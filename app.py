@@ -296,7 +296,7 @@ def main():
             "🟠 Early/Weak Stage 2": "#fef2f2",
             "⚪ Not Stage 2": "#f9fafb"
         }
-        return [f'background-color: {bg_map.get(row["Stage"], "#ffffff")}'] * len(row)
+        return [f'background-color: {bg_map.get(row["Stage"], "#000000")}'] * len(row)
 
     styled_df = display_df.style.apply(color_rows, axis=1)
 
