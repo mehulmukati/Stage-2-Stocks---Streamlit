@@ -6,7 +6,6 @@
 ║   UPDATED: IST Header Time + 7 PM Scheduled Refresh        ║
 ╚══════════════════════════════════════════════════════════════╝
 """
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -14,9 +13,8 @@ import requests
 import yfinance as yf
 import time
 from datetime import datetime
-from zoneinfo import ZoneInfo  # Python 3.9+ standard timezone support
+from zoneinfo import ZoneInfo
 import warnings
-# Safe auto-refresh (actually works in Streamlit)
 from streamlit_autorefresh import st_autorefresh
 warnings.filterwarnings("ignore")
 
@@ -24,14 +22,14 @@ warnings.filterwarnings("ignore")
 # CONFIGURATION
 # ──────────────────────────────────────────────
 INDEX_NAME = "NIFTY MICROCAP 250"
-HISTORY_PERIOD = "3mo"     # enough for 50-DMA + RSI warm-up
+HISTORY_PERIOD = "3mo"
 DMA_FAST = 20
 DMA_SLOW = 50
 VOL_AVG_PERIOD = 10
-VOL_RATIO_THRESHOLD = 1.5  # 150 %
+VOL_RATIO_THRESHOLD = 1.5
 RSI_PERIOD = 14
 RSI_LO, RSI_HI = 50, 70
-MIN_VOLUME = 100_000       # 1 lakh shares
+MIN_VOLUME = 100_000
 
 IST = ZoneInfo("Asia/Kolkata")
 
@@ -59,7 +57,7 @@ st.markdown(
 .hero-sub { text-align: center; color: #64748b; font-size: 0.95rem; margin-top: -4px; }
 .sb-head { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.4rem; }
 </style>
-""", unsafe_html=True
+""", unsafe_allow_html=True
 )
 
 # ══════════════════════════════════════════════
@@ -95,7 +93,6 @@ _FALLBACK_CONSTITUENTS = [
 
 @st.cache_data(ttl=86_400, show_spinner=False)
 def get_index_constituents() -> list[str]:
-    """Fetch from NSE, fallback to hardcoded list if blocked."""
     url = f"https://indices.nseindia.com/api/equity-stockIndices?index={INDEX_NAME.replace(' ', '%20')}"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
@@ -121,7 +118,6 @@ def get_index_constituents() -> list[str]:
     return list(set(_FALLBACK_CONSTITUENTS))
 
 def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
-    """Wilder-smoothed RSI."""
     delta = series.diff()
     gain = delta.clip(lower=0)
     loss = (-delta).clip(lower=0)
@@ -131,7 +127,6 @@ def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
     return 100 - (100 / (1 + rs))
 
 def _analyse(symbol: str, df: pd.DataFrame) -> dict | None:
-    """Apply all Stage-2 breakout filters."""
     close = df["Close"]
     vol = df["Volume"]
     dma20 = close.rolling(DMA_FAST).mean()
@@ -174,7 +169,6 @@ def _analyse(symbol: str, df: pd.DataFrame) -> dict | None:
 
 @st.cache_data(ttl=1800, show_spinner="⏳ Bulk-fetching EOD data for 250 stocks (takes ~10s)...")
 def run_screener():
-    """Full pipeline: constituents -> bulk fetch -> analyse."""
     symbols = get_index_constituents()
     if not symbols:
         return pd.DataFrame(), 0, 0, 0, ""
@@ -232,13 +226,13 @@ def main():
         st.rerun()
 
     with st.sidebar:
-        st.markdown('<p class="sb-head">⚙️ Controls</p>', unsafe_html=True)
+        st.markdown('<p class="sb-head">⚙️ Controls</p>', unsafe_allow_html=True)
         if st.button("🔍 Force Run Screener Now", use_container_width=True, type="primary"):
             st.cache_data.clear()
             st.session_state.pop("last_scheduled_run", None)
             st.rerun()
         st.markdown("---")
-        st.markdown('<p class="sb-head">📋 Screening Criteria</p>', unsafe_html=True)
+        st.markdown('<p class="sb-head">📋 Screening Criteria</p>', unsafe_allow_html=True)
         st.markdown("""
         <div class="criteria">
         <strong>Stage 2 Breakout:</strong><br>
@@ -250,16 +244,16 @@ def main():
         🔴 <em>Fresh</em> — crossed DMA today<br>
         🟢 <em>Sustained</em> — already above DMAs
         </div>
-        """, unsafe_html=True)
+        """, unsafe_allow_html=True)
         st.markdown("---")
         st.caption("🕒 **Auto-refresh scheduled daily at 7:00 PM IST** for EOD data.")
         st.caption("ℹ️ **Data Source:** NSE constituents + Yahoo Finance EOD.")
 
     # ── header ──
     now_str = now_ist.strftime("%d %b %Y · %I:%M %p IST")
-    st.markdown('<p class="hero-title">🚀 Stage 2 Breakout Screener</p>', unsafe_html=True)
-    st.markdown(f'<p class="hero-sub">Nifty Microcap 250 · EOD Analysis · {now_str}</p>', unsafe_html=True)
-    st.markdown("<br>", unsafe_html=True)
+    st.markdown('<p class="hero-title">🚀 Stage 2 Breakout Screener</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="hero-sub">Nifty Microcap 250 · EOD Analysis · {now_str}</p>', unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
     # ── run screener ──
     df, total, fetched, errors, data_date = run_screener()
@@ -267,10 +261,10 @@ def main():
 
     # ── metric cards ──
     c1, c2, c3, c4 = st.columns(4)
-    c1.markdown(_card("card-purple", total, "Total Constituents"), unsafe_html=True)
-    c2.markdown(_card("card-slate", fetched, "Valid Data Fetched"), unsafe_html=True)
-    c3.markdown(_card("card-teal", n_pass, "Breakout Stocks"), unsafe_html=True)
-    c4.markdown(_card("card-rose", errors, "Skipped / Errors"), unsafe_html=True)
+    c1.markdown(_card("card-purple", total, "Total Constituents"), unsafe_allow_html=True)
+    c2.markdown(_card("card-slate", fetched, "Valid Data Fetched"), unsafe_allow_html=True)
+    c3.markdown(_card("card-teal", n_pass, "Breakout Stocks"), unsafe_allow_html=True)
+    c4.markdown(_card("card-rose", errors, "Skipped / Errors"), unsafe_allow_html=True)
     if data_date:
         st.caption(f"📅 Latest trading date in dataset: **{data_date}**")
 
