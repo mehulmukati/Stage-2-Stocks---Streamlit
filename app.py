@@ -2,7 +2,7 @@
 """
 ╔══════════════════════════════════════════════════════════════╗
 ║   Stage 2 Breakout Screener — Nifty Total Market (750)     ║
-║   7-Point Weinstein Scoring | Full-Universe Daily Cache    ║
+║   7-Point Weinstein Scoring | Smart EOD Cache & Fetch Logic║
 ║   DATA: constituents.json | HOLIDAYS: nse_holidays.json    ║
 ╚══════════════════════════════════════════════════════════════╝
 """
@@ -29,7 +29,7 @@ RESULT_CACHE_DIR = "daily_cache"
 os.makedirs(RESULT_CACHE_DIR, exist_ok=True)
 
 # ──────────────────────────────────────────────
-# HOLIDAY & WEEKEND CHECKER (Info only, non-blocking)
+# HOLIDAY & TRADING DAY RESOLVER
 # ──────────────────────────────────────────────
 def load_nse_holidays() -> set:
     path = os.path.join(os.path.dirname(__file__), "nse_holidays.json")
@@ -48,23 +48,18 @@ def load_nse_holidays() -> set:
                 continue
     return holidays
 
-def is_weekend_or_holiday(date_str: str, holidays: set) -> bool:
-    try:
-        dt = datetime.strptime(date_str, "%Y-%m-%d")
-        return dt.weekday() >= 5 or date_str in holidays
-    except ValueError:
-        return False
+def get_last_valid_trading_date(start_date_str: str, holidays: set) -> str:
+    """Loops backward from start_date until a valid weekday (non-holiday) is found."""
+    dt = datetime.strptime(start_date_str, "%Y-%m-%d")
+    for _ in range(10):  # Safety cap: max 10 days back
+        if dt.weekday() < 5 and dt.strftime("%Y-%m-%d") not in holidays:
+            return dt.strftime("%Y-%m-%d")
+        dt -= timedelta(days=1)
+    return start_date_str  # Fallback
 
 # ──────────────────────────────────────────────
-# PERSISTENT CACHE UTILS
+# CACHE UTILS
 # ──────────────────────────────────────────────
-def get_target_date_key() -> str:
-    """<7 PM IST → yesterday, >=7 PM IST → today."""
-    now = datetime.now(IST)
-    if now.hour >= 19:
-        return now.strftime("%Y-%m-%d")
-    return (now - timedelta(days=1)).strftime("%Y-%m-%d")
-
 def load_json_cache(key: str) -> pd.DataFrame | None:
     path = os.path.join(RESULT_CACHE_DIR, f"{key}.json")
     try:
@@ -78,75 +73,6 @@ def load_json_cache(key: str) -> pd.DataFrame | None:
 def save_json_cache(df: pd.DataFrame, key: str):
     path = os.path.join(RESULT_CACHE_DIR, f"{key}.json")
     df.to_json(path, orient="records")
-
-def load_latest_fallback(target_key: str) -> tuple[pd.DataFrame | None, str | None]:
-    try:
-        files = sorted([f.replace(".json", "") for f in os.listdir(RESULT_CACHE_DIR) if f.endswith(".json")], reverse=True)
-        for f in files:
-            if f <= target_key:
-                df = load_json_cache(f)
-                if df is not None: return df, f
-    except Exception:
-        pass
-    return None, None
-
-def _is_yfinance_fresh(raw_df: pd.DataFrame, target_date_str: str) -> bool:
-    """Validates if yfinance returned complete EOD data for the target date."""
-    try:
-        if isinstance(raw_df.columns, pd.MultiIndex):
-            first_ticker = raw_df.columns.levels[0][0]
-            sub = raw_df[first_ticker].dropna(how='all')
-        else:
-            sub = raw_df.dropna(how='all')
-            
-        if sub.empty: return False
-        latest_date = sub.index[-1].date().strftime("%Y-%m-%d")
-        if latest_date != target_date_str: return False
-        vol = sub["Volume"].iloc[-1]
-        return not (pd.isna(vol) or vol <= 0)
-    except Exception:
-        return False
-
-def fetch_and_score_universe() -> tuple[pd.DataFrame, int]:
-    const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
-    if not os.path.exists(const_path):
-        st.error("❌ `constituents.json` missing.")
-        return pd.DataFrame(), 0
-    with open(const_path, "r") as f:
-        constituents = json.load(f)
-
-    symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
-    tickers = [f"{s}.NS" for s in symbols]
-    target_date = get_target_date_key()
-
-    try:
-        with st.spinner("🌐 Fetching EOD data for full Nifty 750 universe..."):
-            raw = yf.download(tickers, period=HISTORY_PERIOD, group_by="ticker", 
-                              threads=True, progress=False, auto_adjust=True)
-    except Exception as e:
-        st.error(f"Yahoo Finance Error: {e}")
-        return pd.DataFrame(), 0
-
-    # ✅ FRESHNESS CHECK
-    if not _is_yfinance_fresh(raw, target_date):
-        return pd.DataFrame(), 0
-
-    # Proceed with scoring
-    results = []
-    for t in tickers:
-        sym = t.replace(".NS", "")
-        try:
-            sub = raw[t].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
-            sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
-            res = score_stage2(sub)
-            if res:
-                res["Symbol"] = sym
-                res["Index"] = next((idx for idx, syms in constituents.items() if sym in syms), "Unknown")
-                results.append(res)
-        except: continue
-
-    df = pd.DataFrame(results)
-    return df.sort_values("Score", ascending=False), len(df)
 
 # ──────────────────────────────────────────────
 # PURE PYTHON SCORING ENGINE
@@ -198,6 +124,84 @@ def score_stage2(df: pd.DataFrame) -> dict | None:
     }
 
 # ──────────────────────────────────────────────
+# FETCH & CACHE ORCHESTRATOR
+# ──────────────────────────────────────────────
+def fetch_and_score_universe(selected_indices: list[str], rsi_filter: bool) -> tuple[pd.DataFrame, int]:
+    const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
+    if not os.path.exists(const_path):
+        st.error("❌ `constituents.json` missing.")
+        return pd.DataFrame(), 0
+    with open(const_path, "r") as f:
+        constituents = json.load(f)
+
+    symbols = []
+    for idx in selected_indices:
+        symbols.extend(constituents.get(idx, []))
+    symbols = list(dict.fromkeys(symbols))
+    tickers = [f"{s}.NS" for s in symbols]
+
+    try:
+        with st.spinner("🌐 Fetching EOD data..."):
+            raw = yf.download(tickers, period=HISTORY_PERIOD, group_by="ticker", 
+                              threads=True, progress=False, auto_adjust=True)
+    except Exception as e:
+        st.error(f"Yahoo Finance Error: {e}")
+        return pd.DataFrame(), 0
+
+    results = []
+    for t in tickers:
+        sym = t.replace(".NS", "")
+        try:
+            sub = raw[t].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
+            sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
+            res = score_stage2(sub)
+            if res:
+                res["Symbol"] = sym
+                res["Index"] = next((idx for idx in selected_indices if sym in constituents.get(idx, [])), "Unknown")
+                results.append(res)
+        except: continue
+
+    df = pd.DataFrame(results)
+    if df.empty: return pd.DataFrame(), 0
+    if rsi_filter: df = df[(df["RSI"] >= 50) & (df["RSI"] <= 70)]
+    return df.sort_values("Score", ascending=False), len(df)
+
+def resolve_screener_data(selected_indices: list[str], rsi_filter: bool):
+    """Implements your exact logic: Time-based target → Find valid trading day → Cache/Fetch."""
+    now = datetime.now(IST)
+    
+    # 1. Determine starting date based on 7 PM cutoff
+    start_date = now.strftime("%Y-%m-%d") if now.hour >= 19 else (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    # 2. Find last valid trading day (handles weekends/holidays)
+    holidays = load_nse_holidays()
+    target_key = get_last_valid_trading_date(start_date, holidays)
+    
+    # 3. Check cache first
+    df = load_json_cache(target_key)
+    if df is not None:
+        return df, target_key, True  # (data, date, is_cached)
+        
+    # 4. Cache miss → Fetch
+    df, valid_count = fetch_and_score_universe(selected_indices, rsi_filter)
+    if not df.empty:
+        save_json_cache(df, target_key)
+        return df, target_key, False
+        
+    # 5. Fetch failed or returned empty → Look for any older cache
+    try:
+        files = sorted([f.replace(".json", "") for f in os.listdir(RESULT_CACHE_DIR) if f.endswith(".json")], reverse=True)
+        for f in files:
+            if f <= target_key:
+                df = load_json_cache(f)
+                if df is not None:
+                    return df, f, True
+    except Exception:
+        pass
+        
+    return pd.DataFrame(), target_key, True  # Fallback to empty if absolutely nothing exists
+
+# ──────────────────────────────────────────────
 # STREAMLIT UI
 # ──────────────────────────────────────────────
 st.set_page_config(page_title="Stage 2 Screener | Nifty 750", page_icon="📈", layout="wide")
@@ -215,39 +219,7 @@ def main():
     st.markdown('<p class="hero">📊 Nifty Total Market Stage 2 Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">EOD Analysis · 7-Point Weinstein Score · {now_ist}</p>', unsafe_allow_html=True)
 
-    # ── 1. SMART CACHE/FETCH LOGIC (Non-blocking) ──
-    target_key = get_target_date_key()
-    holidays = load_nse_holidays()
-    
-    if "full_df" not in st.session_state:
-        df = load_json_cache(target_key)
-        cache_date = target_key
-
-        if df is None:
-            # Cache missing -> ALWAYS attempt fetch
-            df, _ = fetch_and_score_universe()
-            
-            if df is not None and not df.empty:
-                save_json_cache(df, target_key)
-                cache_date = target_key
-            else:
-                # Yahoo data stale/unavailable -> Fallback to latest cache
-                df, cache_date = load_latest_fallback(target_key)
-                if df is None or df.empty:
-                    st.warning(f"📅 No cached or fresh EOD data available yet. Try again after 7:30 PM IST.")
-                    return
-                st.info(f"⚠️ EOD data not yet updated for {target_key}. Showing latest available cache from **{cache_date}**.")
-                
-        st.session_state["full_df"] = df
-        st.session_state["cache_date"] = cache_date
-
-    full_df = st.session_state["full_df"]
-    
-    # Show soft warning if target date is weekend/holiday but cache exists
-    if is_weekend_or_holiday(target_key, holidays) and cache_date != target_key:
-        st.info(f"📅 NSE is closed on {target_key}. Displaying cached data from **{cache_date}**.")
-
-    # ── 2. CONTROL PANEL (Checkboxes + Filters) ──
+    # ── CONTROL PANEL (Batched) ──
     with st.sidebar.form("controls", clear_on_submit=False):
         st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
         rsi_toggle = st.toggle("Filter: RSI between 50–70", value=False)
@@ -275,8 +247,20 @@ def main():
         st.info("👈 Select indices/filters and click **Apply Filters & Show** to begin.")
         return
 
-    # ── 3. APPLY FILTERS (Instant) ──
-    display_df = full_df.copy()
+    # ── RESOLVE DATA (Cache/Fetch Logic) ──
+    df, cache_date, is_cached = resolve_screener_data(selected_indices, rsi_toggle)
+    
+    if df.empty:
+        st.warning(f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins.")
+        return
+        
+    if not is_cached:
+        st.success(f"✅ Fetched & cached fresh EOD data for **{cache_date}**.")
+    elif cache_date != (datetime.now(IST) - timedelta(days=1 if datetime.now(IST).hour < 19 else 0)).strftime("%Y-%m-%d"):
+        st.info(f"ℹ️ Market closed or data pending. Showing latest available cache from **{cache_date}**.")
+
+    # ── APPLY FILTERS (Instant) ──
+    display_df = df.copy()
     if selected_indices: display_df = display_df[display_df["Index"].isin(selected_indices)]
     if rsi_toggle: display_df = display_df[(display_df["RSI"] >= 50) & (display_df["RSI"] <= 70)]
     if not show_illiquid: display_df = display_df[~display_df["Illiquid"]]
@@ -290,8 +274,8 @@ def main():
     )
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Cache Date", st.session_state["cache_date"])
-    c2.metric("Total Universe", len(full_df))
+    c1.metric("Cache Date", cache_date)
+    c2.metric("Total Universe", len(df))
     c3.metric("Matches (Filters)", len(display_df))
     c4.metric("Strong Stage 2", len(display_df[display_df["Score"] >= 6]))
 
