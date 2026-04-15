@@ -273,7 +273,7 @@ def main():
 
     # Inline ILLIQ tag next to ticker
     display_df["Symbol"] = display_df.apply(
-        lambda r: f"{r['Symbol']} <span class='illiq-tag'>ILLIQ</span>" if r['Illiquid'] else r['Symbol'], axis=1
+        lambda r: f"{r['Symbol']} 🚩 ILLIQ" if r['Illiquid'] else r['Symbol'], axis=1
     )
 
     # EXPLICIT COLUMN ORDER: Ticker, Source, Classification, Score, Close, Vol, Vol Ratio, RSI
