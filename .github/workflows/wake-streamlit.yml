@@ -1,0 +1,16 @@
+name: Wake Streamlit at 6:55 PM IST
+
+on:
+  schedule:
+    - cron: '25 13 * * *'  # Runs at 13:25 UTC = 6:55 PM IST
+  workflow_dispatch:        # Allows manual triggering for testing
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake up Streamlit app
+        run: |
+          echo "🌐 Pinging Streamlit app at 6:55 PM IST..."
+          curl -sSf --retry 3 --retry-delay 5 https://stage-2-stocks---app-td6eclbraouxtyfvbt9eiz.streamlit.app/ || true
+          echo "✅ Ping complete."
