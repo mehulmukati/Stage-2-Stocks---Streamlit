@@ -114,7 +114,7 @@ def get_index_constituents() -> list[str]:
                 return symbols
     except Exception:
         pass
-    st.warning("⚠️ NSE API blocked/failed. Using recent cached constituent snapshot.", icon="⚠️")
+    st.warning(" NSE API blocked/failed. Using recent cached constituent snapshot.")
     return list(set(_FALLBACK_CONSTITUENTS))
 
 def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
@@ -217,7 +217,10 @@ def main():
     st_autorefresh(interval=1800000, limit=None, key="bg_poll_30m")
     
     now_ist = datetime.now(IST)
-    is_7pm_window = now_ist.hour == 19 and now_ist.minute < 30  # 7:00 - 7:29 PM IST
+    # Catches 6:55 PM – 7:29 PM IST
+    is_7pm_window = (now_ist.hour == 18 and now_ist.minute >= 55) or \
+                    (now_ist.hour == 19 and now_ist.minute < 30)
+
     today_str = now_ist.strftime("%Y-%m-%d")
     
     if is_7pm_window and st.session_state.get("last_scheduled_run") != today_str:
