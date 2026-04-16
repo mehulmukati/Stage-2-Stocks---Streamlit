@@ -25,7 +25,7 @@ HISTORY_PERIOD = "2y"
 MIN_VOLUME = 100_000
 VOL_AVG_PERIOD = 10          # Configurable: 10, 20, or 50 days (Change here)
 HH_HL_LOOKBACK = 50          # Change here if needed
-MA_RISING_LOOKBACK = 10      # Change here if needed
+MA_RISING_LOOKBACK = 50      # Change here if needed
 RESULT_CACHE_DIR = "daily_cache"
 os.makedirs(RESULT_CACHE_DIR, exist_ok=True)
 
@@ -240,7 +240,7 @@ def main():
         cols = st.columns(2)
         selected_indices = []
         for i, idx in enumerate(idx_options):
-            default_checked = idx in ["Nifty 50", "Nifty Next 50"]
+            default_checked = idx in ["Nifty 50", "Nifty Next 50", "Nifty Midcap 150", "Nifty Smallcap 250", "Nifty Microcap 250"]
             if cols[i % 2].checkbox(idx, value=default_checked):
                 selected_indices.append(idx)
         
