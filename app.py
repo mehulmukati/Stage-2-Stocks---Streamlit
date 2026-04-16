@@ -126,7 +126,7 @@ def score_stage2(df: pd.DataFrame) -> dict | None:
         "Score": score, "Stage": stage,
         # Illiquid check now uses Average Volume over VOL_AVG_PERIOD
         "Illiquid": avg_vol.iloc[-1] < MIN_VOLUME,
-        "Close": round(c1, 2), "Volume": int(v1), "Avg Vol (10d)": int(avg_vol), "Vol_Ratio": round(vr, 2),
+        "Close": round(c1, 2), "Volume": int(v1), "Vol_Ratio": round(vr, 2),
         "RSI": round(r, 1), "MA50": round(m50, 2), "MA150": round(m150, 2), 
         "MA200": round(m200, 2), "MA_Stack": m50 > m150 > m200
     }
@@ -283,8 +283,8 @@ def main():
         lambda r: f"{r['Symbol']} 🚩 ILLIQ" if r['Illiquid'] else r['Symbol'], axis=1
     )
 
-    # EXPLICIT COLUMN ORDER: Ticker, Source, Classification, Score, Close, Vol, Avg Vol, Vol Ratio, RSI
-    display_cols = ["Symbol", "Index", "Stage", "Score", "Close", "Volume", "Avg Vol (10d)", "Vol_Ratio", "RSI"]
+    # EXPLICIT COLUMN ORDER: Ticker, Source, Classification, Score, Close, Vol, Vol Ratio, RSI
+    display_cols = ["Symbol", "Index", "Stage", "Score", "Close", "Volume", "Vol_Ratio", "RSI"]
     display_df = display_df[display_cols]
 
     c1, c2, c3, c4 = st.columns(4)
@@ -317,7 +317,6 @@ def main():
             "Score": st.column_config.NumberColumn("Score", format="%d/7", width="small"),
             "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
             "Volume": st.column_config.NumberColumn("Volume", format="%,d", width="medium"),
-            "Avg Vol (10d)": st.column_config.NumberColumn("Avg Vol (10d)", format="%,d", width="medium"),
             "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio", format="%.2f x", width="small"),
             "RSI": st.column_config.NumberColumn("RSI(14)", format="%.1f", width="small")
         }, 
