@@ -1,0 +1,1 @@
+Nothing should be ignored based on the provided file changes. The changes only include source/config files (.gitignore and app.py) with no build artifacts, dependencies, or temporary files that need to be ignored.
