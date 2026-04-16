@@ -236,7 +236,7 @@ def main():
         selected_indices = []
         cols = st.columns(2)
         for i, idx in enumerate(idx_options):
-            default_checked = idx in ["Nifty Smallcap 250", "Nifty Microcap 250"]
+            default_checked = idx in ["Nifty 50", "Nifty Next 50", "Nifty Midcap 150", "Nifty Smallcap 250", "Nifty Microcap 250"]
             if cols[i % 2].checkbox(idx, value=default_checked):
                 selected_indices.append(idx)
         
