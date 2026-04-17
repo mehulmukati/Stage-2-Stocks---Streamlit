@@ -417,11 +417,11 @@ def stage2_screener_ui():
     st.markdown('<p class="hero">📊 Nifty Total Market Stage 2 Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">EOD Analysis · 7-Point Weinstein Score · {now_ist}</p>', unsafe_allow_html=True)
 
-    # ── CONTROL PANEL (Batched) ──
-    with st.sidebar.form("stage2_controls", clear_on_submit=False):
-        st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
-        rsi_toggle = st.toggle("Filter: RSI between 50–70", value=False, key="rsi_toggle")
-        show_illiquid = st.toggle("Show Illiquid Stocks (Avg Vol < 1L)", value=False, key="show_illiquid")
+    # ── SIDEBAR FILTERS ──
+    with st.sidebar:
+        st.markdown('<p class="sb-head">🔍 Stage 2 Filters</p>', unsafe_allow_html=True)
+        rsi_toggle = st.toggle("Filter: RSI between 50–70", value=False, key="stage2_rsi_toggle")
+        show_illiquid = st.toggle("Show Illiquid Stocks (Avg Vol < 1L)", value=False, key="stage2_show_illiquid")
         
         st.markdown("---")
         st.markdown('<p class="sb-head">📦 Select Indices</p>', unsafe_allow_html=True)
@@ -433,16 +433,16 @@ def stage2_screener_ui():
         selected_indices = []
         for i, idx in enumerate(idx_options):
             default_checked = idx in ["Nifty 50", "Nifty Next 50", "Nifty Midcap 150", "Nifty Smallcap 250", "Nifty Microcap 250"]
-            if cols[i % 2].checkbox(idx, value=default_checked, key=f"idx_{idx}"):
+            if cols[i % 2].checkbox(idx, value=default_checked, key=f"stage2_idx_{idx}"):
                 selected_indices.append(idx)
         
-        run_btn = st.form_submit_button("🚀 Apply Filters & Show", type="primary", width="stretch")
+        run_btn = st.button("🚀 Run Stage 2 Screener", type="primary", width="stretch", key="stage2_run_btn")
 
     if "stage2_run_triggered" not in st.session_state and run_btn:
         st.session_state["stage2_run_triggered"] = True
 
     if not st.session_state.get("stage2_run_triggered"):
-        st.info("👈 Select indices/filters and click **Apply Filters & Show** to begin.")
+        st.info("👈 Select indices/filters and click **Run Stage 2 Screener** to begin.")
         return
 
     # ── RESOLVE DATA (Fetches Full Universe if cache miss) ──
@@ -558,51 +558,51 @@ def momentum_screener_ui():
     st.markdown('<p class="hero">🚀 Momentum Stock Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">Sharpe Ratio Based Momentum Analysis · {now_ist}</p>', unsafe_allow_html=True)
 
-    # ── CONTROL PANEL (Batched) ──
-    with st.sidebar.form("momentum_controls", clear_on_submit=False):
-        st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
+    # ── SIDEBAR FILTERS ──
+    with st.sidebar:
+        st.markdown('<p class="sb-head">🔍 Momentum Filters</p>', unsafe_allow_html=True)
         
         # Universe Selection
         universe_options = [
             "Nifty 50", "Nifty Next 50", "Nifty Midcap 150", "Nifty Smallcap 250", "Nifty Microcap 250",
             "Nifty LargeMidcap 250", "Nifty MidSmallcap 400", "Nifty Total Market"
         ]
-        selected_universe = st.selectbox("Choosing Universe", options=universe_options, index=7)
+        selected_universe = st.selectbox("Choosing Universe", options=universe_options, index=7, key="mom_universe")
         
         # Minimum Annual Return
-        min_annual_return = st.number_input("Minimum Annual Return (%)", min_value=0.0, max_value=1000.0, value=0.0, step=0.01, format="%.2f")
+        min_annual_return = st.number_input("Minimum Annual Return (%)", min_value=0.0, max_value=1000.0, value=0.0, step=0.01, format="%.2f", key="mom_min_return")
         
         # DMA Filters
         col1, col2 = st.columns(2)
         with col1:
-            close_above_100dma = st.checkbox("Close > 100 DMA", value=False)
+            close_above_100dma = st.checkbox("Close > 100 DMA", value=False, key="mom_100dma")
         with col2:
-            close_above_200dma = st.checkbox("Close > 200 DMA", value=False)
+            close_above_200dma = st.checkbox("Close > 200 DMA", value=False, key="mom_200dma")
         
         # 52W High Filter
-        pct_from_52w_high = st.number_input("Last Close / 52w High (within %)", min_value=0, max_value=100, value=25, step=1)
+        pct_from_52w_high = st.number_input("Last Close / 52w High (within %)", min_value=0, max_value=100, value=25, step=1, key="mom_52w_pct")
         
         # Max Circuits
-        max_circuits = st.number_input("Max Circuits (past 1 year)", min_value=0, max_value=100, value=5, step=1)
+        max_circuits = st.number_input("Max Circuits (past 1 year)", min_value=0, max_value=100, value=5, step=1, key="mom_max_circuits")
         
         # Positive Days
         st.markdown('<p class="sb-head" style="margin-top: 1rem;">Positive Days (%)</p>', unsafe_allow_html=True)
         col3, col4, col5 = st.columns(3)
         with col3:
-            pos_days_3m = st.number_input("3 Months", min_value=0, max_value=100, value=0, step=1)
+            pos_days_3m = st.number_input("3 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_3m")
         with col4:
-            pos_days_6m = st.number_input("6 Months", min_value=0, max_value=100, value=0, step=1)
+            pos_days_6m = st.number_input("6 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_6m")
         with col5:
-            pos_days_12m = st.number_input("12 Months", min_value=0, max_value=100, value=0, step=1)
+            pos_days_12m = st.number_input("12 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_12m")
         
         # Sorting Method
         sort_options = [
             "1 year", "3 months", "6 months", "9 months",
             "Average of 3/6/9/12 months", "Average of 3/6 months"
         ]
-        sort_method = st.selectbox("Sorting Method (Sharpe Ratio)", options=sort_options, index=4)
+        sort_method = st.selectbox("Sorting Method (Sharpe Ratio)", options=sort_options, index=4, key="mom_sort")
         
-        run_btn = st.form_submit_button("🚀 Run Momentum Screener", type="primary", width="stretch")
+        run_btn = st.button("🚀 Run Momentum Screener", type="primary", width="stretch", key="mom_run_btn")
 
     if "momentum_run_triggered" not in st.session_state and run_btn:
         st.session_state["momentum_run_triggered"] = True
