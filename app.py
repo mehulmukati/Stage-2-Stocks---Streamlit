@@ -191,11 +191,11 @@ def score_momentum(df: pd.DataFrame) -> dict | None:
     """Calculate momentum metrics for a stock."""
     if len(df) < 250:
         return None
-
+    
     c = df["Close"]
     v = df["Volume"]
     h = df["High"]
-
+    
     # Basic metrics
     close = c.iloc[-1]
     high_52w = h.rolling(252).max().iloc[-1]
@@ -231,7 +231,7 @@ def score_momentum(df: pd.DataFrame) -> dict | None:
     pos_days_3m = _calculate_positive_days_pct(df, 3)
     pos_days_6m = _calculate_positive_days_pct(df, 6)
     pos_days_12m = _calculate_positive_days_pct(df, 12)
-
+    
     return {
         "Close": round(close, 2),
         "52w_High": round(high_52w, 2) if high_52w else None,
@@ -286,12 +286,14 @@ def fetch_full_universe(rsi_filter: bool, for_momentum: bool = False) -> tuple[p
     # Flatten ALL symbols from ALL indices
     all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
     tickers = [f"{s}.NS" for s in all_symbols]
+    
+    period = HISTORY_PERIOD_MOMENTUM if for_momentum else HISTORY_PERIOD
 
     period = HISTORY_PERIOD_MOMENTUM if for_momentum else HISTORY_PERIOD
 
     try:
         with st.spinner("🌐 Fetching EOD data for full Nifty 750 universe..."):
-            raw = yf.download(tickers, period=period, group_by="ticker",
+            raw = yf.download(tickers, period=period, group_by="ticker", 
                               threads=True, progress=False, auto_adjust=True)
     except Exception as e:
         st.error(f"Yahoo Finance Error: {e}")
@@ -315,7 +317,7 @@ def fetch_full_universe(rsi_filter: bool, for_momentum: bool = False) -> tuple[p
 
     df = pd.DataFrame(results)
     if df.empty: return pd.DataFrame(), 0
-    if not for_momentum and rsi_filter:
+    if not for_momentum and rsi_filter: 
         df = df[(df["RSI"] >= 50) & (df["RSI"] <= 70)]
     return df.sort_values("Score" if not for_momentum else "Close", ascending=False), len(df)
 
@@ -334,7 +336,7 @@ def fetch_momentum_universe(universe: str) -> tuple[pd.DataFrame, int]:
 
     try:
         with st.spinner(f"🌐 Fetching EOD data for {universe}..."):
-            raw = yf.download(tickers, period=HISTORY_PERIOD_MOMENTUM, group_by="ticker",
+            raw = yf.download(tickers, period=HISTORY_PERIOD_MOMENTUM, group_by="ticker", 
                               threads=True, progress=False, auto_adjust=True)
     except Exception as e:
         st.error(f"Yahoo Finance Error: {e}")
