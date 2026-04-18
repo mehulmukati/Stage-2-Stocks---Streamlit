@@ -332,10 +332,15 @@ def fetch_momentum_universe(universe: str) -> tuple[pd.DataFrame, int]:
         constituents = json.load(f)
 
     symbols = _get_universe_symbols(universe, constituents)
+    
+    if not symbols:
+        st.warning(f"No symbols found for universe: {universe}")
+        return pd.DataFrame(), 0
+    
     tickers = [f"{s}.NS" for s in symbols]
 
     try:
-        with st.spinner(f"🌐 Fetching EOD data for {universe}..."):
+        with st.spinner(f"🌐 Fetching EOD data for {len(tickers)} stocks in {universe}..."):
             raw = yf.download(tickers, period=HISTORY_PERIOD_MOMENTUM, group_by="ticker", 
                               threads=True, progress=False, auto_adjust=True)
     except Exception as e:
@@ -343,20 +348,41 @@ def fetch_momentum_universe(universe: str) -> tuple[pd.DataFrame, int]:
         return pd.DataFrame(), 0
 
     results = []
+    processed_count = 0
     for t in tickers:
         sym = t.replace(".NS", "")
         try:
-            sub = raw[t].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
+            # Handle single ticker case differently
+            if len(tickers) == 1:
+                sub = raw.dropna(how="all")
+            else:
+                # Check if the ticker exists in the data
+                if t not in raw or raw[t].empty:
+                    continue
+                sub = raw[t].dropna(how="all")
+            
+            if sub.empty:
+                continue
+                
             sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
+            
+            # Ensure we have required columns
+            required_cols = ["Close", "Volume", "High"]
+            if not all(col in sub.columns for col in required_cols):
+                continue
+            
             res = score_momentum(sub)
             if res:
                 res["Symbol"] = sym
                 res["Index"] = next((idx for idx, syms in constituents.items() if sym in syms), "Unknown")
                 results.append(res)
-        except: continue
+                processed_count += 1
+        except Exception as e:
+            continue
 
     df = pd.DataFrame(results)
-    if df.empty: return pd.DataFrame(), 0
+    if df.empty:
+        return pd.DataFrame(), 0
     return df, len(df)
 
 
@@ -409,6 +435,10 @@ st.markdown("""
 .sb-head { font-weight: 700; margin-bottom: 0.5rem; font-size: 0.95rem; }
 .hero { text-align: center; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.2rem; }
 .sub-hero { text-align: center; color: #64748b; margin-top: -8px; }
+/* Make tabs full width at top */
+.stTabs [data-baseweb="tab-list"] { gap: 2px; width: 100%; }
+.stTabs [data-baseweb="tab"] { flex-grow: 1; width: 100%; }
+.stTabs { width: 100%; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -420,10 +450,10 @@ def stage2_screener_ui():
     st.markdown(f'<p class="sub-hero">EOD Analysis · 7-Point Weinstein Score · {now_ist}</p>', unsafe_allow_html=True)
 
     # ── CONTROL PANEL (Batched) ──
-    with st.sidebar.form("stage2_controls", clear_on_submit=False):
+    with st.sidebar:
         st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
-        rsi_toggle = st.toggle("Filter: RSI between 50–70", value=False, key="rsi_toggle")
-        show_illiquid = st.toggle("Show Illiquid Stocks (Avg Vol < 1L)", value=False, key="show_illiquid")
+        rsi_toggle = st.toggle("Filter: RSI between 50–70", value=False, key="stage2_rsi_toggle")
+        show_illiquid = st.toggle("Show Illiquid Stocks (Avg Vol < 1L)", value=False, key="stage2_show_illiquid")
 
         st.markdown("---")
         st.markdown('<p class="sb-head">📦 Select Indices</p>', unsafe_allow_html=True)
@@ -435,10 +465,10 @@ def stage2_screener_ui():
         selected_indices = []
         for i, idx in enumerate(idx_options):
             default_checked = idx in ["Nifty 50", "Nifty Next 50", "Nifty Midcap 150", "Nifty Smallcap 250", "Nifty Microcap 250"]
-            if cols[i % 2].checkbox(idx, value=default_checked, key=f"idx_{idx}"):
+            if cols[i % 2].checkbox(idx, value=default_checked, key=f"stage2_idx_{idx}"):
                 selected_indices.append(idx)
 
-        run_btn = st.form_submit_button("🚀 Apply Filters & Show", type="primary", width="stretch")
+        run_btn = st.button("🚀 Apply Filters & Show", type="primary", use_container_width=True, key="stage2_run_btn")
 
     if "stage2_run_triggered" not in st.session_state and run_btn:
         st.session_state["stage2_run_triggered"] = True
@@ -561,7 +591,7 @@ def momentum_screener_ui():
     st.markdown(f'<p class="sub-hero">Sharpe Ratio Based Momentum Analysis · {now_ist}</p>', unsafe_allow_html=True)
 
     # ── CONTROL PANEL (Batched) ──
-    with st.sidebar.form("momentum_controls", clear_on_submit=False):
+    with st.sidebar:
         st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
 
         # Universe Selection
@@ -569,42 +599,42 @@ def momentum_screener_ui():
             "Nifty 50", "Nifty Next 50", "Nifty Midcap 150", "Nifty Smallcap 250", "Nifty Microcap 250",
             "Nifty LargeMidcap 250", "Nifty MidSmallcap 400", "Nifty Total Market"
         ]
-        selected_universe = st.selectbox("Choosing Universe", options=universe_options, index=7)
+        selected_universe = st.selectbox("Choosing Universe", options=universe_options, index=7, key="mom_universe")
 
         # Minimum Annual Return
-        min_annual_return = st.number_input("Minimum Annual Return (%)", min_value=0.0, max_value=1000.0, value=0.0, step=0.01, format="%.2f")
+        min_annual_return = st.number_input("Minimum Annual Return (%)", min_value=0.0, max_value=1000.0, value=0.0, step=0.01, format="%.2f", key="mom_min_annual_return")
 
         # DMA Filters
         col1, col2 = st.columns(2)
         with col1:
-            close_above_100dma = st.checkbox("Close > 100 DMA", value=False)
+            close_above_100dma = st.checkbox("Close > 100 DMA", value=False, key="mom_close_above_100dma")
         with col2:
-            close_above_200dma = st.checkbox("Close > 200 DMA", value=False)
+            close_above_200dma = st.checkbox("Close > 200 DMA", value=False, key="mom_close_above_200dma")
 
         # 52W High Filter
-        pct_from_52w_high = st.number_input("Last Close / 52w High (within %)", min_value=0, max_value=100, value=25, step=1)
+        pct_from_52w_high = st.number_input("Last Close / 52w High (within %)", min_value=0, max_value=100, value=25, step=1, key="mom_pct_from_52w_high")
 
         # Max Circuits
-        max_circuits = st.number_input("Max Circuits (past 1 year)", min_value=0, max_value=100, value=5, step=1)
+        max_circuits = st.number_input("Max Circuits (past 1 year)", min_value=0, max_value=100, value=5, step=1, key="mom_max_circuits")
 
         # Positive Days
         st.markdown('<p class="sb-head" style="margin-top: 1rem;">Positive Days (%)</p>', unsafe_allow_html=True)
         col3, col4, col5 = st.columns(3)
         with col3:
-            pos_days_3m = st.number_input("3 Months", min_value=0, max_value=100, value=0, step=1)
+            pos_days_3m = st.number_input("3 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_3m")
         with col4:
-            pos_days_6m = st.number_input("6 Months", min_value=0, max_value=100, value=0, step=1)
+            pos_days_6m = st.number_input("6 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_6m")
         with col5:
-            pos_days_12m = st.number_input("12 Months", min_value=0, max_value=100, value=0, step=1)
+            pos_days_12m = st.number_input("12 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_12m")
 
         # Sorting Method
         sort_options = [
             "1 year", "3 months", "6 months", "9 months",
             "Average of 3/6/9/12 months", "Average of 3/6 months"
         ]
-        sort_method = st.selectbox("Sorting Method (Sharpe Ratio)", options=sort_options, index=4)
+        sort_method = st.selectbox("Sorting Method (Sharpe Ratio)", options=sort_options, index=4, key="mom_sort_method")
 
-        run_btn = st.form_submit_button("🚀 Run Momentum Screener", type="primary", width="stretch")
+        run_btn = st.button("🚀 Run Momentum Screener", type="primary", use_container_width=True, key="mom_run_btn")
 
     if "momentum_run_triggered" not in st.session_state and run_btn:
         st.session_state["momentum_run_triggered"] = True
@@ -617,7 +647,7 @@ def momentum_screener_ui():
     df, total_count = fetch_momentum_universe(selected_universe)
 
     if df.empty:
-        st.warning("📅 No data available. Yahoo Finance may be syncing. Try again in 30 mins.")
+        st.warning(f"📅 No data available for {selected_universe}. This could be due to:\n\n1. Yahoo Finance API returning no data\n2. Market holiday/weekend\n3. Invalid symbols in constituents.json\n\nTry again in a few minutes or check your internet connection.")
         return
 
     st.success(f"✅ Fetched data for {total_count} stocks in {selected_universe}")
