@@ -436,9 +436,16 @@ st.markdown("""
 .hero { text-align: center; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.2rem; }
 .sub-hero { text-align: center; color: #64748b; margin-top: -8px; }
 /* Make tabs full width at top */
-.stTabs [data-baseweb="tab-list"] { gap: 2px; width: 100%; }
-.stTabs [data-baseweb="tab"] { flex-grow: 1; width: 100%; }
+.stTabs [data-baseweb="tab-list"] { gap: 2px; width: 100%; justify-content: stretch; }
+.stTabs [data-baseweb="tab"] { flex-grow: 1; width: 100%; max-width: none; }
 .stTabs { width: 100%; }
+/* Sidebar container styling */
+.screener-sidebar { 
+    background-color: #f8f9fa; 
+    padding: 1rem; 
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -449,8 +456,11 @@ def stage2_screener_ui():
     st.markdown('<p class="hero">📊 Nifty Total Market Stage 2 Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">EOD Analysis · 7-Point Weinstein Score · {now_ist}</p>', unsafe_allow_html=True)
 
-    # ── CONTROL PANEL (Batched) ──
-    with st.sidebar:
+    # ── CONTROL PANEL (Batched) - Separate sidebar for this tab ──
+    col_sidebar, col_main = st.columns([1, 4])
+    
+    with col_sidebar:
+        st.markdown('<div class="screener-sidebar">', unsafe_allow_html=True)
         st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
         rsi_toggle = st.toggle("Filter: RSI between 50–70", value=False, key="stage2_rsi_toggle")
         show_illiquid = st.toggle("Show Illiquid Stocks (Avg Vol < 1L)", value=False, key="stage2_show_illiquid")
@@ -469,93 +479,95 @@ def stage2_screener_ui():
                 selected_indices.append(idx)
 
         run_btn = st.button("🚀 Apply Filters & Show", type="primary", use_container_width=True, key="stage2_run_btn")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    if "stage2_run_triggered" not in st.session_state and run_btn:
-        st.session_state["stage2_run_triggered"] = True
+    with col_main:
+        if "stage2_run_triggered" not in st.session_state and run_btn:
+            st.session_state["stage2_run_triggered"] = True
 
-    if not st.session_state.get("stage2_run_triggered"):
-        st.info("👈 Select indices/filters and click **Apply Filters & Show** to begin.")
-        return
+        if not st.session_state.get("stage2_run_triggered"):
+            st.info("👈 Select indices/filters and click **Apply Filters & Show** to begin.")
+            return
 
-    # ── RESOLVE DATA (Fetches Full Universe if cache miss) ──
-    df, cache_date, is_cached = resolve_screener_data(rsi_toggle, for_momentum=False)
+        # ── RESOLVE DATA (Fetches Full Universe if cache miss) ──
+        df, cache_date, is_cached = resolve_screener_data(rsi_toggle, for_momentum=False)
 
-    if df.empty:
-        st.warning(f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins.")
-        return
+        if df.empty:
+            st.warning(f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins.")
+            return
 
-    if not is_cached:
-        st.success(f"✅ Fetched & cached fresh EOD data for **{cache_date}**.")
-    elif cache_date != (datetime.now(IST) - timedelta(days=1 if datetime.now(IST).hour < 19 else 0)).strftime("%Y-%m-%d"):
-        st.info(f"ℹ️ Market closed or data pending. Showing latest available cache from **{cache_date}**.")
+        if not is_cached:
+            st.success(f"✅ Fetched & cached fresh EOD data for **{cache_date}**.")
+        elif cache_date != (datetime.now(IST) - timedelta(days=1 if datetime.now(IST).hour < 19 else 0)).strftime("%Y-%m-%d"):
+            st.info(f"ℹ️ Market closed or data pending. Showing latest available cache from **{cache_date}**.")
 
-    # ── APPLY UI FILTERS LOCALLY (Instant) ──
-    display_df = df.copy()
-    if selected_indices:
-        display_df = display_df[display_df["Index"].isin(selected_indices)]
-    if rsi_toggle:
-        display_df = display_df[(display_df["RSI"] >= 50) & (display_df["RSI"] <= 70)]
-    if not show_illiquid:
-        display_df = display_df[~display_df["Illiquid"]]
+        # ── APPLY UI FILTERS LOCALLY (Instant) ──
+        display_df = df.copy()
+        if selected_indices:
+            display_df = display_df[display_df["Index"].isin(selected_indices)]
+        if rsi_toggle:
+            display_df = display_df[(display_df["RSI"] >= 50) & (display_df["RSI"] <= 70)]
+        if not show_illiquid:
+            display_df = display_df[~display_df["Illiquid"]]
 
-    if display_df.empty:
-        st.warning("No stocks match the selected filters. Adjust criteria or show illiquid stocks.")
-        return
+        if display_df.empty:
+            st.warning("No stocks match the selected filters. Adjust criteria or show illiquid stocks.")
+            return
 
-    # Text-based ILLIQ indicator
-    display_df["Symbol"] = display_df.apply(
-        lambda r: f"{r['Symbol']} 🚩 ILLIQ" if r['Illiquid'] else r['Symbol'], axis=1
-    )
+        # Text-based ILLIQ indicator
+        display_df["Symbol"] = display_df.apply(
+            lambda r: f"{r['Symbol']} 🚩 ILLIQ" if r['Illiquid'] else r['Symbol'], axis=1
+        )
 
-    # EXPLICIT COLUMN ORDER: Ticker, Source, Classification, Score, Close, Vol, Avg Vol, Vol Ratio, RSI
-    display_cols = ["Symbol", "Index", "Stage", "Score", "Close", "Volume", "Avg_Vol", "Vol_Ratio", "RSI"]
-    display_df = display_df[display_cols]
+        # EXPLICIT COLUMN ORDER: Ticker, Source, Classification, Score, Close, Vol, Avg Vol, Vol Ratio, RSI
+        display_cols = ["Symbol", "Index", "Stage", "Score", "Close", "Volume", "Avg_Vol", "Vol_Ratio", "RSI"]
+        display_df = display_df[display_cols]
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Cache Date", cache_date)
-    c2.metric("Total Universe", len(df))
-    c3.metric("Matches (Filters)", len(display_df))
-    c4.metric("Strong Stage 2", len(display_df[display_df["Score"] >= 6]))
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Cache Date", cache_date)
+        c2.metric("Total Universe", len(df))
+        c3.metric("Matches (Filters)", len(display_df))
+        c4.metric("Strong Stage 2", len(display_df[display_df["Score"] >= 6]))
 
-    # Row Coloring Logic
-    def color_rows(row):
-        bg_map = {
-            "🟢 Strong Stage 2": "#ecfdf5",
-            "🟡 Likely Stage 2": "#fefce8",
-            "🟠 Early/Weak Stage 2": "#fef2f2",
-            "⚪ Not Stage 2": "#f9fafb"
-        }
-        return [f'background-color: {bg_map.get(row["Stage"], "#ffffff")}'] * len(row)
+        # Row Coloring Logic
+        def color_rows(row):
+            bg_map = {
+                "🟢 Strong Stage 2": "#ecfdf5",
+                "🟡 Likely Stage 2": "#fefce8",
+                "🟠 Early/Weak Stage 2": "#fef2f2",
+                "⚪ Not Stage 2": "#f9fafb"
+            }
+            return [f'background-color: {bg_map.get(row["Stage"], "#ffffff")}'] * len(row)
 
-    styled_df = display_df.style.apply(color_rows, axis=1)
+        styled_df = display_df.style.apply(color_rows, axis=1)
 
-    # Render Table - Fixed deprecation
-    st.dataframe(
-        styled_df,
-        width="stretch",
-        hide_index=True,
-        column_config={
-            "Symbol": st.column_config.TextColumn("Ticker", width="medium"),
-            "Index": st.column_config.TextColumn("Source", width="small"),
-            "Stage": st.column_config.TextColumn("Classification", width="medium"),
-            "Score": st.column_config.NumberColumn("Score", format="%d/7", width="small"),
-            "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
-            "Volume": st.column_config.NumberColumn("Volume", format="%,d", width="medium"),
-            "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio", format="%.2f x", width="small"),
-            "RSI": st.column_config.NumberColumn("RSI(14)", format="%.1f", width="small"),
-            "Avg_Vol": st.column_config.NumberColumn("Avg Vol (10d)", format="%,d", width="medium")
-        },
-        height=650
-    )
+        # Render Table - Fixed deprecation
+        st.dataframe(
+            styled_df,
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "Symbol": st.column_config.TextColumn("Ticker", width="medium"),
+                "Index": st.column_config.TextColumn("Source", width="small"),
+                "Stage": st.column_config.TextColumn("Classification", width="medium"),
+                "Score": st.column_config.NumberColumn("Score", format="%d/7", width="small"),
+                "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
+                "Volume": st.column_config.NumberColumn("Volume", format="%,d", width="medium"),
+                "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio", format="%.2f x", width="small"),
+                "RSI": st.column_config.NumberColumn("RSI(14)", format="%.1f", width="small"),
+                "Avg_Vol": st.column_config.NumberColumn("Avg Vol (10d)", format="%,d", width="medium")
+            },
+            height=650
+        )
 
-    # Export CSV
-    csv = display_df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        "📥 Download Screener Results", csv,
-        file_name=f"stage2_screener_{datetime.now(IST).strftime('%Y%m%d')}.csv",
-        mime="text/csv",
-        width="stretch"
-    )
+        # Export CSV
+        csv = display_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            "📥 Download Screener Results", csv,
+            file_name=f"stage2_screener_{datetime.now(IST).strftime('%Y%m%d')}.csv",
+            mime="text/csv",
+            width="stretch"
+        )
 
 
 def _calculate_avg_sharpe(row, method: str) -> float | None:
@@ -590,8 +602,11 @@ def momentum_screener_ui():
     st.markdown('<p class="hero">🚀 Momentum Stock Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">Sharpe Ratio Based Momentum Analysis · {now_ist}</p>', unsafe_allow_html=True)
 
-    # ── CONTROL PANEL (Batched) ──
-    with st.sidebar:
+    # ── CONTROL PANEL (Batched) - Separate sidebar for this tab ──
+    col_sidebar, col_main = st.columns([1, 4])
+    
+    with col_sidebar:
+        st.markdown('<div class="screener-sidebar">', unsafe_allow_html=True)
         st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
 
         # Universe Selection
@@ -635,16 +650,18 @@ def momentum_screener_ui():
         sort_method = st.selectbox("Sorting Method (Sharpe Ratio)", options=sort_options, index=4, key="mom_sort_method")
 
         run_btn = st.button("🚀 Run Momentum Screener", type="primary", use_container_width=True, key="mom_run_btn")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    if "momentum_run_triggered" not in st.session_state and run_btn:
-        st.session_state["momentum_run_triggered"] = True
+    with col_main:
+        if "momentum_run_triggered" not in st.session_state and run_btn:
+            st.session_state["momentum_run_triggered"] = True
 
-    if not st.session_state.get("momentum_run_triggered"):
-        st.info("👈 Set your filters and click **Run Momentum Screener** to begin.")
-        return
+        if not st.session_state.get("momentum_run_triggered"):
+            st.info("👈 Set your filters and click **Run Momentum Screener** to begin.")
+            return
 
-    # ── FETCH & PROCESS DATA ──
-    df, total_count = fetch_momentum_universe(selected_universe)
+        # ── FETCH & PROCESS DATA ──
+        df, total_count = fetch_momentum_universe(selected_universe)
 
     if df.empty:
         st.warning(f"📅 No data available for {selected_universe}. This could be due to:\n\n1. Yahoo Finance API returning no data\n2. Market holiday/weekend\n3. Invalid symbols in constituents.json\n\nTry again in a few minutes or check your internet connection.")
