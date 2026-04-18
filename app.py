@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore")
 # ──────────────────────────────────────────────
 IST = ZoneInfo("Asia/Kolkata")
 HISTORY_PERIOD = "2y"
-HISTORY_PERIOD_MOMENTUM = "1y"
+HISTORY_PERIOD_MOMENTUM = "18mo"  # Changed from "1y" to ensure we get >= 250 trading days for momentum calculations
 MIN_VOLUME = 100_000
 VOL_AVG_PERIOD = 10          # Configurable: 10, 20, or 50 days (Change here)
 HH_HL_LOOKBACK = 50          # Change here if needed
@@ -370,14 +370,13 @@ def fetch_momentum_universe(universe: str) -> tuple[pd.DataFrame, int]:
             # Get data for this ticker
             if len(tickers) == 1:
                 sub = raw.dropna(how="all")
+                # For single ticker, columns are still MultiIndex: [(ticker, 'Open'), (ticker, 'High'), ...]
+                if isinstance(sub.columns, pd.MultiIndex):
+                    sub.columns = [c[1] if isinstance(c, tuple) else c for c in sub.columns]
             else:
                 sub = raw[t].dropna(how="all")
-            
-            if sub.empty:
-                continue
-                
-            # Flatten column names
-            sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
+                # For multiple tickers, raw[t] already flattens to ['Open', 'High', ...]
+                sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
             
             # Ensure we have required columns
             required_cols = ["Close", "Volume", "High"]
