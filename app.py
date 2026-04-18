@@ -756,12 +756,12 @@ def momentum_screener_ui():
             hide_index=True,
             column_config={
                 "Symbol": st.column_config.TextColumn("Symbol", width="medium"),
-                "Index": st.column_config.TextColumn("Index", width="small"),
+                "Index": st.column_config.TextColumn("Index", width="medium"),
                 "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
                 "Sharpe": st.column_config.NumberColumn("Sharpe", format="%.3f", width="small"),
                 "Volatility": st.column_config.NumberColumn("Volatility (SD)", format="%.4f", width="small"),
                 "52w_High": st.column_config.NumberColumn("52w High", format="%.2f", width="small"),
-                "Median Vol": st.column_config.NumberColumn("Median Vol", format="%,d", width="medium"),
+                "Median Vol": st.column_config.NumberColumn("Median Vol", format="%,d", width="small"),
                 "1Y Change": st.column_config.NumberColumn("1Y Change", format="%.2f%%", width="small"),
                 "% from 52wH": st.column_config.NumberColumn("% from 52wH", format="%.2f%%", width="small"),
                 "Circuit Close": st.column_config.NumberColumn("Circuit Close", format="%d", width="small")
