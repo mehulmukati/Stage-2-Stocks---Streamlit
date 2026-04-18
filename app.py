@@ -245,7 +245,7 @@ def score_momentum(df: pd.DataFrame) -> dict | None:
         "Sharpe_6M": round(sharpe_6m, 3) if sharpe_6m else None,
         "Sharpe_9M": round(sharpe_9m, 3) if sharpe_9m else None,
         "Sharpe_1Y": round(sharpe_1y, 3) if sharpe_1y else None,
-        "Volatility": round(volatility, 4) if volatility else None,
+        "Volatility": round(volatility * 100, 1) if volatility else None,  # Convert to percentage
         "Pos_Days_3M": round(pos_days_3m, 0) if pos_days_3m else None,
         "Pos_Days_6M": round(pos_days_6m, 0) if pos_days_6m else None,
         "Pos_Days_12M": round(pos_days_12m, 0) if pos_days_12m else None,
@@ -398,7 +398,7 @@ def fetch_momentum_universe(universe: str) -> tuple[pd.DataFrame, int]:
     return df, len(df)
 
 
-def resolve_screener_data(rsi_filter: bool, for_momentum: bool = False):
+def resolve_screener_data(rsi_filter: bool, for_momentum: bool = False, universe: str = None):
     """Implements exact logic: Time-based target → Find valid trading day → Cache/Fetch."""
     now = datetime.now(IST)
 
@@ -437,6 +437,37 @@ def resolve_screener_data(rsi_filter: bool, for_momentum: bool = False):
         pass
 
     return pd.DataFrame(), target_key, True  # Fallback to empty
+
+
+# Global cache for momentum screener full universe data
+_momentum_full_universe_cache = {
+    "data": None,
+    "timestamp": None
+}
+_MOMENTUM_CACHE_TTL_SECONDS = 3600  # Cache valid for 1 hour
+
+
+def get_momentum_full_universe_data():
+    """Fetch and cache the full universe momentum data for filtering without re-fetching."""
+    global _momentum_full_universe_cache
+    
+    now = datetime.now()
+    
+    # Check if cache is still valid
+    if (_momentum_full_universe_cache["data"] is not None and 
+        _momentum_full_universe_cache["timestamp"] is not None and
+        (now - _momentum_full_universe_cache["timestamp"]).total_seconds() < _MOMENTUM_CACHE_TTL_SECONDS):
+        return _momentum_full_universe_cache["data"]
+    
+    # Fetch fresh data
+    with st.spinner("🌐 Fetching EOD data for full universe (this may take a moment)..."):
+        df, _ = fetch_full_universe(rsi_filter=False, for_momentum=True)
+    
+    if not df.empty:
+        _momentum_full_universe_cache["data"] = df
+        _momentum_full_universe_cache["timestamp"] = now
+    
+    return df
 
 # ──────────────────────────────────────────────
 # STREAMLIT UI
@@ -665,25 +696,24 @@ def momentum_screener_ui():
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_main:
-        if "momentum_run_triggered" not in st.session_state and run_btn:
-            st.session_state["momentum_run_triggered"] = True
-
-        if not st.session_state.get("momentum_run_triggered"):
+        # Only fetch data when the Run button is clicked
+        if not run_btn:
             st.info("👈 Set your filters and click **Run Momentum Screener** to begin.")
             return
-
-        # ── FETCH & PROCESS DATA ──
-        df, total_count = fetch_momentum_universe(selected_universe)
-
-        if df.empty:
-            st.warning(f"📅 No data available for {selected_universe}. This could be due to:\n\n1. Yahoo Finance API returning no data\n2. Market holiday/weekend\n3. Invalid symbols in constituents.json\n\nTry again in a few minutes or check your internet connection.")
+        
+        # Fetch full universe data (cached for 1 hour)
+        full_df = get_momentum_full_universe_data()
+        
+        if full_df.empty:
+            st.warning("📅 No data available. This could be due to:\n\n1. Yahoo Finance API returning no data\n2. Market holiday/weekend\n3. Invalid symbols in constituents.json\n\nTry again in a few minutes or check your internet connection.")
             return
 
-        st.success(f"✅ Fetched data for {total_count} stocks in {selected_universe}")
+        st.success(f"✅ Fetched data for {len(full_df)} stocks in the full universe")
+
+        # ── APPLY UNIVERSE FILTER ──
+        display_df = full_df[full_df["Index"].isin([selected_universe])] if selected_universe != "Nifty Total Market" else full_df.copy()
 
         # ── APPLY FILTERS ──
-        display_df = df.copy()
-
         # Minimum Annual Return filter (using 1Y_Change as proxy for annual return)
         if min_annual_return > 0:
             display_df = display_df[display_df["1Y_Change"].notna() & (display_df["1Y_Change"] >= min_annual_return)]
@@ -746,7 +776,7 @@ def momentum_screener_ui():
         # ── METRICS ──
         c1, c2, c3 = st.columns(3)
         c1.metric("Universe", selected_universe)
-        c2.metric("Total in Universe", total_count)
+        c2.metric("Total in Universe", len(full_df))
         c3.metric("Matches (Filters)", len(display_df))
 
         # ── RENDER TABLE ──
@@ -759,7 +789,7 @@ def momentum_screener_ui():
                 "Index": st.column_config.TextColumn("Index", width="medium"),
                 "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
                 "Sharpe": st.column_config.NumberColumn("Sharpe", format="%.3f", width="small"),
-                "Volatility": st.column_config.NumberColumn("Volatility (SD)", format="%.4f", width="small"),
+                "Volatility": st.column_config.NumberColumn("Volatility (%)", format="%.1f%%", width="small"),
                 "52w_High": st.column_config.NumberColumn("52w High", format="%.2f", width="small"),
                 "Median Vol": st.column_config.NumberColumn("Median Vol", format="%,d", width="small"),
                 "1Y Change": st.column_config.NumberColumn("1Y Change", format="%.2f%%", width="small"),
