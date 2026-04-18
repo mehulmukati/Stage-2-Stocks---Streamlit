@@ -463,62 +463,38 @@ def get_momentum_full_universe_data():
 st.set_page_config(page_title="Stock Screeners | Nifty 750", page_icon="📈", layout="wide")
 st.markdown("""
 <style>
-.sb-head { font-weight: 700; margin-bottom: 0.5rem; font-size: 0.95rem; }
 .hero { text-align: center; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.2rem; }
 .sub-hero { text-align: center; color: #64748b; margin-top: -8px; }
-/* Make tabs full width at top */
 .stTabs [data-baseweb="tab-list"] { gap: 2px; width: 100%; justify-content: stretch; }
 .stTabs [data-baseweb="tab"] { flex-grow: 1; width: 100%; max-width: none; }
 .stTabs { width: 100%; }
-/* Sidebar container styling */
-.screener-sidebar { 
-    background-color: #f8f9fa; 
-    padding: 1rem; 
-    border-radius: 8px;
-    margin-bottom: 1rem;
-}
 </style>
 """, unsafe_allow_html=True)
 
 
-def stage2_screener_ui():
+def stage2_screener_ui(selected_indices: list[str]):
     """UI for Stage 2 Screener"""
     now_ist = datetime.now(IST).strftime("%d %b %Y · %I:%M %p IST")
     st.markdown('<p class="hero">📊 Nifty Total Market Stage 2 Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">EOD Analysis · 7-Point Weinstein Score · {now_ist}</p>', unsafe_allow_html=True)
 
-    # ── CONTROL PANEL (Batched) - Separate sidebar for this tab ──
-    col_sidebar, col_main = st.columns([1, 4])
-    
-    with col_sidebar:
-        st.markdown('<div class="screener-sidebar">', unsafe_allow_html=True)
-        st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
-        rsi_toggle = st.toggle("Filter: RSI between 50–70", value=False, key="stage2_rsi_toggle")
-        show_illiquid = st.toggle("Show Illiquid Stocks (Avg Vol < 1L)", value=False, key="stage2_show_illiquid")
+    # ── FILTERS (inline, compact row) ──
+    fc1, fc2, fc3 = st.columns([2, 2, 1])
+    with fc1:
+        rsi_toggle = st.toggle("RSI between 50–70", value=False, key="stage2_rsi_toggle")
+    with fc2:
+        show_illiquid = st.toggle("Show Illiquid (Avg Vol < 1L)", value=False, key="stage2_show_illiquid")
+    with fc3:
+        run_btn = st.button("🚀 Run", type="primary", use_container_width=True, key="stage2_run_btn")
 
-        st.markdown("---")
-        st.markdown('<p class="sb-head">📦 Select Indices</p>', unsafe_allow_html=True)
+    st.divider()
 
-        const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
-        idx_options = list(json.load(open(const_path, "r")).keys()) if os.path.exists(const_path) else []
+    if run_btn:
+        st.session_state["stage2_run_triggered"] = True
 
-        cols = st.columns(2)
-        selected_indices = []
-        for i, idx in enumerate(idx_options):
-            default_checked = idx in ["Nifty 50", "Nifty Next 50", "Nifty Midcap 150", "Nifty Smallcap 250", "Nifty Microcap 250"]
-            if cols[i % 2].checkbox(idx, value=default_checked, key=f"stage2_idx_{idx}"):
-                selected_indices.append(idx)
-
-        run_btn = st.button("🚀 Apply Filters & Show", type="primary", use_container_width=True, key="stage2_run_btn")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with col_main:
-        if "stage2_run_triggered" not in st.session_state and run_btn:
-            st.session_state["stage2_run_triggered"] = True
-
-        if not st.session_state.get("stage2_run_triggered"):
-            st.info("👈 Select indices/filters and click **Apply Filters & Show** to begin.")
-            return
+    if not st.session_state.get("stage2_run_triggered"):
+        st.info("👈 Select indices in the sidebar, set filters above, then click **Run**.")
+        return
 
         # ── RESOLVE DATA  (Memory → DB → Internet) ──
         df, cache_date, source = resolve_screener_data(rsi_toggle, for_momentum=False)
@@ -629,67 +605,44 @@ def _calculate_avg_sharpe(row, method: str) -> float | None:
     return None
 
 
-def momentum_screener_ui():
-    """UI for Momentum Screener"""
+def momentum_screener_ui(selected_indices: list[str], idx_options: list[str]):
     now_ist = datetime.now(IST).strftime("%d %b %Y · %I:%M %p IST")
     st.markdown('<p class="hero">🚀 Momentum Stock Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">Sharpe Ratio Based Momentum Analysis · {now_ist}</p>', unsafe_allow_html=True)
 
-    # ── CONTROL PANEL (Batched) - Separate sidebar for this tab ──
-    col_sidebar, col_main = st.columns([1, 4])
-    
-    with col_sidebar:
-        st.markdown('<div class="screener-sidebar">', unsafe_allow_html=True)
-        st.markdown('<p class="sb-head">🔍 Filters</p>', unsafe_allow_html=True)
+    # ── FILTERS (two compact rows) ──
+    fr1c1, fr1c2, fr1c3, fr1c4 = st.columns([2, 2, 2, 2])
+    with fr1c1:
+        min_annual_return = st.number_input("Min Annual Return (%)", min_value=0.0, max_value=1000.0, value=0.0, step=0.01, format="%.2f", key="mom_min_annual_return")
+    with fr1c2:
+        pct_from_52w_high = st.number_input("Within % of 52w High", min_value=0, max_value=100, value=25, step=1, key="mom_pct_from_52w_high")
+    with fr1c3:
+        max_circuits = st.number_input("Max Circuits (1yr)", min_value=0, max_value=100, value=18, step=1, key="mom_max_circuits")
+    with fr1c4:
+        sort_options = ["1 year", "3 months", "6 months", "9 months", "Average of 3/6/9/12 months", "Average of 3/6 months"]
+        sort_method = st.selectbox("Sort by Sharpe", options=sort_options, index=4, key="mom_sort_method")
 
-        # Universe Selection
-        universe_options = [
-            "Nifty 50", "Nifty Next 50", "Nifty Midcap 150", "Nifty Smallcap 250", "Nifty Microcap 250",
-            "Nifty LargeMidcap 250", "Nifty MidSmallcap 400", "Nifty Total Market"
-        ]
-        selected_universe = st.selectbox("Choosing Universe", options=universe_options, index=7, key="mom_universe")
+    fr2c1, fr2c2, fr2c3, fr2c4, fr2c5 = st.columns([2, 2, 2, 2, 1])
+    with fr2c1:
+        close_above_100dma = st.checkbox("Close > 100 DMA", value=False, key="mom_close_above_100dma")
+        close_above_200dma = st.checkbox("Close > 200 DMA", value=False, key="mom_close_above_200dma")
+    with fr2c2:
+        pos_days_3m = st.number_input("Pos Days 3M (%)", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_3m")
+    with fr2c3:
+        pos_days_6m = st.number_input("Pos Days 6M (%)", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_6m")
+    with fr2c4:
+        pos_days_12m = st.number_input("Pos Days 12M (%)", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_12m")
+    with fr2c5:
+        run_btn = st.button("🚀 Run", type="primary", use_container_width=True, key="mom_run_btn")
 
-        # Minimum Annual Return
-        min_annual_return = st.number_input("Minimum Annual Return (%)", min_value=0.0, max_value=1000.0, value=0.0, step=0.01, format="%.2f", key="mom_min_annual_return")
+    st.divider()
 
-        # DMA Filters
-        col1, col2 = st.columns(2)
-        with col1:
-            close_above_100dma = st.checkbox("Close > 100 DMA", value=False, key="mom_close_above_100dma")
-        with col2:
-            close_above_200dma = st.checkbox("Close > 200 DMA", value=False, key="mom_close_above_200dma")
+    if run_btn:
+        st.session_state["mom_run_triggered"] = True
 
-        # 52W High Filter
-        pct_from_52w_high = st.number_input("Last Close / 52w High (within %)", min_value=0, max_value=100, value=25, step=1, key="mom_pct_from_52w_high")
-
-        # Max Circuits
-        max_circuits = st.number_input("Max Circuits (past 1 year)", min_value=0, max_value=100, value=18, step=1, key="mom_max_circuits")
-
-        # Positive Days
-        st.markdown('<p class="sb-head" style="margin-top: 1rem;">Positive Days (%)</p>', unsafe_allow_html=True)
-        col3, col4, col5 = st.columns(3)
-        with col3:
-            pos_days_3m = st.number_input("3 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_3m")
-        with col4:
-            pos_days_6m = st.number_input("6 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_6m")
-        with col5:
-            pos_days_12m = st.number_input("12 Months", min_value=0, max_value=100, value=0, step=1, key="mom_pos_days_12m")
-
-        # Sorting Method
-        sort_options = [
-            "1 year", "3 months", "6 months", "9 months",
-            "Average of 3/6/9/12 months", "Average of 3/6 months"
-        ]
-        sort_method = st.selectbox("Sorting Method (Sharpe Ratio)", options=sort_options, index=4, key="mom_sort_method")
-
-        run_btn = st.button("🚀 Run Momentum Screener", type="primary", use_container_width=True, key="mom_run_btn")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with col_main:
-        # Only fetch data when the Run button is clicked
-        if not run_btn:
-            st.info("👈 Set your filters and click **Run Momentum Screener** to begin.")
-            return
+    if not st.session_state.get("mom_run_triggered"):
+        st.info("👈 Select indices in the sidebar, set filters above, then click **Run**.")
+        return
         
         # ── RESOLVE DATA  (Memory → DB → Internet) ──
         full_df, cache_date, source = resolve_screener_data(rsi_filter=False, for_momentum=True)
@@ -705,8 +658,8 @@ def momentum_screener_ui():
         elif source == "internet":
             st.success(f"🌐 Fetched fresh EOD data and saved to database for **{cache_date}** · {len(full_df)} stocks")
 
-        # ── APPLY UNIVERSE FILTER ──
-        display_df = full_df[full_df["Index"].isin([selected_universe])] if selected_universe != "Nifty Total Market" else full_df.copy()
+        # ── APPLY INDEX FILTER (in-memory) ──
+        display_df = full_df[full_df["Index"].isin(selected_indices)].copy() if selected_indices else full_df.copy()
 
         # ── APPLY FILTERS ──
         # Minimum Annual Return filter (using 1Y_Change as proxy for annual return)
@@ -770,7 +723,8 @@ def momentum_screener_ui():
 
         # ── METRICS ──
         c1, c2, c3 = st.columns(3)
-        c1.metric("Universe", selected_universe)
+        universe_label = "All Indices" if len(selected_indices) == len(idx_options) else ", ".join(selected_indices) if selected_indices else "None"
+        c1.metric("Universe", universe_label)
         c2.metric("Total in Universe", len(full_df))
         c3.metric("Matches (Filters)", len(display_df))
 
@@ -805,14 +759,29 @@ def momentum_screener_ui():
 
 
 def main():
-    # Create tabs for Stage 2 and Momentum screeners
+    # ── SHARED SIDEBAR — index selection applies to both screeners ──
+    const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
+    idx_options = list(json.load(open(const_path, "r")).keys()) if os.path.exists(const_path) else []
+
+    with st.sidebar:
+        st.markdown("### 📦 Select Indices")
+        st.caption("Applies to both screeners")
+        cols = st.columns(2)
+        selected_indices = []
+        for i, idx in enumerate(idx_options):
+            if cols[i % 2].checkbox(idx, value=True, key=f"shared_idx_{idx}"):
+                selected_indices.append(idx)
+        st.markdown("---")
+        st.caption("💡 **Composite combinations:**\n\n• 50 + Next50 + Mid150 = LargeMidCap 250\n\n• Mid150 + Small250 = MidSmallCap 400\n\n• All five = Total Market")
+
+    # ── TABS ──
     tab1, tab2 = st.tabs(["📊 Stage 2 Screener", "🚀 Momentum Screener"])
 
     with tab1:
-        stage2_screener_ui()
+        stage2_screener_ui(selected_indices)
 
     with tab2:
-        momentum_screener_ui()
+        momentum_screener_ui(selected_indices, idx_options)
 
 
 if __name__ == "__main__":
