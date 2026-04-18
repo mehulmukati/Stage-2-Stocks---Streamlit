@@ -125,20 +125,29 @@ def upsert_ohlcv(records: list[dict]):
 # ──────────────────────────────────────────────
 # OHLCV — READ
 # ──────────────────────────────────────────────
-def get_latest_ohlcv_date() -> str | None:
-    sql = """
+def get_latest_ohlcv_date() -> tuple[str | None, str | None]:
+    """
+    Returns (global_max, conservative_min) where:
+      global_max      = MAX(date) across all rows  → used to check if DB was synced recently
+      conservative_min = MIN of per-symbol MAX dates → used as fetch-start to fill any gaps
+    """
+    sql_max = "SELECT MAX(date) FROM ohlcv"
+    sql_min = """
         SELECT MIN(max_date) FROM (
             SELECT symbol, MAX(date) AS max_date FROM ohlcv GROUP BY symbol
         ) t
     """
     if _is_sqlite():
         with sqlite3.connect(_sqlite_path()) as conn:
-            row = conn.execute(sql).fetchone()
-            return row[0] if row and row[0] else None
+            gmax = conn.execute(sql_max).fetchone()[0]
+            gmin = conn.execute(sql_min).fetchone()[0]
+            return gmax, gmin
     else:
         with _get_pg_conn() as conn:
-            row = conn.execute(sql).fetchone()
-            return row[0].strftime("%Y-%m-%d") if row and row[0] else None
+            gmax = conn.execute(sql_max).fetchone()[0]
+            gmin = conn.execute(sql_min).fetchone()[0]
+            fmt = lambda d: d.strftime("%Y-%m-%d") if d else None
+            return fmt(gmax), fmt(gmin)
 
 
 def load_ohlcv_all(period_days: int = 550) -> dict[str, pd.DataFrame]:

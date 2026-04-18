@@ -284,19 +284,18 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
     target_date: last valid NSE trading day — skip fetch if DB is already up to this date.
     """
     tickers = [f"{s}.NS" for s in all_symbols]
-    latest_date = db.get_latest_ohlcv_date()
+    global_max, conservative_min = db.get_latest_ohlcv_date()
 
-    if latest_date is None:
+    if global_max is None:
         # First run — always fetch the longer period so both screeners have full history
         spinner_msg = f"🌐 First run: downloading full history for {len(tickers)} stocks..."
         fetch_kwargs = {"period": HISTORY_PERIOD}  # 2y — superset of momentum's 18mo
     else:
-        # Skip fetch entirely if DB already has data up to the last trading day
-        if target_date and latest_date >= target_date:
+        # Skip fetch if the most recently synced date already covers the target trading day
+        if target_date and global_max >= target_date:
             return True
-        latest_dt = datetime.strptime(latest_date, "%Y-%m-%d")
-        # Fetch from 3 days before latest to cover any gaps / late-arriving data
-        fetch_from = (latest_dt - timedelta(days=3)).strftime("%Y-%m-%d")
+        # Use conservative_min as fetch start to fill any per-symbol gaps
+        fetch_from = (datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=3)).strftime("%Y-%m-%d")
         today = datetime.now(IST).strftime("%Y-%m-%d")
         spinner_msg = f"🔄 Incremental update: fetching data since {fetch_from}..."
         fetch_kwargs = {"start": fetch_from, "end": today}
