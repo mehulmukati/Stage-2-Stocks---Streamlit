@@ -702,7 +702,7 @@ def momentum_screener_ui():
         display_df = display_df[display_df["Close"] >= (threshold_multiplier * display_df["52w_High"])]
 
         # Max Circuits
-        display_df = display_df[display_df["Circuit_Count"] <= max_circuits]
+        display_df = display_df[display_df["Circuit_Count"] >= max_circuits]
 
         # Positive Days filters
         if pos_days_3m > 0:
