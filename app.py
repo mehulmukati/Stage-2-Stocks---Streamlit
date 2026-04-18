@@ -14,8 +14,12 @@ import json
 import os
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+from dotenv import load_dotenv
 import warnings
 warnings.filterwarnings("ignore")
+
+load_dotenv()
+import db
 
 # ──────────────────────────────────────────────
 # CONFIGURATION
@@ -27,8 +31,6 @@ MIN_VOLUME = 100_000
 VOL_AVG_PERIOD = 10          # Configurable: 10, 20, or 50 days (Change here)
 HH_HL_LOOKBACK = 50          # Change here if needed
 MA_RISING_LOOKBACK = 50      # Change here if needed
-RESULT_CACHE_DIR = "daily_cache"
-os.makedirs(RESULT_CACHE_DIR, exist_ok=True)
 
 # ──────────────────────────────────────────────
 # CIRCUIT LEVELS
@@ -66,21 +68,13 @@ def get_last_valid_trading_date(start_date_str: str, holidays: set) -> str:
     return start_date_str  # Fallback
 
 # ──────────────────────────────────────────────
-# CACHE UTILS
+# DB INIT (runs once at startup)
 # ──────────────────────────────────────────────
-def load_json_cache(key: str) -> pd.DataFrame | None:
-    path = os.path.join(RESULT_CACHE_DIR, f"{key}.json")
-    try:
-        if os.path.exists(path):
-            df = pd.read_json(path, orient="records")
-            return df if not df.empty else None
-    except Exception:
-        return None
-    return None
+@st.cache_resource
+def _init_db():
+    db.init_db()
 
-def save_json_cache(df: pd.DataFrame, key: str):
-    path = os.path.join(RESULT_CACHE_DIR, f"{key}.json")
-    df.to_json(path, orient="records")
+_init_db()
 
 # ──────────────────────────────────────────────
 # PURE PYTHON SCORING ENGINE
@@ -274,199 +268,194 @@ def _get_universe_symbols(universe: str, constituents: dict) -> list:
     return list(dict.fromkeys(symbols))  # Remove duplicates while preserving order
 
 
-def fetch_full_universe(rsi_filter: bool, for_momentum: bool = False) -> tuple[pd.DataFrame, int]:
-    """Downloads ALL indices, scores them, and returns the complete DF."""
+def _load_constituents() -> dict:
     const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
     if not os.path.exists(const_path):
         st.error("❌ `constituents.json` missing.")
-        return pd.DataFrame(), 0
+        return {}
     with open(const_path, "r") as f:
-        constituents = json.load(f)
+        return json.load(f)
 
-    # Flatten ALL symbols from ALL indices
-    all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
+
+def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
+    """
+    Incremental sync: fetch only missing dates from yfinance and upsert to DB.
+    Returns True if data is available in DB (either already fresh or after fetching).
+    target_date: last valid NSE trading day — skip fetch if DB is already up to this date.
+    """
     tickers = [f"{s}.NS" for s in all_symbols]
-    
-    period = HISTORY_PERIOD_MOMENTUM if for_momentum else HISTORY_PERIOD
+    latest_date = db.get_latest_ohlcv_date()
 
-    period = HISTORY_PERIOD_MOMENTUM if for_momentum else HISTORY_PERIOD
+    if latest_date is None:
+        # First run — always fetch the longer period so both screeners have full history
+        spinner_msg = f"🌐 First run: downloading full history for {len(tickers)} stocks..."
+        fetch_kwargs = {"period": HISTORY_PERIOD}  # 2y — superset of momentum's 18mo
+    else:
+        # Skip fetch entirely if DB already has data up to the last trading day
+        if target_date and latest_date >= target_date:
+            return True
+        latest_dt = datetime.strptime(latest_date, "%Y-%m-%d")
+        # Fetch from 3 days before latest to cover any gaps / late-arriving data
+        fetch_from = (latest_dt - timedelta(days=3)).strftime("%Y-%m-%d")
+        today = datetime.now(IST).strftime("%Y-%m-%d")
+        spinner_msg = f"🔄 Incremental update: fetching data since {fetch_from}..."
+        fetch_kwargs = {"start": fetch_from, "end": today}
 
     try:
-        with st.spinner("🌐 Fetching EOD data for full Nifty 750 universe..."):
-            raw = yf.download(tickers, period=period, group_by="ticker", 
-                              threads=True, progress=False, auto_adjust=True)
+        with st.spinner(spinner_msg):
+            raw = yf.download(
+                tickers, group_by="ticker",
+                threads=True, progress=False, auto_adjust=True,
+                **fetch_kwargs
+            )
     except Exception as e:
         st.error(f"Yahoo Finance Error: {e}")
-        return pd.DataFrame(), 0
+        return False
 
-    results = []
+    if raw is None or raw.empty:
+        return False
+
+    # Parse raw into upsert records
+    records = []
+    available = raw.columns.get_level_values(0).unique().tolist() if isinstance(raw.columns, pd.MultiIndex) else tickers
+
     for t in tickers:
         sym = t.replace(".NS", "")
         try:
+            if t not in available:
+                continue
             sub = raw[t].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
             sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
-            if for_momentum:
-                res = score_momentum(sub)
-            else:
-                res = score_stage2(sub)
-            if res:
-                res["Symbol"] = sym
-                res["Index"] = next((idx for idx, syms in constituents.items() if sym in syms), "Unknown")
-                results.append(res)
-        except: continue
+            for dt, row in sub.iterrows():
+                if pd.isna(row.get("Close")):
+                    continue
+                records.append({
+                    "symbol": sym,
+                    "date": dt.date(),
+                    "open":   float(row.get("Open", 0) or 0),
+                    "high":   float(row.get("High", 0) or 0),
+                    "low":    float(row.get("Low", 0) or 0),
+                    "close":  float(row["Close"]),
+                    "volume": int(row.get("Volume", 0) or 0),
+                })
+        except Exception:
+            continue
 
-    df = pd.DataFrame(results)
-    if df.empty: return pd.DataFrame(), 0
-    if not for_momentum and rsi_filter: 
-        df = df[(df["RSI"] >= 50) & (df["RSI"] <= 70)]
-    return df.sort_values("Score" if not for_momentum else "Close", ascending=False), len(df)
+    if records:
+        with st.spinner(f"💾 Saving {len(records):,} rows to database..."):
+            db.upsert_ohlcv(records)
+    return True
 
 
-def fetch_momentum_universe(universe: str) -> tuple[pd.DataFrame, int]:
-    """Fetches data for selected universe and calculates momentum metrics."""
-    const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
-    if not os.path.exists(const_path):
-        st.error("❌ `constituents.json` missing.")
-        return pd.DataFrame(), 0
-    with open(const_path, "r") as f:
-        constituents = json.load(f)
-
-    symbols = _get_universe_symbols(universe, constituents)
-    
-    if not symbols:
-        st.warning(f"No symbols found for universe: {universe}")
-        return pd.DataFrame(), 0
-    
-    tickers = [f"{s}.NS" for s in symbols]
-
-    try:
-        with st.spinner(f"🌐 Fetching EOD data for {len(tickers)} stocks in {universe}..."):
-            raw = yf.download(tickers, period=HISTORY_PERIOD_MOMENTUM, group_by="ticker", 
-                              threads=True, progress=False, auto_adjust=True)
-    except Exception as e:
-        st.error(f"Yahoo Finance Error: {e}")
-        return pd.DataFrame(), 0
-
-    # Handle empty DataFrame case (all tickers failed)
-    if raw.empty:
-        return pd.DataFrame(), 0
+def _score_from_db(constituents: dict, for_momentum: bool, rsi_filter: bool) -> pd.DataFrame:
+    """Load OHLCV from DB, run scoring, return results DataFrame."""
+    period_days = 550 if for_momentum else 750  # enough for 200-day MA + buffer
+    with st.spinner("📊 Loading history from database and scoring..."):
+        symbol_data = db.load_ohlcv_all(period_days=period_days)
 
     results = []
-    processed_count = 0
-    
-    # Get actual tickers that have data from the MultiIndex columns
-    if isinstance(raw.columns, pd.MultiIndex):
-        available_tickers = raw.columns.get_level_values(0).unique().tolist()
-    else:
-        available_tickers = tickers  # Fallback for simple index
-    
-    for t in tickers:
-        sym = t.replace(".NS", "")
+    for sym, sub in symbol_data.items():
         try:
-            # Skip if ticker not in available data
-            if t not in available_tickers:
-                continue
-                
-            # Get data for this ticker
-            if len(tickers) == 1:
-                sub = raw.dropna(how="all")
-                # For single ticker, columns are still MultiIndex: [(ticker, 'Open'), (ticker, 'High'), ...]
-                if isinstance(sub.columns, pd.MultiIndex):
-                    sub.columns = [c[1] if isinstance(c, tuple) else c for c in sub.columns]
-            else:
-                sub = raw[t].dropna(how="all")
-                # For multiple tickers, raw[t] already flattens to ['Open', 'High', ...]
-                sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
-            
-            # Ensure we have required columns
-            required_cols = ["Close", "Volume", "High"]
-            if not all(col in sub.columns for col in required_cols):
-                continue
-            
-            res = score_momentum(sub)
+            res = score_momentum(sub) if for_momentum else score_stage2(sub)
             if res:
                 res["Symbol"] = sym
                 res["Index"] = next((idx for idx, syms in constituents.items() if sym in syms), "Unknown")
                 results.append(res)
-                processed_count += 1
-        except Exception as e:
+        except Exception:
             continue
 
     df = pd.DataFrame(results)
     if df.empty:
-        return pd.DataFrame(), 0
-    return df, len(df)
+        return df
+    if not for_momentum and rsi_filter:
+        df = df[(df["RSI"] >= 50) & (df["RSI"] <= 70)]
+    return df.sort_values("Score" if not for_momentum else "Close", ascending=False)
+
+
+# ──────────────────────────────────────────────
+# 3-TIER CACHE  (Memory → DB → Internet)
+# ──────────────────────────────────────────────
+# Tier 1 — module-level in-memory store, keyed by trading date
+_mem_cache: dict[str, dict] = {
+    "stage2":   {"date": None, "data": None},
+    "momentum": {"date": None, "data": None, "ts": None},
+}
+_MOMENTUM_TTL = 3600  # seconds before in-memory momentum data is considered stale
+
+
+def _get_target_key() -> str:
+    """Return the last valid NSE trading date string (respects 7 PM IST cutoff)."""
+    now = datetime.now(IST)
+    start = now.strftime("%Y-%m-%d") if now.hour >= 19 else (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    return get_last_valid_trading_date(start, load_nse_holidays())
 
 
 def resolve_screener_data(rsi_filter: bool, for_momentum: bool = False, universe: str = None):
-    """Implements exact logic: Time-based target → Find valid trading day → Cache/Fetch."""
-    now = datetime.now(IST)
+    """
+    3-tier resolution for both screeners:
+      Tier 1 — in-memory (same process, keyed by trading date / TTL)
+      Tier 2 — SQLite/PostgreSQL (persists across restarts)
+      Tier 3 — yfinance internet fetch (only when DB is stale)
+    Returns (df, date_str, source) where source is 'memory' | 'db' | 'internet'.
+    """
+    target_key = _get_target_key()
+    constituents = _load_constituents()
+    if not constituents:
+        return pd.DataFrame(), target_key, "error"
+    all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
 
-    # 1. Determine starting date based on 7 PM cutoff
-    start_date = now.strftime("%Y-%m-%d") if now.hour >= 19 else (now - timedelta(days=1)).strftime("%Y-%m-%d")
-
-    # 2. Find last valid trading day (handles weekends/holidays)
-    holidays = load_nse_holidays()
-    target_key = get_last_valid_trading_date(start_date, holidays)
-
-    # For momentum screener, don't use cache (different filters per run)
     if for_momentum:
-        df, valid_count = fetch_full_universe(rsi_filter=False, for_momentum=True)
-        return df, target_key, False
+        mc = _mem_cache["momentum"]
+        now = datetime.now()
 
-    # 3. Check cache first (only for Stage 2 screener)
-    df = load_json_cache(target_key)
-    if df is not None:
-        return df, target_key, True  # (data, date, is_cached)
+        # Tier 1 — memory: same trading day AND within TTL
+        if (mc["data"] is not None and mc["date"] == target_key and
+                mc["ts"] and (now - mc["ts"]).total_seconds() < _MOMENTUM_TTL):
+            return mc["data"], target_key, "memory"
 
-    # 4. Cache miss → Fetch FULL UNIVERSE
-    df, valid_count = fetch_full_universe(rsi_filter, for_momentum=False)
-    if not df.empty:
-        save_json_cache(df, target_key)
-        return df, target_key, False
+        # Tier 2 — DB: OHLCV already fresh → score without internet
+        # Tier 3 — Internet: OHLCV stale → fetch → upsert → score
+        _sync_ohlcv_to_db(all_symbols, target_date=target_key)
+        df = _score_from_db(constituents, for_momentum=True, rsi_filter=False)
 
-    # 5. Fetch failed → Look for any older cache
-    try:
-        files = sorted([f.replace(".json", "") for f in os.listdir(RESULT_CACHE_DIR) if f.endswith(".json")], reverse=True)
-        for f in files:
-            if f <= target_key:
-                df = load_json_cache(f)
-                if df is not None:
-                    return df, f, True
-    except Exception:
-        pass
+        source = "db" if (mc["data"] is None or mc["date"] != target_key) else "memory"
+        if not df.empty:
+            _mem_cache["momentum"] = {"date": target_key, "data": df, "ts": now}
+        return df, target_key, source
 
-    return pd.DataFrame(), target_key, True  # Fallback to empty
+    else:
+        mc = _mem_cache["stage2"]
 
+        # Tier 1 — memory: same trading date
+        if mc["data"] is not None and mc["date"] == target_key:
+            return mc["data"], target_key, "memory"
 
-# Global cache for momentum screener full universe data
-_momentum_full_universe_cache = {
-    "data": None,
-    "timestamp": None
-}
-_MOMENTUM_CACHE_TTL_SECONDS = 3600  # Cache valid for 1 hour
+        # Tier 2 — DB scored-results cache
+        cached_df = db.load_stage2_cache(target_key)
+        if cached_df is not None:
+            _mem_cache["stage2"] = {"date": target_key, "data": cached_df}
+            return cached_df, target_key, "db"
+
+        # Tier 3 — Internet: sync OHLCV → score → persist
+        synced = _sync_ohlcv_to_db(all_symbols, target_date=target_key)
+        if synced:
+            df = _score_from_db(constituents, for_momentum=False, rsi_filter=rsi_filter)
+            if not df.empty:
+                db.save_stage2_cache(target_key, df)
+                _mem_cache["stage2"] = {"date": target_key, "data": df}
+                return df, target_key, "internet"
+
+        # Fallback — most recent DB cache (market closed / fetch failed)
+        fallback_df, fallback_date = db.load_latest_stage2_cache()
+        if fallback_df is not None:
+            return fallback_df, fallback_date, "db"
+
+        return pd.DataFrame(), target_key, "error"
 
 
 def get_momentum_full_universe_data():
-    """Fetch and cache the full universe momentum data for filtering without re-fetching."""
-    global _momentum_full_universe_cache
-    
-    now = datetime.now()
-    
-    # Check if cache is still valid
-    if (_momentum_full_universe_cache["data"] is not None and 
-        _momentum_full_universe_cache["timestamp"] is not None and
-        (now - _momentum_full_universe_cache["timestamp"]).total_seconds() < _MOMENTUM_CACHE_TTL_SECONDS):
-        return _momentum_full_universe_cache["data"]
-    
-    # Fetch fresh data
-    with st.spinner("🌐 Fetching EOD data for full universe (this may take a moment)..."):
-        df, _ = fetch_full_universe(rsi_filter=False, for_momentum=True)
-    
-    if not df.empty:
-        _momentum_full_universe_cache["data"] = df
-        _momentum_full_universe_cache["timestamp"] = now
-    
+    """Thin wrapper — momentum UI calls this; 3-tier logic lives in resolve_screener_data."""
+    df, _, _ = resolve_screener_data(rsi_filter=False, for_momentum=True)
     return df
 
 # ──────────────────────────────────────────────
@@ -532,17 +521,19 @@ def stage2_screener_ui():
             st.info("👈 Select indices/filters and click **Apply Filters & Show** to begin.")
             return
 
-        # ── RESOLVE DATA (Fetches Full Universe if cache miss) ──
-        df, cache_date, is_cached = resolve_screener_data(rsi_toggle, for_momentum=False)
+        # ── RESOLVE DATA  (Memory → DB → Internet) ──
+        df, cache_date, source = resolve_screener_data(rsi_toggle, for_momentum=False)
 
         if df.empty:
             st.warning(f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins.")
             return
 
-        if not is_cached:
-            st.success(f"✅ Fetched & cached fresh EOD data for **{cache_date}**.")
-        elif cache_date != (datetime.now(IST) - timedelta(days=1 if datetime.now(IST).hour < 19 else 0)).strftime("%Y-%m-%d"):
-            st.info(f"ℹ️ Market closed or data pending. Showing latest available cache from **{cache_date}**.")
+        if source == "memory":
+            st.success(f"⚡ Served from memory cache for **{cache_date}**.")
+        elif source == "db":
+            st.info(f"💾 Loaded from local database for **{cache_date}**.")
+        elif source == "internet":
+            st.success(f"🌐 Fetched fresh EOD data and saved to database for **{cache_date}**.")
 
         # ── APPLY UI FILTERS LOCALLY (Instant) ──
         display_df = df.copy()
@@ -701,14 +692,19 @@ def momentum_screener_ui():
             st.info("👈 Set your filters and click **Run Momentum Screener** to begin.")
             return
         
-        # Fetch full universe data (cached for 1 hour)
-        full_df = get_momentum_full_universe_data()
-        
+        # ── RESOLVE DATA  (Memory → DB → Internet) ──
+        full_df, cache_date, source = resolve_screener_data(rsi_filter=False, for_momentum=True)
+
         if full_df.empty:
             st.warning("📅 No data available. This could be due to:\n\n1. Yahoo Finance API returning no data\n2. Market holiday/weekend\n3. Invalid symbols in constituents.json\n\nTry again in a few minutes or check your internet connection.")
             return
 
-        st.success(f"✅ Fetched data for {len(full_df)} stocks in the full universe")
+        if source == "memory":
+            st.success(f"⚡ Served from memory cache for **{cache_date}** · {len(full_df)} stocks")
+        elif source == "db":
+            st.info(f"💾 Loaded from local database for **{cache_date}** · {len(full_df)} stocks")
+        elif source == "internet":
+            st.success(f"🌐 Fetched fresh EOD data and saved to database for **{cache_date}** · {len(full_df)} stocks")
 
         # ── APPLY UNIVERSE FILTER ──
         display_df = full_df[full_df["Index"].isin([selected_universe])] if selected_universe != "Nifty Total Market" else full_df.copy()
