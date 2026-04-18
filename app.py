@@ -347,23 +347,36 @@ def fetch_momentum_universe(universe: str) -> tuple[pd.DataFrame, int]:
         st.error(f"Yahoo Finance Error: {e}")
         return pd.DataFrame(), 0
 
+    # Handle empty DataFrame case (all tickers failed)
+    if raw.empty:
+        return pd.DataFrame(), 0
+
     results = []
     processed_count = 0
+    
+    # Get actual tickers that have data from the MultiIndex columns
+    if isinstance(raw.columns, pd.MultiIndex):
+        available_tickers = raw.columns.get_level_values(0).unique().tolist()
+    else:
+        available_tickers = tickers  # Fallback for simple index
+    
     for t in tickers:
         sym = t.replace(".NS", "")
         try:
-            # Handle single ticker case differently
+            # Skip if ticker not in available data
+            if t not in available_tickers:
+                continue
+                
+            # Get data for this ticker
             if len(tickers) == 1:
                 sub = raw.dropna(how="all")
             else:
-                # Check if the ticker exists in the data
-                if t not in raw or raw[t].empty:
-                    continue
                 sub = raw[t].dropna(how="all")
             
             if sub.empty:
                 continue
                 
+            # Flatten column names
             sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
             
             # Ensure we have required columns
