@@ -642,7 +642,7 @@ def momentum_screener_ui():
         pct_from_52w_high = st.number_input("Last Close / 52w High (within %)", min_value=0, max_value=100, value=25, step=1, key="mom_pct_from_52w_high")
 
         # Max Circuits
-        max_circuits = st.number_input("Max Circuits (past 1 year)", min_value=0, max_value=100, value=5, step=1, key="mom_max_circuits")
+        max_circuits = st.number_input("Max Circuits (past 1 year)", min_value=0, max_value=100, value=18, step=1, key="mom_max_circuits")
 
         # Positive Days
         st.markdown('<p class="sb-head" style="margin-top: 1rem;">Positive Days (%)</p>', unsafe_allow_html=True)
