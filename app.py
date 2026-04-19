@@ -18,6 +18,7 @@ from momentum_engine import _calculate_avg_sharpe
 # ── DB INIT (once at startup) ──
 @st.cache_resource
 def _init_db():
+    """Initialize DB schema once per process via Streamlit's cached resource."""
     db.init_db()
 
 _init_db()
@@ -36,6 +37,7 @@ st.markdown("""
 # RESULTS — STAGE 2
 # ──────────────────────────────────────────────
 def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid: bool):
+    """Render the Stage 2 screener results table with index/RSI/liquidity filters and a CSV download."""
     now_ist = datetime.now(IST).strftime("%d %b %Y · %I:%M %p IST")
     st.markdown('<p class="hero">📊 Stage 2 Breakout Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">EOD Analysis · 7-Point Weinstein Score · {now_ist}</p>', unsafe_allow_html=True)
@@ -119,6 +121,7 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
 # RESULTS — MOMENTUM
 # ──────────────────────────────────────────────
 def momentum_results(selected_indices: list[str], idx_options: list[str], filters: dict):
+    """Render the Momentum screener results sorted by composite Sharpe ratio with applied filters and a CSV download."""
     now_ist = datetime.now(IST).strftime("%d %b %Y · %I:%M %p IST")
     st.markdown('<p class="hero">🚀 Momentum Stock Screener</p>', unsafe_allow_html=True)
     st.markdown(f'<p class="sub-hero">Sharpe Ratio Based Momentum Analysis · {now_ist}</p>', unsafe_allow_html=True)
@@ -217,10 +220,22 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
 # MAIN
 # ──────────────────────────────────────────────
 def main():
+    """Build the sidebar controls and dispatch to the selected screener's result view."""
     const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
     idx_options = list(json.load(open(const_path, "r")).keys()) if os.path.exists(const_path) else []
 
     with st.sidebar:
+        # ── SCREENER SELECTOR ──
+        st.markdown("### 🖥 Screener")
+        screener = st.radio(
+            "",
+            options=["📊 Stage 2", "🚀 Momentum"],
+            key="active_screener",
+            horizontal=True,
+        )
+
+        st.divider()
+
         # ── INDEX SELECTION ──
         st.markdown("### 📦 Indices")
         cols = st.columns(2)
@@ -229,16 +244,6 @@ def main():
             if cols[i % 2].checkbox(idx, value=True, key=f"shared_idx_{idx}"):
                 selected_indices.append(idx)
         st.caption("💡 50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market")
-
-        st.divider()
-
-        # ── SCREENER SELECTOR ──
-        screener = st.radio(
-            "### 🖥 Screener",
-            options=["📊 Stage 2", "🚀 Momentum"],
-            key="active_screener",
-            horizontal=True,
-        )
 
         st.divider()
 

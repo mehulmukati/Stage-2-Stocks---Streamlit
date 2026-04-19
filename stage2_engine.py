@@ -4,6 +4,7 @@ from config import MIN_VOLUME, VOL_AVG_PERIOD, HH_HL_LOOKBACK, MA_RISING_LOOKBAC
 
 
 def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
+    """Compute Wilder's RSI using exponential weighted moving averages."""
     delta = series.diff()
     gain = delta.clip(lower=0)
     loss = (-delta).clip(lower=0)
@@ -14,6 +15,7 @@ def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
 
 
 def score_stage2(df: pd.DataFrame) -> dict | None:
+    """Score a stock on 7 Weinstein Stage 2 criteria; returns metric dict or None if insufficient data."""
     if len(df) < 250:
         return None
     c, h, l, v = df["Close"], df["High"], df["Low"], df["Volume"]

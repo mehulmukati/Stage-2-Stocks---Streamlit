@@ -15,6 +15,7 @@ from momentum_engine import score_momentum
 # HOLIDAY & TRADING DAY RESOLVER
 # ──────────────────────────────────────────────
 def load_nse_holidays() -> set:
+    """Load NSE market holidays from nse_holidays.json; returns a set of 'YYYY-MM-DD' strings."""
     path = os.path.join(os.path.dirname(__file__), "nse_holidays.json")
     if not os.path.exists(path):
         return set()
@@ -33,6 +34,7 @@ def load_nse_holidays() -> set:
 
 
 def get_last_valid_trading_date(start_date_str: str, holidays: set) -> str:
+    """Walk backwards from start_date_str to find the nearest weekday that is not an NSE holiday."""
     dt = datetime.strptime(start_date_str, "%Y-%m-%d")
     for _ in range(10):
         if dt.weekday() < 5 and dt.strftime("%Y-%m-%d") not in holidays:
@@ -45,6 +47,7 @@ def get_last_valid_trading_date(start_date_str: str, holidays: set) -> str:
 # CONSTITUENTS
 # ──────────────────────────────────────────────
 def _load_constituents() -> dict:
+    """Load index-to-symbols mapping from constituents.json; shows an error and returns {} if missing."""
     const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
     if not os.path.exists(const_path):
         st.error("❌ `constituents.json` missing.")
@@ -121,6 +124,7 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
 
 
 def _score_from_db(constituents: dict, for_momentum: bool, rsi_filter: bool) -> pd.DataFrame:
+    """Load recent OHLCV from DB, run the appropriate scorer on each symbol, and return a sorted DataFrame."""
     period_days = 550 if for_momentum else 750
     with st.spinner("📊 Loading history from database and scoring..."):
         symbol_data = db.load_ohlcv_all(period_days=period_days)
@@ -154,6 +158,7 @@ _mem_cache: dict[str, dict] = {
 
 
 def _get_target_key() -> str:
+    """Return the last valid trading date string to use as the cache key (after-market cutoff at 19:00 IST)."""
     now = datetime.now(IST)
     start = now.strftime("%Y-%m-%d") if now.hour >= 19 else (now - timedelta(days=1)).strftime("%Y-%m-%d")
     return get_last_valid_trading_date(start, load_nse_holidays())

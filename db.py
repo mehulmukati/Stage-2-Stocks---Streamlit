@@ -17,13 +17,16 @@ load_dotenv()
 # BACKEND DETECTION
 # ──────────────────────────────────────────────
 def _db_url() -> str:
+    """Return DATABASE_URL env var, defaulting to a local SQLite file."""
     url = os.environ.get("DATABASE_URL", "sqlite:///daily_cache/stocks.db")
     return url
 
 def _is_sqlite() -> bool:
+    """True if the configured backend is SQLite."""
     return _db_url().startswith("sqlite")
 
 def _sqlite_path() -> str:
+    """Extract the filesystem path from a sqlite:// URL and ensure its parent directory exists."""
     url = _db_url()
     # sqlite:///relative/path  or  sqlite:////absolute/path
     path = re.sub(r"^sqlite:///", "", url)
@@ -31,6 +34,7 @@ def _sqlite_path() -> str:
     return path
 
 def _get_pg_conn():
+    """Open a PostgreSQL connection with up to 3 retries; injects Neon endpoint param when needed."""
     import time, psycopg
     url = _db_url()
     m = re.search(r"@(ep-[^.]+)\.", url)
@@ -52,6 +56,7 @@ def _get_pg_conn():
 # SCHEMA INIT
 # ──────────────────────────────────────────────
 def init_db():
+    """Create ohlcv and stage2_cache tables (and index) if they do not already exist."""
     ddl_ohlcv = """
         CREATE TABLE IF NOT EXISTS ohlcv (
             symbol  TEXT    NOT NULL,
@@ -97,6 +102,7 @@ def init_db():
 # OHLCV — WRITE
 # ──────────────────────────────────────────────
 def upsert_ohlcv(records: list[dict]):
+    """Bulk-upsert OHLCV rows, updating price/volume fields on duplicate (symbol, date) keys."""
     if not records:
         return
     rows = [
@@ -151,6 +157,7 @@ def get_latest_ohlcv_date() -> tuple[str | None, str | None]:
 
 
 def load_ohlcv_all(period_days: int = 550) -> dict[str, pd.DataFrame]:
+    """Load the last period_days of OHLCV data; returns a symbol→DataFrame dict with proper column names."""
     if _is_sqlite():
         from datetime import datetime, timedelta
         cutoff = (datetime.now() - timedelta(days=period_days)).strftime("%Y-%m-%d")
@@ -187,6 +194,7 @@ def load_ohlcv_all(period_days: int = 550) -> dict[str, pd.DataFrame]:
 # STAGE 2 CACHE — WRITE / READ
 # ──────────────────────────────────────────────
 def save_stage2_cache(cache_date: str, df: pd.DataFrame):
+    """Persist scored Stage 2 results for cache_date as JSON; overwrites any existing entry."""
     payload = df.to_json(orient="records")
     sql_sqlite = """
         INSERT INTO stage2_cache (cache_date, results)
@@ -209,6 +217,7 @@ def save_stage2_cache(cache_date: str, df: pd.DataFrame):
 
 
 def load_stage2_cache(cache_date: str) -> pd.DataFrame | None:
+    """Return cached Stage 2 results for a specific trading date, or None if not found."""
     if _is_sqlite():
         with sqlite3.connect(_sqlite_path()) as conn:
             row = conn.execute(
@@ -225,6 +234,7 @@ def load_stage2_cache(cache_date: str) -> pd.DataFrame | None:
 
 
 def load_latest_stage2_cache() -> tuple[pd.DataFrame | None, str | None]:
+    """Return the most recent Stage 2 cache entry as (DataFrame, date_str) fallback when today's data is unavailable."""
     if _is_sqlite():
         with sqlite3.connect(_sqlite_path()) as conn:
             row = conn.execute(

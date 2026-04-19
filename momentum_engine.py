@@ -4,6 +4,7 @@ from config import CIRCUIT_LEVELS, CIRCUIT_TOLERANCE
 
 
 def _count_circuits(df: pd.DataFrame) -> int:
+    """Count circuit-breaker closes (upper or lower) over the full history of df."""
     if len(df) < 2:
         return 0
     pct_change = df["Close"].pct_change() * 100
@@ -16,6 +17,7 @@ def _count_circuits(df: pd.DataFrame) -> int:
 
 
 def _calculate_sharpe(df: pd.DataFrame, period_days: int) -> float | None:
+    """Return annualized Sharpe ratio over the last period_days trading days, or None if insufficient data."""
     if len(df) < period_days:
         return None
     subset = df.tail(period_days)
@@ -32,6 +34,7 @@ def _calculate_sharpe(df: pd.DataFrame, period_days: int) -> float | None:
 
 
 def _calculate_positive_days_pct(df: pd.DataFrame, months: int) -> float | None:
+    """Return the percentage of up-close days over the last N months (approx 21 trading days/month)."""
     days_approx = int(months * 21)
     if len(df) < days_approx:
         return None
@@ -44,6 +47,7 @@ def _calculate_positive_days_pct(df: pd.DataFrame, months: int) -> float | None:
 
 
 def score_momentum(df: pd.DataFrame) -> dict | None:
+    """Compute momentum metrics (Sharpe, volatility, 52w stats, circuit count) for a single stock."""
     if len(df) < 250:
         return None
 
@@ -94,6 +98,7 @@ def score_momentum(df: pd.DataFrame) -> dict | None:
 
 
 def _calculate_avg_sharpe(row, method: str) -> float | None:
+    """Return a composite Sharpe score for a row based on the selected sort method."""
     sharpes = []
     if method in ["1 year", "1Y"]:
         return row.get("Sharpe_1Y")
