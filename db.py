@@ -106,7 +106,6 @@ def get_latest_ohlcv_date() -> tuple[str | None, str | None]:
       global_max       = MAX(date) across all rows  → used to check if DB was synced recently
       conservative_min = MIN of per-symbol MAX dates → used as fetch-start to fill any gaps
     """
-    fmt = lambda d: d.strftime("%Y-%m-%d") if d else None
     with _get_conn() as conn:
         gmax = conn.execute("SELECT MAX(date) FROM ohlcv").fetchone()[0]
         gmin = conn.execute("""
@@ -114,7 +113,7 @@ def get_latest_ohlcv_date() -> tuple[str | None, str | None]:
                 SELECT symbol, MAX(date) AS max_date FROM ohlcv GROUP BY symbol
             ) t
         """).fetchone()[0]
-        return fmt(gmax), fmt(gmin)
+        return gmax, gmin
 
 
 def load_ohlcv_all(period_days: int = 550) -> dict[str, pd.DataFrame]:
