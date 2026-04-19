@@ -112,6 +112,7 @@
     .tag-green { background: var(--green-bg); color: #166534; }
     .tag-yellow{ background: var(--yellow-bg); color: #92400e; }
     .tag-purple{ background: var(--purple-bg); color: #5b21b6; }
+    .tag-gray  { background: #f1f5f9; color: #475569; }
 
     /* ── FLOW DIAGRAM ── */
     .flow {
@@ -180,7 +181,7 @@
     .fn-grid { display: grid; gap: 0.7rem; }
     .fn-row {
       display: grid;
-      grid-template-columns: 220px 1fr;
+      grid-template-columns: 260px 1fr;
       gap: 0.8rem;
       background: var(--card);
       border: 1px solid var(--border);
@@ -189,6 +190,7 @@
       align-items: start;
     }
     .fn-name { font-family: 'Menlo', 'Courier New', monospace; font-size: 0.82rem; color: var(--accent2); font-weight: 700; }
+    .fn-file { font-family: 'Menlo', 'Courier New', monospace; font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
     .fn-desc { font-size: 0.85rem; color: var(--muted); }
 
     /* ── CONFIG TABLE ── */
@@ -229,7 +231,7 @@
     <span class="badge">Streamlit App</span>
     <span class="badge">Python 3</span>
     <span class="badge">yfinance Data</span>
-    <span class="badge">Daily Cache</span>
+    <span class="badge">Neon PostgreSQL</span>
   </div>
 </header>
 
@@ -260,9 +262,9 @@
         <p>Ranks stocks by risk-adjusted return (Sharpe ratio) across multiple timeframes — 3, 6, 9, and 12 months. Helps identify stocks with consistent, smooth upward momentum rather than volatile spikes.</p>
       </div>
       <div class="card" style="border-left: 4px solid #059669;">
-        <div class="icon">💾</div>
-        <h3>Smart Daily Cache</h3>
-        <p>Results are stored once per trading day so the app is fast for repeated use. Data automatically refreshes after 7 PM IST each day, aligned with market close and NSE holidays.</p>
+        <div class="icon">🗄️</div>
+        <h3>3-Tier Smart Cache</h3>
+        <p>Results are cached in three layers: in-memory (instant), PostgreSQL on Neon (persists across restarts), and live Yahoo Finance fetch (only when DB is stale). Stage 2 refreshes once per trading day; Momentum re-scores hourly.</p>
       </div>
     </div>
 
@@ -291,7 +293,7 @@
       <div class="card">
         <div class="icon">🌐</div>
         <h3>Yahoo Finance</h3>
-        <p>Daily end-of-day (EOD) price and volume data for all stocks — free, no API key needed. Downloads up to 2 years of history at once.</p>
+        <p>Daily end-of-day (EOD) price and volume data for all stocks — free, no API key needed. Incremental syncs fetch only missing dates; first run downloads 2 years of history.</p>
       </div>
       <div class="card">
         <div class="icon">📁</div>
@@ -308,12 +310,12 @@
     <div class="section-title">🔍 Available Filters</div>
     <div class="card-grid">
       <div class="card">
-        <h3>Stage 2 Tab Filters</h3>
+        <h3>Stage 2 Filters</h3>
         <p>• RSI between 50–70 (momentum sweet spot)<br>• Show/hide illiquid stocks (avg volume &lt; 1 lakh)<br>• Filter by specific Nifty index<br>• Download results as CSV</p>
       </div>
       <div class="card">
-        <h3>Momentum Tab Filters</h3>
-        <p>• Select universe (Nifty 50 → Total Market)<br>• Minimum 1-year return %<br>• Close above 100-day / 200-day moving average<br>• Within % of 52-week high<br>• Max circuit breaker days<br>• Positive day % thresholds<br>• Sort by Sharpe (3M / 6M / 9M / 1Y / Average)</p>
+        <h3>Momentum Filters</h3>
+        <p>• Select universe (Nifty 50 → Total Market)<br>• Minimum 1-year return %<br>• Close above 100-day / 200-day moving average<br>• Within % of 52-week high<br>• Max circuit breaker days<br>• Positive day % thresholds (3M / 6M / 12M)<br>• Sort by Sharpe (3M / 6M / 9M / 1Y / Average)</p>
       </div>
     </div>
 
@@ -330,27 +332,27 @@
       <div class="flow-step">
         <div class="num">1</div>
         <h4>User Opens App</h4>
-        <p>Streamlit serves the UI from <code>app.py</code> on localhost</p>
+        <p>Streamlit serves the UI from <code>app.py</code>; DB schema is initialised via <code>db.init_db()</code> once at startup</p>
       </div>
       <div class="flow-step highlight">
         <div class="num">2</div>
         <h4>Resolve Cache Date</h4>
-        <p>Check IST time → find last valid NSE trading day (skip holidays/weekends)</p>
+        <p>Check IST time → find last valid NSE trading day (skip weekends &amp; holidays); cutoff at 19:00 IST</p>
       </div>
       <div class="flow-step">
         <div class="num">3</div>
-        <h4>Cache Hit?</h4>
-        <p>Look for <code>daily_cache/YYYY-MM-DD.json</code> — serve instantly if found</p>
+        <h4>Memory Cache?</h4>
+        <p>In-process dict keyed by trading date. Stage 2 never expires; Momentum has 1-hour TTL</p>
       </div>
       <div class="flow-step highlight">
         <div class="num">4</div>
-        <h4>Fetch from Yahoo</h4>
-        <p>If cache miss → bulk download 750 stocks via <code>yf.download()</code></p>
+        <h4>DB Cache?</h4>
+        <p>Stage 2: check <code>stage2_cache</code> table in Neon PostgreSQL. Momentum: check OHLCV freshness in <code>ohlcv</code> table</p>
       </div>
       <div class="flow-step">
         <div class="num">5</div>
-        <h4>Score & Cache</h4>
-        <p>Run scoring engine → save to JSON cache → render to UI</p>
+        <h4>Fetch &amp; Score</h4>
+        <p>Incremental yfinance sync → upsert to <code>ohlcv</code> → run scorer → save to <code>stage2_cache</code></p>
       </div>
     </div>
 
@@ -359,21 +361,21 @@
       <div class="card" style="border-top: 3px solid #2563eb;">
         <h3>Stage 2 Screener</h3>
         <p style="font-size:0.84rem; margin-top:0.5rem;">
-          <strong>Universe:</strong> Full Nifty 750 (hardcoded)<br>
-          <strong>History:</strong> 2 years of OHLCV<br>
-          <strong>Cache:</strong> File-based JSON, keyed by trading date<br>
-          <strong>Filter timing:</strong> Filtering applied in-memory after load (instant)<br>
-          <strong>Re-fetch:</strong> Once per trading day; fallback to older cache on failure
+          <strong>Universe:</strong> Full Nifty 750 (all indices combined)<br>
+          <strong>OHLCV history:</strong> 750 days loaded from DB for scoring<br>
+          <strong>Cache:</strong> <code>stage2_cache</code> PostgreSQL table, keyed by trading date<br>
+          <strong>Filter timing:</strong> Applied in-memory after load (instant)<br>
+          <strong>Re-fetch:</strong> Once per trading day; falls back to most recent cached entry on failure
         </p>
       </div>
       <div class="card" style="border-top: 3px solid #7c3aed;">
         <h3>Momentum Screener</h3>
         <p style="font-size:0.84rem; margin-top:0.5rem;">
-          <strong>Universe:</strong> User-selected (8 options)<br>
-          <strong>History:</strong> 18 months of OHLCV<br>
-          <strong>Cache:</strong> In-memory only, 1-hour TTL (no disk persistence)<br>
+          <strong>Universe:</strong> Full Nifty 750 (filtered in UI after scoring)<br>
+          <strong>OHLCV history:</strong> 550 days loaded from DB for scoring<br>
+          <strong>Cache:</strong> In-memory only, 1-hour TTL (<code>_MOMENTUM_TTL = 3600s</code>)<br>
           <strong>Filter timing:</strong> All filters applied to cached DataFrame in real time<br>
-          <strong>Re-fetch:</strong> On button click after cache expires
+          <strong>Re-fetch:</strong> After TTL expiry on next Run click
         </p>
       </div>
     </div>
@@ -382,23 +384,48 @@
     <table class="score-table">
       <thead><tr><th>Metric</th><th>How Calculated</th><th>Purpose</th></tr></thead>
       <tbody>
-        <tr><td><strong>Sharpe (3M/6M/9M/1Y)</strong></td><td>Annualized Return ÷ Annualized Std Dev over N trading days</td><td>Risk-adjusted return — higher is better</td></tr>
+        <tr><td><strong>Sharpe (3M/6M/9M/1Y)</strong></td><td>Annualized Return ÷ Annualized Std Dev over 63/126/189/252 trading days</td><td>Risk-adjusted return — higher is better</td></tr>
         <tr><td><strong>Volatility</strong></td><td>Daily return std dev × √252 × 100</td><td>Annualized volatility %, lower = smoother ride</td></tr>
-        <tr><td><strong>Positive Days %</strong></td><td>Days where Close > prev Close ÷ total days</td><td>Consistency of upward movement</td></tr>
+        <tr><td><strong>Positive Days %</strong></td><td>Days where Close > prev Close ÷ total days (3M/6M/12M windows)</td><td>Consistency of upward movement</td></tr>
         <tr><td><strong>1Y Change %</strong></td><td>(Close[−1] / Close[−252] − 1) × 100</td><td>Raw 1-year return</td></tr>
         <tr><td><strong>% from 52W High</strong></td><td>(Close − 52W Max) / 52W Max × 100</td><td>How far off peak — lower magnitude = near highs</td></tr>
         <tr><td><strong>Circuit Count</strong></td><td>Days where daily % change ≈ ±5%, ±10%, or ±20% (±0.1% tolerance)</td><td>Filters out illiquid / manipulated stocks</td></tr>
       </tbody>
     </table>
 
-    <div class="section-title">🗂️ File Structure</div>
+    <div class="section-title">🗂️ Module Structure</div>
     <table class="file-table">
       <thead><tr><th>File</th><th>Role</th><th>Notes</th></tr></thead>
       <tbody>
         <tr>
           <td><span class="file-name">app.py</span></td>
-          <td>Entire application — scoring, data fetching, caching, UI</td>
-          <td>~824 lines, single monolith</td>
+          <td>Streamlit UI — sidebar controls, <code>stage2_results()</code>, <code>momentum_results()</code>, <code>main()</code></td>
+          <td>No business logic; delegates everything to the engine and data modules</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">data.py</span></td>
+          <td>Data orchestration — holiday resolution, OHLCV sync, scoring dispatch, 3-tier cache</td>
+          <td>Entry point is <code>resolve_screener_data()</code></td>
+        </tr>
+        <tr>
+          <td><span class="file-name">stage2_engine.py</span></td>
+          <td>Weinstein Stage 2 scorer — <code>score_stage2(df)</code> and Wilder RSI helper</td>
+          <td>Pure function; takes an OHLCV DataFrame, returns a metric dict or None</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">momentum_engine.py</span></td>
+          <td>Momentum scorer — Sharpe, volatility, circuit count, positive days</td>
+          <td>Pure functions; <code>score_momentum(df)</code> is the main entry point</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">db.py</span></td>
+          <td>PostgreSQL layer via psycopg v3 — schema init, OHLCV upsert/read, stage2_cache read/write</td>
+          <td>Requires <code>DATABASE_URL</code> env var pointing to Neon; retries up to 3× on connect</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">config.py</span></td>
+          <td>All tunable constants — MA windows, circuit levels, TTL, timezone</td>
+          <td>Single source of truth; imported by all other modules</td>
         </tr>
         <tr>
           <td><span class="file-name">constituents.json</span></td>
@@ -410,27 +437,43 @@
           <td>NSE holiday calendar by segment (Equity, Debt, etc.)</td>
           <td>Used to resolve last valid trading date</td>
         </tr>
-        <tr>
-          <td><span class="file-name">daily_cache/*.json</span></td>
-          <td>Stage 2 scored results per trading day</td>
-          <td>Auto-created; keyed as <code>YYYY-MM-DD.json</code></td>
-        </tr>
       </tbody>
     </table>
+
+    <div class="section-title">🗄️ Database Schema (Neon PostgreSQL)</div>
+    <div class="card-grid">
+      <div class="card" style="border-left: 4px solid #2563eb;">
+        <h3>ohlcv</h3>
+        <p style="font-family:monospace; font-size:0.8rem; margin-top:0.4rem; line-height:1.8;">
+          symbol TEXT NOT NULL<br>
+          date TEXT NOT NULL<br>
+          open / high / low / close FLOAT<br>
+          volume BIGINT<br>
+          PRIMARY KEY (symbol, date)
+        </p>
+      </div>
+      <div class="card" style="border-left: 4px solid #7c3aed;">
+        <h3>stage2_cache</h3>
+        <p style="font-family:monospace; font-size:0.8rem; margin-top:0.4rem; line-height:1.8;">
+          cache_date DATE PRIMARY KEY<br>
+          results JSONB NOT NULL<br>
+          created_at TIMESTAMP DEFAULT NOW()
+        </p>
+      </div>
+    </div>
 
     <div class="section-title">⚙️ Key Configuration Constants</div>
     <table class="cfg-table">
       <thead><tr><th>Constant</th><th>Default</th><th>Effect</th></tr></thead>
       <tbody>
-        <tr><td><span class="cfg-name">HISTORY_PERIOD</span></td><td><span class="cfg-val">"2y"</span></td><td>OHLCV lookback for Stage 2 (needs 200-day MA)</td></tr>
-        <tr><td><span class="cfg-name">HISTORY_PERIOD_MOMENTUM</span></td><td><span class="cfg-val">"18mo"</span></td><td>Lookback for Momentum (needs 252 trading days)</td></tr>
-        <tr><td><span class="cfg-name">MIN_VOLUME</span></td><td><span class="cfg-val">100,000</span></td><td>Below this → stock flagged as Illiquid</td></tr>
+        <tr><td><span class="cfg-name">HISTORY_PERIOD</span></td><td><span class="cfg-val">"2y"</span></td><td>yfinance period string for initial full download</td></tr>
+        <tr><td><span class="cfg-name">MIN_VOLUME</span></td><td><span class="cfg-val">100,000</span></td><td>Below this → stock flagged as Illiquid in Stage 2</td></tr>
         <tr><td><span class="cfg-name">VOL_AVG_PERIOD</span></td><td><span class="cfg-val">10</span></td><td>Days for average volume calculation (Vol Ratio denominator)</td></tr>
         <tr><td><span class="cfg-name">HH_HL_LOOKBACK</span></td><td><span class="cfg-val">50</span></td><td>Window for Higher High / Higher Low detection</td></tr>
-        <tr><td><span class="cfg-name">MA_RISING_LOOKBACK</span></td><td><span class="cfg-val">50</span></td><td>How far back to check if MA is trending up</td></tr>
+        <tr><td><span class="cfg-name">MA_RISING_LOOKBACK</span></td><td><span class="cfg-val">50</span></td><td>How far back to check if a moving average is trending up</td></tr>
         <tr><td><span class="cfg-name">CIRCUIT_LEVELS</span></td><td><span class="cfg-val">[5, 10, 20]</span></td><td>Circuit breaker % levels to detect</td></tr>
         <tr><td><span class="cfg-name">CIRCUIT_TOLERANCE</span></td><td><span class="cfg-val">±0.1%</span></td><td>Fuzzy match tolerance for circuit detection</td></tr>
-        <tr><td><span class="cfg-name">_MOMENTUM_CACHE_TTL_SECONDS</span></td><td><span class="cfg-val">3600</span></td><td>1-hour in-memory TTL for momentum data</td></tr>
+        <tr><td><span class="cfg-name">_MOMENTUM_TTL</span></td><td><span class="cfg-val">3600</span></td><td>Seconds before in-memory momentum cache is considered stale</td></tr>
       </tbody>
     </table>
 
@@ -444,9 +487,12 @@
 
     <div class="section-title">🧩 Function Reference</div>
     <div class="fn-grid">
+
+      <!-- data.py -->
       <div class="fn-row">
         <div>
           <div class="fn-name">load_nse_holidays()</div>
+          <div class="fn-file">data.py</div>
           <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
         </div>
         <div class="fn-desc">Loads <code>nse_holidays.json</code> and returns a <code>set</code> of date strings (<code>YYYY-MM-DD</code>). Handles both <code>"tradingDate"</code> and <code>"tradingDate "</code> (trailing space) key variants.</div>
@@ -454,41 +500,83 @@
       <div class="fn-row">
         <div>
           <div class="fn-name">get_last_valid_trading_date(start, holidays)</div>
+          <div class="fn-file">data.py</div>
           <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
         </div>
         <div class="fn-desc">Walks backward from <code>start</code> (max 10 days) skipping weekends and holidays. Returns the nearest valid NSE trading date as a string.</div>
       </div>
       <div class="fn-row">
         <div>
-          <div class="fn-name">load_json_cache(key) / save_json_cache(df, key)</div>
-          <div class="tag tag-green" style="margin-top:0.3rem;">cache</div>
+          <div class="fn-name">_get_target_key()</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
         </div>
-        <div class="fn-desc">Read/write <code>daily_cache/{key}.json</code> as a pandas DataFrame using <code>orient="records"</code>. Returns <code>None</code> on any read failure.</div>
+        <div class="fn-desc">Returns the active cache date string. Uses current IST time — if before 19:00 uses yesterday's date, then resolves to last valid trading day.</div>
       </div>
       <div class="fn-row">
         <div>
+          <div class="fn-name">_load_constituents()</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
+        </div>
+        <div class="fn-desc">Loads <code>constituents.json</code> and returns a dict of index→symbols. Shows a Streamlit error and returns <code>{}</code> if the file is missing.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_sync_ohlcv_to_db(symbols, target_date)</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
+        </div>
+        <div class="fn-desc">Incremental yfinance sync. If DB is empty, downloads the full <code>HISTORY_PERIOD</code>; otherwise fetches only missing dates. Upserts all rows via <code>db.upsert_ohlcv()</code>. Returns <code>True</code> if data is now available.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_score_from_db(constituents, for_momentum, rsi_filter)</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
+        </div>
+        <div class="fn-desc">Loads OHLCV from DB (550 days for momentum, 750 for Stage 2), runs the appropriate scorer on each symbol, attaches Index from constituents, and returns a sorted DataFrame.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">resolve_screener_data(rsi_filter, for_momentum)</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">orchestrator</div>
+        </div>
+        <div class="fn-desc">3-tier cache resolution. Tier 1: in-memory dict keyed by date (Momentum also checks TTL). Tier 2: DB stage2_cache table (Stage 2 only) / OHLCV freshness check. Tier 3: live yfinance sync + score. Returns <code>(df, date_str, source)</code> where source is <code>'memory' | 'db' | 'internet' | 'error'</code>.</div>
+      </div>
+
+      <!-- stage2_engine.py -->
+      <div class="fn-row">
+        <div>
           <div class="fn-name">_rsi_wilder(series, period=14)</div>
+          <div class="fn-file">stage2_engine.py</div>
           <div class="tag tag-purple" style="margin-top:0.3rem;">indicator</div>
         </div>
-        <div class="fn-desc">Wilder's RSI using EWM with <code>alpha=1/period</code>. Returns a pd.Series of RSI values. Used only in Stage 2 scoring.</div>
+        <div class="fn-desc">Wilder's RSI using EWM with <code>alpha=1/period</code>. Returns a pd.Series of RSI values.</div>
       </div>
       <div class="fn-row">
         <div>
           <div class="fn-name">score_stage2(df)</div>
+          <div class="fn-file">stage2_engine.py</div>
           <div class="tag tag-purple" style="margin-top:0.3rem;">scoring</div>
         </div>
-        <div class="fn-desc">Takes an OHLCV DataFrame (min 250 rows). Computes MA50/150/200, RSI, volume ratio. Returns a dict with Score (0–7), Stage label, Close, Vol_Ratio, RSI, MA values, Illiquid flag, and Avg_Vol — or <code>None</code> if data insufficient.</div>
+        <div class="fn-desc">Takes an OHLCV DataFrame (min 250 rows). Computes MA50/150/200, RSI, volume ratio. Returns a dict with Score (0–7), Stage label, Close, Vol_Ratio, RSI, MA values, Illiquid flag, and Avg_Vol — or <code>None</code> if data is insufficient or contains NaNs.</div>
       </div>
+
+      <!-- momentum_engine.py -->
       <div class="fn-row">
         <div>
           <div class="fn-name">_count_circuits(df)</div>
+          <div class="fn-file">momentum_engine.py</div>
           <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
         </div>
-        <div class="fn-desc">Counts days where <code>pct_change</code> ≈ ±5%, ±10%, or ±20% within ±0.1% tolerance. Returns an integer circuit count.</div>
+        <div class="fn-desc">Counts days where <code>pct_change</code> ≈ ±5%, ±10%, or ±20% within ±0.1% tolerance over full history. Returns an integer.</div>
       </div>
       <div class="fn-row">
         <div>
           <div class="fn-name">_calculate_sharpe(df, period_days)</div>
+          <div class="fn-file">momentum_engine.py</div>
           <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
         </div>
         <div class="fn-desc">Annualized Sharpe = Annualized RoC ÷ Annualized Std Dev over the last <code>period_days</code> trading days. Returns <code>None</code> if insufficient data or zero std dev.</div>
@@ -496,6 +584,7 @@
       <div class="fn-row">
         <div>
           <div class="fn-name">_calculate_positive_days_pct(df, months)</div>
+          <div class="fn-file">momentum_engine.py</div>
           <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
         </div>
         <div class="fn-desc">Calculates % of days where Close > prev Close over approx <code>months × 21</code> trading days. Returns a float or <code>None</code>.</div>
@@ -503,82 +592,124 @@
       <div class="fn-row">
         <div>
           <div class="fn-name">score_momentum(df)</div>
+          <div class="fn-file">momentum_engine.py</div>
           <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
         </div>
         <div class="fn-desc">Calls all momentum sub-functions and returns a dict with: Close, 52w_High, DMA100, DMA200, Vol_Median, 1Y_Change, Pct_From_52W_High, Circuit_Count, Sharpe_3M/6M/9M/1Y, Volatility, Pos_Days_3M/6M/12M.</div>
       </div>
       <div class="fn-row">
         <div>
-          <div class="fn-name">_get_universe_symbols(universe, constituents)</div>
-          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
-        </div>
-        <div class="fn-desc">Maps composite universe names (e.g. <code>"Nifty LargeMidcap 250"</code>) to their constituent index lists, then flattens and deduplicates symbols.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">fetch_full_universe(rsi_filter, for_momentum)</div>
-          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
-        </div>
-        <div class="fn-desc">Bulk downloads all 750 tickers via <code>yf.download(threads=True)</code>. Iterates per-ticker to extract OHLCV sub-frames, dispatches to <code>score_stage2</code> or <code>score_momentum</code>. Handles both single and multi-ticker MultiIndex column layouts.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">fetch_momentum_universe(universe)</div>
-          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
-        </div>
-        <div class="fn-desc">Fetches only the symbols for a user-selected universe. Includes robust multi vs. single ticker column flattening and skips tickers not present in the returned MultiIndex.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">resolve_screener_data(rsi_filter, for_momentum, universe)</div>
-          <div class="tag tag-green" style="margin-top:0.3rem;">orchestrator</div>
-        </div>
-        <div class="fn-desc">Main cache resolution pipeline. Applies 7 PM IST cutoff logic → resolves trading date → checks disk cache → fetches if miss → saves → falls back to older cache. Returns <code>(df, date_str, is_cached)</code>.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">get_momentum_full_universe_data()</div>
-          <div class="tag tag-purple" style="margin-top:0.3rem;">cache</div>
-        </div>
-        <div class="fn-desc">Module-level in-memory cache (<code>_momentum_full_universe_cache</code> dict). Fetches full-universe momentum data once per hour. Called by <code>momentum_screener_ui()</code> on every Run click.</div>
-      </div>
-      <div class="fn-row">
-        <div>
           <div class="fn-name">_calculate_avg_sharpe(row, method)</div>
+          <div class="fn-file">momentum_engine.py</div>
           <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
         </div>
-        <div class="fn-desc">Row-wise helper for sorting. Reads <code>Sharpe_3M/6M/9M/1Y</code> fields from a DataFrame row and returns the appropriate single or averaged value based on the <code>sort_method</code> string.</div>
+        <div class="fn-desc">Row-wise helper for sorting. Reads Sharpe_3M/6M/9M/1Y from a DataFrame row and returns the single or averaged value based on the selected <code>sort_method</code> string.</div>
+      </div>
+
+      <!-- db.py -->
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">init_db()</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Creates <code>ohlcv</code> and <code>stage2_cache</code> tables and the <code>ohlcv_date_idx</code> index if they don't already exist. Called once at startup via <code>@st.cache_resource</code>.</div>
       </div>
       <div class="fn-row">
         <div>
-          <div class="fn-name">stage2_screener_ui() / momentum_screener_ui()</div>
+          <div class="fn-name">upsert_ohlcv(records)</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Bulk-upserts a list of OHLCV dicts. Uses <code>cursor.executemany()</code> with <code>ON CONFLICT DO UPDATE</code> to handle re-fetched data gracefully.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">get_latest_ohlcv_date()</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Returns <code>(global_max, conservative_min)</code>: the overall MAX date across all rows, and the MIN of per-symbol MAX dates. The conservative_min is used as the incremental sync start point.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">load_ohlcv_all(period_days=550)</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Loads recent OHLCV rows from the DB filtered by <code>date::date >= NOW() - INTERVAL '…'</code>. Returns a <code>symbol → DataFrame</code> dict with columns <code>Open/High/Low/Close/Volume</code> and a DatetimeIndex.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">save_stage2_cache(cache_date, df)</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Serialises <code>df</code> as JSON and upserts it into <code>stage2_cache</code> for the given trading date. Overwrites any existing entry for that date.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">load_stage2_cache(cache_date)</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Returns a DataFrame for the exact <code>cache_date</code>, or <code>None</code> if not found.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">load_latest_stage2_cache()</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Fallback: returns <code>(df, date_str)</code> for the most recent entry in <code>stage2_cache</code>. Used when today's data is unavailable.</div>
+      </div>
+
+      <!-- app.py -->
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">stage2_results(selected_indices, rsi_toggle, show_illiquid)</div>
+          <div class="fn-file">app.py</div>
           <div class="tag tag-blue" style="margin-top:0.3rem;">ui</div>
         </div>
-        <div class="fn-desc">Full Streamlit UI functions. Each renders a 1:4 sidebar/main column layout. Use Streamlit <code>session_state</code> keys prefixed <code>stage2_</code> / <code>mom_</code> to avoid cross-tab key collisions.</div>
+        <div class="fn-desc">Renders the Stage 2 results table. Calls <code>resolve_screener_data()</code>, applies index/RSI/liquidity filters in-memory, displays the styled dataframe with metrics, and offers a CSV download.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">momentum_results(selected_indices, idx_options, filters)</div>
+          <div class="fn-file">app.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">ui</div>
+        </div>
+        <div class="fn-desc">Renders the Momentum results table. Calls <code>resolve_screener_data(for_momentum=True)</code>, applies all momentum filters, sorts by composite Sharpe via <code>_calculate_avg_sharpe()</code>, and offers a CSV download.</div>
       </div>
       <div class="fn-row">
         <div>
           <div class="fn-name">main()</div>
+          <div class="fn-file">app.py</div>
           <div class="tag tag-blue" style="margin-top:0.3rem;">entrypoint</div>
         </div>
-        <div class="fn-desc">Creates <code>st.tabs()</code> and calls <code>stage2_screener_ui()</code> / <code>momentum_screener_ui()</code>. Called at module level; Streamlit re-runs this on every interaction.</div>
+        <div class="fn-desc">Builds the shared sidebar (screener selector, index checkboxes, context-specific filters, Run button) and dispatches to <code>stage2_results()</code> or <code>momentum_results()</code>. Streamlit re-runs this on every interaction.</div>
       </div>
+
     </div>
 
     <div class="section-title">🔑 Key Implementation Notes</div>
     <div class="info-box">
-      <strong>MultiIndex Column Handling</strong>
-      When yfinance returns data for multiple tickers, columns are a MultiIndex: <code>(ticker, OHLCV-field)</code>. For a single ticker, columns are still MultiIndex but structured as <code>(ticker, field)</code>. The code handles both cases differently per-function — <code>fetch_full_universe</code> uses <code>c[0]</code> extraction, while <code>fetch_momentum_universe</code> uses <code>c[1]</code> for single-ticker case and direct <code>raw[t]</code> for multi-ticker.
+      <strong>3-Tier Cache Architecture</strong>
+      <code>_mem_cache</code> is a module-level dict with <code>"stage2"</code> and <code>"momentum"</code> slots. Stage 2 is keyed only by trading date (no TTL — once computed for a given day it never expires in-process). Momentum adds a <code>"ts"</code> timestamp and expires after <code>_MOMENTUM_TTL</code> seconds (1 hour). The DB tier stores Stage 2 scored results as JSONB in <code>stage2_cache</code>; Momentum always re-scores from OHLCV since its filters change dynamically.
     </div>
     <div class="info-box" style="background: var(--purple-bg); border-color: #ddd6fe; color: #3b0764;">
       <strong>Session State Keys</strong>
-      All Streamlit widget keys are namespaced: <code>stage2_*</code> for Stage 2 tab, <code>mom_*</code> for Momentum tab. The Stage 2 run trigger uses <code>st.session_state["stage2_run_triggered"]</code> to persist across reruns; Momentum is stateless (only runs on button click each time).
+      All Streamlit widget keys are namespaced: <code>stage2_*</code> for Stage 2 (e.g. <code>stage2_run_triggered</code>, <code>stage2_rsi_toggle</code>), <code>mom_*</code> for Momentum (e.g. <code>mom_run_triggered</code>, <code>mom_sort_method</code>). The run trigger pattern (<code>session_state["…_run_triggered"] = True</code>) gates result rendering so the main area stays blank until the user clicks Run.
+    </div>
+    <div class="info-box" style="background:#fef3c7; border-color:#fcd34d; color:#78350f;">
+      <strong>yfinance MultiIndex Handling</strong>
+      When downloading multiple tickers, yfinance returns a MultiIndex DataFrame with columns <code>(ticker, field)</code>. For a single ticker it still returns MultiIndex. <code>_sync_ohlcv_to_db</code> normalises this by slicing <code>raw[ticker]</code> for multi-ticker downloads and <code>raw</code> directly for single-ticker, then flattening tuple column names with <code>c[0] if isinstance(c, tuple) else c</code>.
     </div>
     <div class="warn-box">
       <strong>⚠️ Known Quirks</strong>
-      • <code>HISTORY_PERIOD_MOMENTUM</code> is assigned twice in <code>fetch_full_universe()</code> (line 291 is a duplicate — safe but redundant).<br>
-      • Stage 2 cache applies RSI filter before saving — re-running with RSI toggle off on a cached day will still show pre-filtered data. Filter is re-applied in UI for display but the cache itself may be pre-filtered.<br>
-      • Momentum universe filter in <code>momentum_screener_ui()</code> uses <code>isin([selected_universe])</code> which matches against the <code>Index</code> column (individual index names, not composite names like "Nifty LargeMidcap 250") — composite universes work because the data is fetched from expanded symbol lists upstream.
+      • The <code>source</code> flag returned by <code>resolve_screener_data</code> for Momentum is always <code>"db"</code> on first load (even if data came from internet) — it only returns <code>"memory"</code> on subsequent calls within the TTL window.<br>
+      • Stage 2 RSI filter is applied before saving to <code>stage2_cache</code> — changing the RSI toggle after a cache hit for today won't re-fetch; the in-UI filter re-applies it on the cached data instead.<br>
+      • <code>db._get_conn()</code> injects the Neon endpoint hint (<code>options=endpoint%3D…</code>) only if the URL contains <code>ep-</code> and doesn't already have <code>options=</code>, which is the standard Neon connection string format.
     </div>
 
     <div class="section-title">🚀 Running the App</div>
@@ -586,19 +717,19 @@
       <div class="card">
         <h3>Install</h3>
         <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
-          pip install streamlit yfinance pandas numpy
+          pip install -r requirements.txt
+        </p>
+      </div>
+      <div class="card">
+        <h3>Configure .env</h3>
+        <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
+          DATABASE_URL=postgresql://…<br>(Neon connection string)
         </p>
       </div>
       <div class="card">
         <h3>Run</h3>
         <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
           streamlit run app.py
-        </p>
-      </div>
-      <div class="card">
-        <h3>Cache Location</h3>
-        <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
-          ./daily_cache/YYYY-MM-DD.json
         </p>
       </div>
     </div>
