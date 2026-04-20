@@ -16,6 +16,10 @@ def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
     return 100 - (100 / (1 + rs))
 
 
+import streamlit as st
+
+
+@st.cache_data(ttl=3600)
 def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
     """Vectorised daily Stage 2 score; returns df with Close/MA cols, Score (0-7), and Phase."""
     c, h, l, v = df["Close"], df["High"], df["Low"], df["Volume"].astype(float)

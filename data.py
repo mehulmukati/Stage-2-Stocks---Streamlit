@@ -219,6 +219,7 @@ def _score_from_db(
 # ──────────────────────────────────────────────
 # SINGLE-SYMBOL CHART DATA
 # ──────────────────────────────────────────────
+@st.cache_data(ttl=3600)
 def fetch_chart_data(symbol: str) -> pd.DataFrame:
     """Return 2y OHLCV DataFrame for one symbol; tries DB first, falls back to yfinance."""
     df = db.load_ohlcv_symbol(symbol.upper(), period_days=750)

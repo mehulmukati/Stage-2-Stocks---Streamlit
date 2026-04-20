@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import difflib
 import json
 import os
 import warnings
@@ -16,7 +17,7 @@ load_dotenv()
 import db
 from backtest_engine import rolling_returns, run_backtest
 from config import IST
-from data import fetch_chart_data, load_benchmark_series, resolve_screener_data, sync_benchmark_data
+from data import _load_constituents, fetch_chart_data, load_benchmark_series, resolve_screener_data, sync_benchmark_data
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2
 
@@ -55,14 +56,41 @@ _PHASE_COLORS = {
 }
 
 
-def render_phase_chart(ticker: str):
+def get_closest_symbol_match(ticker: str, threshold: float = 0.6) -> str | None:
+    """Find the closest matching symbol from available constituents using fuzzy matching.
+    Returns the matched symbol if similarity > threshold, else None."""
+    constituents = _load_constituents()
+    all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
+    
+    if not all_symbols:
+        return None
+    
+    matches = difflib.get_close_matches(ticker.upper(), all_symbols, n=1, cutoff=threshold)
+    return matches[0] if matches else None
+
+
+def render_phase_chart(ticker: str, use_log_scale: bool = True):
     """Fetch OHLCV for ticker, compute rolling Stage 2 phases, and render a Plotly phase-band chart."""
     with st.spinner(f"Loading data for {ticker}…"):
         df = fetch_chart_data(ticker)
 
     if df.empty:
-        st.error(f"No data found for **{ticker}**. Check the symbol and try again.")
-        return
+        # Try to find the closest matching symbol
+        closest_match = get_closest_symbol_match(ticker)
+        
+        if closest_match:
+            st.info(f"ℹ️ Symbol **{ticker}** not found. Did you mean **{closest_match}**? Loading that instead...")
+            with st.spinner(f"Loading data for {closest_match}…"):
+                df = fetch_chart_data(closest_match)
+            
+            if df.empty:
+                st.error(f"❌ No data available for **{closest_match}**. Please try another symbol.")
+                return
+            
+            ticker = closest_match
+        else:
+            st.error(f"❌ Symbol **{ticker}** not found in available stocks. Please check the symbol and try again.")
+            return
 
     rolled = compute_rolling_stage2(df)
     # Only draw phase bands where MA200 is valid (enough history)
@@ -109,7 +137,7 @@ def render_phase_chart(ticker: str):
 
     fig.update_layout(
         title=dict(text=f"{ticker} — Stage 2 Phase Map", font=dict(size=16)),
-        yaxis=dict(type="log", showgrid=True, gridcolor="#e2e8f0", title="Price (log)"),
+        yaxis=dict(type="log" if use_log_scale else "linear", showgrid=True, gridcolor="#e2e8f0", title="Price (log)" if use_log_scale else "Price"),
         xaxis=dict(showgrid=False),
         height=540,
         margin=dict(l=50, r=20, t=55, b=40),
@@ -614,17 +642,13 @@ def main():
                 "💡 N50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market"
             )
 
-        st.divider()
-
         # ── CONTEXT-SPECIFIC FILTERS ──
         if screener == "📈 Phase Chart":
             st.markdown("**Stock Symbol**")
             chart_ticker = st.text_input(
                 "NSE Symbol (e.g. RELIANCE)", key="chart_ticker_input"
             ).strip().upper()
-            st.divider()
-            if st.button("📈 Plot", type="primary", use_container_width=True, key="chart_plot_btn"):
-                st.session_state["chart_ticker"] = chart_ticker
+            st.session_state["chart_ticker"] = chart_ticker
 
         elif screener == "📊 Stage 2":
             st.markdown("**Filters**")
@@ -746,11 +770,17 @@ def main():
         if not ticker:
             st.markdown('<p class="hero">📈 Stage 2 Phase Chart</p>', unsafe_allow_html=True)
             st.markdown(
-                '<p class="sub-hero">Enter an NSE symbol in the sidebar and click Plot.</p>',
+                '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>',
                 unsafe_allow_html=True,
             )
         else:
-            render_phase_chart(ticker)
+            # Scale toggle above chart on the right
+            col1, col2 = st.columns([0.85, 0.15])
+            with col2:
+                use_log_scale = st.toggle(
+                    "Log Y-Axis", value=True, key="chart_log_scale_toggle"
+                )
+            render_phase_chart(ticker, use_log_scale=use_log_scale)
     elif screener == "📊 Stage 2":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
     elif screener == "⏱ Backtest":
