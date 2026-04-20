@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Architecture — Stage 2 Stock Screener</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --accent2: #7c3aed;
+      --accent3: #059669;
+      --accent4: #d97706;
+      --text: #1e293b;
+      --muted: #64748b;
+      --tag-bg: #eff6ff;
+      --tag-text: #1d4ed8;
+      --green-bg: #f0fdf4;
+      --yellow-bg: #fefce8;
+      --purple-bg: #f5f3ff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #7c3aed 100%);
+      color: white;
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+    }
+    header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
+    header p  { margin-top: 0.4rem; font-size: 1rem; opacity: 0.85; }
+    .badges { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
+    .badge {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 0.25rem 0.8rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* ── PERSONA TABS ── */
+    .persona-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1.2rem 1rem 0;
+      flex-wrap: wrap;
+    }
+    .persona-btn {
+      padding: 0.5rem 1.4rem;
+      border-radius: 20px;
+      border: 2px solid var(--border);
+      background: var(--card);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--muted);
+    }
+    .persona-btn.active { border-color: var(--accent); color: var(--accent); background: var(--tag-bg); }
+    .persona-btn:hover:not(.active) { border-color: #94a3b8; color: var(--text); }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+    .persona-section { display: none; }
+    .persona-section.visible { display: block; }
+
+    /* ── SECTION HEADINGS ── */
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2rem 0 0.8rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── CARDS ── */
+    .card-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+    }
+    .card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .card p  { font-size: 0.85rem; color: var(--muted); }
+    .card .icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+
+    /* ── SCORE TABLE ── */
+    .score-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+    .score-table th { background: #1e3a5f; color: white; padding: 0.7rem 1rem; text-align: left; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .score-table td { padding: 0.65rem 1rem; font-size: 0.87rem; border-bottom: 1px solid var(--border); }
+    .score-table tr:last-child td { border-bottom: none; }
+    .score-table tr:nth-child(even) td { background: #f8fafc; }
+    .tag { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .tag-blue  { background: var(--tag-bg); color: var(--tag-text); }
+    .tag-green { background: var(--green-bg); color: #166534; }
+    .tag-yellow{ background: var(--yellow-bg); color: #92400e; }
+    .tag-purple{ background: var(--purple-bg); color: #5b21b6; }
+    .tag-gray  { background: #f1f5f9; color: #475569; }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      align-items: stretch;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .flow-step {
+      flex: 1;
+      min-width: 130px;
+      padding: 1rem 0.8rem;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .flow-step:last-child { border-right: none; }
+    .flow-step .num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.5rem;
+    }
+    .flow-step h4 { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .flow-step p  { font-size: 0.78rem; color: var(--muted); }
+    .flow-step.highlight { background: #eff6ff; }
+
+    /* ── FILE TABLE ── */
+    .file-table { width: 100%; border-collapse: collapse; }
+    .file-table th { text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 0.4rem 0.8rem; border-bottom: 2px solid var(--border); }
+    .file-table td { padding: 0.55rem 0.8rem; font-size: 0.87rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .file-table tr:last-child td { border-bottom: none; }
+    .file-name { font-family: 'Menlo', 'Courier New', monospace; font-size: 0.83rem; color: var(--accent); font-weight: 600; }
+
+    /* ── INFO BOX ── */
+    .info-box {
+      background: var(--green-bg);
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      font-size: 0.88rem;
+      color: #14532d;
+      margin-bottom: 0.8rem;
+    }
+    .info-box strong { display: block; margin-bottom: 0.25rem; font-size: 0.95rem; }
+
+    .warn-box {
+      background: var(--yellow-bg);
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      font-size: 0.88rem;
+      color: #78350f;
+      margin-bottom: 0.8rem;
+    }
+
+    /* ── FUNCTION REF ── */
+    .fn-grid { display: grid; gap: 0.7rem; }
+    .fn-row {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 0.8rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      align-items: start;
+    }
+    .fn-name { font-family: 'Menlo', 'Courier New', monospace; font-size: 0.82rem; color: var(--accent2); font-weight: 700; }
+    .fn-file { font-family: 'Menlo', 'Courier New', monospace; font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+    .fn-desc { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── CONFIG TABLE ── */
+    .cfg-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .cfg-table th { background: #1e3a5f; color: white; padding: 0.6rem 1rem; text-align: left; font-size: 0.8rem; text-transform: uppercase; }
+    .cfg-table td { padding: 0.6rem 1rem; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+    .cfg-table tr:last-child td { border-bottom: none; }
+    .cfg-name { font-family: 'Menlo', monospace; font-size: 0.82rem; color: #7c3aed; font-weight: 600; }
+    .cfg-val  { font-family: 'Menlo', monospace; font-size: 0.82rem; background: #f1f5f9; padding: 0.1rem 0.4rem; border-radius: 4px; }
+
+    /* ── STAGE LEGEND ── */
+    .stage-legend { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .stage-pill {
+      padding: 0.35rem 1rem;
+      border-radius: 20px;
+      font-size: 0.83rem;
+      font-weight: 600;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      header h1 { font-size: 1.4rem; }
+      .fn-row { grid-template-columns: 1fr; }
+      .flow { flex-direction: column; }
+      .flow-step { border-right: none; border-bottom: 1px solid var(--border); }
+      .flow-step:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📈 Stage 2 Stock Screener</h1>
+  <p>Nifty Total Market · Weinstein Breakout Methodology · Sharpe Momentum Analysis</p>
+  <div class="badges">
+    <span class="badge">🇮🇳 Indian Equities</span>
+    <span class="badge">750 Stocks</span>
+    <span class="badge">Streamlit App</span>
+    <span class="badge">Python 3</span>
+    <span class="badge">yfinance Data</span>
+    <span class="badge">Neon PostgreSQL</span>
+  </div>
+</header>
+
+<!-- PERSONA TABS -->
+<div class="persona-bar">
+  <button class="persona-btn active" onclick="switchPersona('business')">💼 Business User</button>
+  <button class="persona-btn"        onclick="switchPersona('tech')">🛠️ Tech User</button>
+  <button class="persona-btn"        onclick="switchPersona('dev')">👨‍💻 Developer</button>
+</div>
+
+<div class="container">
+
+  <!-- ══════════════════════════════════════════
+       BUSINESS USER
+  ══════════════════════════════════════════ -->
+  <div id="persona-business" class="persona-section visible">
+
+    <div class="section-title">🎯 What does this app do?</div>
+    <div class="card-grid">
+      <div class="card" style="border-left: 4px solid #2563eb;">
+        <div class="icon">📊</div>
+        <h3>Stage 2 Screener</h3>
+        <p>Identifies stocks from the Nifty 750 universe that are breaking out of consolidation into an uptrend — the "Stage 2" phase described by Stan Weinstein. Scores each stock out of 7 based on price, volume, and moving average conditions.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid #7c3aed;">
+        <div class="icon">🚀</div>
+        <h3>Momentum Screener</h3>
+        <p>Ranks stocks by risk-adjusted return (Sharpe ratio) across multiple timeframes — 3, 6, 9, and 12 months. Helps identify stocks with consistent, smooth upward momentum rather than volatile spikes.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid #059669;">
+        <div class="icon">🗄️</div>
+        <h3>3-Tier Smart Cache</h3>
+        <p>Results are cached in three layers: in-memory (instant), PostgreSQL on Neon (persists across restarts), and live Yahoo Finance fetch (only when DB is stale). Stage 2 refreshes once per trading day; Momentum re-scores hourly.</p>
+      </div>
+    </div>
+
+    <div class="section-title">📋 The 7-Point Stage 2 Scoring System</div>
+    <div class="stage-legend">
+      <span class="stage-pill" style="background:#ecfdf5; color:#166534;">🟢 6–7 Strong Stage 2</span>
+      <span class="stage-pill" style="background:#fefce8; color:#92400e;">🟡 4–5 Likely Stage 2</span>
+      <span class="stage-pill" style="background:#fef2f2; color:#991b1b;">🟠 2–3 Early / Weak</span>
+      <span class="stage-pill" style="background:#f9fafb; color:#374151;">⚪ 0–1 Not Stage 2</span>
+    </div>
+    <table class="score-table">
+      <thead><tr><th>#</th><th>Condition</th><th>What it checks</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><span class="tag tag-blue">Volume Surge</span></td><td>Today's volume is 2× or more of the recent average — institutional buying signal</td></tr>
+        <tr><td>2</td><td><span class="tag tag-green">Higher High</span></td><td>Today's high exceeds the highest high of the past 50 days — price expanding upward</td></tr>
+        <tr><td>3</td><td><span class="tag tag-green">Higher Low</span></td><td>Today's low is above the lowest low of the past 50 days — floor rising</td></tr>
+        <tr><td>4</td><td><span class="tag tag-yellow">MA50 Rising</span></td><td>Price is above 50-day average and that average itself is trending up</td></tr>
+        <tr><td>5</td><td><span class="tag tag-yellow">MA200 Rising</span></td><td>Price is above 200-day average and that average is trending up — long-term health</td></tr>
+        <tr><td>6</td><td><span class="tag tag-purple">Above MA150</span></td><td>Price above the 150-day average — medium-term trend confirmation</td></tr>
+        <tr><td>7</td><td><span class="tag tag-purple">MA Stack</span></td><td>MA50 > MA150 > MA200 — the "golden alignment" of moving averages</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">📡 Where does the data come from?</div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="icon">🌐</div>
+        <h3>Yahoo Finance</h3>
+        <p>Daily end-of-day (EOD) price and volume data for all stocks — free, no API key needed. Incremental syncs fetch only missing dates; first run downloads 2 years of history.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📁</div>
+        <h3>constituents.json</h3>
+        <p>List of stock symbols for each Nifty index — Nifty 50, Next 50, Midcap 150, Smallcap 250, and Microcap 250. Updated manually as index rebalances occur.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📅</div>
+        <h3>nse_holidays.json</h3>
+        <p>NSE trading holiday calendar. Used to make sure the app always shows data for the last valid trading day, not a weekend or holiday.</p>
+      </div>
+    </div>
+
+    <div class="section-title">🔍 Available Filters</div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Stage 2 Filters</h3>
+        <p>• RSI between 50–70 (momentum sweet spot)<br>• Show/hide illiquid stocks (avg volume &lt; 1 lakh)<br>• Filter by specific Nifty index<br>• Download results as CSV</p>
+      </div>
+      <div class="card">
+        <h3>Momentum Filters</h3>
+        <p>• Select universe (Nifty 50 → Total Market)<br>• Minimum 1-year return %<br>• Close above 100-day / 200-day moving average<br>• Within % of 52-week high<br>• Max circuit breaker days<br>• Positive day % thresholds (3M / 6M / 12M)<br>• Sort by Sharpe (3M / 6M / 9M / 1Y / Average)</p>
+      </div>
+    </div>
+
+  </div><!-- /business -->
+
+
+  <!-- ══════════════════════════════════════════
+       TECH USER
+  ══════════════════════════════════════════ -->
+  <div id="persona-tech" class="persona-section">
+
+    <div class="section-title">🏗️ System Architecture</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="num">1</div>
+        <h4>User Opens App</h4>
+        <p>Streamlit serves the UI from <code>app.py</code>; DB schema is initialised via <code>db.init_db()</code> once at startup</p>
+      </div>
+      <div class="flow-step highlight">
+        <div class="num">2</div>
+        <h4>Resolve Cache Date</h4>
+        <p>Check IST time → find last valid NSE trading day (skip weekends &amp; holidays); cutoff at 19:00 IST</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">3</div>
+        <h4>Memory Cache?</h4>
+        <p>In-process dict keyed by trading date. Stage 2 never expires; Momentum has 1-hour TTL</p>
+      </div>
+      <div class="flow-step highlight">
+        <div class="num">4</div>
+        <h4>DB Cache?</h4>
+        <p>Stage 2: check <code>stage2_cache</code> table in Neon PostgreSQL. Momentum: check OHLCV freshness in <code>ohlcv</code> table</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">5</div>
+        <h4>Fetch &amp; Score</h4>
+        <p>Incremental yfinance sync → upsert to <code>ohlcv</code> → run scorer → save to <code>stage2_cache</code></p>
+      </div>
+    </div>
+
+    <div class="section-title">📂 Data Flow by Screener</div>
+    <div class="card-grid">
+      <div class="card" style="border-top: 3px solid #2563eb;">
+        <h3>Stage 2 Screener</h3>
+        <p style="font-size:0.84rem; margin-top:0.5rem;">
+          <strong>Universe:</strong> Full Nifty 750 (all indices combined)<br>
+          <strong>OHLCV history:</strong> 750 days loaded from DB for scoring<br>
+          <strong>Cache:</strong> <code>stage2_cache</code> PostgreSQL table, keyed by trading date<br>
+          <strong>Filter timing:</strong> Applied in-memory after load (instant)<br>
+          <strong>Re-fetch:</strong> Once per trading day; falls back to most recent cached entry on failure
+        </p>
+      </div>
+      <div class="card" style="border-top: 3px solid #7c3aed;">
+        <h3>Momentum Screener</h3>
+        <p style="font-size:0.84rem; margin-top:0.5rem;">
+          <strong>Universe:</strong> Full Nifty 750 (filtered in UI after scoring)<br>
+          <strong>OHLCV history:</strong> 550 days loaded from DB for scoring<br>
+          <strong>Cache:</strong> In-memory only, 1-hour TTL (<code>_MOMENTUM_TTL = 3600s</code>)<br>
+          <strong>Filter timing:</strong> All filters applied to cached DataFrame in real time<br>
+          <strong>Re-fetch:</strong> After TTL expiry on next Run click
+        </p>
+      </div>
+    </div>
+
+    <div class="section-title">📊 Momentum Metrics Explained</div>
+    <table class="score-table">
+      <thead><tr><th>Metric</th><th>How Calculated</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Sharpe (3M/6M/9M/1Y)</strong></td><td>Annualized Return ÷ Annualized Std Dev over 63/126/189/252 trading days</td><td>Risk-adjusted return — higher is better</td></tr>
+        <tr><td><strong>Volatility</strong></td><td>Daily return std dev × √252 × 100</td><td>Annualized volatility %, lower = smoother ride</td></tr>
+        <tr><td><strong>Positive Days %</strong></td><td>Days where Close > prev Close ÷ total days (3M/6M/12M windows)</td><td>Consistency of upward movement</td></tr>
+        <tr><td><strong>1Y Change %</strong></td><td>(Close[−1] / Close[−252] − 1) × 100</td><td>Raw 1-year return</td></tr>
+        <tr><td><strong>% from 52W High</strong></td><td>(Close − 52W Max) / 52W Max × 100</td><td>How far off peak — lower magnitude = near highs</td></tr>
+        <tr><td><strong>Circuit Count</strong></td><td>Days where daily % change ≈ ±5%, ±10%, or ±20% (±0.1% tolerance)</td><td>Filters out illiquid / manipulated stocks</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">🗂️ Module Structure</div>
+    <table class="file-table">
+      <thead><tr><th>File</th><th>Role</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="file-name">app.py</span></td>
+          <td>Streamlit UI — sidebar controls, <code>stage2_results()</code>, <code>momentum_results()</code>, <code>main()</code></td>
+          <td>No business logic; delegates everything to the engine and data modules</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">data.py</span></td>
+          <td>Data orchestration — holiday resolution, OHLCV sync, scoring dispatch, 3-tier cache</td>
+          <td>Entry point is <code>resolve_screener_data()</code></td>
+        </tr>
+        <tr>
+          <td><span class="file-name">stage2_engine.py</span></td>
+          <td>Weinstein Stage 2 scorer — <code>score_stage2(df)</code> and Wilder RSI helper</td>
+          <td>Pure function; takes an OHLCV DataFrame, returns a metric dict or None</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">momentum_engine.py</span></td>
+          <td>Momentum scorer — Sharpe, volatility, circuit count, positive days</td>
+          <td>Pure functions; <code>score_momentum(df)</code> is the main entry point</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">db.py</span></td>
+          <td>PostgreSQL layer via psycopg v3 — schema init, OHLCV upsert/read, stage2_cache read/write</td>
+          <td>Requires <code>DATABASE_URL</code> env var pointing to Neon; retries up to 3× on connect</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">config.py</span></td>
+          <td>All tunable constants — MA windows, circuit levels, TTL, timezone</td>
+          <td>Single source of truth; imported by all other modules</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">constituents.json</span></td>
+          <td>Index → [Symbol, ...] mapping for all 5 Nifty indices</td>
+          <td>Updated manually on index rebalances</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">nse_holidays.json</span></td>
+          <td>NSE holiday calendar by segment (Equity, Debt, etc.)</td>
+          <td>Used to resolve last valid trading date</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">🗄️ Database Schema (Neon PostgreSQL)</div>
+    <div class="card-grid">
+      <div class="card" style="border-left: 4px solid #2563eb;">
+        <h3>ohlcv</h3>
+        <p style="font-family:monospace; font-size:0.8rem; margin-top:0.4rem; line-height:1.8;">
+          symbol TEXT NOT NULL<br>
+          date TEXT NOT NULL<br>
+          open / high / low / close FLOAT<br>
+          volume BIGINT<br>
+          PRIMARY KEY (symbol, date)
+        </p>
+      </div>
+      <div class="card" style="border-left: 4px solid #7c3aed;">
+        <h3>stage2_cache</h3>
+        <p style="font-family:monospace; font-size:0.8rem; margin-top:0.4rem; line-height:1.8;">
+          cache_date DATE PRIMARY KEY<br>
+          results JSONB NOT NULL<br>
+          created_at TIMESTAMP DEFAULT NOW()
+        </p>
+      </div>
+    </div>
+
+    <div class="section-title">⚙️ Key Configuration Constants</div>
+    <table class="cfg-table">
+      <thead><tr><th>Constant</th><th>Default</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><span class="cfg-name">HISTORY_PERIOD</span></td><td><span class="cfg-val">"2y"</span></td><td>yfinance period string for initial full download</td></tr>
+        <tr><td><span class="cfg-name">MIN_VOLUME</span></td><td><span class="cfg-val">100,000</span></td><td>Below this → stock flagged as Illiquid in Stage 2</td></tr>
+        <tr><td><span class="cfg-name">VOL_AVG_PERIOD</span></td><td><span class="cfg-val">10</span></td><td>Days for average volume calculation (Vol Ratio denominator)</td></tr>
+        <tr><td><span class="cfg-name">HH_HL_LOOKBACK</span></td><td><span class="cfg-val">50</span></td><td>Window for Higher High / Higher Low detection</td></tr>
+        <tr><td><span class="cfg-name">MA_RISING_LOOKBACK</span></td><td><span class="cfg-val">50</span></td><td>How far back to check if a moving average is trending up</td></tr>
+        <tr><td><span class="cfg-name">CIRCUIT_LEVELS</span></td><td><span class="cfg-val">[5, 10, 20]</span></td><td>Circuit breaker % levels to detect</td></tr>
+        <tr><td><span class="cfg-name">CIRCUIT_TOLERANCE</span></td><td><span class="cfg-val">±0.1%</span></td><td>Fuzzy match tolerance for circuit detection</td></tr>
+        <tr><td><span class="cfg-name">_MOMENTUM_TTL</span></td><td><span class="cfg-val">3600</span></td><td>Seconds before in-memory momentum cache is considered stale</td></tr>
+      </tbody>
+    </table>
+
+  </div><!-- /tech -->
+
+
+  <!-- ══════════════════════════════════════════
+       DEVELOPER
+  ══════════════════════════════════════════ -->
+  <div id="persona-dev" class="persona-section">
+
+    <div class="section-title">🧩 Function Reference</div>
+    <div class="fn-grid">
+
+      <!-- data.py -->
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">load_nse_holidays()</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
+        </div>
+        <div class="fn-desc">Loads <code>nse_holidays.json</code> and returns a <code>set</code> of date strings (<code>YYYY-MM-DD</code>). Handles both <code>"tradingDate"</code> and <code>"tradingDate "</code> (trailing space) key variants.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">get_last_valid_trading_date(start, holidays)</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
+        </div>
+        <div class="fn-desc">Walks backward from <code>start</code> (max 10 days) skipping weekends and holidays. Returns the nearest valid NSE trading date as a string.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_get_target_key()</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
+        </div>
+        <div class="fn-desc">Returns the active cache date string. Uses current IST time — if before 19:00 uses yesterday's date, then resolves to last valid trading day.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_load_constituents()</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
+        </div>
+        <div class="fn-desc">Loads <code>constituents.json</code> and returns a dict of index→symbols. Shows a Streamlit error and returns <code>{}</code> if the file is missing.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_sync_ohlcv_to_db(symbols, target_date)</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
+        </div>
+        <div class="fn-desc">Incremental yfinance sync. If DB is empty, downloads the full <code>HISTORY_PERIOD</code>; otherwise fetches only missing dates. Upserts all rows via <code>db.upsert_ohlcv()</code>. Returns <code>True</code> if data is now available.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_score_from_db(constituents, for_momentum, rsi_filter)</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
+        </div>
+        <div class="fn-desc">Loads OHLCV from DB (550 days for momentum, 750 for Stage 2), runs the appropriate scorer on each symbol, attaches Index from constituents, and returns a sorted DataFrame.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">resolve_screener_data(rsi_filter, for_momentum)</div>
+          <div class="fn-file">data.py</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">orchestrator</div>
+        </div>
+        <div class="fn-desc">3-tier cache resolution. Tier 1: in-memory dict keyed by date (Momentum also checks TTL). Tier 2: DB stage2_cache table (Stage 2 only) / OHLCV freshness check. Tier 3: live yfinance sync + score. Returns <code>(df, date_str, source)</code> where source is <code>'memory' | 'db' | 'internet' | 'error'</code>.</div>
+      </div>
+
+      <!-- stage2_engine.py -->
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_rsi_wilder(series, period=14)</div>
+          <div class="fn-file">stage2_engine.py</div>
+          <div class="tag tag-purple" style="margin-top:0.3rem;">indicator</div>
+        </div>
+        <div class="fn-desc">Wilder's RSI using EWM with <code>alpha=1/period</code>. Returns a pd.Series of RSI values.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">score_stage2(df)</div>
+          <div class="fn-file">stage2_engine.py</div>
+          <div class="tag tag-purple" style="margin-top:0.3rem;">scoring</div>
+        </div>
+        <div class="fn-desc">Takes an OHLCV DataFrame (min 250 rows). Computes MA50/150/200, RSI, volume ratio. Returns a dict with Score (0–7), Stage label, Close, Vol_Ratio, RSI, MA values, Illiquid flag, and Avg_Vol — or <code>None</code> if data is insufficient or contains NaNs.</div>
+      </div>
+
+      <!-- momentum_engine.py -->
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_count_circuits(df)</div>
+          <div class="fn-file">momentum_engine.py</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+        </div>
+        <div class="fn-desc">Counts days where <code>pct_change</code> ≈ ±5%, ±10%, or ±20% within ±0.1% tolerance over full history. Returns an integer.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_calculate_sharpe(df, period_days)</div>
+          <div class="fn-file">momentum_engine.py</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+        </div>
+        <div class="fn-desc">Annualized Sharpe = Annualized RoC ÷ Annualized Std Dev over the last <code>period_days</code> trading days. Returns <code>None</code> if insufficient data or zero std dev.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_calculate_positive_days_pct(df, months)</div>
+          <div class="fn-file">momentum_engine.py</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+        </div>
+        <div class="fn-desc">Calculates % of days where Close > prev Close over approx <code>months × 21</code> trading days. Returns a float or <code>None</code>.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">score_momentum(df)</div>
+          <div class="fn-file">momentum_engine.py</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+        </div>
+        <div class="fn-desc">Calls all momentum sub-functions and returns a dict with: Close, 52w_High, DMA100, DMA200, Vol_Median, 1Y_Change, Pct_From_52W_High, Circuit_Count, Sharpe_3M/6M/9M/1Y, Volatility, Pos_Days_3M/6M/12M.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">_calculate_avg_sharpe(row, method)</div>
+          <div class="fn-file">momentum_engine.py</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+        </div>
+        <div class="fn-desc">Row-wise helper for sorting. Reads Sharpe_3M/6M/9M/1Y from a DataFrame row and returns the single or averaged value based on the selected <code>sort_method</code> string.</div>
+      </div>
+
+      <!-- db.py -->
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">init_db()</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Creates <code>ohlcv</code> and <code>stage2_cache</code> tables and the <code>ohlcv_date_idx</code> index if they don't already exist. Called once at startup via <code>@st.cache_resource</code>.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">upsert_ohlcv(records)</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Bulk-upserts a list of OHLCV dicts. Uses <code>cursor.executemany()</code> with <code>ON CONFLICT DO UPDATE</code> to handle re-fetched data gracefully.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">get_latest_ohlcv_date()</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Returns <code>(global_max, conservative_min)</code>: the overall MAX date across all rows, and the MIN of per-symbol MAX dates. The conservative_min is used as the incremental sync start point.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">load_ohlcv_all(period_days=550)</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Loads recent OHLCV rows from the DB filtered by <code>date::date >= NOW() - INTERVAL '…'</code>. Returns a <code>symbol → DataFrame</code> dict with columns <code>Open/High/Low/Close/Volume</code> and a DatetimeIndex.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">save_stage2_cache(cache_date, df)</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Serialises <code>df</code> as JSON and upserts it into <code>stage2_cache</code> for the given trading date. Overwrites any existing entry for that date.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">load_stage2_cache(cache_date)</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Returns a DataFrame for the exact <code>cache_date</code>, or <code>None</code> if not found.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">load_latest_stage2_cache()</div>
+          <div class="fn-file">db.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+        </div>
+        <div class="fn-desc">Fallback: returns <code>(df, date_str)</code> for the most recent entry in <code>stage2_cache</code>. Used when today's data is unavailable.</div>
+      </div>
+
+      <!-- app.py -->
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">stage2_results(selected_indices, rsi_toggle, show_illiquid)</div>
+          <div class="fn-file">app.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">ui</div>
+        </div>
+        <div class="fn-desc">Renders the Stage 2 results table. Calls <code>resolve_screener_data()</code>, applies index/RSI/liquidity filters in-memory, displays the styled dataframe with metrics, and offers a CSV download.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">momentum_results(selected_indices, idx_options, filters)</div>
+          <div class="fn-file">app.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">ui</div>
+        </div>
+        <div class="fn-desc">Renders the Momentum results table. Calls <code>resolve_screener_data(for_momentum=True)</code>, applies all momentum filters, sorts by composite Sharpe via <code>_calculate_avg_sharpe()</code>, and offers a CSV download.</div>
+      </div>
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">main()</div>
+          <div class="fn-file">app.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">entrypoint</div>
+        </div>
+        <div class="fn-desc">Builds the shared sidebar (screener selector, index checkboxes, context-specific filters, Run button) and dispatches to <code>stage2_results()</code> or <code>momentum_results()</code>. Streamlit re-runs this on every interaction.</div>
+      </div>
+
+    </div>
+
+    <div class="section-title">🔑 Key Implementation Notes</div>
+    <div class="info-box">
+      <strong>3-Tier Cache Architecture</strong>
+      <code>_mem_cache</code> is a module-level dict with <code>"stage2"</code> and <code>"momentum"</code> slots. Stage 2 is keyed only by trading date (no TTL — once computed for a given day it never expires in-process). Momentum adds a <code>"ts"</code> timestamp and expires after <code>_MOMENTUM_TTL</code> seconds (1 hour). The DB tier stores Stage 2 scored results as JSONB in <code>stage2_cache</code>; Momentum always re-scores from OHLCV since its filters change dynamically.
+    </div>
+    <div class="info-box" style="background: var(--purple-bg); border-color: #ddd6fe; color: #3b0764;">
+      <strong>Session State Keys</strong>
+      All Streamlit widget keys are namespaced: <code>stage2_*</code> for Stage 2 (e.g. <code>stage2_run_triggered</code>, <code>stage2_rsi_toggle</code>), <code>mom_*</code> for Momentum (e.g. <code>mom_run_triggered</code>, <code>mom_sort_method</code>). The run trigger pattern (<code>session_state["…_run_triggered"] = True</code>) gates result rendering so the main area stays blank until the user clicks Run.
+    </div>
+    <div class="info-box" style="background:#fef3c7; border-color:#fcd34d; color:#78350f;">
+      <strong>yfinance MultiIndex Handling</strong>
+      When downloading multiple tickers, yfinance returns a MultiIndex DataFrame with columns <code>(ticker, field)</code>. For a single ticker it still returns MultiIndex. <code>_sync_ohlcv_to_db</code> normalises this by slicing <code>raw[ticker]</code> for multi-ticker downloads and <code>raw</code> directly for single-ticker, then flattening tuple column names with <code>c[0] if isinstance(c, tuple) else c</code>.
+    </div>
+    <div class="warn-box">
+      <strong>⚠️ Known Quirks</strong>
+      • The <code>source</code> flag returned by <code>resolve_screener_data</code> for Momentum is always <code>"db"</code> on first load (even if data came from internet) — it only returns <code>"memory"</code> on subsequent calls within the TTL window.<br>
+      • Stage 2 RSI filter is applied before saving to <code>stage2_cache</code> — changing the RSI toggle after a cache hit for today won't re-fetch; the in-UI filter re-applies it on the cached data instead.<br>
+      • <code>db._get_conn()</code> injects the Neon endpoint hint (<code>options=endpoint%3D…</code>) only if the URL contains <code>ep-</code> and doesn't already have <code>options=</code>, which is the standard Neon connection string format.
+    </div>
+
+    <div class="section-title">🚀 Running the App</div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Install</h3>
+        <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
+          pip install -r requirements.txt
+        </p>
+      </div>
+      <div class="card">
+        <h3>Configure .env</h3>
+        <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
+          DATABASE_URL=postgresql://…<br>(Neon connection string)
+        </p>
+      </div>
+      <div class="card">
+        <h3>Run</h3>
+        <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
+          streamlit run app.py
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /dev -->
+
+</div><!-- /container -->
+
+<script>
+  function switchPersona(name) {
+    document.querySelectorAll('.persona-section').forEach(s => s.classList.remove('visible'));
+    document.querySelectorAll('.persona-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('persona-' + name).classList.add('visible');
+    event.currentTarget.classList.add('active');
+  }
+</script>
+</body>
+</html>

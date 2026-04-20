@@ -4,3 +4,6 @@ numpy>=1.24.0
 yfinance>=0.2.36
 requests>=2.31.0
 streamlit-autorefresh>=1.0.1
+psycopg[binary]>=3.1.0
+python-dotenv>=1.0.0
+plotly>=5.0.0
