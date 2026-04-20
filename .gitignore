@@ -1,2 +1,7 @@
 .env
 daily_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.DS_Store
