@@ -611,7 +611,7 @@ def main():
                 if cols[i % 2].checkbox(idx, value=True, key=f"shared_idx_{idx}"):
                     selected_indices.append(idx)
             st.caption(
-                "💡 50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market"
+                "💡 N50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market"
             )
 
         st.divider()
