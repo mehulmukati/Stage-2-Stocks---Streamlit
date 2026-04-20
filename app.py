@@ -683,8 +683,8 @@ def main():
                 "Min Annual Return (%)",
                 min_value=0.0,
                 max_value=1000.0,
-                value=0.0,
-                step=0.01,
+                value=7.0,
+                step=0.1,
                 format="%.2f",
                 key="mom_min_annual_return",
             )
@@ -708,13 +708,13 @@ def main():
                 "Close > 100 DMA", value=False, key="mom_close_above_100dma"
             )
             close_above_200dma = st.checkbox(
-                "Close > 200 DMA", value=False, key="mom_close_above_200dma"
+                "Close > 200 DMA", value=True, key="mom_close_above_200dma"
             )
             pos_days_3m = st.number_input(
                 "Pos Days 3M (%)",
                 min_value=0,
                 max_value=100,
-                value=0,
+                value=45,
                 step=1,
                 key="mom_pos_days_3m",
             )
@@ -722,7 +722,7 @@ def main():
                 "Pos Days 6M (%)",
                 min_value=0,
                 max_value=100,
-                value=0,
+                value=45,
                 step=1,
                 key="mom_pos_days_6m",
             )
@@ -730,7 +730,7 @@ def main():
                 "Pos Days 12M (%)",
                 min_value=0,
                 max_value=100,
-                value=0,
+                value=45,
                 step=1,
                 key="mom_pos_days_12m",
             )
