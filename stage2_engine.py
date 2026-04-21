@@ -30,8 +30,8 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
 
     score = (
         (v / avg_vol >= 2.0).astype(int)
-        + (h >= h.rolling(HH_HL_LOOKBACK).max().shift(1)).astype(int)
-        + (l >= l.rolling(HH_HL_LOOKBACK).min().shift(1)).astype(int)
+        + (c >= c.rolling(HH_HL_LOOKBACK).max().shift(1)).astype(int)
+        + (c >= c.rolling(HH_HL_LOOKBACK).min().shift(1)).astype(int)
         + ((c > ma50) & (ma50 > ma50.shift(MA_RISING_LOOKBACK))).astype(int)
         + ((c > ma200) & (ma200 > ma200.shift(MA_RISING_LOOKBACK))).astype(int)
         + (c > ma150).astype(int)
