@@ -9,7 +9,7 @@ import yfinance as yf
 import db
 from config import _MOMENTUM_TTL, HISTORY_PERIOD, IST
 from momentum_engine import score_momentum
-from stage2_engine import score_stage2
+from stage2_engine import check_weinstein_retest, score_stage2
 
 
 # ──────────────────────────────────────────────
@@ -64,7 +64,13 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
     """
     Incremental sync: fetch only missing dates from yfinance and upsert to DB.
     Returns True if data is available in DB (either already fresh or after fetching).
+    A per-session flag ensures we never hit yfinance more than once per target_date,
+    even if yfinance doesn't yet carry today's data (global_max < target_date).
     """
+    # Already attempted this session for this date — don't re-fetch
+    if target_date and target_date in _ohlcv_sync_attempted:
+        return True
+
     tickers = [f"{s}.NS" for s in all_symbols]
     global_max, conservative_min = db.get_latest_ohlcv_date()
 
@@ -75,6 +81,8 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
         fetch_kwargs = {"period": HISTORY_PERIOD}
     else:
         if target_date and global_max >= target_date:
+            if target_date:
+                _ohlcv_sync_attempted.add(target_date)
             return True
         fetch_from = (
             datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=3)
@@ -136,6 +144,11 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
     if records:
         with st.spinner(f"💾 Saving {len(records):,} rows to database..."):
             db.upsert_ohlcv(records)
+
+    # Mark this date as synced for the remainder of the session so that
+    # the second screener (or backtest) doesn't trigger another yfinance fetch.
+    if target_date:
+        _ohlcv_sync_attempted.add(target_date)
     return True
 
 
@@ -186,9 +199,7 @@ def load_benchmark_series() -> dict[str, pd.Series]:
     return {label: db.load_index_ohlcv(label) for label in BENCHMARK_TICKERS}
 
 
-def _score_from_db(
-    constituents: dict, for_momentum: bool, rsi_filter: bool
-) -> pd.DataFrame:
+def _score_from_db(constituents: dict, for_momentum: bool) -> pd.DataFrame:
     """Load recent OHLCV from DB, run the appropriate scorer on each symbol, and return a sorted DataFrame."""
     period_days = 550 if for_momentum else 750
     with st.spinner("📊 Loading history from database and scoring..."):
@@ -204,6 +215,8 @@ def _score_from_db(
                     (idx for idx, syms in constituents.items() if sym in syms),
                     "Unknown",
                 )
+                if not for_momentum:
+                    res["Retest"] = check_weinstein_retest(sub)
                 results.append(res)
         except Exception:
             continue
@@ -211,8 +224,6 @@ def _score_from_db(
     df = pd.DataFrame(results)
     if df.empty:
         return df
-    if not for_momentum and rsi_filter:
-        df = df[(df["RSI"] >= 50) & (df["RSI"] <= 70)]
     return df.sort_values("Score" if not for_momentum else "Close", ascending=False)
 
 
@@ -248,6 +259,11 @@ _mem_cache: dict[str, dict] = {
     "momentum": {"date": None, "data": None, "ts": None},
     "backtest": {"date": None, "data": None, "ts": None},
 }
+
+# Dates for which an OHLCV sync has already been attempted this session.
+# Prevents both screeners (and backtest) from hitting yfinance independently
+# when they share the same underlying OHLCV store.
+_ohlcv_sync_attempted: set[str] = set()
 
 
 def _get_target_key() -> str:
@@ -328,7 +344,7 @@ def resolve_screener_data(
             return mc["data"], target_key, "memory"
 
         _sync_ohlcv_to_db(all_symbols, target_date=target_key)
-        df = _score_from_db(constituents, for_momentum=True, rsi_filter=False)
+        df = _score_from_db(constituents, for_momentum=True)
 
         source = "db" if (mc["data"] is None or mc["date"] != target_key) else "memory"
         if not df.empty:
@@ -348,7 +364,7 @@ def resolve_screener_data(
 
         synced = _sync_ohlcv_to_db(all_symbols, target_date=target_key)
         if synced:
-            df = _score_from_db(constituents, for_momentum=False, rsi_filter=rsi_filter)
+            df = _score_from_db(constituents, for_momentum=False)
             if not df.empty:
                 db.save_stage2_cache(target_key, df)
                 _mem_cache["stage2"] = {"date": target_key, "data": df}

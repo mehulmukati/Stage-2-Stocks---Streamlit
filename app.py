@@ -39,7 +39,7 @@ st.markdown(
     """
 <style>
 .hero { text-align: center; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.2rem; }
-.sub-hero { text-align: center; color: #64748b; margin-top: -8px; }
+.sub-hero { text-align: center; opacity: 0.6; margin-top: -8px; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -50,9 +50,9 @@ st.markdown(
 # PHASE CHART
 # ──────────────────────────────────────────────
 _PHASE_COLORS = {
-    "Strong Stage 2":     "rgba(34, 197, 94, 0.18)",
-    "Likely Stage 2":     "rgba(234, 179, 8, 0.18)",
-    "Early/Weak Stage 2": "rgba(249, 115, 22, 0.14)",
+    "Strong Stage 2":     "rgba(34, 197, 94, 0.25)",
+    "Likely Stage 2":     "rgba(234, 179, 8, 0.25)",
+    "Early/Weak Stage 2": "rgba(249, 115, 22, 0.22)",
 }
 
 
@@ -132,22 +132,22 @@ def render_phase_chart(ticker: str, use_log_scale: bool = True):
     # ── Price line ──
     fig.add_trace(go.Scatter(
         x=rolled.index, y=rolled["Close"],
-        name=ticker, line=dict(color="#0f172a", width=2),
+        name=ticker, line=dict(color="#38bdf8", width=2),
     ))
 
     fig.update_layout(
         title=dict(text=f"{ticker} — Stage 2 Phase Map", font=dict(size=16)),
-        yaxis=dict(type="log" if use_log_scale else "linear", showgrid=True, gridcolor="#e2e8f0", title="Price (log)" if use_log_scale else "Price"),
+        yaxis=dict(type="log" if use_log_scale else "linear", showgrid=True, gridcolor="rgba(128,128,128,0.2)", title="Price (log)" if use_log_scale else "Price"),
         xaxis=dict(showgrid=False),
         height=540,
         margin=dict(l=50, r=20, t=55, b=40),
         legend=dict(orientation="h", y=-0.13),
         hovermode="x unified",
-        plot_bgcolor="#f8fafc",
-        paper_bgcolor="#ffffff",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # ── Legend explainer ──
     st.caption(
@@ -208,9 +208,15 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
         )
         return
 
-    display_df["Symbol"] = display_df.apply(
-        lambda r: f"{r['Symbol']} 🚩 ILLIQ" if r["Illiquid"] else r["Symbol"], axis=1
-    )
+    def _decorate_symbol(r):
+        sym = r["Symbol"]
+        if r.get("Illiquid", False):
+            sym += " 🚩 ILLIQ"
+        if r.get("Retest", False):
+            sym += " 🔄 RT"
+        return sym
+
+    display_df["Symbol"] = display_df.apply(_decorate_symbol, axis=1)
     display_df = display_df[
         [
             "Symbol",
@@ -233,12 +239,12 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
 
     def color_rows(row):
         bg_map = {
-            "🟢 Strong Stage 2": "#ecfdf5",
-            "🟡 Likely Stage 2": "#fefce8",
-            "🟠 Early/Weak Stage 2": "#fef2f2",
-            "⚪ Not Stage 2": "#f9fafb",
+            "🟢 Strong Stage 2":     "rgba(34, 197, 94, 0.18)",
+            "🟡 Likely Stage 2":     "rgba(234, 179, 8, 0.18)",
+            "🟠 Early/Weak Stage 2": "rgba(249, 115, 22, 0.15)",
+            "⚪ Not Stage 2":        "rgba(0, 0, 0, 0)",
         }
-        return [f'background-color: {bg_map.get(row["Stage"], "#ffffff")}'] * len(row)
+        return [f'background-color: {bg_map.get(row["Stage"], "rgba(0,0,0,0)")}'] * len(row)
 
     st.dataframe(
         display_df.style.apply(color_rows, axis=1),
@@ -545,17 +551,17 @@ def backtest_results(params: dict):
         fig_nav.add_trace(go.Scatter(
             x=s.index, y=s.values,
             name=col,
-            line=dict(color=_BT_COLORS.get(col, "#64748b"), width=2),
+            line=dict(color=_BT_COLORS.get(col, "#94a3b8"), width=2),
         ))
     fig_nav.update_layout(
         height=420, hovermode="x unified",
-        yaxis=dict(title="NAV", showgrid=True, gridcolor="#e2e8f0"),
+        yaxis=dict(title="NAV", showgrid=True, gridcolor="rgba(128,128,128,0.2)"),
         xaxis=dict(showgrid=False),
         legend=dict(orientation="h", y=-0.15),
         margin=dict(l=50, r=20, t=30, b=50),
-        plot_bgcolor="#f8fafc", paper_bgcolor="#ffffff",
+        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
     )
-    st.plotly_chart(fig_nav, use_container_width=True)
+    st.plotly_chart(fig_nav, width="stretch")
 
     # ── rolling returns chart ──
     window_map = {"3 months": 63, "6 months": 126, "1 year": 252}
@@ -569,24 +575,24 @@ def backtest_results(params: dict):
         fig_roll.add_trace(go.Scatter(
             x=s.index, y=s.values,
             name=col,
-            line=dict(color=_BT_COLORS.get(col, "#64748b"), width=1.5),
+            line=dict(color=_BT_COLORS.get(col, "#94a3b8"), width=1.5),
         ))
     fig_roll.add_hline(y=0, line_dash="dash", line_color="#94a3b8", line_width=1)
     fig_roll.update_layout(
         height=360, hovermode="x unified",
-        yaxis=dict(title="Return (%)", showgrid=True, gridcolor="#e2e8f0"),
+        yaxis=dict(title="Return (%)", showgrid=True, gridcolor="rgba(128,128,128,0.2)"),
         xaxis=dict(showgrid=False),
         legend=dict(orientation="h", y=-0.18),
         margin=dict(l=50, r=20, t=30, b=55),
-        plot_bgcolor="#f8fafc", paper_bgcolor="#ffffff",
+        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
     )
-    st.plotly_chart(fig_roll, use_container_width=True)
+    st.plotly_chart(fig_roll, width="stretch")
 
     # ── stats table ──
     st.subheader("Performance Summary")
     st.dataframe(
         stats_df,
-        use_container_width=True,
+        width="stretch",
         column_config={
             "CAGR (%)":          st.column_config.NumberColumn("CAGR (%)", format="%.2f%%"),
             "Sharpe":            st.column_config.NumberColumn("Sharpe", format="%.3f"),
@@ -660,7 +666,7 @@ def main():
             )
             st.divider()
             if st.button(
-                "🚀 Run", type="primary", use_container_width=True, key="stage2_run_btn"
+                "🚀 Run", type="primary", width="stretch", key="stage2_run_btn"
             ):
                 st.session_state["stage2_run_triggered"] = True
 
@@ -687,7 +693,7 @@ def main():
             bt_end   = st.date_input("End date",   value=_date.today(),      key="bt_end")
             bt_rolling = st.selectbox("Rolling return window", ["3 months", "6 months", "1 year"], index=1, key="bt_rolling")
             st.divider()
-            if st.button("▶ Run Backtest", type="primary", use_container_width=True, key="bt_run_btn"):
+            if st.button("▶ Run Backtest", type="primary", width="stretch", key="bt_run_btn"):
                 st.session_state["bt_run_triggered"] = True
 
         else:  # Momentum
@@ -760,7 +766,7 @@ def main():
             )
             st.divider()
             if st.button(
-                "🚀 Run", type="primary", use_container_width=True, key="mom_run_btn"
+                "🚀 Run", type="primary", width="stretch", key="mom_run_btn"
             ):
                 st.session_state["mom_run_triggered"] = True
 

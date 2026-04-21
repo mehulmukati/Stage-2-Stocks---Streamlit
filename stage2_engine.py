@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from config import (HH_HL_LOOKBACK, MA_RISING_LOOKBACK, MIN_VOLUME,
-                    VOL_AVG_PERIOD)
+from config import (BOUNCE_CONFIRMATION, HH_HL_LOOKBACK, MA_RISING_LOOKBACK,
+                    MIN_VOLUME, RETEST_LOOKBACK_DAYS, RETEST_TOLERANCE,
+                    VOL_AVG_PERIOD, VOL_DRYUP_RATIO)
 
 
 def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
@@ -109,3 +110,54 @@ def score_stage2(df: pd.DataFrame) -> dict | None:
         "MA_Stack": m50 > m150 > m200,
         "Avg_Vol": int(np.floor(avg_vol.iloc[-1])),
     }
+
+
+def check_weinstein_retest(df: pd.DataFrame) -> bool:
+    """Return True if the stock recently broke out on volume and has since retested
+    that breakout level with volume contraction and a confirmed bounce."""
+    if len(df) < RETEST_LOOKBACK_DAYS + 50:
+        return False
+
+    c = df["Close"]
+    v = df["Volume"]
+    avg_vol = v.rolling(VOL_AVG_PERIOD).mean()
+
+    # 1. Find the most recent 50-day closing-high breakout with volume confirmation
+    hh_50 = c.rolling(50).max()
+    breakout_mask = (c == hh_50) & (v / avg_vol >= 2.0)
+
+    # Shift by 1 — we want a pullback *after* the breakout day, not on it
+    breakout_mask = breakout_mask.shift(1).fillna(False)
+
+    recent_breakouts = df.index[
+        breakout_mask & (df.index >= df.index[-RETEST_LOOKBACK_DAYS])
+    ]
+    if len(recent_breakouts) == 0:
+        return False
+
+    last_breakout_idx = recent_breakouts[-1]
+    breakout_level = c.loc[last_breakout_idx]
+    breakout_vol = v.loc[last_breakout_idx]
+
+    # 2. Check that price pulled back to within ±RETEST_TOLERANCE of the breakout level
+    pullback_period = df.loc[last_breakout_idx:].iloc[1:]  # exclude breakout day itself
+    if pullback_period.empty:
+        return False
+
+    pullback_low = pullback_period["Low"].min()
+    near_breakout = (
+        pullback_low <= breakout_level * (1 + RETEST_TOLERANCE)
+        and pullback_low >= breakout_level * (1 - RETEST_TOLERANCE)
+    )
+    if not near_breakout:
+        return False
+
+    # 3. Current close has bounced ≥ BOUNCE_CONFIRMATION above the breakout level
+    if c.iloc[-1] < breakout_level * (1 + BOUNCE_CONFIRMATION):
+        return False
+
+    # 4. Volume dried up during the pullback (avg < VOL_DRYUP_RATIO × breakout-day vol)
+    if pullback_period["Volume"].mean() > breakout_vol * VOL_DRYUP_RATIO:
+        return False
+
+    return True
