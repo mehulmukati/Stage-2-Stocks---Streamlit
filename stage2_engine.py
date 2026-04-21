@@ -73,9 +73,9 @@ def score_stage2(df: pd.DataFrame) -> dict | None:
     score = 0
     if vr >= 2.0:
         score += 1
-    if h1 >= h.rolling(HH_HL_LOOKBACK).max().shift(1).iloc[-1]:
+    if c1 >= c.rolling(HH_HL_LOOKBACK).max().shift(1).iloc[-1]:
         score += 1
-    if l1 >= l.rolling(HH_HL_LOOKBACK).min().shift(1).iloc[-1]:
+    if c1 >= c.rolling(HH_HL_LOOKBACK).min().shift(1).iloc[-1]:
         score += 1
     if c1 > m50 and ma50.iloc[-1] > ma50.iloc[-MA_RISING_LOOKBACK]:
         score += 1
