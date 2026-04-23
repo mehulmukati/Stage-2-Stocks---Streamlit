@@ -1,39 +1,75 @@
 """
-Database layer — PostgreSQL via Neon (psycopg v3).
+Database layer — PostgreSQL via Neon (psycopg v3) with a shared connection pool.
 Requires DATABASE_URL env var pointing to a postgresql:// connection string.
 """
 
 import io
 import os
 import re
+import threading
 import time
+from contextlib import contextmanager
 
 import pandas as pd
 import psycopg
 from dotenv import load_dotenv
+from psycopg_pool import ConnectionPool
 
 load_dotenv()
 
 
 # ──────────────────────────────────────────────
-# CONNECTION
+# CONNECTION POOL
 # ──────────────────────────────────────────────
-def _get_conn() -> psycopg.Connection:
-    """Open a PostgreSQL connection with up to 3 retries; injects Neon endpoint param when needed."""
+_pool: ConnectionPool | None = None
+_pool_lock = threading.Lock()
+
+
+def _build_conninfo() -> str:
+    """Return the PostgreSQL conninfo string with the Neon endpoint param injected when needed."""
     url = os.environ["DATABASE_URL"]
     m = re.search(r"@(ep-[^.]+)\.", url)
     if m and "options=" not in url:
         sep = "&" if "?" in url else "?"
         url = f"{url}{sep}options=endpoint%3D{m.group(1)}"
-    last_exc = None
-    for attempt in range(3):
-        try:
-            return psycopg.connect(url, connect_timeout=30)
-        except psycopg.OperationalError as e:
-            last_exc = e
-            if attempt < 2:
-                time.sleep(5 * (attempt + 1))
-    raise last_exc
+    return url
+
+
+def get_pool() -> ConnectionPool:
+    """Lazily construct and return a process-wide ConnectionPool (min=2, max=8). Thread-safe."""
+    global _pool
+    if _pool is not None:
+        return _pool
+    with _pool_lock:
+        if _pool is not None:
+            return _pool
+        last_exc: Exception | None = None
+        for attempt in range(3):
+            try:
+                pool = ConnectionPool(
+                    conninfo=_build_conninfo(),
+                    min_size=2,
+                    max_size=8,
+                    timeout=30,
+                    kwargs={"connect_timeout": 30},
+                    open=True,
+                )
+                pool.wait(timeout=30)
+                _pool = pool
+                return _pool
+            except Exception as e:
+                last_exc = e
+                if attempt < 2:
+                    time.sleep(5 * (attempt + 1))
+        assert last_exc is not None
+        raise last_exc
+
+
+@contextmanager
+def _get_conn():
+    """Yield a pooled connection. On clean exit the transaction commits and the connection returns to the pool."""
+    with get_pool().connection() as conn:
+        yield conn
 
 
 # ──────────────────────────────────────────────
