@@ -3,11 +3,13 @@ import difflib
 import json
 import os
 import threading
+import uuid
 import warnings
 from datetime import datetime
 
 import plotly.graph_objects as go
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -16,32 +18,48 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import db
-from backtest_engine import rolling_returns, run_backtest
+from backtest_engine import rolling_returns
 from config import IST
-from data import _load_constituents, _mem_cache, fetch_chart_data, load_benchmark_series, load_compositions, load_ohlcv_for_backtest, resolve_screener_data, sync_benchmark_data
+from data import _load_constituents, _mem_cache, fetch_chart_data
+from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
+from workers import backtest_worker, momentum_worker, stage2_worker
 
 @st.cache_data(ttl=3600)
 def compute_rolling_stage2(df):
     return _compute_rolling_stage2(df)
 
 
-# ── PROCESS-LEVEL STATE (survives session resets within same server process) ──
-# Guarded by _state_lock so background workers in later phases can safely update.
+# ── PROCESS-LEVEL STATE ──
 _state_lock = threading.RLock()
 _last_chart_ticker: str = ""
-_bt_proc_cache: dict = {"result": None}
 
 
 # ── EMIT HELPER ──
 def _make_emit(status_obj):
-    """Return an emit callable that writes progress messages into a st.status container.
-    Signature: emit(level, msg) where level is 'info' | 'warning' | 'error' | 'success'."""
+    """Return an emit callable that writes progress messages into a st.status container."""
     _icons = {"info": "▸", "warning": "⚠️", "error": "❌", "success": "✅"}
     def _emit(level: str, msg: str) -> None:
         status_obj.write(f"{_icons.get(level, '▸')} {msg}")
     return _emit
+
+
+def _get_user_token() -> str:
+    """Return a stable per-session UUID, creating it on first call."""
+    if "user_token" not in st.session_state:
+        st.session_state["user_token"] = str(uuid.uuid4())
+    return st.session_state["user_token"]
+
+
+def _render_job_progress(job) -> None:
+    """Show accumulated events from a running background job."""
+    _icons = {"info": "▸", "warning": "⚠️", "error": "❌", "success": "✅"}
+    label = "⏳ Queued…" if job.status.value == "QUEUED" else "⏳ Running in background…"
+    with st.container(border=True):
+        st.markdown(f"**{label}**")
+        for ev in list(job.events):
+            st.write(f"{_icons.get(ev['level'], '▸')} {ev['msg']}")
 
 
 # ── DB INIT (once at startup) ──
@@ -195,34 +213,40 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
     )
     st.divider()
 
-    run_triggered = st.session_state.get("stage2_run_triggered", False)
-    cached = st.session_state.get("stage2_cached_result")
-
-    if not run_triggered and cached is None:
-        proc = _mem_cache["stage2"]
-        if proc["data"] is not None and proc["date"] is not None:
-            st.session_state["stage2_cached_result"] = {
-                "df": proc["data"], "cache_date": proc["date"], "source": "memory"
-            }
-            cached = st.session_state["stage2_cached_result"]
-        else:
-            st.info("Set filters in the sidebar and click **Run**.")
-            return
+    user_token = _get_user_token()
+    run_triggered = st.session_state.pop("stage2_run_triggered", False)
 
     if run_triggered:
-        with st.status("📊 Loading Stage 2 data…", expanded=True) as _status:
-            _emit = _make_emit(_status)
-            df, cache_date, source = resolve_screener_data(False, for_momentum=False, emit=_emit)
-            if df.empty:
-                _status.update(label="⚠️ No data available", state="error")
-                st.warning(
-                    f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins."
-                )
-                st.session_state["stage2_run_triggered"] = False
-                return
-            _status.update(label="✓ Stage 2 data loaded", state="complete", expanded=False)
-        st.session_state["stage2_cached_result"] = {"df": df, "cache_date": cache_date, "source": source}
-        st.session_state["stage2_run_triggered"] = False
+        job = registry.submit(user_token, "stage2", {}, stage2_worker)
+        st.session_state["stage2_job_key"] = job.key
+        st.session_state.pop("stage2_cached_result", None)
+
+    job = registry.latest(user_token, "stage2")
+    job_key = st.session_state.get("stage2_job_key")
+    if job is not None and job.key == job_key:
+        if job.status in (JobStatus.RUNNING, JobStatus.QUEUED):
+            _render_job_progress(job)
+            return
+        elif job.status == JobStatus.DONE:
+            st.session_state["stage2_cached_result"] = job.result
+            st.session_state.pop("stage2_job_key", None)
+        elif job.status == JobStatus.ERROR:
+            st.error(f"❌ {job.error}")
+            st.session_state.pop("stage2_job_key", None)
+            return
+        else:
+            st.session_state.pop("stage2_job_key", None)
+
+    cached = st.session_state.get("stage2_cached_result")
+    if cached is None:
+        proc = _mem_cache["stage2"]
+        if proc["data"] is not None and proc["date"] is not None:
+            cached = {"df": proc["data"], "cache_date": proc["date"], "source": "memory"}
+            st.session_state["stage2_cached_result"] = cached
+
+    if cached is None:
+        st.info("Set filters in the sidebar and click **Run**.")
+        return
 
     cached = st.session_state["stage2_cached_result"]
     df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
@@ -345,34 +369,40 @@ def momentum_results(
     )
     st.divider()
 
-    run_triggered = st.session_state.get("mom_run_triggered", False)
-    cached = st.session_state.get("mom_cached_result")
-
-    if not run_triggered and cached is None:
-        proc = _mem_cache["momentum"]
-        if proc["data"] is not None and proc["date"] is not None:
-            st.session_state["mom_cached_result"] = {
-                "df": proc["data"], "cache_date": proc["date"], "source": "memory"
-            }
-            cached = st.session_state["mom_cached_result"]
-        else:
-            st.info("Set filters in the sidebar and click **Run**.")
-            return
+    user_token = _get_user_token()
+    run_triggered = st.session_state.pop("mom_run_triggered", False)
 
     if run_triggered:
-        with st.status("🚀 Loading Momentum data…", expanded=True) as _status:
-            _emit = _make_emit(_status)
-            full_df, cache_date, source = resolve_screener_data(rsi_filter=False, for_momentum=True, emit=_emit)
-            if full_df.empty:
-                _status.update(label="⚠️ No data available", state="error")
-                st.warning(
-                    "📅 No data available. Try again in a few minutes or check your internet connection."
-                )
-                st.session_state["mom_run_triggered"] = False
-                return
-            _status.update(label="✓ Momentum data loaded", state="complete", expanded=False)
-        st.session_state["mom_cached_result"] = {"df": full_df, "cache_date": cache_date, "source": source}
-        st.session_state["mom_run_triggered"] = False
+        job = registry.submit(user_token, "momentum", {}, momentum_worker)
+        st.session_state["mom_job_key"] = job.key
+        st.session_state.pop("mom_cached_result", None)
+
+    job = registry.latest(user_token, "momentum")
+    job_key = st.session_state.get("mom_job_key")
+    if job is not None and job.key == job_key:
+        if job.status in (JobStatus.RUNNING, JobStatus.QUEUED):
+            _render_job_progress(job)
+            return
+        elif job.status == JobStatus.DONE:
+            st.session_state["mom_cached_result"] = job.result
+            st.session_state.pop("mom_job_key", None)
+        elif job.status == JobStatus.ERROR:
+            st.error(f"❌ {job.error}")
+            st.session_state.pop("mom_job_key", None)
+            return
+        else:
+            st.session_state.pop("mom_job_key", None)
+
+    cached = st.session_state.get("mom_cached_result")
+    if cached is None:
+        proc = _mem_cache["momentum"]
+        if proc["data"] is not None and proc["date"] is not None:
+            cached = {"df": proc["data"], "cache_date": proc["date"], "source": "memory"}
+            st.session_state["mom_cached_result"] = cached
+
+    if cached is None:
+        st.info("Set filters in the sidebar and click **Run**.")
+        return
 
     cached = st.session_state["mom_cached_result"]
     full_df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
@@ -544,93 +574,46 @@ def backtest_results(params: dict):
     )
     st.divider()
 
-    # rolling_window is display-only — pull it out before deciding whether to re-run
+    # rolling_window is display-only — pop before submitting so it doesn't go to worker.
     roll_label = params.pop("rolling_window", "3 years")
 
-    run_triggered = st.session_state.get("bt_run_triggered", False)
-    cached = st.session_state.get("bt_cached_result")
-
-    if not run_triggered and cached is None:
-        with _state_lock:
-            proc_result = _bt_proc_cache.get("result")
-        if proc_result is not None:
-            st.session_state["bt_cached_result"] = proc_result
-            cached = st.session_state["bt_cached_result"]
-            st.caption("⚡ Restored from last run — sidebar parameters reset to defaults; re-run if you changed them.")
-        else:
-            st.info("Configure parameters in the sidebar and click **Run Backtest**.")
-            return
+    user_token = _get_user_token()
+    run_triggered = st.session_state.pop("bt_run_triggered", False)
 
     if run_triggered:
         if params["n"] <= params["m"]:
             st.error("N (exit threshold) must be greater than M (entry threshold).")
-            st.session_state["bt_run_triggered"] = False
             return
+        job = registry.submit(user_token, "backtest", params, backtest_worker)
+        st.session_state["bt_job_key"] = job.key
+        st.session_state.pop("bt_cached_result", None)
 
-        ohlcv_date = ohlcv_source = None
+    job = registry.latest(user_token, "backtest")
+    job_key = st.session_state.get("bt_job_key")
+    if job is not None and job.key == job_key:
+        if job.status in (JobStatus.RUNNING, JobStatus.QUEUED):
+            _render_job_progress(job)
+            return
+        elif job.status == JobStatus.DONE:
+            st.session_state["bt_cached_result"] = job.result
+            st.session_state.pop("bt_job_key", None)
+        elif job.status == JobStatus.ERROR:
+            st.error(f"❌ {job.error}")
+            st.session_state.pop("bt_job_key", None)
+            return
+        else:
+            st.session_state.pop("bt_job_key", None)
 
-        with st.status("⏱ Running backtest…", expanded=True) as _status:
-            _emit = _make_emit(_status)
+    result = st.session_state.get("bt_cached_result")
+    if result is None:
+        st.info("Configure parameters in the sidebar and click **Run Backtest**.")
+        return
 
-            _emit("info", "Syncing benchmark index data…")
-            sync_benchmark_data()
-
-            symbol_data, ohlcv_date, ohlcv_source = load_ohlcv_for_backtest(emit=_emit)
-
-            if not symbol_data:
-                _status.update(label="❌ No OHLCV data", state="error")
-                st.error("No OHLCV data in database. Run the Momentum screener first to sync data.")
-                st.session_state["bt_run_triggered"] = False
-                return
-
-            if params["universe"]:
-                constituents = _load_constituents()
-                allowed = {s for idx, syms in constituents.items() if idx in params["universe"] for s in syms}
-                symbol_data = {s: df for s, df in symbol_data.items() if s in allowed}
-
-            compositions_df = load_compositions() if params.get("use_compositions") else None
-            if compositions_df is not None and not compositions_df.empty:
-                _emit("info", "🛡️ Historical constituent filter active (survivorship-bias mitigation)")
-            elif params.get("use_compositions"):
-                _emit("warning", "compositions.csv not found — constituent filter disabled")
-
-            benchmarks = load_benchmark_series()
-            _emit("info", f"Running simulation ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
-
-            result = run_backtest(
-                all_ohlcv=symbol_data,
-                benchmarks=benchmarks,
-                m=params["m"],
-                n=params["n"],
-                rebalance_freq=params["rebalance_freq"],
-                sort_method=params["sort_method"],
-                start_date=params["start_date"],
-                end_date=params["end_date"],
-                compositions_df=compositions_df,
-                index_names=params["universe"] or [],
-                transaction_cost_pct=params["transaction_cost_pct"] / 100.0,
-                min_history_days=params["min_history_days"],
-                apply_volume_filter=True,
-            )
-
-            if "error" in result:
-                _status.update(label="❌ Backtest failed", state="error")
-                st.error(result["error"])
-                st.session_state["bt_run_triggered"] = False
-                return
-
-            _status.update(label="✓ Backtest complete", state="complete", expanded=False)
-
-        source_icon = {"memory": "⚡", "db": "💾", "internet": "🌐"}.get(ohlcv_source, "")
-        if ohlcv_date:
-            st.caption(f"{source_icon} OHLCV data as of **{ohlcv_date}** (source: {ohlcv_source})")
-
-        st.session_state["bt_cached_result"] = result
-        with _state_lock:
-            _bt_proc_cache["result"] = result
-        st.session_state["bt_run_triggered"] = False
-
-    result = st.session_state["bt_cached_result"]
+    ohlcv_date = result.get("ohlcv_date")
+    ohlcv_source = result.get("ohlcv_source")
+    source_icon = {"memory": "⚡", "db": "💾", "internet": "🌐"}.get(ohlcv_source, "")
+    if ohlcv_date:
+        st.caption(f"{source_icon} OHLCV data as of **{ohlcv_date}** (source: {ohlcv_source})")
     nav_df = result["nav"]
     stats_df = result["stats"]
 
@@ -639,7 +622,7 @@ def backtest_results(params: dict):
     cols[0].metric("Trading Days", len(result["trading_days"]))
     cols[1].metric("Rebalances", len(result["rebalance_dates"]))
     cols[2].metric("Avg Turnover / Rebalance", f"{result['avg_turnover_pct']:.1f}%")
-    cols[3].metric("Portfolio Size (M)", params["m"])
+    cols[3].metric("Portfolio Size (M)", result.get("m", params.get("m", "—")))
     cols[4].metric("Total Cost Drag", f"{result['total_cost_drag_pct']:.2f}%")
 
     st.divider()
@@ -814,6 +797,9 @@ def render_docs():
 
 def main():
     """Build the sidebar controls and dispatch to the selected screener's result view."""
+    user_token = _get_user_token()
+    if registry.any_running(user_token):
+        st_autorefresh(interval=1500, key="job_autorefresh")
     idx_options = _load_index_options()
 
     with st.sidebar:

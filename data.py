@@ -74,110 +74,133 @@ def _sync_ohlcv_to_db(
     """
     Incremental sync: fetch only missing dates from yfinance and upsert to DB.
     Returns True if data is available in DB (either already fresh or after fetching).
-    A per-session flag ensures we never hit yfinance more than once per target_date,
-    even if yfinance doesn't yet carry today's data (global_max < target_date).
+
+    Single-flight guarantee: the first thread to sync a given target_date does the
+    work; concurrent threads block on a threading.Event until the leader finishes,
+    then return True without re-fetching.
     """
-    # Already attempted this session for this date — don't re-fetch
+    # Already synced this process run — skip immediately.
     if target_date:
         with _cache_lock:
             if target_date in _ohlcv_sync_attempted:
                 return True
 
-    tickers = [f"{s}.NS" for s in all_symbols]
-    global_max, conservative_min = db.get_latest_ohlcv_date()
-    global_min = db.get_earliest_ohlcv_date()
-
-    # Earliest date the DB should cover given HISTORY_PERIOD
-    earliest_needed = (
-        datetime.now(IST) - timedelta(days=HISTORY_DAYS)
-    ).strftime("%Y-%m-%d")
-
-    needs_backfill = global_min is None or global_min > earliest_needed
-
-    if global_max is None or needs_backfill:
-        spinner_msg = (
-            f"🌐 Downloading {HISTORY_PERIOD} history for {len(tickers)} stocks"
-            + (" (backfilling missing history)…" if needs_backfill and global_max else "…")
-        )
-        fetch_kwargs = {"period": HISTORY_PERIOD}
-    else:
-        if target_date and global_max >= target_date:
-            with _cache_lock:
-                _ohlcv_sync_attempted.add(target_date)
+    # Single-flight latch: leader creates the Event; waiters block on it.
+    latch_evt: threading.Event | None = None
+    if target_date:
+        with _sync_latch_lock:
+            if target_date in _sync_latches:
+                latch_evt = _sync_latches[target_date]
+                is_leader = False
+            else:
+                latch_evt = threading.Event()
+                _sync_latches[target_date] = latch_evt
+                is_leader = True
+        if not is_leader:
+            emit("info", "⏳ OHLCV sync already in progress — waiting…")
+            latch_evt.wait(timeout=300)
             return True
-        fetch_from = (
-            datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=10)
-        ).strftime("%Y-%m-%d")
-        today = datetime.now(IST).strftime("%Y-%m-%d")
-        spinner_msg = f"🔄 Incremental update: fetching data since {fetch_from}..."
-        fetch_kwargs = {"start": fetch_from, "end": today}
+    # target_date is None → always leader, no latch needed.
 
     try:
-        emit("info", spinner_msg)
-        raw = yf.download(
-            tickers,
-            group_by="ticker",
-            threads=True,
-            progress=False,
-            auto_adjust=True,
-            **fetch_kwargs,
-        )
-    except Exception as e:
-        emit("error", f"Yahoo Finance error: {e}")
-        return False
+        tickers = [f"{s}.NS" for s in all_symbols]
+        global_max, conservative_min = db.get_latest_ohlcv_date()
+        global_min = db.get_earliest_ohlcv_date()
 
-    if raw is None or raw.empty:
-        return False
+        earliest_needed = (
+            datetime.now(IST) - timedelta(days=HISTORY_DAYS)
+        ).strftime("%Y-%m-%d")
 
-    records = []
-    available = (
-        raw.columns.get_level_values(0).unique().tolist()
-        if isinstance(raw.columns, pd.MultiIndex)
-        else tickers
-    )
+        needs_backfill = global_min is None or global_min > earliest_needed
 
-    for t in tickers:
-        sym = t.replace(".NS", "")
-        try:
-            if t not in available:
-                continue
-            sub = (
-                raw[t].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
+        if global_max is None or needs_backfill:
+            spinner_msg = (
+                f"🌐 Downloading {HISTORY_PERIOD} history for {len(tickers)} stocks"
+                + (" (backfilling missing history)…" if needs_backfill and global_max else "…")
             )
-            sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
-            for dt, row in sub.iterrows():
-                if pd.isna(row.get("Close")):
+            fetch_kwargs = {"period": HISTORY_PERIOD}
+        else:
+            if target_date and global_max >= target_date:
+                with _cache_lock:
+                    _ohlcv_sync_attempted.add(target_date)
+                return True
+            fetch_from = (
+                datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=10)
+            ).strftime("%Y-%m-%d")
+            today = datetime.now(IST).strftime("%Y-%m-%d")
+            spinner_msg = f"🔄 Incremental update: fetching data since {fetch_from}..."
+            fetch_kwargs = {"start": fetch_from, "end": today}
+
+        try:
+            emit("info", spinner_msg)
+            raw = yf.download(
+                tickers,
+                group_by="ticker",
+                threads=True,
+                progress=False,
+                auto_adjust=True,
+                **fetch_kwargs,
+            )
+        except Exception as e:
+            emit("error", f"Yahoo Finance error: {e}")
+            return False
+
+        if raw is None or raw.empty:
+            return False
+
+        records = []
+        available = (
+            raw.columns.get_level_values(0).unique().tolist()
+            if isinstance(raw.columns, pd.MultiIndex)
+            else tickers
+        )
+
+        for t in tickers:
+            sym = t.replace(".NS", "")
+            try:
+                if t not in available:
                     continue
-                def _f(v):
-                    try:
-                        f = float(v)
-                        return None if pd.isna(f) else f
-                    except (TypeError, ValueError):
-                        return None
-                records.append(
-                    {
-                        "symbol": sym,
-                        "date": dt.date(),
-                        "open": _f(row.get("Open")),
-                        "high": _f(row.get("High")),
-                        "low": _f(row.get("Low")),
-                        "close": float(row["Close"]),
-                        "volume": int(row.get("Volume") or 0),
-                    }
+                sub = (
+                    raw[t].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
                 )
-        except Exception:
-            continue
+                sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
+                for dt, row in sub.iterrows():
+                    if pd.isna(row.get("Close")):
+                        continue
+                    def _f(v):
+                        try:
+                            f = float(v)
+                            return None if pd.isna(f) else f
+                        except (TypeError, ValueError):
+                            return None
+                    records.append(
+                        {
+                            "symbol": sym,
+                            "date": dt.date(),
+                            "open": _f(row.get("Open")),
+                            "high": _f(row.get("High")),
+                            "low": _f(row.get("Low")),
+                            "close": float(row["Close"]),
+                            "volume": int(row.get("Volume") or 0),
+                        }
+                    )
+            except Exception:
+                continue
 
-    if records:
-        emit("info", f"💾 Saving {len(records):,} rows to database…")
-        db.upsert_ohlcv(records)
+        if records:
+            emit("info", f"💾 Saving {len(records):,} rows to database…")
+            db.upsert_ohlcv(records)
 
-    # Mark this date as synced for the remainder of the session so that
-    # the second screener (or backtest) doesn't trigger another yfinance fetch.
-    if target_date:
-        with _cache_lock:
-            _ohlcv_sync_attempted.add(target_date)
-    return True
+        if target_date:
+            with _cache_lock:
+                _ohlcv_sync_attempted.add(target_date)
+        return True
+
+    finally:
+        if latch_evt is not None:
+            latch_evt.set()
+            with _sync_latch_lock:
+                _sync_latches.pop(target_date, None)
 
 
 # ──────────────────────────────────────────────
@@ -303,6 +326,11 @@ _mem_cache: dict[str, dict] = {
 # Prevents both screeners (and backtest) from hitting yfinance independently
 # when they share the same underlying OHLCV store.
 _ohlcv_sync_attempted: set[str] = set()
+
+# Single-flight latch: the first background thread to sync a given target_date
+# creates an Event here and does the work; subsequent threads wait on it.
+_sync_latch_lock = threading.Lock()
+_sync_latches: dict[str, threading.Event] = {}
 
 
 def _get_target_key() -> str:
