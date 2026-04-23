@@ -22,7 +22,7 @@ The background is shaded according to the rolling daily Stage 2 score:
 
 | Colour | Phase | Score |
 |---|---|---|
-| 🟢 Green | Strong Stage 2 | 6–7 |
+| 🟢 Green | Strong Stage 2 | 6–8 |
 | 🟡 Yellow | Likely Stage 2 | 4–5 |
 | 🟠 Orange | Early / Weak Stage 2 | 2–3 |
 | *(no shade)* | Not Stage 2 | 0–1 |

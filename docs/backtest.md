@@ -90,7 +90,7 @@ All series start at 100 and compound from there. A final NAV of 350 means the po
 | **Final NAV** | Ending value on a base-100 investment |
 
 ### Rolling returns chart
-Shows the N-period trailing return at each point in time. Useful for seeing consistency — a portfolio with persistently positive rolling returns (rarely dipping below zero) indicates smoother compounding.
+Shows the rolling annualised CAGR (%) at each point in time — what a buy-and-hold investor over the selected window would have earned, annualised. Useful for seeing consistency: a portfolio with persistently positive rolling CAGR (rarely dipping below zero) indicates smoother compounding.
 
 ### Avg Turnover / Rebalance
 The average fraction of the portfolio traded at each rebalance (exits + entries as a share of holdings). Lower turnover = lower cost drag. The band rule (M vs N gap) is the primary lever for reducing this.

@@ -66,7 +66,7 @@ A confirmed retest is considered a lower-risk entry than chasing the initial bre
 1. Select one or more indices in the sidebar.
 2. Click **Run**.
 3. Sort the results table by **Score** (descending) to see the strongest setups first.
-4. Click any symbol to open the **Phase Chart** and review the full price history and MA structure.
+4. Switch to the **Phase Chart** tab and type the symbol to review the full price history and MA structure.
 5. Apply RSI and volume filters to narrow to actionable candidates.
 
 > **Tip**: A score of 6 or 7 without the volume criterion (criterion 1) often indicates a stock that has already broken out and is now in a clean Stage 2 advance — these can be excellent swing or position trade entries on pullbacks to the MA50. A score of **8/8** (all criteria including consolidation + volume spike) is the highest-confidence Weinstein base breakout signal.

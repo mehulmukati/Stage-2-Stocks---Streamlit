@@ -56,23 +56,23 @@ Checkboxes to require the close to be above the 100-day and/or 200-day moving av
 | Column | Description |
 |---|---|
 | **Close** | Last closing price |
-| **52w High** | 52-week high (rolling 252-day high of the High column) |
-| **DMA100 / DMA200** | 100-day and 200-day simple moving averages |
-| **Vol Median** | 252-day median daily volume |
-| **1Y Change (%)** | Price return over the last 252 trading days |
-| **Pct From 52W High (%)** | How far below the 52-week high the stock currently trades (negative = below high) |
-| **Circuit Count** | Number of circuit-limit closes in the last 252 days |
-| **Sharpe 3M/6M/9M/1Y** | Annualised Sharpe for each period |
+| **Sharpe** | Averaged annualised Sharpe across the selected time periods |
 | **Volatility (%)** | Annualised standard deviation of daily returns over full history |
-| **Pos Days 3M/6M/12M (%)** | Percentage of up-close days over each period |
+| **52w High** | 52-week high (rolling 252-day high of the High column) |
+| **Median Vol** | 252-day median daily volume |
+| **1Y Change** | Price return over the last 252 trading days |
+| **% from 52wH** | How far below the 52-week high the stock currently trades |
+| **Circuit Close** | Number of circuit-limit closes in the last 252 days |
+
+> DMA100, DMA200, individual period Sharpes, and positive-day counts are used for filtering but are not shown in the table.
 
 ---
 
 ## How to use
 
-1. Select indices in the sidebar, set your filters, and the results appear automatically.
-2. Sort by the Sharpe column matching your chosen sort method to see top-ranked stocks first.
+1. Select indices in the sidebar, set your filters, and click **Run**.
+2. Results are pre-sorted by Sharpe (descending). Re-sort other columns as needed.
 3. Cross-reference with the Stage 2 Screener — stocks that rank highly on both momentum and Weinstein criteria are the strongest candidates.
-4. Click any symbol to view its Phase Chart.
+4. Switch to the **Phase Chart** tab and type a symbol to review its full price history.
 
 > **Tip**: Combining a high Sharpe rank with a Stage 2 score ≥ 5 is a powerful filter. The Sharpe rank ensures smooth upward movement; the Stage 2 score confirms the structural MA alignment that sustains it.

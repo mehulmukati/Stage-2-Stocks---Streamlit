@@ -10,7 +10,7 @@ It implements Stan Weinstein's stage analysis methodology from *Secrets for Prof
 
 | Tool | What it does |
 |---|---|
-| **Stage 2 Screener** | Scores each stock 0–7 on Weinstein criteria and surfaces those in a Stage 2 uptrend |
+| **Stage 2 Screener** | Scores each stock 0–8 on Weinstein criteria and surfaces those in a Stage 2 uptrend |
 | **Momentum Screener** | Ranks the universe by risk-adjusted return (Sharpe ratio) across multiple time periods |
 | **Phase Chart** | Plots rolling Stage 2 score and MA bands for any single stock over its full history |
 | **Backtest** | Simulates a momentum portfolio (top-M entry, top-N exit band) with realistic costs and survivorship-bias mitigations |
