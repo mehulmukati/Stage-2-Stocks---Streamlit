@@ -313,6 +313,20 @@ def load_ohlcv_for_backtest() -> tuple[dict, str, str]:
     return symbol_data, target_key, source
 
 
+def load_compositions() -> pd.DataFrame:
+    """
+    Load historical index compositions from data/compositions.csv.
+    Returns a DataFrame with columns [INDEX_NAME, TIME_STAMP, SYMBOL] for use
+    in survivorship-bias-aware backtesting.  Returns an empty DataFrame if the
+    file is missing.
+    """
+    path = os.path.join(os.path.dirname(__file__), "data", "compositions.csv")
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    df = pd.read_csv(path, parse_dates=["TIME_STAMP"])
+    return df[["INDEX_NAME", "TIME_STAMP", "SYMBOL"]].dropna(subset=["SYMBOL"])
+
+
 def resolve_screener_data(
     rsi_filter: bool, for_momentum: bool = False, universe: str = None
 ):

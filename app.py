@@ -497,7 +497,7 @@ def backtest_results(params: dict):
     with st.spinner("Syncing benchmark index data…"):
         sync_benchmark_data()
 
-    from data import _load_constituents, load_ohlcv_for_backtest
+    from data import _load_constituents, load_compositions, load_ohlcv_for_backtest
     symbol_data, ohlcv_date, ohlcv_source = load_ohlcv_for_backtest()
 
     source_icon = {"memory": "⚡", "db": "💾", "internet": "🌐"}.get(ohlcv_source, "")
@@ -513,6 +513,13 @@ def backtest_results(params: dict):
         allowed = {s for idx, syms in constituents.items() if idx in params["universe"] for s in syms}
         symbol_data = {s: df for s, df in symbol_data.items() if s in allowed}
 
+    # load historical compositions for survivorship-bias filter
+    compositions_df = load_compositions() if params.get("use_compositions") else None
+    if compositions_df is not None and not compositions_df.empty:
+        st.caption("🛡️ Historical constituent filter active (survivorship-bias mitigation)")
+    elif params.get("use_compositions"):
+        st.warning("⚠️ compositions.csv not found — constituent filter disabled.")
+
     benchmarks = load_benchmark_series()
 
     with st.spinner(f"Running backtest ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…"):
@@ -525,6 +532,11 @@ def backtest_results(params: dict):
             sort_method=params["sort_method"],
             start_date=params["start_date"],
             end_date=params["end_date"],
+            compositions_df=compositions_df,
+            index_names=params["universe"] or [],
+            transaction_cost_pct=params["transaction_cost_pct"] / 100.0,
+            min_history_days=params["min_history_days"],
+            apply_volume_filter=True,
         )
 
     if "error" in result:
@@ -535,11 +547,12 @@ def backtest_results(params: dict):
     stats_df = result["stats"]
 
     # ── summary metrics ──
-    cols = st.columns(4)
+    cols = st.columns(5)
     cols[0].metric("Trading Days", len(result["trading_days"]))
     cols[1].metric("Rebalances", len(result["rebalance_dates"]))
     cols[2].metric("Avg Turnover / Rebalance", f"{result['avg_turnover_pct']:.1f}%")
     cols[3].metric("Portfolio Size (M)", params["m"])
+    cols[4].metric("Total Cost Drag", f"{result['total_cost_drag_pct']:.2f}%")
 
     st.divider()
 
@@ -564,7 +577,7 @@ def backtest_results(params: dict):
     st.plotly_chart(fig_nav, width="stretch")
 
     # ── rolling returns chart ──
-    window_map = {"3 months": 63, "6 months": 126, "1 year": 252}
+    window_map = {"2 years": 504, "3 years": 756, "5 years": 1260, "7 years": 1764, "10 years": 2520}
     roll_label = params["rolling_window"]
     roll_days = window_map[roll_label]
     st.subheader(f"Rolling {roll_label} Returns (%)")
@@ -691,7 +704,25 @@ def main():
             from datetime import date as _date
             bt_start = st.date_input("Start date", value=_date(2021, 1, 1), key="bt_start")
             bt_end   = st.date_input("End date",   value=_date.today(),      key="bt_end")
-            bt_rolling = st.selectbox("Rolling return window", ["3 months", "6 months", "1 year"], index=1, key="bt_rolling")
+            bt_rolling = st.selectbox("Rolling return window", ["2 years", "3 years", "5 years", "7 years", "10 years"], index=1, key="bt_rolling")
+            st.markdown("**Realism Settings**")
+            bt_min_history = st.number_input(
+                "Min history (trading days)",
+                min_value=63, max_value=1260, value=252, step=21,
+                key="bt_min_history",
+                help="Minimum trading days of data a stock must have before it can be ranked. 252 ≈ 1 year.",
+            )
+            bt_cost_pct = st.slider(
+                "Transaction cost per trade (%)",
+                min_value=0.0, max_value=1.0, value=0.1, step=0.05,
+                key="bt_cost_pct",
+                help="One-way cost applied to each stock traded at rebalance (slippage + brokerage).",
+            )
+            bt_use_compositions = st.toggle(
+                "Use historical constituents (anti-survivorship)",
+                value=True, key="bt_use_compositions",
+                help="Filter the universe to stocks that were actually in the index at each rebalance date.",
+            )
             st.divider()
             if st.button("▶ Run Backtest", type="primary", width="stretch", key="bt_run_btn"):
                 st.session_state["bt_run_triggered"] = True
@@ -791,14 +822,17 @@ def main():
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
     elif screener == "⏱ Backtest":
         backtest_results({
-            "m":              bt_m,
-            "n":              bt_n,
-            "rebalance_freq": bt_freq,
-            "sort_method":    bt_sort,
-            "universe":       bt_universe,
-            "start_date":     bt_start.strftime("%Y-%m-%d"),
-            "end_date":       bt_end.strftime("%Y-%m-%d"),
-            "rolling_window": bt_rolling,
+            "m":                   bt_m,
+            "n":                   bt_n,
+            "rebalance_freq":      bt_freq,
+            "sort_method":         bt_sort,
+            "universe":            bt_universe,
+            "start_date":          bt_start.strftime("%Y-%m-%d"),
+            "end_date":            bt_end.strftime("%Y-%m-%d"),
+            "rolling_window":      bt_rolling,
+            "transaction_cost_pct": bt_cost_pct,
+            "use_compositions":    bt_use_compositions,
+            "min_history_days":    bt_min_history,
         })
     else:
         momentum_results(

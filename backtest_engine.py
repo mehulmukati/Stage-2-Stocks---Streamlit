@@ -8,6 +8,13 @@ Rebalance  : weekly | biweekly | monthly
 Two portfolio variants are tracked simultaneously:
   - Full rebalance   : every rebalance date all holdings reset to equal weight (1/size)
   - Marginal rebalance: only in/out stocks are adjusted; incumbents keep price-drifted weights
+
+Survivorship-bias mitigations applied:
+  - Historical constituent filter via compositions.csv (only stocks in-index at each date)
+  - Minimum 750 trading-day history required before a stock can be ranked
+  - Stocks with > 5% missing close prices excluded (suspended / bad data)
+  - Volume filter: median volume must meet MIN_VOLUME threshold
+  - Transaction costs deducted at each rebalance
 """
 
 from __future__ import annotations
@@ -15,7 +22,43 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from config import MIN_VOLUME
 from momentum_engine import _calculate_avg_sharpe, score_momentum
+
+
+# ──────────────────────────────────────────────────────────────
+# HISTORICAL CONSTITUENT LOOKUP
+# ──────────────────────────────────────────────────────────────
+
+def _valid_symbols_at_date(
+    comp_df: pd.DataFrame,
+    index_names: list[str],
+    as_of: pd.Timestamp,
+) -> set[str] | None:
+    """
+    Return the set of symbols that were members of the given indices on or
+    before `as_of`, based on the most recent composition snapshot per index.
+    Returns None when comp_df is empty (disables the filter so the backtest
+    still runs without compositions data).
+    """
+    if comp_df is None or comp_df.empty or not index_names:
+        return None
+
+    eligible = comp_df[
+        comp_df["INDEX_NAME"].isin(index_names) & (comp_df["TIME_STAMP"] <= as_of)
+    ]
+    if eligible.empty:
+        return None
+
+    valid: set[str] = set()
+    for idx_name in index_names:
+        idx_rows = eligible[eligible["INDEX_NAME"] == idx_name]
+        if idx_rows.empty:
+            continue
+        latest_ts = idx_rows["TIME_STAMP"].max()
+        valid.update(idx_rows.loc[idx_rows["TIME_STAMP"] == latest_ts, "SYMBOL"])
+
+    return valid if valid else None
 
 
 # ──────────────────────────────────────────────────────────────
@@ -26,19 +69,37 @@ def rank_universe_at_date(
     all_ohlcv: dict[str, pd.DataFrame],
     as_of: pd.Timestamp,
     sort_method: str,
+    valid_symbols: set[str] | None = None,
+    min_history_days: int = 750,
+    apply_volume_filter: bool = True,
 ) -> list[str]:
     """
     Score every symbol using data up to `as_of` and return symbols ordered
-    best→worst by the chosen sort_method.  Symbols with insufficient data are excluded.
+    best→worst by the chosen sort_method.
+
+    valid_symbols      : if provided, only these symbols are considered
+                         (historical constituent filter — prevents survivorship bias)
+    min_history_days   : minimum trading days of history required before as_of
+                         (default 750 ≈ 3 years; prevents ranking on thin data)
+    apply_volume_filter: if True, exclude symbols whose median volume < MIN_VOLUME
     """
     ranked: list[tuple[str, float]] = []
     for sym, df in all_ohlcv.items():
+        if valid_symbols is not None and sym not in valid_symbols:
+            continue
         sub = df[df.index <= as_of]
-        if len(sub) < 250:
+        if len(sub) < min_history_days:
+            continue
+        # Reject stocks with > 5% missing close prices (suspended / delisted mid-period)
+        if sub["Close"].isna().mean() > 0.05:
             continue
         metrics = score_momentum(sub)
         if metrics is None:
             continue
+        if apply_volume_filter:
+            vol = metrics.get("Vol_Median")
+            if vol is None or vol < MIN_VOLUME:
+                continue
         score = _calculate_avg_sharpe(metrics, sort_method)
         if score is None:
             continue
@@ -123,20 +184,35 @@ def run_backtest(
     sort_method: str,
     start_date: str,
     end_date: str,
+    compositions_df: pd.DataFrame | None = None,
+    index_names: list[str] | None = None,
+    transaction_cost_pct: float = 0.001,
+    min_history_days: int = 750,
+    apply_volume_filter: bool = True,
 ) -> dict:
     """
     Run both portfolio variants and return NAV series + summary stats.
 
     Parameters
     ----------
-    all_ohlcv      : symbol → OHLCV DataFrame (full history, index = DatetimeIndex)
-    benchmarks     : label  → close price Series (e.g. 'NIFTY50', 'NIFTY500')
-    m              : enter portfolio if ranked ≤ m  (1-based)
-    n              : exit  portfolio if ranked >  n  (n > m)
-    rebalance_freq : 'weekly' | 'biweekly' | 'monthly'
-    sort_method    : passed to _calculate_avg_sharpe
-    start_date     : 'YYYY-MM-DD'
-    end_date       : 'YYYY-MM-DD'
+    all_ohlcv            : symbol → OHLCV DataFrame (full history, index = DatetimeIndex)
+    benchmarks           : label  → close price Series (e.g. 'NIFTY50', 'NIFTY500')
+    m                    : enter portfolio if ranked ≤ m  (1-based)
+    n                    : exit  portfolio if ranked >  n  (n > m)
+    rebalance_freq       : 'weekly' | 'biweekly' | 'monthly'
+    sort_method          : passed to _calculate_avg_sharpe
+    start_date           : 'YYYY-MM-DD'
+    end_date             : 'YYYY-MM-DD'
+    compositions_df      : historical index compositions from load_compositions()
+                           used to restrict the universe to stocks that were actually
+                           in-index on each rebalance date (eliminates survivorship bias)
+    index_names          : list of index names to use for composition lookup
+                           (e.g. ['NIFTY 50', 'NIFTY NEXT 50'])
+    transaction_cost_pct : one-way cost per trade as a fraction of traded value
+                           (default 0.001 = 0.1%)
+    min_history_days     : minimum trading-day history required before a stock
+                           can be ranked (default 750 ≈ 3 years)
+    apply_volume_filter  : exclude stocks with median volume < MIN_VOLUME
     """
     t0 = pd.Timestamp(start_date)
     t1 = pd.Timestamp(end_date)
@@ -159,11 +235,20 @@ def run_backtest(
     nav_records: list[dict] = []
     holdings_log: list[dict] = []
     turnover_log: list[float] = []
+    cost_log: list[float] = []
 
     for i, day in enumerate(trading_days):
         # ── rebalance ──
         if day in rebalance_set:
-            ranked = rank_universe_at_date(all_ohlcv, day, sort_method)
+            # Restrict universe to historically valid members on this date
+            valid_syms = _valid_symbols_at_date(compositions_df, index_names or [], day)
+
+            ranked = rank_universe_at_date(
+                all_ohlcv, day, sort_method,
+                valid_symbols=valid_syms,
+                min_history_days=min_history_days,
+                apply_volume_filter=apply_volume_filter,
+            )
             top_m = set(ranked[:m])
             top_n = set(ranked[:n])
 
@@ -176,8 +261,19 @@ def run_backtest(
                 new_holdings = top_m if top_m else current_holdings
 
             size = len(new_holdings)
-            turnover = (len(exits) + len(entries)) / max(len(current_holdings), 1) if current_holdings else 1.0
+            traded = len(exits) + len(entries)
+            turnover = traded / max(len(current_holdings), 1) if current_holdings else 1.0
             turnover_log.append(turnover)
+
+            # ── transaction cost drag ──
+            # Deduct cost proportional to the fraction of portfolio traded.
+            # traded_fraction = (exits + entries) / portfolio_size (one-way)
+            if i > 0 and transaction_cost_pct > 0 and size > 0:
+                traded_fraction = traded / size
+                cost_drag = traded_fraction * transaction_cost_pct
+                nav_full *= (1.0 - cost_drag)
+                nav_marg *= (1.0 - cost_drag)
+                cost_log.append(cost_drag)
 
             # full rebalance: equal weight all holdings
             full_weights = {s: 1.0 / size for s in new_holdings}
@@ -199,7 +295,13 @@ def run_backtest(
             marg_weights = new_marg
 
             current_holdings = new_holdings
-            holdings_log.append({"date": day, "holdings": sorted(current_holdings), "entries": sorted(entries), "exits": sorted(exits)})
+            holdings_log.append({
+                "date": day,
+                "holdings": sorted(current_holdings),
+                "entries": sorted(entries),
+                "exits": sorted(exits),
+                "valid_universe_size": len(valid_syms) if valid_syms else len(all_ohlcv),
+            })
 
         # ── daily NAV update ──
         if i > 0 and current_holdings:
@@ -251,14 +353,15 @@ def run_backtest(
 
     stats_df = pd.DataFrame(stats).T
 
-    # avg turnover only for portfolio variants
     avg_turnover = round(np.mean(turnover_log) * 100, 1) if turnover_log else 0.0
+    total_cost_drag = round(sum(cost_log) * 100, 3) if cost_log else 0.0
 
     return {
         "nav": nav_df,
         "stats": stats_df,
         "holdings_log": holdings_log,
         "avg_turnover_pct": avg_turnover,
+        "total_cost_drag_pct": total_cost_drag,
         "rebalance_dates": rebalance_dates,
         "trading_days": trading_days,
     }
