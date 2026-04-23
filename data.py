@@ -211,22 +211,13 @@ BENCHMARK_TICKERS = {
     "NIFTY500": "^CRSLDX",
 }
 
-_benchmark_last_synced: datetime | None = None
-_benchmark_sync_lock = threading.Lock()
-
-
 def sync_benchmark_data() -> bool:
-    """Fetch Nifty 50 and Nifty 500 index close prices from yfinance and upsert to index_ohlcv table.
-
-    Skips all network and DB work if a successful sync already happened within the last hour
-    in this process — benchmark indices update at most once per trading day.
-    """
-    global _benchmark_last_synced
-    with _benchmark_sync_lock:
-        if _benchmark_last_synced is not None:
-            age_seconds = (datetime.now(IST) - _benchmark_last_synced).total_seconds()
-            if age_seconds < 3600:
-                return True
+    """Fetch Nifty 50 and Nifty 500 index close prices from yfinance and upsert to index_ohlcv table."""
+    with _cache_lock:
+        bc = _mem_cache["benchmark"]
+    now = datetime.now(IST)
+    if bc["ts"] is not None and (now - bc["ts"]).total_seconds() < 3600:
+        return True  # already synced this hour — skip all network/DB work
 
     records = []
     for label, ticker in BENCHMARK_TICKERS.items():
@@ -237,7 +228,7 @@ def sync_benchmark_data() -> bool:
             fetch_from = (
                 datetime.strptime(latest, "%Y-%m-%d") - timedelta(days=3)
             ).strftime("%Y-%m-%d")
-            today = datetime.now(IST).strftime("%Y-%m-%d")
+            today = now.strftime("%Y-%m-%d")
             if latest >= today:
                 continue
             fetch_kwargs = {"start": fetch_from, "end": today}
@@ -256,14 +247,21 @@ def sync_benchmark_data() -> bool:
 
     if records:
         db.upsert_index_ohlcv(records)
-    with _benchmark_sync_lock:
-        _benchmark_last_synced = datetime.now(IST)
+    with _cache_lock:
+        _mem_cache["benchmark"] = {"data": None, "ts": now}  # data=None forces fresh DB read
     return True
 
 
 def load_benchmark_series() -> dict[str, pd.Series]:
-    """Return close price Series for each benchmark index, keyed by label."""
-    return {label: db.load_index_ohlcv(label) for label in BENCHMARK_TICKERS}
+    """Return close price Series for each benchmark index, keyed by label. Cached in memory."""
+    with _cache_lock:
+        bc = _mem_cache["benchmark"]
+    if bc["data"] is not None:
+        return bc["data"]
+    result = {label: db.load_index_ohlcv(label) for label in BENCHMARK_TICKERS}
+    with _cache_lock:
+        _mem_cache["benchmark"]["data"] = result
+    return result
 
 
 def _score_from_db(
@@ -333,9 +331,10 @@ def fetch_chart_data(symbol: str) -> pd.DataFrame:
 _cache_lock = threading.RLock()
 
 _mem_cache: dict[str, dict] = {
-    "stage2":   {"date": None, "data": None},
-    "momentum": {"date": None, "data": None, "ts": None},
-    "backtest": {"date": None, "data": None, "ts": None},
+    "stage2":    {"date": None, "data": None},
+    "momentum":  {"date": None, "data": None, "ts": None},
+    "backtest":  {"date": None, "data": None, "ts": None},
+    "benchmark": {"data": None, "ts": None},
 }
 
 # Dates for which an OHLCV sync has already been attempted this session.
