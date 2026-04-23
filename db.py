@@ -125,6 +125,13 @@ def get_latest_ohlcv_date() -> tuple[str | None, str | None]:
         return gmax, gmin
 
 
+def get_earliest_ohlcv_date() -> str | None:
+    """Return the earliest date present in the ohlcv table, or None if the table is empty."""
+    with _get_conn() as conn:
+        result = conn.execute("SELECT MIN(date) FROM ohlcv").fetchone()[0]
+    return str(result) if result else None
+
+
 def load_ohlcv_all(period_days: int = 550) -> dict[str, pd.DataFrame]:
     """Load the last period_days of OHLCV data; returns a symbol→DataFrame dict with proper column names."""
     with _get_conn() as conn:

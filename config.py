@@ -1,7 +1,8 @@
 from zoneinfo import ZoneInfo
 
 IST = ZoneInfo("Asia/Kolkata")
-HISTORY_PERIOD = "5y"
+HISTORY_PERIOD = "10y"
+HISTORY_DAYS   = 3650   # calendar days matching HISTORY_PERIOD, used for DB queries
 MIN_VOLUME = 100_000
 VOL_AVG_PERIOD = 10
 HH_HL_LOOKBACK = 50

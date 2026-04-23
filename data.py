@@ -7,7 +7,7 @@ import streamlit as st
 import yfinance as yf
 
 import db
-from config import _MOMENTUM_TTL, HISTORY_PERIOD, IST
+from config import _MOMENTUM_TTL, HISTORY_DAYS, HISTORY_PERIOD, IST
 from momentum_engine import score_momentum
 from stage2_engine import check_weinstein_retest, score_stage2
 
@@ -73,10 +73,19 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
 
     tickers = [f"{s}.NS" for s in all_symbols]
     global_max, conservative_min = db.get_latest_ohlcv_date()
+    global_min = db.get_earliest_ohlcv_date()
 
-    if global_max is None:
+    # Earliest date the DB should cover given HISTORY_PERIOD
+    earliest_needed = (
+        datetime.now(IST) - timedelta(days=HISTORY_DAYS)
+    ).strftime("%Y-%m-%d")
+
+    needs_backfill = global_min is None or global_min > earliest_needed
+
+    if global_max is None or needs_backfill:
         spinner_msg = (
-            f"🌐 First run: downloading full history for {len(tickers)} stocks..."
+            f"🌐 Downloading {HISTORY_PERIOD} history for {len(tickers)} stocks"
+            + (" (backfilling missing history)…" if needs_backfill and global_max else "…")
         )
         fetch_kwargs = {"period": HISTORY_PERIOD}
     else:
@@ -303,8 +312,8 @@ def load_ohlcv_for_backtest() -> tuple[dict, str, str]:
     _sync_ohlcv_to_db(all_symbols, target_date=target_key)
 
     # Tier 2: load from DB
-    with st.spinner("📊 Loading 5-year OHLCV history from database…"):
-        symbol_data = db.load_ohlcv_all(period_days=1825)
+    with st.spinner(f"📊 Loading {HISTORY_PERIOD} OHLCV history from database…"):
+        symbol_data = db.load_ohlcv_all(period_days=HISTORY_DAYS)
 
     if symbol_data:
         _mem_cache["backtest"] = {"date": target_key, "data": symbol_data, "ts": now}

@@ -173,17 +173,25 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
     )
     st.divider()
 
-    if not st.session_state.get("stage2_run_triggered"):
+    run_triggered = st.session_state.get("stage2_run_triggered", False)
+    cached = st.session_state.get("stage2_cached_result")
+
+    if not run_triggered and cached is None:
         st.info("Set filters in the sidebar and click **Run**.")
         return
 
-    df, cache_date, source = resolve_screener_data(rsi_toggle, for_momentum=False)
+    if run_triggered:
+        st.session_state["stage2_run_triggered"] = False
+        df, cache_date, source = resolve_screener_data(False, for_momentum=False)
+        if df.empty:
+            st.warning(
+                f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins."
+            )
+            return
+        st.session_state["stage2_cached_result"] = {"df": df, "cache_date": cache_date, "source": source}
 
-    if df.empty:
-        st.warning(
-            f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins."
-        )
-        return
+    cached = st.session_state["stage2_cached_result"]
+    df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
 
     if source == "memory":
         st.success(f"⚡ Served from memory cache for **{cache_date}**.")
@@ -303,19 +311,25 @@ def momentum_results(
     )
     st.divider()
 
-    if not st.session_state.get("mom_run_triggered"):
+    run_triggered = st.session_state.get("mom_run_triggered", False)
+    cached = st.session_state.get("mom_cached_result")
+
+    if not run_triggered and cached is None:
         st.info("Set filters in the sidebar and click **Run**.")
         return
 
-    full_df, cache_date, source = resolve_screener_data(
-        rsi_filter=False, for_momentum=True
-    )
+    if run_triggered:
+        st.session_state["mom_run_triggered"] = False
+        full_df, cache_date, source = resolve_screener_data(rsi_filter=False, for_momentum=True)
+        if full_df.empty:
+            st.warning(
+                "📅 No data available. Try again in a few minutes or check your internet connection."
+            )
+            return
+        st.session_state["mom_cached_result"] = {"df": full_df, "cache_date": cache_date, "source": source}
 
-    if full_df.empty:
-        st.warning(
-            "📅 No data available. Try again in a few minutes or check your internet connection."
-        )
-        return
+    cached = st.session_state["mom_cached_result"]
+    full_df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
 
     if source == "memory":
         st.success(
@@ -484,65 +498,76 @@ def backtest_results(params: dict):
     )
     st.divider()
 
-    if not st.session_state.get("bt_run_triggered"):
+    # rolling_window is display-only — pull it out before deciding whether to re-run
+    roll_label = params.pop("rolling_window", "3 years")
+
+    run_triggered = st.session_state.get("bt_run_triggered", False)
+    cached = st.session_state.get("bt_cached_result")
+
+    if not run_triggered and cached is None:
         st.info("Configure parameters in the sidebar and click **Run Backtest**.")
         return
 
-    if params["n"] <= params["m"]:
-        st.error("N (exit threshold) must be greater than M (entry threshold).")
-        return
+    if run_triggered:
+        # Clear the trigger immediately so future widget interactions don't re-run
+        st.session_state["bt_run_triggered"] = False
 
-    db.init_db()  # ensure index_ohlcv table exists (idempotent)
+        if params["n"] <= params["m"]:
+            st.error("N (exit threshold) must be greater than M (entry threshold).")
+            return
 
-    with st.spinner("Syncing benchmark index data…"):
-        sync_benchmark_data()
+        db.init_db()
 
-    from data import _load_constituents, load_compositions, load_ohlcv_for_backtest
-    symbol_data, ohlcv_date, ohlcv_source = load_ohlcv_for_backtest()
+        with st.spinner("Syncing benchmark index data…"):
+            sync_benchmark_data()
 
-    source_icon = {"memory": "⚡", "db": "💾", "internet": "🌐"}.get(ohlcv_source, "")
-    st.caption(f"{source_icon} OHLCV data as of **{ohlcv_date}** (source: {ohlcv_source})")
+        from data import _load_constituents, load_compositions, load_ohlcv_for_backtest
+        symbol_data, ohlcv_date, ohlcv_source = load_ohlcv_for_backtest()
 
-    if not symbol_data:
-        st.error("No OHLCV data in database. Run the Momentum screener first to sync data.")
-        return
+        source_icon = {"memory": "⚡", "db": "💾", "internet": "🌐"}.get(ohlcv_source, "")
+        st.caption(f"{source_icon} OHLCV data as of **{ohlcv_date}** (source: {ohlcv_source})")
 
-    # filter to selected indices if specified
-    if params["universe"]:
-        constituents = _load_constituents()
-        allowed = {s for idx, syms in constituents.items() if idx in params["universe"] for s in syms}
-        symbol_data = {s: df for s, df in symbol_data.items() if s in allowed}
+        if not symbol_data:
+            st.error("No OHLCV data in database. Run the Momentum screener first to sync data.")
+            return
 
-    # load historical compositions for survivorship-bias filter
-    compositions_df = load_compositions() if params.get("use_compositions") else None
-    if compositions_df is not None and not compositions_df.empty:
-        st.caption("🛡️ Historical constituent filter active (survivorship-bias mitigation)")
-    elif params.get("use_compositions"):
-        st.warning("⚠️ compositions.csv not found — constituent filter disabled.")
+        if params["universe"]:
+            constituents = _load_constituents()
+            allowed = {s for idx, syms in constituents.items() if idx in params["universe"] for s in syms}
+            symbol_data = {s: df for s, df in symbol_data.items() if s in allowed}
 
-    benchmarks = load_benchmark_series()
+        compositions_df = load_compositions() if params.get("use_compositions") else None
+        if compositions_df is not None and not compositions_df.empty:
+            st.caption("🛡️ Historical constituent filter active (survivorship-bias mitigation)")
+        elif params.get("use_compositions"):
+            st.warning("⚠️ compositions.csv not found — constituent filter disabled.")
 
-    with st.spinner(f"Running backtest ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…"):
-        result = run_backtest(
-            all_ohlcv=symbol_data,
-            benchmarks=benchmarks,
-            m=params["m"],
-            n=params["n"],
-            rebalance_freq=params["rebalance_freq"],
-            sort_method=params["sort_method"],
-            start_date=params["start_date"],
-            end_date=params["end_date"],
-            compositions_df=compositions_df,
-            index_names=params["universe"] or [],
-            transaction_cost_pct=params["transaction_cost_pct"] / 100.0,
-            min_history_days=params["min_history_days"],
-            apply_volume_filter=True,
-        )
+        benchmarks = load_benchmark_series()
 
-    if "error" in result:
-        st.error(result["error"])
-        return
+        with st.spinner(f"Running backtest ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…"):
+            result = run_backtest(
+                all_ohlcv=symbol_data,
+                benchmarks=benchmarks,
+                m=params["m"],
+                n=params["n"],
+                rebalance_freq=params["rebalance_freq"],
+                sort_method=params["sort_method"],
+                start_date=params["start_date"],
+                end_date=params["end_date"],
+                compositions_df=compositions_df,
+                index_names=params["universe"] or [],
+                transaction_cost_pct=params["transaction_cost_pct"] / 100.0,
+                min_history_days=params["min_history_days"],
+                apply_volume_filter=True,
+            )
 
+        if "error" in result:
+            st.error(result["error"])
+            return
+
+        st.session_state["bt_cached_result"] = result
+
+    result = st.session_state["bt_cached_result"]
     nav_df = result["nav"]
     stats_df = result["stats"]
 
@@ -577,29 +602,38 @@ def backtest_results(params: dict):
     st.plotly_chart(fig_nav, width="stretch")
 
     # ── rolling returns chart ──
-    window_map = {"2 years": 504, "3 years": 756, "5 years": 1260, "7 years": 1764, "10 years": 2520}
-    roll_label = params["rolling_window"]
-    roll_days = window_map[roll_label]
+    window_map = {
+        "6 months": 126, "1 year": 252, "2 years": 504,
+        "3 years": 756, "5 years": 1260, "7 years": 1764, "10 years": 2520,
+    }
+    roll_days = window_map.get(roll_label, 252)
     st.subheader(f"Rolling {roll_label} Returns (%)")
-    roll_df = rolling_returns(nav_df, roll_days)
-    fig_roll = go.Figure()
-    for col in roll_df.columns:
-        s = roll_df[col].dropna()
-        fig_roll.add_trace(go.Scatter(
-            x=s.index, y=s.values,
-            name=col,
-            line=dict(color=_BT_COLORS.get(col, "#94a3b8"), width=1.5),
-        ))
-    fig_roll.add_hline(y=0, line_dash="dash", line_color="#94a3b8", line_width=1)
-    fig_roll.update_layout(
-        height=360, hovermode="x unified",
-        yaxis=dict(title="Return (%)", showgrid=True, gridcolor="rgba(128,128,128,0.2)"),
-        xaxis=dict(showgrid=False),
-        legend=dict(orientation="h", y=-0.18),
-        margin=dict(l=50, r=20, t=30, b=55),
-        plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-    )
-    st.plotly_chart(fig_roll, width="stretch")
+    available_days = len(nav_df.dropna(how="all"))
+    if roll_days >= available_days:
+        st.warning(
+            f"⚠️ Rolling window ({roll_label} = {roll_days} trading days) exceeds available data "
+            f"({available_days} days). Select a shorter window or extend the backtest date range."
+        )
+    else:
+        roll_df = rolling_returns(nav_df, roll_days)
+        fig_roll = go.Figure()
+        for col in roll_df.columns:
+            s = roll_df[col].dropna()
+            fig_roll.add_trace(go.Scatter(
+                x=s.index, y=s.values,
+                name=col,
+                line=dict(color=_BT_COLORS.get(col, "#94a3b8"), width=1.5),
+            ))
+        fig_roll.add_hline(y=0, line_dash="dash", line_color="#94a3b8", line_width=1)
+        fig_roll.update_layout(
+            height=360, hovermode="x unified",
+            yaxis=dict(title="Return (%)", showgrid=True, gridcolor="rgba(128,128,128,0.2)"),
+            xaxis=dict(showgrid=False),
+            legend=dict(orientation="h", y=-0.18),
+            margin=dict(l=50, r=20, t=30, b=55),
+            plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+        )
+        st.plotly_chart(fig_roll, width="stretch")
 
     # ── stats table ──
     st.subheader("Performance Summary")
@@ -641,10 +675,11 @@ def main():
         # ── SCREENER SELECTOR ──
         st.markdown("### 🖥 Screener")
         screener = st.radio(
-            "",
+            "Screener",
             options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest"],
             key="active_screener",
             horizontal=True,
+            label_visibility="collapsed",
         )
 
         st.divider()
@@ -704,7 +739,7 @@ def main():
             from datetime import date as _date
             bt_start = st.date_input("Start date", value=_date(2021, 1, 1), key="bt_start")
             bt_end   = st.date_input("End date",   value=_date.today(),      key="bt_end")
-            bt_rolling = st.selectbox("Rolling return window", ["2 years", "3 years", "5 years", "7 years", "10 years"], index=1, key="bt_rolling")
+            bt_rolling = st.selectbox("Rolling return window", ["6 months", "1 year", "2 years", "3 years", "5 years", "7 years", "10 years"], index=1, key="bt_rolling")
             st.markdown("**Realism Settings**")
             bt_min_history = st.number_input(
                 "Min history (trading days)",
