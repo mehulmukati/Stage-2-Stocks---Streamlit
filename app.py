@@ -696,12 +696,6 @@ _GUIDE_CSS = """
     color: #94a3b8;
     font-weight: 600;
 }
-.guide-title {
-    font-size: 1.9rem;
-    font-weight: 700;
-    margin: 0.35rem 0 0 0;
-    line-height: 1.2;
-}
 [data-testid="stMarkdownContainer"] table th {
     background: rgba(148, 163, 184, 0.08);
     padding: 0.45rem 0.8rem;
@@ -735,40 +729,33 @@ _GUIDE_CSS = """
 
 
 def render_docs():
-    """Render the selected Guide section with styled header and content card."""
-    section = st.session_state.get("docs_section", "Overview")
-    filename = _DOCS_SECTIONS.get(section)
-    if not filename:
-        st.error("Section not found.")
-        return
-
-    docs_dir = os.path.join(os.path.dirname(__file__), "docs")
-    path = os.path.join(docs_dir, filename)
-    if not os.path.exists(path):
-        st.error(f"Documentation file missing: {filename}")
-        return
-
+    """Render the Guide with top tabs for section navigation and a styled content card."""
     st.markdown(_GUIDE_CSS, unsafe_allow_html=True)
 
-    # Breadcrumb + section title
     st.markdown(
-        f'<div class="guide-header">'
-        f'<span class="guide-crumb">📚 Guide</span>'
-        f'<p class="guide-title">{section}</p>'
-        f'</div>',
+        '<div class="guide-header">'
+        '<span class="guide-crumb">📚 User Guide</span>'
+        '</div>',
         unsafe_allow_html=True,
     )
 
-    with open(path, "r", encoding="utf-8") as f:
-        content = f.read()
+    docs_dir = os.path.join(os.path.dirname(__file__), "docs")
+    tabs = st.tabs(list(_DOCS_SECTIONS.keys()))
 
-    # Strip the leading H1 — it's already rendered as the styled header above
-    lines = content.split("\n")
-    if lines and lines[0].startswith("# "):
-        content = "\n".join(lines[1:]).lstrip("\n")
-
-    with st.container(border=True):
-        st.markdown(content)
+    for tab, (section, filename) in zip(tabs, _DOCS_SECTIONS.items()):
+        with tab:
+            path = os.path.join(docs_dir, filename)
+            if not os.path.exists(path):
+                st.error(f"Documentation file missing: {filename}")
+                continue
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            # Strip the leading H1 — the tab label already names the section
+            lines = content.split("\n")
+            if lines and lines[0].startswith("# "):
+                content = "\n".join(lines[1:]).lstrip("\n")
+            with st.container(border=True):
+                st.markdown(content)
 
 
 def main():
@@ -787,18 +774,6 @@ def main():
         )
 
         st.divider()
-
-        if screener == "📚 Guide":
-            st.markdown("### Contents")
-            sections = list(_DOCS_SECTIONS.keys())
-            st.radio(
-                "Section",
-                options=sections,
-                key="docs_section",
-                label_visibility="collapsed",
-            )
-            current_idx = sections.index(st.session_state.get("docs_section", sections[0]))
-            st.caption(f"Section {current_idx + 1} of {len(sections)}")
 
         # ── INDEX SELECTION (hidden for Phase Chart, Backtest, and Guide) ──
         selected_indices = []
