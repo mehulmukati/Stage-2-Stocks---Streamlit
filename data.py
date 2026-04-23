@@ -211,9 +211,23 @@ BENCHMARK_TICKERS = {
     "NIFTY500": "^CRSLDX",
 }
 
+_benchmark_last_synced: datetime | None = None
+_benchmark_sync_lock = threading.Lock()
+
 
 def sync_benchmark_data() -> bool:
-    """Fetch Nifty 50 and Nifty 500 index close prices from yfinance and upsert to index_ohlcv table."""
+    """Fetch Nifty 50 and Nifty 500 index close prices from yfinance and upsert to index_ohlcv table.
+
+    Skips all network and DB work if a successful sync already happened within the last hour
+    in this process — benchmark indices update at most once per trading day.
+    """
+    global _benchmark_last_synced
+    with _benchmark_sync_lock:
+        if _benchmark_last_synced is not None:
+            age_seconds = (datetime.now(IST) - _benchmark_last_synced).total_seconds()
+            if age_seconds < 3600:
+                return True
+
     records = []
     for label, ticker in BENCHMARK_TICKERS.items():
         latest = db.get_latest_index_date(label)
@@ -242,6 +256,8 @@ def sync_benchmark_data() -> bool:
 
     if records:
         db.upsert_index_ohlcv(records)
+    with _benchmark_sync_lock:
+        _benchmark_last_synced = datetime.now(IST)
     return True
 
 
