@@ -700,18 +700,6 @@ def render_docs():
     with open(path, "r", encoding="utf-8") as f:
         st.markdown(f.read())
 
-    # ── prev / next navigation ──
-    sections = list(_DOCS_SECTIONS.keys())
-    idx = sections.index(section)
-    st.divider()
-    col_prev, col_next = st.columns(2)
-    if idx > 0 and col_prev.button(f"← {sections[idx - 1]}", use_container_width=True):
-        st.session_state["docs_section"] = sections[idx - 1]
-        st.rerun()
-    if idx < len(sections) - 1 and col_next.button(f"{sections[idx + 1]} →", use_container_width=True):
-        st.session_state["docs_section"] = sections[idx + 1]
-        st.rerun()
-
 
 def main():
     """Build the sidebar controls and dispatch to the selected screener's result view."""
@@ -817,7 +805,7 @@ def main():
             if st.button("▶ Run Backtest", type="primary", width="stretch", key="bt_run_btn"):
                 st.session_state["bt_run_triggered"] = True
 
-        else:  # Momentum
+        elif screener == "🚀 Momentum":
             st.markdown("**Filters**")
             sort_options = [
                 "Average of 3/6/9/12 months",
@@ -926,7 +914,7 @@ def main():
             "use_compositions":    bt_use_compositions,
             "min_history_days":    bt_min_history,
         })
-    else:
+    else:  # 🚀 Momentum
         momentum_results(
             selected_indices,
             idx_options,
