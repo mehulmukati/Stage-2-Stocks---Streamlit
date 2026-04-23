@@ -17,7 +17,7 @@ load_dotenv()
 import db
 from backtest_engine import rolling_returns, run_backtest
 from config import IST
-from data import _load_constituents, fetch_chart_data, load_benchmark_series, resolve_screener_data, sync_benchmark_data
+from data import _load_constituents, _mem_cache, fetch_chart_data, load_benchmark_series, resolve_screener_data, sync_benchmark_data
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
 
@@ -181,8 +181,15 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
     cached = st.session_state.get("stage2_cached_result")
 
     if not run_triggered and cached is None:
-        st.info("Set filters in the sidebar and click **Run**.")
-        return
+        proc = _mem_cache["stage2"]
+        if proc["data"] is not None and proc["date"] is not None:
+            st.session_state["stage2_cached_result"] = {
+                "df": proc["data"], "cache_date": proc["date"], "source": "memory"
+            }
+            cached = st.session_state["stage2_cached_result"]
+        else:
+            st.info("Set filters in the sidebar and click **Run**.")
+            return
 
     if run_triggered:
         st.session_state["stage2_run_triggered"] = False
@@ -319,8 +326,15 @@ def momentum_results(
     cached = st.session_state.get("mom_cached_result")
 
     if not run_triggered and cached is None:
-        st.info("Set filters in the sidebar and click **Run**.")
-        return
+        proc = _mem_cache["momentum"]
+        if proc["data"] is not None and proc["date"] is not None:
+            st.session_state["mom_cached_result"] = {
+                "df": proc["data"], "cache_date": proc["date"], "source": "memory"
+            }
+            cached = st.session_state["mom_cached_result"]
+        else:
+            st.info("Set filters in the sidebar and click **Run**.")
+            return
 
     if run_triggered:
         st.session_state["mom_run_triggered"] = False
@@ -939,7 +953,7 @@ def main():
             render_phase_chart(ticker, use_log_scale=use_log_scale)
     elif screener == "📊 Stage 2":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
-    elif screener == "📚 Guide":
+    elif screener == "📚 User Guide":
         render_docs()
     elif screener == "⏱ Backtest":
         backtest_results({

@@ -1,7 +1,5 @@
 # Data & Methodology
 
----
-
 ## Data source
 
 All price data is sourced from **Yahoo Finance** via the `yfinance` library. NSE stocks are fetched with the `.NS` suffix (e.g. `RELIANCE.NS`). Benchmark indices use their Yahoo Finance tickers (`^NSEI` for Nifty 50, `^CRSLDX` for Nifty 500).
