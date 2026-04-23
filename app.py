@@ -640,11 +640,11 @@ def backtest_results(params: dict):
 
     # ── rolling returns chart ──
     window_map = {
-        "6 months": 126, "1 year": 252, "2 years": 504,
-        "3 years": 756, "5 years": 1260, "7 years": 1764, "10 years": 2520,
+        "1 year": 252, "2 years": 504, "3 years": 756,
+        "5 years": 1260, "7 years": 1764, "10 years": 2520,
     }
     roll_days = window_map.get(roll_label, 252)
-    st.subheader(f"Rolling {roll_label} Returns (%)")
+    st.subheader(f"Rolling {roll_label} CAGR (%)")
     available_days = len(nav_df.dropna(how="all"))
     if roll_days >= available_days:
         st.warning(
@@ -664,7 +664,7 @@ def backtest_results(params: dict):
         fig_roll.add_hline(y=0, line_dash="dash", line_color="#94a3b8", line_width=1)
         fig_roll.update_layout(
             height=360, hovermode="x unified",
-            yaxis=dict(title="Return (%)", showgrid=True, gridcolor="rgba(128,128,128,0.2)"),
+            yaxis=dict(title="CAGR (%)", showgrid=True, gridcolor="rgba(128,128,128,0.2)"),
             xaxis=dict(showgrid=False),
             legend=dict(orientation="h", y=-0.18),
             margin=dict(l=50, r=20, t=30, b=55),
@@ -871,7 +871,7 @@ def main():
             from datetime import date as _date
             bt_start = st.date_input("Start date", value=_date(2021, 1, 1), key="bt_start")
             bt_end   = st.date_input("End date",   value=_date.today(),      key="bt_end")
-            bt_rolling = st.selectbox("Rolling return window", ["6 months", "1 year", "2 years", "3 years", "5 years", "7 years", "10 years"], index=1, key="bt_rolling")
+            bt_rolling = st.selectbox("Rolling return window", ["1 year", "2 years", "3 years", "5 years", "7 years", "10 years"], index=0, key="bt_rolling")
             st.markdown("**Realism Settings**")
             bt_min_history = st.number_input(
                 "Min history (trading days)",

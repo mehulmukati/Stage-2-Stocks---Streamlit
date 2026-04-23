@@ -417,5 +417,6 @@ def run_backtest(
 # ──────────────────────────────────────────────────────────────
 
 def rolling_returns(nav_df: pd.DataFrame, window_days: int) -> pd.DataFrame:
-    """Return rolling N-day return (%) for all columns in nav_df."""
-    return nav_df.pct_change(periods=window_days) * 100
+    """Return rolling annualised return / CAGR (%) for all columns in nav_df."""
+    simple = nav_df.pct_change(periods=window_days)
+    return ((1 + simple) ** (252 / window_days) - 1) * 100
