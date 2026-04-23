@@ -578,6 +578,9 @@ def backtest_results(params: dict):
         job = registry.submit(user_token, "backtest", params, backtest_worker)
         st.session_state["bt_job_key"] = job.key
         st.session_state.pop("bt_cached_result", None)
+        # Snapshot all submitted params (incl. rolling_window already popped) so the
+        # sidebar can restore widget values after a tab-switch clears widget keys.
+        st.session_state["bt_saved_params"] = {**params, "rolling_window": roll_label}
 
     job = registry.latest(user_token, "backtest")
     job_key = st.session_state.get("bt_job_key")
@@ -851,6 +854,32 @@ def main():
                 st.session_state["stage2_run_triggered"] = True
 
         elif screener == "⏱ Backtest":
+            # Widget keys are removed from session state when not rendered (tab switch).
+            # Restore from the last-submitted params snapshot so values survive navigation.
+            from datetime import date as _date
+            _s = st.session_state.get("bt_saved_params", {})
+            _simple_restore = {
+                "bt_m":               ("m",                    20),
+                "bt_n":               ("n",                    30),
+                "bt_freq":            ("rebalance_freq",       "monthly"),
+                "bt_sort":            ("sort_method",          "Average of 3/6/9/12 months"),
+                "bt_rolling":         ("rolling_window",       "1 year"),
+                "bt_min_history":     ("min_history_days",     252),
+                "bt_cost_pct":        ("transaction_cost_pct", 0.1),
+                "bt_use_compositions":("use_compositions",     True),
+            }
+            for _wk, (_pk, _default) in _simple_restore.items():
+                if _wk not in st.session_state and _pk in _s:
+                    st.session_state[_wk] = _s[_pk]
+            if "bt_start" not in st.session_state and "start_date" in _s:
+                st.session_state["bt_start"] = _date.fromisoformat(_s["start_date"])
+            if "bt_end" not in st.session_state and "end_date" in _s:
+                st.session_state["bt_end"] = _date.fromisoformat(_s["end_date"])
+            for _idx in idx_options:
+                _ck = f"bt_idx_{_idx}"
+                if _ck not in st.session_state and "universe" in _s:
+                    st.session_state[_ck] = _idx in _s["universe"]
+
             st.markdown("**Portfolio Parameters**")
             bt_m = st.number_input("Entry threshold M (top-M enters)", min_value=1, max_value=200, value=20, step=1, key="bt_m")
             bt_n = st.number_input("Exit threshold N (exits if > N)", min_value=2, max_value=300, value=30, step=1, key="bt_n")
@@ -868,7 +897,6 @@ def main():
                 if bt_idx_cols[i % 2].checkbox(idx, value=True, key=f"bt_idx_{idx}"):
                     bt_universe.append(idx)
             st.markdown("**Date Range**")
-            from datetime import date as _date
             bt_start = st.date_input("Start date", value=_date(2021, 1, 1), key="bt_start")
             bt_end   = st.date_input("End date",   value=_date.today(),      key="bt_end")
             bt_rolling = st.selectbox("Rolling return window", ["1 year", "2 years", "3 years", "5 years", "7 years", "10 years"], index=0, key="bt_rolling")
