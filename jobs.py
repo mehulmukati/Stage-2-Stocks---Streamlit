@@ -78,13 +78,5 @@ class JobRegistry:
         with self._lock:
             return self._jobs.get(user_token, {}).get(kind)
 
-    def any_running(self, user_token: str) -> bool:
-        """True if any job for this user is still QUEUED or RUNNING."""
-        with self._lock:
-            return any(
-                j.status in (JobStatus.QUEUED, JobStatus.RUNNING)
-                for j in self._jobs.get(user_token, {}).values()
-            )
-
 
 registry = JobRegistry(max_workers=4)

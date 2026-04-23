@@ -402,9 +402,7 @@ def load_compositions() -> pd.DataFrame:
 
 
 def resolve_screener_data(
-    rsi_filter: bool,
     for_momentum: bool = False,
-    universe: str = None,
     emit: Callable[[str, str], None] = _NOOP_EMIT,
 ):
     """

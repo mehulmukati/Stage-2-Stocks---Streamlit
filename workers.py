@@ -18,7 +18,7 @@ from data import (
 
 
 def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
-    df, cache_date, source = resolve_screener_data(False, for_momentum=False, emit=emit)
+    df, cache_date, source = resolve_screener_data(for_momentum=False, emit=emit)
     if df.empty:
         raise RuntimeError(
             "No Stage 2 data available. Yahoo Finance may be syncing — try again in 30 mins."
@@ -27,7 +27,7 @@ def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> 
 
 
 def momentum_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
-    df, cache_date, source = resolve_screener_data(False, for_momentum=True, emit=emit)
+    df, cache_date, source = resolve_screener_data(for_momentum=True, emit=emit)
     if df.empty:
         raise RuntimeError(
             "No Momentum data available. Try again in a few minutes or check your internet connection."

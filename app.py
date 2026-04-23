@@ -36,15 +36,6 @@ _state_lock = threading.RLock()
 _last_chart_ticker: str = ""
 
 
-# ── EMIT HELPER ──
-def _make_emit(status_obj):
-    """Return an emit callable that writes progress messages into a st.status container."""
-    _icons = {"info": "▸", "warning": "⚠️", "error": "❌", "success": "✅"}
-    def _emit(level: str, msg: str) -> None:
-        status_obj.write(f"{_icons.get(level, '▸')} {msg}")
-    return _emit
-
-
 def _get_user_token() -> str:
     """Return a stable per-session UUID, creating it on first call."""
     if "user_token" not in st.session_state:
