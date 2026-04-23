@@ -682,9 +682,60 @@ _DOCS_SECTIONS = {
     "Data & Methodology": "data_methodology.md",
 }
 
+_GUIDE_CSS = """
+<style>
+.guide-header {
+    padding: 1.25rem 0 1rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    margin-bottom: 1.75rem;
+}
+.guide-crumb {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: #94a3b8;
+    font-weight: 600;
+}
+.guide-title {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 0.35rem 0 0 0;
+    line-height: 1.2;
+}
+[data-testid="stMarkdownContainer"] table th {
+    background: rgba(148, 163, 184, 0.08);
+    padding: 0.45rem 0.8rem;
+    border-bottom: 2px solid rgba(148, 163, 184, 0.25);
+}
+[data-testid="stMarkdownContainer"] table td {
+    padding: 0.45rem 0.8rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+[data-testid="stMarkdownContainer"] code:not(pre code) {
+    background: rgba(148, 163, 184, 0.12);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-size: 0.88em;
+}
+[data-testid="stMarkdownContainer"] pre {
+    background: rgba(15, 23, 42, 0.55) !important;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+}
+[data-testid="stMarkdownContainer"] blockquote {
+    border-left: 3px solid #3b82f6;
+    padding: 0.4rem 1rem;
+    margin: 0.75rem 0;
+    background: rgba(59, 130, 246, 0.07);
+    border-radius: 0 4px 4px 0;
+}
+</style>
+"""
+
 
 def render_docs():
-    """Render the selected documentation section from the docs/ folder."""
+    """Render the selected Guide section with styled header and content card."""
     section = st.session_state.get("docs_section", "Overview")
     filename = _DOCS_SECTIONS.get(section)
     if not filename:
@@ -697,8 +748,27 @@ def render_docs():
         st.error(f"Documentation file missing: {filename}")
         return
 
+    st.markdown(_GUIDE_CSS, unsafe_allow_html=True)
+
+    # Breadcrumb + section title
+    st.markdown(
+        f'<div class="guide-header">'
+        f'<span class="guide-crumb">📚 Guide</span>'
+        f'<p class="guide-title">{section}</p>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
     with open(path, "r", encoding="utf-8") as f:
-        st.markdown(f.read())
+        content = f.read()
+
+    # Strip the leading H1 — it's already rendered as the styled header above
+    lines = content.split("\n")
+    if lines and lines[0].startswith("# "):
+        content = "\n".join(lines[1:]).lstrip("\n")
+
+    with st.container(border=True):
+        st.markdown(content)
 
 
 def main():
@@ -710,7 +780,7 @@ def main():
         st.markdown("### 🖥 Screener")
         screener = st.radio(
             "Screener",
-            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest", "📖 Docs"],
+            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest", "📚 Guide"],
             key="active_screener",
             horizontal=True,
             label_visibility="collapsed",
@@ -718,18 +788,21 @@ def main():
 
         st.divider()
 
-        if screener == "📖 Docs":
+        if screener == "📚 Guide":
             st.markdown("### Contents")
+            sections = list(_DOCS_SECTIONS.keys())
             st.radio(
                 "Section",
-                options=list(_DOCS_SECTIONS.keys()),
+                options=sections,
                 key="docs_section",
                 label_visibility="collapsed",
             )
+            current_idx = sections.index(st.session_state.get("docs_section", sections[0]))
+            st.caption(f"Section {current_idx + 1} of {len(sections)}")
 
-        # ── INDEX SELECTION (hidden for Phase Chart, Backtest, and Docs) ──
+        # ── INDEX SELECTION (hidden for Phase Chart, Backtest, and Guide) ──
         selected_indices = []
-        if screener not in ("📈 Phase Chart", "⏱ Backtest", "📖 Docs"):
+        if screener not in ("📈 Phase Chart", "⏱ Backtest", "📚 Guide"):
             st.markdown("### 📦 Indices")
             cols = st.columns(2)
             for i, idx in enumerate(idx_options):
@@ -898,7 +971,7 @@ def main():
             render_phase_chart(ticker, use_log_scale=use_log_scale)
     elif screener == "📊 Stage 2":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
-    elif screener == "📖 Docs":
+    elif screener == "📚 Guide":
         render_docs()
     elif screener == "⏱ Backtest":
         backtest_results({
