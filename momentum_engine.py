@@ -5,10 +5,11 @@ from config import CIRCUIT_LEVELS, CIRCUIT_TOLERANCE
 
 
 def _count_circuits(df: pd.DataFrame) -> int:
-    """Count circuit-breaker closes (upper or lower) over the full history of df."""
-    if len(df) < 2:
+    """Count circuit-breaker closes (upper or lower) over the last 252 trading days (1 year)."""
+    subset = df.tail(252)
+    if len(subset) < 2:
         return 0
-    pct_change = df["Close"].pct_change() * 100
+    pct_change = subset["Close"].pct_change() * 100
     circuit_count = 0
     for level in CIRCUIT_LEVELS:
         upper = (pct_change >= level - CIRCUIT_TOLERANCE) & (
@@ -22,22 +23,14 @@ def _count_circuits(df: pd.DataFrame) -> int:
 
 
 def _calculate_sharpe(df: pd.DataFrame, period_days: int) -> float | None:
-    """Return annualized Sharpe ratio over the last period_days trading days, or None if insufficient data."""
+    """Return annualized Sharpe ratio (no risk-free rate) over the last period_days trading days."""
     if len(df) < period_days:
         return None
     subset = df.tail(period_days)
     daily_returns = subset["Close"].pct_change().dropna()
     if len(daily_returns) == 0 or daily_returns.std() == 0:
         return None
-    total_return = (subset["Close"].iloc[-1] / subset["Close"].iloc[0]) - 1
-    trading_days_in_year = 252
-    annualized_roc = (
-        (1 + total_return) ** (trading_days_in_year / len(daily_returns))
-    ) - 1
-    annualized_sd = daily_returns.std() * np.sqrt(trading_days_in_year)
-    if annualized_sd == 0:
-        return None
-    return annualized_roc / annualized_sd
+    return daily_returns.mean() / daily_returns.std() * np.sqrt(252)
 
 
 def _calculate_positive_days_pct(df: pd.DataFrame, months: int) -> float | None:
@@ -89,18 +82,18 @@ def score_momentum(df: pd.DataFrame) -> dict | None:
         "52w_High": round(high_52w, 2) if high_52w else None,
         "DMA100": round(dma100, 2),
         "DMA200": round(dma200, 2),
-        "Vol_Median": int(vol_median) if vol_median and not np.isnan(vol_median) else None,
-        "1Y_Change": round(one_yr_change, 2) if one_yr_change else None,
-        "Pct_From_52W_High": round(pct_from_52w_high, 2) if pct_from_52w_high else None,
+        "Vol_Median": int(vol_median) if vol_median is not None and not np.isnan(vol_median) else None,
+        "1Y_Change": round(one_yr_change, 2) if one_yr_change is not None else None,
+        "Pct_From_52W_High": round(pct_from_52w_high, 2) if pct_from_52w_high is not None else None,
         "Circuit_Count": circuit_count,
-        "Sharpe_3M": round(sharpe_3m, 3) if sharpe_3m else None,
-        "Sharpe_6M": round(sharpe_6m, 3) if sharpe_6m else None,
-        "Sharpe_9M": round(sharpe_9m, 3) if sharpe_9m else None,
-        "Sharpe_1Y": round(sharpe_1y, 3) if sharpe_1y else None,
-        "Volatility": round(volatility * 100, 1) if volatility else None,
-        "Pos_Days_3M": round(pos_days_3m, 0) if pos_days_3m else None,
-        "Pos_Days_6M": round(pos_days_6m, 0) if pos_days_6m else None,
-        "Pos_Days_12M": round(pos_days_12m, 0) if pos_days_12m else None,
+        "Sharpe_3M": round(sharpe_3m, 3) if sharpe_3m is not None else None,
+        "Sharpe_6M": round(sharpe_6m, 3) if sharpe_6m is not None else None,
+        "Sharpe_9M": round(sharpe_9m, 3) if sharpe_9m is not None else None,
+        "Sharpe_1Y": round(sharpe_1y, 3) if sharpe_1y is not None else None,
+        "Volatility": round(volatility * 100, 1) if volatility is not None else None,
+        "Pos_Days_3M": round(pos_days_3m, 0) if pos_days_3m is not None else None,
+        "Pos_Days_6M": round(pos_days_6m, 0) if pos_days_6m is not None else None,
+        "Pos_Days_12M": round(pos_days_12m, 0) if pos_days_12m is not None else None,
     }
 
 

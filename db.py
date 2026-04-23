@@ -135,12 +135,15 @@ def get_earliest_ohlcv_date() -> str | None:
 def load_ohlcv_all(period_days: int = 550) -> dict[str, pd.DataFrame]:
     """Load the last period_days of OHLCV data; returns a symbol→DataFrame dict with proper column names."""
     with _get_conn() as conn:
-        rows = conn.execute(f"""
+        rows = conn.execute(
+            """
             SELECT symbol, date, open, high, low, close, volume
             FROM ohlcv
-            WHERE date::date >= NOW() - INTERVAL '{period_days} days'
+            WHERE date::date >= NOW() - make_interval(days => %s)
             ORDER BY symbol, date
-        """).fetchall()
+            """,
+            (int(period_days),),
+        ).fetchall()
 
     df = pd.DataFrame(
         rows, columns=["symbol", "date", "open", "high", "low", "close", "volume"]
@@ -163,13 +166,13 @@ def load_ohlcv_symbol(symbol: str, period_days: int = 750) -> pd.DataFrame:
     """Load OHLCV history for a single symbol from DB; returns empty DataFrame if not found."""
     with _get_conn() as conn:
         rows = conn.execute(
-            f"""
+            """
             SELECT date, open, high, low, close, volume
             FROM ohlcv
-            WHERE symbol = %s AND date::date >= NOW() - INTERVAL '{period_days} days'
+            WHERE symbol = %s AND date::date >= NOW() - make_interval(days => %s)
             ORDER BY date
             """,
-            (symbol,),
+            (symbol, int(period_days)),
         ).fetchall()
     if not rows:
         return pd.DataFrame()

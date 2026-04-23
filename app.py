@@ -8,7 +8,7 @@ from datetime import datetime
 import plotly.graph_objects as go
 import streamlit as st
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 from dotenv import load_dotenv
 
@@ -19,7 +19,11 @@ from backtest_engine import rolling_returns, run_backtest
 from config import IST
 from data import _load_constituents, fetch_chart_data, load_benchmark_series, resolve_screener_data, sync_benchmark_data
 from momentum_engine import _calculate_avg_sharpe
-from stage2_engine import compute_rolling_stage2
+from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
+
+@st.cache_data(ttl=3600)
+def compute_rolling_stage2(df):
+    return _compute_rolling_stage2(df)
 
 
 # ── DB INIT (once at startup) ──
@@ -516,8 +520,6 @@ def backtest_results(params: dict):
             st.error("N (exit threshold) must be greater than M (entry threshold).")
             return
 
-        db.init_db()
-
         with st.spinner("Syncing benchmark index data…"):
             sync_benchmark_data()
 
@@ -662,14 +664,18 @@ def backtest_results(params: dict):
 # ──────────────────────────────────────────────
 # MAIN
 # ──────────────────────────────────────────────
+@st.cache_resource
+def _load_index_options() -> list[str]:
+    const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
+    if not os.path.exists(const_path):
+        return []
+    with open(const_path, "r") as f:
+        return list(json.load(f).keys())
+
+
 def main():
     """Build the sidebar controls and dispatch to the selected screener's result view."""
-    const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
-    idx_options = (
-        list(json.load(open(const_path, "r")).keys())
-        if os.path.exists(const_path)
-        else []
-    )
+    idx_options = _load_index_options()
 
     with st.sidebar:
         # ── SCREENER SELECTOR ──

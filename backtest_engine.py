@@ -243,8 +243,11 @@ def run_backtest(
             # Restrict universe to historically valid members on this date
             valid_syms = _valid_symbols_at_date(compositions_df, index_names or [], day)
 
+            # Rank using previous day's data to avoid look-ahead bias:
+            # rankings are determined from T-1 close; trades execute at T close.
+            rank_as_of = trading_days[i - 1] if i > 0 else day
             ranked = rank_universe_at_date(
-                all_ohlcv, day, sort_method,
+                all_ohlcv, rank_as_of, sort_method,
                 valid_symbols=valid_syms,
                 min_history_days=min_history_days,
                 apply_volume_filter=apply_volume_filter,
@@ -339,7 +342,7 @@ def run_backtest(
             continue
         daily_ret = s.pct_change().dropna()
         n_days = len(s)
-        cagr = (s.iloc[-1] / s.iloc[0]) ** (252 / n_days) - 1
+        cagr = (s.iloc[-1] / s.iloc[0]) ** (252 / (n_days - 1)) - 1
         sharpe = (daily_ret.mean() / daily_ret.std() * np.sqrt(252)) if daily_ret.std() > 0 else np.nan
         rolling_max = s.cummax()
         drawdown = (s - rolling_max) / rolling_max

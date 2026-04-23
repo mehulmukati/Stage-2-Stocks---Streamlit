@@ -94,7 +94,7 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
                 _ohlcv_sync_attempted.add(target_date)
             return True
         fetch_from = (
-            datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=3)
+            datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=10)
         ).strftime("%Y-%m-%d")
         today = datetime.now(IST).strftime("%Y-%m-%d")
         spinner_msg = f"🔄 Incremental update: fetching data since {fetch_from}..."
@@ -136,15 +136,21 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
             for dt, row in sub.iterrows():
                 if pd.isna(row.get("Close")):
                     continue
+                def _f(v):
+                    try:
+                        f = float(v)
+                        return None if pd.isna(f) else f
+                    except (TypeError, ValueError):
+                        return None
                 records.append(
                     {
                         "symbol": sym,
                         "date": dt.date(),
-                        "open": float(row.get("Open", 0) or 0),
-                        "high": float(row.get("High", 0) or 0),
-                        "low": float(row.get("Low", 0) or 0),
+                        "open": _f(row.get("Open")),
+                        "high": _f(row.get("High")),
+                        "low": _f(row.get("Low")),
                         "close": float(row["Close"]),
-                        "volume": int(row.get("Volume", 0) or 0),
+                        "volume": int(row.get("Volume") or 0),
                     }
                 )
         except Exception:

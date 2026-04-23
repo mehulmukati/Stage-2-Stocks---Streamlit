@@ -14,13 +14,11 @@ def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
     avg_gain = gain.ewm(alpha=1 / period, adjust=False).mean()
     avg_loss = loss.ewm(alpha=1 / period, adjust=False).mean()
     rs = avg_gain / avg_loss.replace(0, np.nan)
-    return 100 - (100 / (1 + rs))
+    # When avg_loss == 0 all gains, RSI should be 100 (not NaN)
+    rsi = 100 - (100 / (1 + rs))
+    return rsi.where(avg_loss != 0, 100.0)
 
 
-import streamlit as st
-
-
-@st.cache_data(ttl=3600)
 def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
     """Vectorised daily Stage 2 score; returns df with Close/MA cols, Score (0-7), and Phase."""
     c, h, l, v = df["Close"], df["High"], df["Low"], df["Volume"].astype(float)
@@ -29,10 +27,17 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
     ma200 = c.rolling(200).mean()
     avg_vol = v.rolling(VOL_AVG_PERIOD).mean()
 
+    # Higher high: close broke above 50-day prior high
+    higher_high = (c >= c.rolling(HH_HL_LOOKBACK).max().shift(1)).astype(int)
+    # Higher low: recent 20-day low is above the 50-day low from HH_HL_LOOKBACK bars ago
+    higher_low = (
+        c.rolling(20).min().shift(1) > c.rolling(HH_HL_LOOKBACK).min().shift(HH_HL_LOOKBACK)
+    ).astype(int)
+
     score = (
         (v / avg_vol >= 2.0).astype(int)
-        + (c >= c.rolling(HH_HL_LOOKBACK).max().shift(1)).astype(int)
-        + (c >= c.rolling(HH_HL_LOOKBACK).min().shift(1)).astype(int)
+        + higher_high
+        + higher_low
         + ((c > ma50) & (ma50 > ma50.shift(MA_RISING_LOOKBACK))).astype(int)
         + ((c > ma200) & (ma200 > ma200.shift(MA_RISING_LOOKBACK))).astype(int)
         + (c > ma150).astype(int)
@@ -76,7 +81,10 @@ def score_stage2(df: pd.DataFrame) -> dict | None:
         score += 1
     if c1 >= c.rolling(HH_HL_LOOKBACK).max().shift(1).iloc[-1]:
         score += 1
-    if c1 >= c.rolling(HH_HL_LOOKBACK).min().shift(1).iloc[-1]:
+    # Higher low: recent 20-day low above the 50-day low from HH_HL_LOOKBACK bars ago
+    recent_low = c.rolling(20).min().iloc[-2]
+    older_low = c.rolling(HH_HL_LOOKBACK).min().iloc[-HH_HL_LOOKBACK]
+    if recent_low > older_low:
         score += 1
     if c1 > m50 and ma50.iloc[-1] > ma50.iloc[-MA_RISING_LOOKBACK]:
         score += 1
