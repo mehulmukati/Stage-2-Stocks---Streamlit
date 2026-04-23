@@ -7,6 +7,8 @@ MIN_VOLUME = 100_000
 VOL_AVG_PERIOD = 10
 HH_HL_LOOKBACK = 50
 MA_RISING_LOOKBACK = 50
+CONSOLIDATION_LOOKBACK  = 20    # days to measure base flatness
+CONSOLIDATION_RANGE_PCT = 0.15  # max close-to-close range (as % of period low) to qualify as a base
 
 CIRCUIT_LEVELS = [5.0, 10.0, 20.0]
 CIRCUIT_TOLERANCE = 0.1

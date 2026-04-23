@@ -177,7 +177,7 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
         '<p class="hero">📊 Stage 2 Breakout Screener</p>', unsafe_allow_html=True
     )
     st.markdown(
-        f'<p class="sub-hero">EOD Analysis · 7-Point Weinstein Score · {now_ist}</p>',
+        f'<p class="sub-hero">EOD Analysis · 8-Point Weinstein Score · {now_ist}</p>',
         unsafe_allow_html=True,
     )
     st.divider()
@@ -279,7 +279,7 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
             "Index": st.column_config.TextColumn("Source", width="medium"),
             "Stage": st.column_config.TextColumn("Classification", width="medium"),
             "Score": st.column_config.NumberColumn(
-                "Score", format="%d/7", width="small"
+                "Score", format="%d/8", width="small"
             ),
             "Close": st.column_config.NumberColumn(
                 "Close (₹)", format="%.2f", width="small"

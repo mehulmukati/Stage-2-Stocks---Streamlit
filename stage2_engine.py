@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from config import (BOUNCE_CONFIRMATION, HH_HL_LOOKBACK, MA_RISING_LOOKBACK,
+from config import (BOUNCE_CONFIRMATION, CONSOLIDATION_LOOKBACK,
+                    CONSOLIDATION_RANGE_PCT, HH_HL_LOOKBACK, MA_RISING_LOOKBACK,
                     MIN_VOLUME, RETEST_LOOKBACK_DAYS, RETEST_TOLERANCE,
                     VOL_AVG_PERIOD, VOL_DRYUP_RATIO)
 
@@ -20,7 +21,7 @@ def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
 
 
 def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
-    """Vectorised daily Stage 2 score; returns df with Close/MA cols, Score (0-7), and Phase."""
+    """Vectorised daily Stage 2 score; returns df with Close/MA cols, Score (0-8), and Phase."""
     c, h, l, v = df["Close"], df["High"], df["Low"], df["Volume"].astype(float)
     ma50 = c.rolling(50).mean()
     ma150 = c.rolling(150).mean()
@@ -34,6 +35,11 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
         c.rolling(20).min().shift(1) > c.rolling(HH_HL_LOOKBACK).min().shift(HH_HL_LOOKBACK)
     ).astype(int)
 
+    consol_range = (
+        c.rolling(CONSOLIDATION_LOOKBACK).max() - c.rolling(CONSOLIDATION_LOOKBACK).min()
+    ) / c.rolling(CONSOLIDATION_LOOKBACK).min()
+    consolidation = (consol_range < CONSOLIDATION_RANGE_PCT).astype(int)
+
     score = (
         (v / avg_vol >= 2.0).astype(int)
         + higher_high
@@ -42,11 +48,12 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
         + ((c > ma200) & (ma200 > ma200.shift(MA_RISING_LOOKBACK))).astype(int)
         + (c > ma150).astype(int)
         + ((ma50 > ma150) & (ma150 > ma200)).astype(int)
+        + consolidation
     )
 
     phase = pd.cut(
         score,
-        bins=[-1, 1, 3, 5, 7],
+        bins=[-1, 1, 3, 5, 8],
         labels=["Not Stage 2", "Early/Weak Stage 2", "Likely Stage 2", "Strong Stage 2"],
     )
 
@@ -58,7 +65,7 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def score_stage2(df: pd.DataFrame) -> dict | None:
-    """Score a stock on 7 Weinstein Stage 2 criteria; returns metric dict or None if insufficient data."""
+    """Score a stock on 8 Weinstein Stage 2 criteria; returns metric dict or None if insufficient data."""
     if len(df) < 250:
         return None
     c, h, l, v = df["Close"], df["High"], df["Low"], df["Volume"]
@@ -94,6 +101,12 @@ def score_stage2(df: pd.DataFrame) -> dict | None:
         score += 1
     if m50 > m150 > m200:
         score += 1
+    # Consolidation: close range over last N days < X% (base formation check)
+    lookback_closes = c.iloc[-CONSOLIDATION_LOOKBACK:]
+    consol_range = (lookback_closes.max() - lookback_closes.min()) / lookback_closes.min()
+    consolidating = bool(consol_range < CONSOLIDATION_RANGE_PCT)
+    if consolidating:
+        score += 1
 
     if score >= 6:
         stage = "🟢 Strong Stage 2"
@@ -116,6 +129,7 @@ def score_stage2(df: pd.DataFrame) -> dict | None:
         "MA150": round(m150, 2),
         "MA200": round(m200, 2),
         "MA_Stack": m50 > m150 > m200,
+        "Consolidating": consolidating,
         "Avg_Vol": int(np.floor(avg_vol.iloc[-1])),
     }
 

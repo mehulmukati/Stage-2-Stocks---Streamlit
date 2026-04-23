@@ -1,12 +1,12 @@
 # Stage 2 Screener
 
-The Stage 2 Screener scores every stock in the selected indices on **seven Weinstein criteria**, classifies each into a phase, and surfaces candidates in or near a Stage 2 uptrend.
+The Stage 2 Screener scores every stock in the selected indices on **eight Weinstein criteria**, classifies each into a phase, and surfaces candidates in or near a Stage 2 uptrend.
 
 ---
 
-## The 7-point scoring system
+## The 8-point scoring system
 
-Each criterion contributes **1 point** (0 or 1). The maximum score is 7.
+Each criterion contributes **1 point** (0 or 1). The maximum score is 8.
 
 | # | Criterion | Condition | What it measures |
 |---|---|---|---|
@@ -17,8 +17,11 @@ Each criterion contributes **1 point** (0 or 1). The maximum score is 7.
 | 5 | **Price above rising MA200** | Close > MA200 **and** MA200 is higher than it was 50 bars ago | Long-term trend is up and the base is solid |
 | 6 | **Price above MA150** | Close > MA150 | Intermediate trend confirmation |
 | 7 | **MA stack** | MA50 > MA150 > MA200 | The three MAs are fanned out in bull-market order |
+| 8 | **Consolidation base** | 20-day close range < 15% of the period low | Stock has been basing/consolidating — distinguishes genuine base breakouts from momentum continuation moves |
 
-> **Note on the volume criterion**: the 10-day rolling average is deliberately short. On most ordinary trading days stocks will *not* fire this criterion (volume is ≈ average), so a score of 6/7 without the volume spike is still a solid Stage 2 signal. A 7/7 score indicates a breakout or unusually active session.
+> **Note on the volume criterion**: the 10-day rolling average is deliberately short. On most ordinary trading days stocks will *not* fire this criterion (volume is ≈ average), so a score of 6/8 without the volume spike is still a solid Stage 2 signal. An 8/8 score indicates a base breakout on heavy volume — the highest-quality Weinstein setup.
+
+> **Note on the consolidation criterion**: a stock trending steadily upward without pausing will *not* earn this point (its 20-day range exceeds 15%). This intentionally filters out momentum-continuation moves that score high on criteria 2–7 but lack the basing pattern Weinstein considered essential.
 
 ---
 
@@ -29,7 +32,7 @@ Each criterion contributes **1 point** (0 or 1). The maximum score is 7.
 | 0–1 | ⚪ Not Stage 2 | Stage 1 basing, Stage 3 topping, or Stage 4 decline |
 | 2–3 | 🟠 Early / Weak Stage 2 | Early uptrend structure forming; confirm with chart |
 | 4–5 | 🟡 Likely Stage 2 | Most Weinstein criteria satisfied; reasonable entry candidate |
-| 6–7 | 🟢 Strong Stage 2 | Full bull configuration; best-quality Stage 2 setups |
+| 6–8 | 🟢 Strong Stage 2 | Full bull configuration; best-quality Stage 2 setups |
 
 ---
 
@@ -66,4 +69,4 @@ A confirmed retest is considered a lower-risk entry than chasing the initial bre
 4. Click any symbol to open the **Phase Chart** and review the full price history and MA structure.
 5. Apply RSI and volume filters to narrow to actionable candidates.
 
-> **Tip**: A score of 6 or 7 without the volume criterion (criterion 1) often indicates a stock that has already broken out and is now in a clean Stage 2 advance — these can be excellent swing or position trade entries on pullbacks to the MA50.
+> **Tip**: A score of 6 or 7 without the volume criterion (criterion 1) often indicates a stock that has already broken out and is now in a clean Stage 2 advance — these can be excellent swing or position trade entries on pullbacks to the MA50. A score of **8/8** (all criteria including consolidation + volume spike) is the highest-confidence Weinstein base breakout signal.
