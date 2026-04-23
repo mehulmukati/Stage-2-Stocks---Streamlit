@@ -673,6 +673,46 @@ def _load_index_options() -> list[str]:
         return list(json.load(f).keys())
 
 
+_DOCS_SECTIONS = {
+    "Overview":           "overview.md",
+    "Stage 2 Screener":   "stage2_screener.md",
+    "Momentum Screener":  "momentum_screener.md",
+    "Phase Chart":        "phase_chart.md",
+    "Backtest":           "backtest.md",
+    "Data & Methodology": "data_methodology.md",
+}
+
+
+def render_docs():
+    """Render the selected documentation section from the docs/ folder."""
+    section = st.session_state.get("docs_section", "Overview")
+    filename = _DOCS_SECTIONS.get(section)
+    if not filename:
+        st.error("Section not found.")
+        return
+
+    docs_dir = os.path.join(os.path.dirname(__file__), "docs")
+    path = os.path.join(docs_dir, filename)
+    if not os.path.exists(path):
+        st.error(f"Documentation file missing: {filename}")
+        return
+
+    with open(path, "r", encoding="utf-8") as f:
+        st.markdown(f.read())
+
+    # ── prev / next navigation ──
+    sections = list(_DOCS_SECTIONS.keys())
+    idx = sections.index(section)
+    st.divider()
+    col_prev, col_next = st.columns(2)
+    if idx > 0 and col_prev.button(f"← {sections[idx - 1]}", use_container_width=True):
+        st.session_state["docs_section"] = sections[idx - 1]
+        st.rerun()
+    if idx < len(sections) - 1 and col_next.button(f"{sections[idx + 1]} →", use_container_width=True):
+        st.session_state["docs_section"] = sections[idx + 1]
+        st.rerun()
+
+
 def main():
     """Build the sidebar controls and dispatch to the selected screener's result view."""
     idx_options = _load_index_options()
@@ -682,7 +722,7 @@ def main():
         st.markdown("### 🖥 Screener")
         screener = st.radio(
             "Screener",
-            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest"],
+            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest", "📖 Docs"],
             key="active_screener",
             horizontal=True,
             label_visibility="collapsed",
@@ -690,9 +730,18 @@ def main():
 
         st.divider()
 
-        # ── INDEX SELECTION (hidden for Phase Chart and Backtest which has its own) ──
+        if screener == "📖 Docs":
+            st.markdown("### Contents")
+            st.radio(
+                "Section",
+                options=list(_DOCS_SECTIONS.keys()),
+                key="docs_section",
+                label_visibility="collapsed",
+            )
+
+        # ── INDEX SELECTION (hidden for Phase Chart, Backtest, and Docs) ──
         selected_indices = []
-        if screener not in ("📈 Phase Chart", "⏱ Backtest"):
+        if screener not in ("📈 Phase Chart", "⏱ Backtest", "📖 Docs"):
             st.markdown("### 📦 Indices")
             cols = st.columns(2)
             for i, idx in enumerate(idx_options):
@@ -861,6 +910,8 @@ def main():
             render_phase_chart(ticker, use_log_scale=use_log_scale)
     elif screener == "📊 Stage 2":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
+    elif screener == "📖 Docs":
+        render_docs()
     elif screener == "⏱ Backtest":
         backtest_results({
             "m":                   bt_m,
