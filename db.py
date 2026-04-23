@@ -51,6 +51,9 @@ def get_pool() -> ConnectionPool:
                     min_size=2,
                     max_size=8,
                     timeout=30,
+                    max_idle=300,      # discard connections idle > 5 min before Neon suspends them
+                    max_lifetime=3600, # recycle connections hourly to prevent stale state
+                    check=ConnectionPool.check_connection,  # SELECT 1 on borrow to catch dead connections
                     kwargs={"connect_timeout": 30},
                     open=True,
                 )
