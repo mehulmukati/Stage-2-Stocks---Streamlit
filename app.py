@@ -2,6 +2,7 @@
 import difflib
 import json
 import os
+import threading
 import warnings
 from datetime import datetime
 
@@ -17,7 +18,7 @@ load_dotenv()
 import db
 from backtest_engine import rolling_returns, run_backtest
 from config import IST
-from data import _load_constituents, _mem_cache, fetch_chart_data, load_benchmark_series, resolve_screener_data, sync_benchmark_data
+from data import _load_constituents, _mem_cache, fetch_chart_data, load_benchmark_series, load_compositions, load_ohlcv_for_backtest, resolve_screener_data, sync_benchmark_data
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
 
@@ -27,8 +28,20 @@ def compute_rolling_stage2(df):
 
 
 # ── PROCESS-LEVEL STATE (survives session resets within same server process) ──
+# Guarded by _state_lock so background workers in later phases can safely update.
+_state_lock = threading.RLock()
 _last_chart_ticker: str = ""
 _bt_proc_cache: dict = {"result": None}
+
+
+# ── EMIT HELPER ──
+def _make_emit(status_obj):
+    """Return an emit callable that writes progress messages into a st.status container.
+    Signature: emit(level, msg) where level is 'info' | 'warning' | 'error' | 'success'."""
+    _icons = {"info": "▸", "warning": "⚠️", "error": "❌", "success": "✅"}
+    def _emit(level: str, msg: str) -> None:
+        status_obj.write(f"{_icons.get(level, '▸')} {msg}")
+    return _emit
 
 
 # ── DB INIT (once at startup) ──
@@ -197,13 +210,17 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
             return
 
     if run_triggered:
-        df, cache_date, source = resolve_screener_data(False, for_momentum=False)
-        if df.empty:
-            st.warning(
-                f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins."
-            )
-            st.session_state["stage2_run_triggered"] = False
-            return
+        with st.status("📊 Loading Stage 2 data…", expanded=True) as _status:
+            _emit = _make_emit(_status)
+            df, cache_date, source = resolve_screener_data(False, for_momentum=False, emit=_emit)
+            if df.empty:
+                _status.update(label="⚠️ No data available", state="error")
+                st.warning(
+                    f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins."
+                )
+                st.session_state["stage2_run_triggered"] = False
+                return
+            _status.update(label="✓ Stage 2 data loaded", state="complete", expanded=False)
         st.session_state["stage2_cached_result"] = {"df": df, "cache_date": cache_date, "source": source}
         st.session_state["stage2_run_triggered"] = False
 
@@ -343,13 +360,17 @@ def momentum_results(
             return
 
     if run_triggered:
-        full_df, cache_date, source = resolve_screener_data(rsi_filter=False, for_momentum=True)
-        if full_df.empty:
-            st.warning(
-                "📅 No data available. Try again in a few minutes or check your internet connection."
-            )
-            st.session_state["mom_run_triggered"] = False
-            return
+        with st.status("🚀 Loading Momentum data…", expanded=True) as _status:
+            _emit = _make_emit(_status)
+            full_df, cache_date, source = resolve_screener_data(rsi_filter=False, for_momentum=True, emit=_emit)
+            if full_df.empty:
+                _status.update(label="⚠️ No data available", state="error")
+                st.warning(
+                    "📅 No data available. Try again in a few minutes or check your internet connection."
+                )
+                st.session_state["mom_run_triggered"] = False
+                return
+            _status.update(label="✓ Momentum data loaded", state="complete", expanded=False)
         st.session_state["mom_cached_result"] = {"df": full_df, "cache_date": cache_date, "source": source}
         st.session_state["mom_run_triggered"] = False
 
@@ -530,8 +551,10 @@ def backtest_results(params: dict):
     cached = st.session_state.get("bt_cached_result")
 
     if not run_triggered and cached is None:
-        if _bt_proc_cache["result"] is not None:
-            st.session_state["bt_cached_result"] = _bt_proc_cache["result"]
+        with _state_lock:
+            proc_result = _bt_proc_cache.get("result")
+        if proc_result is not None:
+            st.session_state["bt_cached_result"] = proc_result
             cached = st.session_state["bt_cached_result"]
             st.caption("⚡ Restored from last run — sidebar parameters reset to defaults; re-run if you changed them.")
         else:
@@ -544,34 +567,36 @@ def backtest_results(params: dict):
             st.session_state["bt_run_triggered"] = False
             return
 
-        with st.spinner("Syncing benchmark index data…"):
+        ohlcv_date = ohlcv_source = None
+
+        with st.status("⏱ Running backtest…", expanded=True) as _status:
+            _emit = _make_emit(_status)
+
+            _emit("info", "Syncing benchmark index data…")
             sync_benchmark_data()
 
-        from data import _load_constituents, load_compositions, load_ohlcv_for_backtest
-        symbol_data, ohlcv_date, ohlcv_source = load_ohlcv_for_backtest()
+            symbol_data, ohlcv_date, ohlcv_source = load_ohlcv_for_backtest(emit=_emit)
 
-        source_icon = {"memory": "⚡", "db": "💾", "internet": "🌐"}.get(ohlcv_source, "")
-        st.caption(f"{source_icon} OHLCV data as of **{ohlcv_date}** (source: {ohlcv_source})")
+            if not symbol_data:
+                _status.update(label="❌ No OHLCV data", state="error")
+                st.error("No OHLCV data in database. Run the Momentum screener first to sync data.")
+                st.session_state["bt_run_triggered"] = False
+                return
 
-        if not symbol_data:
-            st.error("No OHLCV data in database. Run the Momentum screener first to sync data.")
-            st.session_state["bt_run_triggered"] = False
-            return
+            if params["universe"]:
+                constituents = _load_constituents()
+                allowed = {s for idx, syms in constituents.items() if idx in params["universe"] for s in syms}
+                symbol_data = {s: df for s, df in symbol_data.items() if s in allowed}
 
-        if params["universe"]:
-            constituents = _load_constituents()
-            allowed = {s for idx, syms in constituents.items() if idx in params["universe"] for s in syms}
-            symbol_data = {s: df for s, df in symbol_data.items() if s in allowed}
+            compositions_df = load_compositions() if params.get("use_compositions") else None
+            if compositions_df is not None and not compositions_df.empty:
+                _emit("info", "🛡️ Historical constituent filter active (survivorship-bias mitigation)")
+            elif params.get("use_compositions"):
+                _emit("warning", "compositions.csv not found — constituent filter disabled")
 
-        compositions_df = load_compositions() if params.get("use_compositions") else None
-        if compositions_df is not None and not compositions_df.empty:
-            st.caption("🛡️ Historical constituent filter active (survivorship-bias mitigation)")
-        elif params.get("use_compositions"):
-            st.warning("⚠️ compositions.csv not found — constituent filter disabled.")
+            benchmarks = load_benchmark_series()
+            _emit("info", f"Running simulation ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
 
-        benchmarks = load_benchmark_series()
-
-        with st.spinner(f"Running backtest ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…"):
             result = run_backtest(
                 all_ohlcv=symbol_data,
                 benchmarks=benchmarks,
@@ -588,13 +613,21 @@ def backtest_results(params: dict):
                 apply_volume_filter=True,
             )
 
-        if "error" in result:
-            st.error(result["error"])
-            st.session_state["bt_run_triggered"] = False
-            return
+            if "error" in result:
+                _status.update(label="❌ Backtest failed", state="error")
+                st.error(result["error"])
+                st.session_state["bt_run_triggered"] = False
+                return
+
+            _status.update(label="✓ Backtest complete", state="complete", expanded=False)
+
+        source_icon = {"memory": "⚡", "db": "💾", "internet": "🌐"}.get(ohlcv_source, "")
+        if ohlcv_date:
+            st.caption(f"{source_icon} OHLCV data as of **{ohlcv_date}** (source: {ohlcv_source})")
 
         st.session_state["bt_cached_result"] = result
-        _bt_proc_cache["result"] = result
+        with _state_lock:
+            _bt_proc_cache["result"] = result
         st.session_state["bt_run_triggered"] = False
 
     result = st.session_state["bt_cached_result"]
@@ -815,14 +848,17 @@ def main():
             # Widget keys are removed from session state when not rendered (tab switch).
             # Restore explicitly from the persistent non-widget key or process-level fallback.
             if "chart_ticker_input" not in st.session_state:
-                restore = st.session_state.get("chart_ticker") or _last_chart_ticker
+                with _state_lock:
+                    proc_ticker = _last_chart_ticker
+                restore = st.session_state.get("chart_ticker") or proc_ticker
                 if restore:
                     st.session_state["chart_ticker_input"] = restore
             chart_ticker = st.text_input(
                 "NSE Symbol (e.g. RELIANCE)", key="chart_ticker_input",
             ).strip().upper()
             if chart_ticker:
-                _last_chart_ticker = chart_ticker
+                with _state_lock:
+                    _last_chart_ticker = chart_ticker
             st.session_state["chart_ticker"] = chart_ticker
 
         elif screener == "📊 Stage 2":

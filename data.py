@@ -1,10 +1,17 @@
 import json
 import os
+import threading
 from datetime import datetime, timedelta
+from typing import Callable
 
 import pandas as pd
 import streamlit as st
 import yfinance as yf
+
+# Default no-op emit used when callers don't need progress reporting.
+# Signature: (level: str, message: str) -> None
+# Levels: "info" | "warning" | "error" | "success"
+_NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
 import db
 from config import _MOMENTUM_TTL, HISTORY_DAYS, HISTORY_PERIOD, IST
@@ -48,10 +55,9 @@ def get_last_valid_trading_date(start_date_str: str, holidays: set) -> str:
 # CONSTITUENTS
 # ──────────────────────────────────────────────
 def _load_constituents() -> dict:
-    """Load index-to-symbols mapping from constituents.json; shows an error and returns {} if missing."""
+    """Load index-to-symbols mapping from constituents.json; returns {} if missing."""
     const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
     if not os.path.exists(const_path):
-        st.error("❌ `constituents.json` missing.")
         return {}
     with open(const_path, "r") as f:
         return json.load(f)
@@ -60,7 +66,11 @@ def _load_constituents() -> dict:
 # ──────────────────────────────────────────────
 # OHLCV SYNC
 # ──────────────────────────────────────────────
-def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
+def _sync_ohlcv_to_db(
+    all_symbols: list[str],
+    target_date: str = None,
+    emit: Callable[[str, str], None] = _NOOP_EMIT,
+) -> bool:
     """
     Incremental sync: fetch only missing dates from yfinance and upsert to DB.
     Returns True if data is available in DB (either already fresh or after fetching).
@@ -68,8 +78,10 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
     even if yfinance doesn't yet carry today's data (global_max < target_date).
     """
     # Already attempted this session for this date — don't re-fetch
-    if target_date and target_date in _ohlcv_sync_attempted:
-        return True
+    if target_date:
+        with _cache_lock:
+            if target_date in _ohlcv_sync_attempted:
+                return True
 
     tickers = [f"{s}.NS" for s in all_symbols]
     global_max, conservative_min = db.get_latest_ohlcv_date()
@@ -90,7 +102,7 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
         fetch_kwargs = {"period": HISTORY_PERIOD}
     else:
         if target_date and global_max >= target_date:
-            if target_date:
+            with _cache_lock:
                 _ohlcv_sync_attempted.add(target_date)
             return True
         fetch_from = (
@@ -101,17 +113,17 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
         fetch_kwargs = {"start": fetch_from, "end": today}
 
     try:
-        with st.spinner(spinner_msg):
-            raw = yf.download(
-                tickers,
-                group_by="ticker",
-                threads=True,
-                progress=False,
-                auto_adjust=True,
-                **fetch_kwargs,
-            )
+        emit("info", spinner_msg)
+        raw = yf.download(
+            tickers,
+            group_by="ticker",
+            threads=True,
+            progress=False,
+            auto_adjust=True,
+            **fetch_kwargs,
+        )
     except Exception as e:
-        st.error(f"Yahoo Finance Error: {e}")
+        emit("error", f"Yahoo Finance error: {e}")
         return False
 
     if raw is None or raw.empty:
@@ -157,13 +169,14 @@ def _sync_ohlcv_to_db(all_symbols: list[str], target_date: str = None) -> bool:
             continue
 
     if records:
-        with st.spinner(f"💾 Saving {len(records):,} rows to database..."):
-            db.upsert_ohlcv(records)
+        emit("info", f"💾 Saving {len(records):,} rows to database…")
+        db.upsert_ohlcv(records)
 
     # Mark this date as synced for the remainder of the session so that
     # the second screener (or backtest) doesn't trigger another yfinance fetch.
     if target_date:
-        _ohlcv_sync_attempted.add(target_date)
+        with _cache_lock:
+            _ohlcv_sync_attempted.add(target_date)
     return True
 
 
@@ -214,11 +227,16 @@ def load_benchmark_series() -> dict[str, pd.Series]:
     return {label: db.load_index_ohlcv(label) for label in BENCHMARK_TICKERS}
 
 
-def _score_from_db(constituents: dict, for_momentum: bool) -> pd.DataFrame:
+def _score_from_db(
+    constituents: dict,
+    for_momentum: bool,
+    emit: Callable[[str, str], None] = _NOOP_EMIT,
+) -> pd.DataFrame:
     """Load recent OHLCV from DB, run the appropriate scorer on each symbol, and return a sorted DataFrame."""
     period_days = 550 if for_momentum else 750
-    with st.spinner("📊 Loading history from database and scoring..."):
-        symbol_data = db.load_ohlcv_all(period_days=period_days)
+    emit("info", "📊 Loading price history from database…")
+    symbol_data = db.load_ohlcv_all(period_days=period_days)
+    emit("info", f"⚙️ Scoring {len(symbol_data)} symbols…")
 
     results = []
     for sym, sub in symbol_data.items():
@@ -269,6 +287,12 @@ def fetch_chart_data(symbol: str) -> pd.DataFrame:
 # ──────────────────────────────────────────────
 # 3-TIER CACHE  (Memory → DB → Internet)
 # ──────────────────────────────────────────────
+# Guards every read and write of _mem_cache and _ohlcv_sync_attempted. Workers
+# in later phases will hit these from background threads; readers snapshot the
+# per-kind dict under the lock and then read fields off the (immutable-by-convention)
+# snapshot without holding the lock.
+_cache_lock = threading.RLock()
+
 _mem_cache: dict[str, dict] = {
     "stage2":   {"date": None, "data": None},
     "momentum": {"date": None, "data": None, "ts": None},
@@ -292,7 +316,9 @@ def _get_target_key() -> str:
     return get_last_valid_trading_date(start, load_nse_holidays())
 
 
-def load_ohlcv_for_backtest() -> tuple[dict, str, str]:
+def load_ohlcv_for_backtest(
+    emit: Callable[[str, str], None] = _NOOP_EMIT,
+) -> tuple[dict, str, str]:
     """
     3-tier load of the full OHLCV history for backtesting (~5 years).
       Tier 1 — in-memory dict keyed by last trading date (TTL: 1 hour)
@@ -302,9 +328,13 @@ def load_ohlcv_for_backtest() -> tuple[dict, str, str]:
     """
     target_key = _get_target_key()
     constituents = _load_constituents()
+    if not constituents:
+        emit("error", "❌ constituents.json missing — check the data directory")
+        return {}, target_key, "error"
     all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
 
-    bc = _mem_cache["backtest"]
+    with _cache_lock:
+        bc = _mem_cache["backtest"]
     now = datetime.now()
     if (
         bc["data"] is not None
@@ -315,14 +345,15 @@ def load_ohlcv_for_backtest() -> tuple[dict, str, str]:
         return bc["data"], target_key, "memory"
 
     # Tier 3: sync from yfinance if DB is stale
-    _sync_ohlcv_to_db(all_symbols, target_date=target_key)
+    _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
 
     # Tier 2: load from DB
-    with st.spinner(f"📊 Loading {HISTORY_PERIOD} OHLCV history from database…"):
-        symbol_data = db.load_ohlcv_all(period_days=HISTORY_DAYS)
+    emit("info", f"📊 Loading {HISTORY_PERIOD} OHLCV history from database…")
+    symbol_data = db.load_ohlcv_all(period_days=HISTORY_DAYS)
 
     if symbol_data:
-        _mem_cache["backtest"] = {"date": target_key, "data": symbol_data, "ts": now}
+        with _cache_lock:
+            _mem_cache["backtest"] = {"date": target_key, "data": symbol_data, "ts": now}
 
     source = "memory" if bc["data"] is not None and bc["date"] == target_key else "db"
     return symbol_data, target_key, source
@@ -343,7 +374,10 @@ def load_compositions() -> pd.DataFrame:
 
 
 def resolve_screener_data(
-    rsi_filter: bool, for_momentum: bool = False, universe: str = None
+    rsi_filter: bool,
+    for_momentum: bool = False,
+    universe: str = None,
+    emit: Callable[[str, str], None] = _NOOP_EMIT,
 ):
     """
     3-tier resolution for both screeners:
@@ -355,13 +389,15 @@ def resolve_screener_data(
     target_key = _get_target_key()
     constituents = _load_constituents()
     if not constituents:
+        emit("error", "❌ constituents.json missing — check the data directory")
         return pd.DataFrame(), target_key, "error"
     all_symbols = list(
         dict.fromkeys([s for syms in constituents.values() for s in syms])
     )
 
     if for_momentum:
-        mc = _mem_cache["momentum"]
+        with _cache_lock:
+            mc = _mem_cache["momentum"]
         now = datetime.now()
 
         if (
@@ -372,31 +408,35 @@ def resolve_screener_data(
         ):
             return mc["data"], target_key, "memory"
 
-        _sync_ohlcv_to_db(all_symbols, target_date=target_key)
-        df = _score_from_db(constituents, for_momentum=True)
+        _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
+        df = _score_from_db(constituents, for_momentum=True, emit=emit)
 
         source = "db" if (mc["data"] is None or mc["date"] != target_key) else "memory"
         if not df.empty:
-            _mem_cache["momentum"] = {"date": target_key, "data": df, "ts": now}
+            with _cache_lock:
+                _mem_cache["momentum"] = {"date": target_key, "data": df, "ts": now}
         return df, target_key, source
 
     else:
-        mc = _mem_cache["stage2"]
+        with _cache_lock:
+            mc = _mem_cache["stage2"]
 
         if mc["data"] is not None and mc["date"] == target_key:
             return mc["data"], target_key, "memory"
 
         cached_df = db.load_stage2_cache(target_key)
         if cached_df is not None:
-            _mem_cache["stage2"] = {"date": target_key, "data": cached_df}
+            with _cache_lock:
+                _mem_cache["stage2"] = {"date": target_key, "data": cached_df}
             return cached_df, target_key, "db"
 
-        synced = _sync_ohlcv_to_db(all_symbols, target_date=target_key)
+        synced = _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
         if synced:
-            df = _score_from_db(constituents, for_momentum=False)
+            df = _score_from_db(constituents, for_momentum=False, emit=emit)
             if not df.empty:
                 db.save_stage2_cache(target_key, df)
-                _mem_cache["stage2"] = {"date": target_key, "data": df}
+                with _cache_lock:
+                    _mem_cache["stage2"] = {"date": target_key, "data": df}
                 return df, target_key, "internet"
 
         fallback_df, fallback_date = db.load_latest_stage2_cache()
