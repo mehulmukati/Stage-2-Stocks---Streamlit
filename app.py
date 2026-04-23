@@ -732,13 +732,6 @@ def render_docs():
     """Render the Guide with top tabs for section navigation and a styled content card."""
     st.markdown(_GUIDE_CSS, unsafe_allow_html=True)
 
-    st.markdown(
-        '<div class="guide-header">'
-        '<span class="guide-crumb">📚 User Guide</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
     docs_dir = os.path.join(os.path.dirname(__file__), "docs")
     tabs = st.tabs(list(_DOCS_SECTIONS.keys()))
 
@@ -767,7 +760,7 @@ def main():
         st.markdown("### 🖥 Screener")
         screener = st.radio(
             "Screener",
-            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest", "📚 Guide"],
+            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest", "📚 User Guide"],
             key="active_screener",
             horizontal=True,
             label_visibility="collapsed",
@@ -775,9 +768,9 @@ def main():
 
         st.divider()
 
-        # ── INDEX SELECTION (hidden for Phase Chart, Backtest, and Guide) ──
+        # ── INDEX SELECTION (hidden for Phase Chart, Backtest, and User Guide) ──
         selected_indices = []
-        if screener not in ("📈 Phase Chart", "⏱ Backtest", "📚 Guide"):
+        if screener not in ("📈 Phase Chart", "⏱ Backtest", "📚 User Guide"):
             st.markdown("### 📦 Indices")
             cols = st.columns(2)
             for i, idx in enumerate(idx_options):
