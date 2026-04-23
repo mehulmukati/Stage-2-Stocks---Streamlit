@@ -197,14 +197,15 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
             return
 
     if run_triggered:
-        st.session_state["stage2_run_triggered"] = False
         df, cache_date, source = resolve_screener_data(False, for_momentum=False)
         if df.empty:
             st.warning(
                 f"📅 No data available for **{cache_date}**. Yahoo Finance may be syncing. Try again in 30 mins."
             )
+            st.session_state["stage2_run_triggered"] = False
             return
         st.session_state["stage2_cached_result"] = {"df": df, "cache_date": cache_date, "source": source}
+        st.session_state["stage2_run_triggered"] = False
 
     cached = st.session_state["stage2_cached_result"]
     df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
@@ -342,14 +343,15 @@ def momentum_results(
             return
 
     if run_triggered:
-        st.session_state["mom_run_triggered"] = False
         full_df, cache_date, source = resolve_screener_data(rsi_filter=False, for_momentum=True)
         if full_df.empty:
             st.warning(
                 "📅 No data available. Try again in a few minutes or check your internet connection."
             )
+            st.session_state["mom_run_triggered"] = False
             return
         st.session_state["mom_cached_result"] = {"df": full_df, "cache_date": cache_date, "source": source}
+        st.session_state["mom_run_triggered"] = False
 
     cached = st.session_state["mom_cached_result"]
     full_df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
@@ -537,11 +539,9 @@ def backtest_results(params: dict):
             return
 
     if run_triggered:
-        # Clear the trigger immediately so future widget interactions don't re-run
-        st.session_state["bt_run_triggered"] = False
-
         if params["n"] <= params["m"]:
             st.error("N (exit threshold) must be greater than M (entry threshold).")
+            st.session_state["bt_run_triggered"] = False
             return
 
         with st.spinner("Syncing benchmark index data…"):
@@ -555,6 +555,7 @@ def backtest_results(params: dict):
 
         if not symbol_data:
             st.error("No OHLCV data in database. Run the Momentum screener first to sync data.")
+            st.session_state["bt_run_triggered"] = False
             return
 
         if params["universe"]:
@@ -589,10 +590,12 @@ def backtest_results(params: dict):
 
         if "error" in result:
             st.error(result["error"])
+            st.session_state["bt_run_triggered"] = False
             return
 
         st.session_state["bt_cached_result"] = result
         _bt_proc_cache["result"] = result
+        st.session_state["bt_run_triggered"] = False
 
     result = st.session_state["bt_cached_result"]
     nav_df = result["nav"]
@@ -809,9 +812,14 @@ def main():
         if screener == "📈 Phase Chart":
             global _last_chart_ticker
             st.markdown("**Stock Symbol**")
+            # Widget keys are removed from session state when not rendered (tab switch).
+            # Restore explicitly from the persistent non-widget key or process-level fallback.
+            if "chart_ticker_input" not in st.session_state:
+                restore = st.session_state.get("chart_ticker") or _last_chart_ticker
+                if restore:
+                    st.session_state["chart_ticker_input"] = restore
             chart_ticker = st.text_input(
                 "NSE Symbol (e.g. RELIANCE)", key="chart_ticker_input",
-                value=_last_chart_ticker,
             ).strip().upper()
             if chart_ticker:
                 _last_chart_ticker = chart_ticker
