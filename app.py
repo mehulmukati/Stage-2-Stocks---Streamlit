@@ -26,6 +26,11 @@ def compute_rolling_stage2(df):
     return _compute_rolling_stage2(df)
 
 
+# ── PROCESS-LEVEL STATE (survives session resets within same server process) ──
+_last_chart_ticker: str = ""
+_bt_proc_cache: dict = {"result": None}
+
+
 # ── DB INIT (once at startup) ──
 @st.cache_resource
 def _init_db():
@@ -523,8 +528,13 @@ def backtest_results(params: dict):
     cached = st.session_state.get("bt_cached_result")
 
     if not run_triggered and cached is None:
-        st.info("Configure parameters in the sidebar and click **Run Backtest**.")
-        return
+        if _bt_proc_cache["result"] is not None:
+            st.session_state["bt_cached_result"] = _bt_proc_cache["result"]
+            cached = st.session_state["bt_cached_result"]
+            st.caption("⚡ Restored from last run — sidebar parameters reset to defaults; re-run if you changed them.")
+        else:
+            st.info("Configure parameters in the sidebar and click **Run Backtest**.")
+            return
 
     if run_triggered:
         # Clear the trigger immediately so future widget interactions don't re-run
@@ -582,6 +592,7 @@ def backtest_results(params: dict):
             return
 
         st.session_state["bt_cached_result"] = result
+        _bt_proc_cache["result"] = result
 
     result = st.session_state["bt_cached_result"]
     nav_df = result["nav"]
@@ -796,10 +807,14 @@ def main():
 
         # ── CONTEXT-SPECIFIC FILTERS ──
         if screener == "📈 Phase Chart":
+            global _last_chart_ticker
             st.markdown("**Stock Symbol**")
             chart_ticker = st.text_input(
-                "NSE Symbol (e.g. RELIANCE)", key="chart_ticker_input"
+                "NSE Symbol (e.g. RELIANCE)", key="chart_ticker_input",
+                value=_last_chart_ticker,
             ).strip().upper()
+            if chart_ticker:
+                _last_chart_ticker = chart_ticker
             st.session_state["chart_ticker"] = chart_ticker
 
         elif screener == "📊 Stage 2":
