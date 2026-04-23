@@ -798,8 +798,6 @@ def render_docs():
 def main():
     """Build the sidebar controls and dispatch to the selected screener's result view."""
     user_token = _get_user_token()
-    if registry.any_running(user_token):
-        st_autorefresh(interval=1500, key="job_autorefresh")
     idx_options = _load_index_options()
 
     with st.sidebar:
@@ -978,6 +976,20 @@ def main():
                 "🚀 Run", type="primary", width="stretch", key="mom_run_btn"
             ):
                 st.session_state["mom_run_triggered"] = True
+
+    # ── AUTOREFRESH — only on the active screener tab while its job runs ──
+    # Firing globally for any background job caused the previous tab's content
+    # to bleed into the current tab during autorefresh-triggered reruns.
+    _kind_for_screener = {
+        "📊 Stage 2": "stage2",
+        "🚀 Momentum": "momentum",
+        "⏱ Backtest": "backtest",
+    }
+    _active_kind = _kind_for_screener.get(screener)
+    if _active_kind:
+        _active_job = registry.latest(user_token, _active_kind)
+        if _active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED):
+            st_autorefresh(interval=1500, key="job_autorefresh")
 
     # ── MAIN AREA — results only ──
     if screener == "📈 Phase Chart":
