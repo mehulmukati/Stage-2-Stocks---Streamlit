@@ -220,6 +220,7 @@ def sync_benchmark_data() -> bool:
         return True  # already synced this hour — skip all network/DB work
 
     records = []
+    fetch_failed = False
     for label, ticker in BENCHMARK_TICKERS.items():
         latest = db.get_latest_index_date(label)
         if latest is None:
@@ -236,6 +237,7 @@ def sync_benchmark_data() -> bool:
         try:
             raw = yf.download(ticker, auto_adjust=True, progress=False, **fetch_kwargs)
             if raw is None or raw.empty:
+                fetch_failed = True
                 continue
             raw.columns = [c[0] if isinstance(c, tuple) else c for c in raw.columns]
             for dt, row in raw.iterrows():
@@ -243,12 +245,16 @@ def sync_benchmark_data() -> bool:
                     continue
                 records.append({"symbol": label, "date": dt.date(), "close": float(row["Close"])})
         except Exception:
+            fetch_failed = True
             continue
 
     if records:
         db.upsert_index_ohlcv(records)
-    with _cache_lock:
-        _mem_cache["benchmark"] = {"data": None, "ts": now}  # data=None forces fresh DB read
+    if not fetch_failed:
+        # Only advance the TTL when all fetches succeeded (or data was already current).
+        # A failed fetch leaves ts unchanged so the next call can retry immediately.
+        with _cache_lock:
+            _mem_cache["benchmark"] = {"data": None, "ts": now}
     return True
 
 

@@ -284,9 +284,9 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
     if filters["min_annual_return"] > 0:
         display_df = display_df[display_df["1Y_Change"].notna() & (display_df["1Y_Change"] >= filters["min_annual_return"])]
     if filters["close_above_100dma"]:
-        display_df = display_df[display_df["Close"] > display_df["DMA100"]]
+        display_df = display_df[display_df["DMA100"].notna() & (display_df["Close"] > display_df["DMA100"])]
     if filters["close_above_200dma"]:
-        display_df = display_df[display_df["Close"] > display_df["DMA200"]]
+        display_df = display_df[display_df["DMA200"].notna() & (display_df["Close"] > display_df["DMA200"])]
 
     threshold = (100 - filters["pct_from_52w_high"]) / 100
     display_df = display_df[display_df["Close"] >= (threshold * display_df["52w_High"])]
@@ -369,10 +369,15 @@ def backtest_results(params: dict):
     if st.session_state.get("backtest_run_triggered"):
         if params["n"] <= params["m"]:
             st.session_state.pop("backtest_run_triggered", None)
-            st.error("N (exit threshold) must be greater than M (entry threshold).")
+            st.session_state["backtest_param_error"] = "N (exit threshold) must be greater than M (entry threshold)."
             return
+        st.session_state.pop("backtest_param_error", None)
         # Snapshot all submitted params so the sidebar can restore widget values after a tab-switch.
         st.session_state["bt_saved_params"] = {**params, "rolling_window": roll_label}
+
+    if "backtest_param_error" in st.session_state:
+        st.error(st.session_state["backtest_param_error"])
+        return
 
     if _poll_job("backtest", backtest_worker, params):
         return
@@ -713,7 +718,8 @@ def main():
     _active_kind = _kind_for_screener.get(screener)
     if _active_kind:
         _active_job = registry.latest(user_token, _active_kind)
-        if _active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED):
+        _run_triggered = st.session_state.get(f"{_active_kind}_run_triggered", False)
+        if _run_triggered or (_active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
             st_autorefresh(interval=1500, key="job_autorefresh")
 
     if screener == "📈 Phase Chart":
