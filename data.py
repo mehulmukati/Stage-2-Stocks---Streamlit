@@ -96,6 +96,7 @@ def _sync_ohlcv_to_db(
     all_symbols: list[str],
     target_date: str = None,
     emit: Callable[[str, str], None] = _NOOP_EMIT,
+    force_download: bool = False,
 ) -> bool:
     """
     Incremental sync: fetch only missing dates from yfinance and upsert to DB.
@@ -104,16 +105,22 @@ def _sync_ohlcv_to_db(
     Single-flight guarantee: the first thread to sync a given target_date does the
     work; concurrent threads block on a threading.Event until the leader finishes,
     then return True without re-fetching.
+
+    When `force_download=True`, bypass the attempted-set guard AND the
+    "DB already has fresh data" shortcut — do a real yfinance fetch and populate
+    `_mem_ohlcv`.  Used as a last-resort fallback when DB reads succeed for small
+    queries but fail/time-out for the backtest's 10-year query on flaky hosts.
     """
-    # Already synced this process run — skip immediately.
-    if target_date:
+    # Already synced this process run — skip immediately (unless forced).
+    if target_date and not force_download:
         with _cache_lock:
             if target_date in _ohlcv_sync_attempted:
                 return True
 
     # Single-flight latch: leader creates the Event; waiters block on it.
+    # Skipped when forcing a re-download (the prior latch is already resolved).
     latch_evt: threading.Event | None = None
-    if target_date:
+    if target_date and not force_download:
         with _sync_latch_lock:
             if target_date in _sync_latches:
                 latch_evt = _sync_latches[target_date]
@@ -126,18 +133,24 @@ def _sync_ohlcv_to_db(
             emit("info", "⏳ OHLCV sync already in progress — waiting…")
             latch_evt.wait(timeout=300)
             return True
-    # target_date is None → always leader, no latch needed.
+    # target_date is None or force_download → always leader, no latch needed.
 
     try:
         tickers = [f"{s}.NS" for s in all_symbols]
-        try:
-            global_max, conservative_min = db.get_latest_ohlcv_date()
-            global_min = db.get_earliest_ohlcv_date()
-        except Exception as _db_exc:
-            emit("warning", f"⚠️ DB unavailable — fetching full history from Yahoo Finance: {_db_exc}")
+        if force_download:
+            # Skip DB date checks — go straight to full yfinance download
             global_max = None
             conservative_min = None
             global_min = None
+        else:
+            try:
+                global_max, conservative_min = db.get_latest_ohlcv_date()
+                global_min = db.get_earliest_ohlcv_date()
+            except Exception as _db_exc:
+                emit("warning", f"⚠️ DB unavailable — fetching full history from Yahoo Finance: {_db_exc}")
+                global_max = None
+                conservative_min = None
+                global_min = None
 
         earliest_needed = (
             datetime.now(IST) - timedelta(days=HISTORY_DAYS)
@@ -226,7 +239,7 @@ def _sync_ohlcv_to_db(
                 _mem_ohlcv.update(_records_to_symbol_data(records))
             emit("info", f"💾 Saving {len(records):,} rows to database…")
             try:
-                db.upsert_ohlcv(records)
+                db.upsert_ohlcv(records, emit=emit)
             except Exception as _db_exc:
                 emit("warning", f"⚠️ DB write failed — data cached in memory only: {_db_exc}")
 
@@ -366,20 +379,41 @@ def _score_from_db(
 ) -> pd.DataFrame:
     """Load recent OHLCV from DB (or memory fallback), run the scorer, return a sorted DataFrame."""
     period_days = 550 if for_momentum else 750
-    emit("info", "📊 Loading price history from database…")
     symbol_data: dict[str, pd.DataFrame] | None = None
-    try:
-        symbol_data = db.load_ohlcv_all(period_days=period_days)
-    except Exception as _db_exc:
-        emit("warning", f"⚠️ DB read failed — using in-memory OHLCV cache: {_db_exc}")
+
+    # Prefer in-memory cache when populated — avoids a full-table-scan query
+    # against Supabase (the date column is TEXT, so `date::date >= NOW() - ...`
+    # cannot use an index and routinely hits the 60s statement timeout).
+    with _cache_lock:
+        if _mem_ohlcv:
+            symbol_data = dict(_mem_ohlcv)
+    if symbol_data:
+        emit("info", f"📦 Using in-memory OHLCV cache ({len(symbol_data)} symbols)")
+    else:
+        emit("info", "📊 Loading price history from database…")
+        try:
+            symbol_data = db.load_ohlcv_all(period_days=period_days)
+            if symbol_data:
+                with _cache_lock:
+                    _mem_ohlcv.update(symbol_data)
+        except Exception as _db_exc:
+            emit("warning", f"⚠️ DB read failed — using in-memory OHLCV cache: {_db_exc}")
 
     if not symbol_data:
-        # Fallback: use whatever _sync_ohlcv_to_db already downloaded to memory
+        # Fallback A: use whatever _sync_ohlcv_to_db already downloaded to memory
+        with _cache_lock:
+            symbol_data = dict(_mem_ohlcv)
+
+    # Fallback B (last resort): force fresh yfinance download
+    if not symbol_data:
+        emit("warning", "⚠️ DB unreachable and memory empty — forcing fresh Yahoo Finance download…")
+        all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
+        _sync_ohlcv_to_db(all_symbols, emit=emit, force_download=True)
         with _cache_lock:
             symbol_data = dict(_mem_ohlcv)
 
     if not symbol_data:
-        emit("error", "❌ No OHLCV data available (DB down and no in-memory cache yet)")
+        emit("error", "❌ No OHLCV data available — DB is unreachable and Yahoo Finance download failed")
         return pd.DataFrame()
 
     emit("info", f"⚙️ Scoring {len(symbol_data)} symbols…")
@@ -508,20 +542,47 @@ def load_ohlcv_for_backtest(
     # Tier 3: sync from yfinance if DB is stale (also populates _mem_ohlcv as fallback)
     _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
 
-    # Tier 2: load from DB
-    emit("info", f"📊 Loading {HISTORY_PERIOD} OHLCV history from database…")
     symbol_data: dict[str, pd.DataFrame] | None = None
-    try:
-        symbol_data = db.load_ohlcv_all(period_days=HISTORY_DAYS)
-    except Exception as _db_exc:
-        emit("warning", f"⚠️ DB read failed — using in-memory OHLCV cache: {_db_exc}")
 
+    # Prefer in-memory cache when populated — a 10y `date::date >= NOW() - ...`
+    # query against Supabase regularly hits the 60s statement timeout because
+    # the date column is TEXT and cannot use an index.
+    with _cache_lock:
+        if _mem_ohlcv:
+            symbol_data = dict(_mem_ohlcv)
+    if symbol_data:
+        emit("info", f"📦 Using in-memory OHLCV cache ({len(symbol_data)} symbols)")
+    else:
+        # Tier 2: load from DB
+        emit("info", f"📊 Loading {HISTORY_PERIOD} OHLCV history from database…")
+        try:
+            symbol_data = db.load_ohlcv_all(period_days=HISTORY_DAYS)
+        except Exception as _db_exc:
+            emit("warning", f"⚠️ DB read failed — using in-memory OHLCV cache: {_db_exc}")
+
+        # Cache successful DB reads into _mem_ohlcv so later calls skip the slow query.
+        if symbol_data:
+            with _cache_lock:
+                _mem_ohlcv.update(symbol_data)
+
+    # Fallback A: use whatever _sync_ohlcv_to_db or a prior load stored in _mem_ohlcv
     if not symbol_data:
-        # Fallback: use what _sync_ohlcv_to_db stored in _mem_ohlcv
         with _cache_lock:
             symbol_data = dict(_mem_ohlcv)
         if symbol_data:
             emit("info", f"📦 Serving {len(symbol_data)} symbols from in-memory cache (DB offline)")
+
+    # Fallback B (last resort): both DB and memory are empty.
+    # This hits when a previous momentum run short-circuited _sync_ohlcv_to_db
+    # (DB looked fresh for the 550-day query) but the 10-year backtest query
+    # then fails or times out on the DB.  Force a real yfinance download.
+    if not symbol_data:
+        emit("warning", "⚠️ DB has no 10-year history and memory is empty — forcing fresh Yahoo Finance download…")
+        _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit, force_download=True)
+        with _cache_lock:
+            symbol_data = dict(_mem_ohlcv)
+        if symbol_data:
+            emit("info", f"📦 Serving {len(symbol_data)} symbols from fresh Yahoo Finance download")
 
     source = "db"
     if symbol_data:

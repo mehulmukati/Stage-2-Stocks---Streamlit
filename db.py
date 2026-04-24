@@ -142,33 +142,63 @@ def init_db():
 # ──────────────────────────────────────────────
 # OHLCV — WRITE
 # ──────────────────────────────────────────────
-def upsert_ohlcv(records: list[dict]):
-    """Bulk-upsert OHLCV rows, updating price/volume fields on duplicate (symbol, date) keys."""
+def upsert_ohlcv(records: list[dict], chunk_size: int = 100_000, emit=None):
+    """
+    Bulk-upsert OHLCV rows via COPY → staging → INSERT … ON CONFLICT.
+
+    COPY is ~100× faster than executemany for large batches (single-round-trip
+    streaming vs per-row parameter binding).  Writes are split into chunks so
+    each INSERT … ON CONFLICT stays inside Supabase's ~60 s statement timeout.
+
+    For 1.4 M rows over a Supabase Session Pooler from India:
+      executemany  → 30 min to several hours
+      chunked COPY → ~1–2 minutes
+    """
     if not records:
         return
-    rows = [
-        (
-            r["symbol"],
-            str(r["date"]),
-            r["open"],
-            r["high"],
-            r["low"],
-            r["close"],
-            r["volume"],
-        )
-        for r in records
-    ]
-    sql = """
-        INSERT INTO ohlcv (symbol, date, open, high, low, close, volume)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (symbol, date) DO UPDATE SET
-            open=excluded.open, high=excluded.high, low=excluded.low,
-            close=excluded.close, volume=excluded.volume
-    """
     with _get_conn() as conn:
         with conn.cursor() as cur:
-            cur.executemany(sql, rows, returning=False)
-        conn.commit()
+            # Session-scoped staging table; rows auto-clear on every commit.
+            cur.execute("""
+                CREATE TEMP TABLE IF NOT EXISTS _ohlcv_stage (
+                    symbol TEXT NOT NULL,
+                    date   TEXT NOT NULL,
+                    open   FLOAT,
+                    high   FLOAT,
+                    low    FLOAT,
+                    close  FLOAT,
+                    volume BIGINT
+                ) ON COMMIT DELETE ROWS
+            """)
+            total = len(records)
+            for i in range(0, total, chunk_size):
+                chunk = records[i:i + chunk_size]
+                # Stream chunk via COPY — single round-trip
+                with cur.copy(
+                    "COPY _ohlcv_stage (symbol, date, open, high, low, close, volume) FROM STDIN"
+                ) as copy:
+                    for r in chunk:
+                        copy.write_row((
+                            r["symbol"],
+                            str(r["date"]),
+                            r["open"],
+                            r["high"],
+                            r["low"],
+                            r["close"],
+                            r["volume"],
+                        ))
+                # Merge into main table with ON CONFLICT
+                cur.execute("""
+                    INSERT INTO ohlcv (symbol, date, open, high, low, close, volume)
+                    SELECT symbol, date, open, high, low, close, volume FROM _ohlcv_stage
+                    ON CONFLICT (symbol, date) DO UPDATE SET
+                        open=excluded.open, high=excluded.high, low=excluded.low,
+                        close=excluded.close, volume=excluded.volume
+                """)
+                conn.commit()  # drops _ohlcv_stage rows via ON COMMIT DELETE ROWS
+                if emit is not None:
+                    done = min(i + chunk_size, total)
+                    emit("info", f"💾 Upserted {done:,}/{total:,} rows…")
 
 
 # ──────────────────────────────────────────────
