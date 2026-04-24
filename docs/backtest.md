@@ -65,7 +65,7 @@ One-way cost applied to each stock that enters or exits the portfolio at rebalan
 
 ## Survivorship bias mitigation
 
-When **"Use historical constituents"** is enabled, the eligible universe on each rebalance date is restricted to stocks that were **actually in the selected index at that point in time**, using historical composition data from `compositions.csv`.
+When **"Use historical constituents"** is enabled, the eligible universe on each rebalance date is restricted to stocks that were **actually in the selected index at that point in time**, using historical composition data from `compositions.parquet`.
 
 This prevents the backtest from picking stocks that:
 - Were added to the index *after* the rebalance date (hindsight selection)

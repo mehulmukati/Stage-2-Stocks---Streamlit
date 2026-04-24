@@ -10,7 +10,7 @@ Two portfolio variants are tracked simultaneously:
   - Marginal rebalance: only in/out stocks are adjusted; incumbents keep price-drifted weights
 
 Survivorship-bias mitigations applied:
-  - Historical constituent filter via compositions.csv (only stocks in-index at each date)
+  - Historical constituent filter via compositions.parquet (only stocks in-index at each date)
   - Minimum 750 trading-day history required before a stock can be ranked
   - Stocks with > 5% missing close prices excluded (suspended / bad data)
   - Volume filter: median volume must meet MIN_VOLUME threshold

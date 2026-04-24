@@ -62,7 +62,7 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
     if compositions_df is not None and not compositions_df.empty:
         emit("info", "🛡️ Historical constituent filter active (survivorship-bias mitigation)")
     elif params.get("use_compositions"):
-        emit("warning", "compositions.csv not found — constituent filter disabled")
+        emit("warning", "compositions.parquet not found — constituent filter disabled")
 
     benchmarks = load_benchmark_series()
     emit("info", f"Running simulation ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
