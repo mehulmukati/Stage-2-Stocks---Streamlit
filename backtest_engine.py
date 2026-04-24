@@ -227,6 +227,7 @@ def run_backtest(
     transaction_cost_pct: float = 0.001,
     min_history_days: int = 750,
     apply_volume_filter: bool = True,
+    band_rule: str = "classic",
 ) -> dict:
     """
     Run both portfolio variants and return NAV series + summary stats.
@@ -251,6 +252,9 @@ def run_backtest(
     min_history_days     : minimum trading-day history required before a stock
                            can be ranked (default 750 ≈ 3 years)
     apply_volume_filter  : exclude stocks with median volume < MIN_VOLUME
+    band_rule            : 'classic'      — exit if rank > N, enter if rank ≤ M (may exceed M)
+                           'displacement' — exit only when displaced by a rank-≤M entrant;
+                                            portfolio size is always ≤ M
     """
     t0 = pd.Timestamp(start_date)
     t1 = pd.Timestamp(end_date)
@@ -277,6 +281,7 @@ def run_backtest(
     holdings_log: list[dict] = []
     turnover_log: list[float] = []
     cost_log: list[float] = []
+    holdings_sizes: list[int] = []
 
     for i, day in enumerate(trading_days):
         # ── rebalance ──
@@ -297,15 +302,29 @@ def run_backtest(
             top_m = set(ranked[:m])
             top_n = set(ranked[:n])
 
-            # determine new holdings via band rule
-            exits = current_holdings - top_n          # held but fell out of top-N
-            entries = top_m - current_holdings        # not held but now in top-M
+            if band_rule == "displacement":
+                # Exit only when displaced by a rank-≤M entrant; portfolio stays ≤ M.
+                entries_wanted = sorted(top_m - current_holdings, key=ranked.index)
+                exits_eligible = sorted(current_holdings - top_n, key=ranked.index, reverse=True)
+                free_slots = max(0, m - len(current_holdings))
+                entries = set(entries_wanted[:free_slots])
+                exits: set[str] = set()
+                for _i, stock in enumerate(entries_wanted[free_slots:]):
+                    if _i < len(exits_eligible):
+                        entries.add(stock)
+                        exits.add(exits_eligible[_i])
+            else:
+                # classic: exit if rank > N, enter if rank ≤ M (may briefly exceed M)
+                exits = current_holdings - top_n
+                entries = top_m - current_holdings
+
             new_holdings = (current_holdings - exits) | entries
 
             if not new_holdings:
                 new_holdings = top_m if top_m else current_holdings
 
             size = len(new_holdings)
+            holdings_sizes.append(size)
             traded = len(exits) + len(entries)
             turnover = traded / max(len(current_holdings), 1) if current_holdings else 1.0
             turnover_log.append(turnover)
@@ -389,10 +408,15 @@ def run_backtest(
         rolling_max = s.cummax()
         drawdown = (s - rolling_max) / rolling_max
         max_dd = drawdown.min()
+        calmar = cagr / abs(max_dd) if max_dd != 0 else np.nan
+        neg_ret = daily_ret[daily_ret < 0]
+        sortino = (daily_ret.mean() / neg_ret.std() * np.sqrt(252)) if len(neg_ret) > 1 and neg_ret.std() > 0 else np.nan
         stats[col] = {
             "CAGR (%)": round(cagr * 100, 2),
-            "Sharpe": round(sharpe, 3),
+            "Sharpe": round(float(sharpe), 3) if not np.isnan(sharpe) else np.nan,
             "Max Drawdown (%)": round(max_dd * 100, 2),
+            "Calmar": round(float(calmar), 3) if not np.isnan(calmar) else np.nan,
+            "Sortino": round(float(sortino), 3) if not np.isnan(sortino) else np.nan,
             "Final NAV": round(s.iloc[-1], 2),
         }
 
@@ -400,6 +424,13 @@ def run_backtest(
 
     avg_turnover = round(np.mean(turnover_log) * 100, 1) if turnover_log else 0.0
     total_cost_drag = round(sum(cost_log) * 100, 3) if cost_log else 0.0
+    avg_holdings = round(float(np.mean(holdings_sizes)), 1) if holdings_sizes else 0.0
+
+    for col in ["Full Rebalance", "Marginal Rebalance"]:
+        if col in stats_df.index:
+            stats_df.loc[col, "Avg Holdings"] = avg_holdings
+            stats_df.loc[col, "Avg Turnover (%)"] = avg_turnover
+            stats_df.loc[col, "Cost Drag (%)"] = total_cost_drag
 
     return {
         "nav": nav_df,

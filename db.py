@@ -1,78 +1,104 @@
 """
-Database layer — PostgreSQL via Neon (psycopg v3) with a shared connection pool.
+Database layer — PostgreSQL via Neon (psycopg v3), direct per-call connections.
 Requires DATABASE_URL env var pointing to a postgresql:// connection string.
+
+No connection pool is used: Neon is a serverless database that suspends after
+inactivity and can take several seconds to cold-start.  A pool's background
+keep-alive threads fight this behaviour and produce spurious timeout errors.
+Direct connections are opened on demand, with a retry loop that absorbs
+cold-start latency transparently.
 """
 
 import io
 import os
 import re
-import threading
 import time
 from contextlib import contextmanager
 
 import pandas as pd
 import psycopg
 from dotenv import load_dotenv
-from psycopg_pool import ConnectionPool
 
 load_dotenv()
 
 
-# ──────────────────────────────────────────────
-# CONNECTION POOL
-# ──────────────────────────────────────────────
-_pool: ConnectionPool | None = None
-_pool_lock = threading.Lock()
-
-
 def _build_conninfo() -> str:
-    """Return the PostgreSQL conninfo string with the Neon endpoint param injected when needed."""
+    """
+    Return the PostgreSQL connection string from DATABASE_URL.
+
+    - Neon hosts (ep-* pattern): injects the required endpoint option.
+    - Supabase hosts (supabase.com): injects sslmode=require, which the
+      Session Pooler mandates but psycopg doesn't enable by default.
+    """
     url = os.environ["DATABASE_URL"]
+
+    # Neon: inject endpoint parameter
     m = re.search(r"@(ep-[^.]+)\.", url)
     if m and "options=" not in url:
         sep = "&" if "?" in url else "?"
         url = f"{url}{sep}options=endpoint%3D{m.group(1)}"
+
+    # Supabase: require SSL (Session Pooler closes non-SSL connections)
+    if "supabase.com" in url and "sslmode=" not in url:
+        sep = "&" if "?" in url else "?"
+        url = f"{url}{sep}sslmode=require"
+
     return url
 
 
-def get_pool() -> ConnectionPool:
-    """Lazily construct and return a process-wide ConnectionPool (min=2, max=8). Thread-safe."""
-    global _pool
-    if _pool is not None:
-        return _pool
-    with _pool_lock:
-        if _pool is not None:
-            return _pool
-        last_exc: Exception | None = None
-        for attempt in range(3):
-            try:
-                pool = ConnectionPool(
-                    conninfo=_build_conninfo(),
-                    min_size=2,
-                    max_size=8,
-                    timeout=30,
-                    max_idle=300,      # discard connections idle > 5 min before Neon suspends them
-                    max_lifetime=3600, # recycle connections hourly to prevent stale state
-                    check=ConnectionPool.check_connection,  # SELECT 1 on borrow to catch dead connections
-                    kwargs={"connect_timeout": 30},
-                    open=True,
-                )
-                pool.wait(timeout=30)
-                _pool = pool
-                return _pool
-            except Exception as e:
-                last_exc = e
-                if attempt < 2:
-                    time.sleep(5 * (attempt + 1))
-        assert last_exc is not None
-        raise last_exc
+_PERMANENT_ERRORS = (
+    "quota",
+    "does not exist",
+    "password authentication failed",
+    "pg_hba.conf",
+    "role",
+    "database",
+    "getaddrinfo",          # DNS resolution failure — retrying won't help
+    "resolve host",         # same class of error, different wording
+    "name or service",      # POSIX variant: "Name or service not known"
+    "tenant or user not",   # Supabase pooler: wrong username format
+    "no pg_hba.conf",       # auth config mismatch
+)
+
+
+def _is_transient(exc: Exception) -> bool:
+    """Return True only for errors that are worth retrying (cold-start, network blip)."""
+    msg = str(exc).lower()
+    return not any(kw in msg for kw in _PERMANENT_ERRORS)
+
+
+def _masked_url() -> str:
+    """Return DATABASE_URL with the password replaced by *** for safe logging."""
+    url = os.environ.get("DATABASE_URL", "")
+    return re.sub(r"(:)[^:@]+(@)", r"\1***\2", url)
 
 
 @contextmanager
 def _get_conn():
-    """Yield a pooled connection. On clean exit the transaction commits and the connection returns to the pool."""
-    with get_pool().connection() as conn:
-        yield conn
+    """
+    Open a direct psycopg connection, yield it, then close it.
+
+    Retries up to 3 times (with 10 s / 20 s back-off) for transient failures
+    such as Neon cold-starts.  Permanent errors (quota exceeded, bad credentials,
+    unknown database, etc.) are re-raised immediately without retrying.
+    """
+    conn: psycopg.Connection | None = None
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        try:
+            conn = psycopg.connect(_build_conninfo(), connect_timeout=30)
+            break
+        except Exception as exc:
+            last_exc = exc
+            if not _is_transient(exc) or attempt == 2:
+                raise RuntimeError(
+                    f"DB connection failed [{_masked_url()}]: {exc}"
+                ) from exc
+            time.sleep(10 * (attempt + 1))   # 10 s, then 20 s
+    try:
+        yield conn  # type: ignore[misc]
+    finally:
+        conn.close()  # type: ignore[union-attr]
 
 
 # ──────────────────────────────────────────────
@@ -141,7 +167,7 @@ def upsert_ohlcv(records: list[dict]):
     """
     with _get_conn() as conn:
         with conn.cursor() as cur:
-            cur.executemany(sql, rows)
+            cur.executemany(sql, rows, returning=False)
         conn.commit()
 
 
@@ -273,7 +299,7 @@ def upsert_index_ohlcv(records: list[dict]):
     """
     with _get_conn() as conn:
         with conn.cursor() as cur:
-            cur.executemany(sql, rows)
+            cur.executemany(sql, rows, returning=False)
         conn.commit()
 
 

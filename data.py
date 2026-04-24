@@ -66,6 +66,32 @@ def _load_constituents() -> dict:
 # ──────────────────────────────────────────────
 # OHLCV SYNC
 # ──────────────────────────────────────────────
+def _records_to_symbol_data(records: list[dict]) -> dict[str, pd.DataFrame]:
+    """
+    Convert a list of OHLCV record dicts (as written by _sync_ohlcv_to_db) to the
+    {symbol: DataFrame} format returned by db.load_ohlcv_all().  Used to populate
+    the in-memory fallback store when the database is unavailable.
+    """
+    if not records:
+        return {}
+    from collections import defaultdict
+    buckets: dict[str, list] = defaultdict(list)
+    for r in records:
+        buckets[r["symbol"]].append(r)
+    result: dict[str, pd.DataFrame] = {}
+    for sym, rows in buckets.items():
+        df = pd.DataFrame(rows).drop(columns="symbol")
+        df["date"] = pd.to_datetime(df["date"])
+        df = df.set_index("date").sort_index()
+        df = df.rename(columns={
+            "open": "Open", "high": "High", "low": "Low",
+            "close": "Close", "volume": "Volume",
+        })
+        df["Volume"] = df["Volume"].astype("Int64")
+        result[sym] = df
+    return result
+
+
 def _sync_ohlcv_to_db(
     all_symbols: list[str],
     target_date: str = None,
@@ -104,8 +130,14 @@ def _sync_ohlcv_to_db(
 
     try:
         tickers = [f"{s}.NS" for s in all_symbols]
-        global_max, conservative_min = db.get_latest_ohlcv_date()
-        global_min = db.get_earliest_ohlcv_date()
+        try:
+            global_max, conservative_min = db.get_latest_ohlcv_date()
+            global_min = db.get_earliest_ohlcv_date()
+        except Exception as _db_exc:
+            emit("warning", f"⚠️ DB unavailable — fetching full history from Yahoo Finance: {_db_exc}")
+            global_max = None
+            conservative_min = None
+            global_min = None
 
         earliest_needed = (
             datetime.now(IST) - timedelta(days=HISTORY_DAYS)
@@ -188,8 +220,15 @@ def _sync_ohlcv_to_db(
                 continue
 
         if records:
+            # Always populate the in-memory fallback store so callers can use
+            # _mem_ohlcv when the DB is unavailable for reads.
+            with _cache_lock:
+                _mem_ohlcv.update(_records_to_symbol_data(records))
             emit("info", f"💾 Saving {len(records):,} rows to database…")
-            db.upsert_ohlcv(records)
+            try:
+                db.upsert_ohlcv(records)
+            except Exception as _db_exc:
+                emit("warning", f"⚠️ DB write failed — data cached in memory only: {_db_exc}")
 
         if target_date:
             with _cache_lock:
@@ -221,8 +260,14 @@ def sync_benchmark_data() -> bool:
 
     records = []
     fetch_failed = False
+    fresh_series: dict[str, pd.Series] = {}  # built from yfinance; persisted to memory regardless of DB
+
     for label, ticker in BENCHMARK_TICKERS.items():
-        latest = db.get_latest_index_date(label)
+        try:
+            latest = db.get_latest_index_date(label)
+        except Exception:
+            latest = None  # DB unavailable — treat as uncached, do full download
+
         if latest is None:
             fetch_kwargs = {"period": "10y"}
         else:
@@ -240,21 +285,45 @@ def sync_benchmark_data() -> bool:
                 fetch_failed = True
                 continue
             raw.columns = [c[0] if isinstance(c, tuple) else c for c in raw.columns]
+            label_records = []
             for dt, row in raw.iterrows():
                 if pd.isna(row.get("Close")):
                     continue
-                records.append({"symbol": label, "date": dt.date(), "close": float(row["Close"])})
+                label_records.append({"symbol": label, "date": dt.date(), "close": float(row["Close"])})
+            records.extend(label_records)
+            # Build in-memory Series for fallback reads (DB-independent)
+            if label_records:
+                _df = pd.DataFrame(label_records)
+                _df["date"] = pd.to_datetime(_df["date"])
+                fresh_series[label] = _df.set_index("date")["close"]
         except Exception:
             fetch_failed = True
             continue
 
+    # Merge freshly downloaded series into the in-memory benchmark cache.
+    # This means load_benchmark_series() can serve data even when the DB is down.
+    if fresh_series:
+        with _cache_lock:
+            existing = _mem_cache["benchmark"].get("data") or {}
+            merged = {**existing}
+            for lbl, s in fresh_series.items():
+                if lbl in merged and not merged[lbl].empty:
+                    merged[lbl] = pd.concat([merged[lbl], s]).groupby(level=0).last().sort_index()
+                else:
+                    merged[lbl] = s
+            _mem_cache["benchmark"]["data"] = merged
+
     if records:
-        db.upsert_index_ohlcv(records)
+        try:
+            db.upsert_index_ohlcv(records)
+        except Exception:
+            pass  # DB write failure is non-fatal; in-memory series already updated above
+
     if not fetch_failed:
         # Only advance the TTL when all fetches succeeded (or data was already current).
         # A failed fetch leaves ts unchanged so the next call can retry immediately.
         with _cache_lock:
-            _mem_cache["benchmark"] = {"data": None, "ts": now}
+            _mem_cache["benchmark"]["ts"] = now
     return True
 
 
@@ -264,7 +333,27 @@ def load_benchmark_series() -> dict[str, pd.Series]:
         bc = _mem_cache["benchmark"]
     if bc["data"] is not None:
         return bc["data"]
-    result = {label: db.load_index_ohlcv(label) for label in BENCHMARK_TICKERS}
+
+    # Tier 2: try DB
+    try:
+        result = {label: db.load_index_ohlcv(label) for label in BENCHMARK_TICKERS}
+        with _cache_lock:
+            _mem_cache["benchmark"]["data"] = result
+        return result
+    except Exception:
+        pass  # fall through to yfinance
+
+    # Tier 3: DB unavailable — download directly from yfinance
+    result = {}
+    for label, ticker in BENCHMARK_TICKERS.items():
+        try:
+            raw = yf.download(ticker, period="10y", auto_adjust=True, progress=False)
+            if raw is not None and not raw.empty:
+                raw.columns = [c[0] if isinstance(c, tuple) else c for c in raw.columns]
+                raw.index = pd.to_datetime(raw.index)
+                result[label] = raw["Close"]
+        except Exception:
+            result[label] = pd.Series(dtype=float)
     with _cache_lock:
         _mem_cache["benchmark"]["data"] = result
     return result
@@ -275,10 +364,24 @@ def _score_from_db(
     for_momentum: bool,
     emit: Callable[[str, str], None] = _NOOP_EMIT,
 ) -> pd.DataFrame:
-    """Load recent OHLCV from DB, run the appropriate scorer on each symbol, and return a sorted DataFrame."""
+    """Load recent OHLCV from DB (or memory fallback), run the scorer, return a sorted DataFrame."""
     period_days = 550 if for_momentum else 750
     emit("info", "📊 Loading price history from database…")
-    symbol_data = db.load_ohlcv_all(period_days=period_days)
+    symbol_data: dict[str, pd.DataFrame] | None = None
+    try:
+        symbol_data = db.load_ohlcv_all(period_days=period_days)
+    except Exception as _db_exc:
+        emit("warning", f"⚠️ DB read failed — using in-memory OHLCV cache: {_db_exc}")
+
+    if not symbol_data:
+        # Fallback: use whatever _sync_ohlcv_to_db already downloaded to memory
+        with _cache_lock:
+            symbol_data = dict(_mem_ohlcv)
+
+    if not symbol_data:
+        emit("error", "❌ No OHLCV data available (DB down and no in-memory cache yet)")
+        return pd.DataFrame()
+
     emit("info", f"⚙️ Scoring {len(symbol_data)} symbols…")
 
     results = []
@@ -309,7 +412,10 @@ def _score_from_db(
 @st.cache_data(ttl=3600)
 def fetch_chart_data(symbol: str) -> pd.DataFrame:
     """Return 2y OHLCV DataFrame for one symbol; tries DB first, falls back to yfinance."""
-    df = db.load_ohlcv_symbol(symbol.upper(), period_days=750)
+    try:
+        df = db.load_ohlcv_symbol(symbol.upper(), period_days=750)
+    except Exception:
+        df = pd.DataFrame()
     if not df.empty:
         return df
     try:
@@ -342,6 +448,12 @@ _mem_cache: dict[str, dict] = {
     "backtest":  {"date": None, "data": None, "ts": None},
     "benchmark": {"data": None, "ts": None},
 }
+
+# In-memory OHLCV store used as a DB fallback.  Populated by _sync_ohlcv_to_db()
+# whenever yfinance data is downloaded; consumed by _score_from_db() and
+# load_ohlcv_for_backtest() when db.load_ohlcv_all() raises an exception.
+# Format matches db.load_ohlcv_all(): {symbol: DataFrame(Open,High,Low,Close,Volume)}.
+_mem_ohlcv: dict[str, pd.DataFrame] = {}
 
 # Dates for which an OHLCV sync has already been attempted this session.
 # Prevents both screeners (and backtest) from hitting yfinance independently
@@ -393,19 +505,32 @@ def load_ohlcv_for_backtest(
     ):
         return bc["data"], target_key, "memory"
 
-    # Tier 3: sync from yfinance if DB is stale
+    # Tier 3: sync from yfinance if DB is stale (also populates _mem_ohlcv as fallback)
     _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
 
     # Tier 2: load from DB
     emit("info", f"📊 Loading {HISTORY_PERIOD} OHLCV history from database…")
-    symbol_data = db.load_ohlcv_all(period_days=HISTORY_DAYS)
+    symbol_data: dict[str, pd.DataFrame] | None = None
+    try:
+        symbol_data = db.load_ohlcv_all(period_days=HISTORY_DAYS)
+    except Exception as _db_exc:
+        emit("warning", f"⚠️ DB read failed — using in-memory OHLCV cache: {_db_exc}")
 
+    if not symbol_data:
+        # Fallback: use what _sync_ohlcv_to_db stored in _mem_ohlcv
+        with _cache_lock:
+            symbol_data = dict(_mem_ohlcv)
+        if symbol_data:
+            emit("info", f"📦 Serving {len(symbol_data)} symbols from in-memory cache (DB offline)")
+
+    source = "db"
     if symbol_data:
         with _cache_lock:
             _mem_cache["backtest"] = {"date": target_key, "data": symbol_data, "ts": now}
+        if bc["data"] is not None and bc["date"] == target_key:
+            source = "memory"
 
-    source = "memory" if bc["data"] is not None and bc["date"] == target_key else "db"
-    return symbol_data, target_key, source
+    return symbol_data or {}, target_key, source
 
 
 def load_compositions() -> pd.DataFrame:
@@ -469,7 +594,10 @@ def resolve_screener_data(
         if mc["data"] is not None and mc["date"] == target_key:
             return mc["data"], target_key, "memory"
 
-        cached_df = db.load_stage2_cache(target_key)
+        try:
+            cached_df = db.load_stage2_cache(target_key)
+        except Exception:
+            cached_df = None  # DB unavailable; skip to re-score
         if cached_df is not None:
             with _cache_lock:
                 _mem_cache["stage2"] = {"date": target_key, "data": cached_df}
@@ -479,12 +607,18 @@ def resolve_screener_data(
         if synced:
             df = _score_from_db(constituents, for_momentum=False, emit=emit)
             if not df.empty:
-                db.save_stage2_cache(target_key, df)
+                try:
+                    db.save_stage2_cache(target_key, df)
+                except Exception:
+                    pass  # non-fatal — results served from memory this session
                 with _cache_lock:
                     _mem_cache["stage2"] = {"date": target_key, "data": df}
                 return df, target_key, "internet"
 
-        fallback_df, fallback_date = db.load_latest_stage2_cache()
+        try:
+            fallback_df, fallback_date = db.load_latest_stage2_cache()
+        except Exception:
+            fallback_df, fallback_date = None, None
         if fallback_df is not None:
             return fallback_df, fallback_date, "db"
 

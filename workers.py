@@ -65,12 +65,8 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         emit("warning", "compositions.parquet not found — constituent filter disabled")
 
     benchmarks = load_benchmark_series()
-    emit("info", f"Running simulation ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
 
-    if cancel_evt.is_set():
-        raise RuntimeError("Cancelled")
-
-    result = run_backtest(
+    common_kwargs = dict(
         all_ohlcv=symbol_data,
         benchmarks=benchmarks,
         m=params["m"],
@@ -86,10 +82,67 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         apply_volume_filter=True,
     )
 
-    if "error" in result:
-        raise RuntimeError(result["error"])
+    emit("info", f"Running Classic band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
+    result_classic = run_backtest(**common_kwargs, band_rule="classic")
+    if "error" in result_classic:
+        raise RuntimeError(result_classic["error"])
 
-    result["ohlcv_date"] = ohlcv_date
-    result["ohlcv_source"] = ohlcv_source
-    result["m"] = params["m"]
-    return result
+    if cancel_evt.is_set():
+        raise RuntimeError("Cancelled")
+
+    emit("info", f"Running Displacement band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
+    result_disp = run_backtest(**common_kwargs, band_rule="displacement")
+    if "error" in result_disp:
+        raise RuntimeError(result_disp["error"])
+
+    import pandas as pd
+
+    # ── merge NAV DataFrames ──
+    nav_classic = result_classic["nav"].rename(columns={
+        "Full Rebalance": "Classic · Full",
+        "Marginal Rebalance": "Classic · Marginal",
+    })
+    nav_disp = result_disp["nav"][["Full Rebalance", "Marginal Rebalance"]].rename(columns={
+        "Full Rebalance": "Displacement · Full",
+        "Marginal Rebalance": "Displacement · Marginal",
+    })
+    nav_merged = nav_classic.join(nav_disp, how="outer")
+
+    # ── merge stats DataFrames ──
+    bench_rows = [r for r in result_classic["stats"].index
+                  if r not in ("Full Rebalance", "Marginal Rebalance")]
+    stats_classic = result_classic["stats"].rename(index={
+        "Full Rebalance": "Classic · Full",
+        "Marginal Rebalance": "Classic · Marginal",
+    })
+    stats_disp = result_disp["stats"].drop(index=bench_rows, errors="ignore").rename(index={
+        "Full Rebalance": "Displacement · Full",
+        "Marginal Rebalance": "Displacement · Marginal",
+    })
+    stats_merged = pd.concat([
+        stats_classic.loc[["Classic · Full", "Classic · Marginal"]],
+        stats_disp.loc[["Displacement · Full", "Displacement · Marginal"]],
+        stats_classic.loc[bench_rows],
+    ])
+
+    return {
+        "nav": nav_merged,
+        "stats": stats_merged,
+        "holdings_log": {
+            "Classic": result_classic["holdings_log"],
+            "Displacement": result_disp["holdings_log"],
+        },
+        "avg_turnover_pct": {
+            "Classic": result_classic["avg_turnover_pct"],
+            "Displacement": result_disp["avg_turnover_pct"],
+        },
+        "total_cost_drag_pct": {
+            "Classic": result_classic["total_cost_drag_pct"],
+            "Displacement": result_disp["total_cost_drag_pct"],
+        },
+        "rebalance_dates": result_classic["rebalance_dates"],
+        "trading_days": result_classic["trading_days"],
+        "ohlcv_date": ohlcv_date,
+        "ohlcv_source": ohlcv_source,
+        "m": params["m"],
+    }
