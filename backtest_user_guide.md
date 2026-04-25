@@ -107,9 +107,24 @@ Only **entering and exiting stocks** trigger weight changes. Incumbents keep wha
 weight they have drifted to since the last rebalance.
 
 - Price-drifted weights: a stock up 30% since the last rebalance carries 30% more weight.
-- Weight freed by exiting stocks is redistributed to entrants proportionally.
 - Lower turnover (unchanged incumbents are not touched).
 - Implicit momentum factor in the weights — recent winners carry more portfolio weight.
+
+**Weight assignment for entrants depends on whether any stocks exit that period:**
+
+*When exits are present:* the combined weight freed by exiting stocks is split equally
+among entrants. Incumbents are not touched beyond their natural price drift.
+
+*When there are only entries (no exits):* there is no freed weight to redistribute.
+Each entrant is seeded at `1 / portfolio_size` (equal-weight share of the new total),
+and all weights are then normalised to 1. The practical effect is that incumbents are
+**diluted proportionally** to make room for entrants. With *k* entrants joining a
+portfolio of *size* stocks, entrants each receive `1 / (size + k)` and every incumbent
+weight is scaled by `size / (size + k)`.
+
+> **Example:** 5 incumbents (equal 20% each), 2 entrants, no exits → portfolio size = 7.
+> After normalisation: each incumbent = 15.6%, each entrant = 11.1%.
+> Incumbents yield ~22% of the portfolio collectively to the two new arrivals.
 
 #### When each works better
 
