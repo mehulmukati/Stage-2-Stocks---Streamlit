@@ -1,7 +1,19 @@
 .env
+.env.*
 daily_cache/
 __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
 .DS_Store
+
+# Claude local tooling
+.claude/
+
+# Raw source data (build artefacts — parquets are the canonical form)
+data/*.csv
+data/*.zip
+data/*.xls
+data/*.xlsx
+data/manual_overrides.json
+data/validation_report.csv
