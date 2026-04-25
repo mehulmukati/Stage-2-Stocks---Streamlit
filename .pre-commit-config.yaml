@@ -1,0 +1,26 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: [--line-length=120]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=120]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.0
+    hooks:
+      - id: flake8
+
+  - repo: local
+    hooks:
+      - id: import-smoke-test
+        name: import smoke test (app + app_backtest)
+        entry: python -W ignore -c "import app, app_backtest"
+        language: system
+        pass_filenames: false
+        types: [python]
