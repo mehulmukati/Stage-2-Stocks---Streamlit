@@ -18,7 +18,6 @@ import yfinance as yf
 _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
 from config import (
-    _MOMENTUM_TTL,
     HISTORY_DAYS,
     HISTORY_PERIOD,
     IST,
@@ -497,10 +496,10 @@ def fetch_chart_data(symbol: str) -> pd.DataFrame:
 _cache_lock = threading.RLock()
 
 # Scored results cache — stores the output of the screener engines.
-# stage2 is keyed by trading date; momentum adds a TTL timestamp for intraday refresh.
+# Both screeners are keyed by trading date only — no intraday TTL (both use EOD data).
 _score_cache: dict[str, dict] = {
     "stage2": {"date": None, "data": None},
-    "momentum": {"date": None, "data": None, "ts": None},
+    "momentum": {"date": None, "data": None},
 }
 
 # Raw OHLCV store — populated by _sync_ohlcv_to_parquet() and _load_and_score();
@@ -531,7 +530,7 @@ def resolve_screener_data(
 ):
     """
     3-tier resolution for both screeners:
-      Tier 1 — in-memory (same process, keyed by trading date; momentum adds TTL)
+      Tier 1 — in-memory (same process, keyed by trading date)
       Tier 2 — local parquet file (persists across restarts; consulted on cold start only)
       Tier 3 — yfinance internet fetch (only when parquet is stale or absent)
     Returns (df, date_str, source) where source is 'memory' | 'db' | 'internet' | 'error'.
@@ -546,28 +545,20 @@ def resolve_screener_data(
     if for_momentum:
         with _cache_lock:
             mc = _score_cache["momentum"]
-        now = datetime.now()
 
-        # Tier 1: memory with TTL
-        if (
-            mc["data"] is not None
-            and mc["date"] == target_key
-            and mc["ts"]
-            and (now - mc["ts"]).total_seconds() < _MOMENTUM_TTL
-        ):
+        # Tier 1: memory
+        if mc["data"] is not None and mc["date"] == target_key:
             return mc["data"], target_key, "memory"
 
-        # Tier 2: parquet cache — consulted only on cold start (no in-memory data for today).
-        # When TTL expires mid-session we skip straight to Tier 3 for fresh scores.
-        if mc["data"] is None or mc["date"] != target_key:
-            try:
-                cached_df = _load_score_cache(MOMENTUM_CACHE_PARQUET, target_key)
-            except Exception:
-                cached_df = None
-            if cached_df is not None:
-                with _cache_lock:
-                    _score_cache["momentum"] = {"date": target_key, "data": cached_df, "ts": now}
-                return cached_df, target_key, "db"
+        # Tier 2: parquet cache
+        try:
+            cached_df = _load_score_cache(MOMENTUM_CACHE_PARQUET, target_key)
+        except Exception:
+            cached_df = None
+        if cached_df is not None:
+            with _cache_lock:
+                _score_cache["momentum"] = {"date": target_key, "data": cached_df}
+            return cached_df, target_key, "db"
 
         # Tier 3: score fresh from OHLCV
         _sync_ohlcv_to_parquet(all_symbols, target_date=target_key, emit=emit)
@@ -578,7 +569,7 @@ def resolve_screener_data(
             except Exception as _exc:
                 emit("warning", f"⚠️ Failed to save momentum cache: {_exc}")
             with _cache_lock:
-                _score_cache["momentum"] = {"date": target_key, "data": df, "ts": now}
+                _score_cache["momentum"] = {"date": target_key, "data": df}
         return df, target_key, "internet" if not df.empty else "error"
 
     else:
