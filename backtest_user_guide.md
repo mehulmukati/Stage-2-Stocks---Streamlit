@@ -203,3 +203,30 @@ listings entirely; lower values (e.g., 126) let younger stocks in sooner.
 
 Monthly rebalancing is usually the best trade-off between responsiveness and cost
 unless the strategy has very fast momentum signals.
+
+## Data Files
+
+The backtester is fully self-contained — no internet connection is required after the
+initial seed. All data lives in committed Parquet files under `data/`.
+
+| File | Contents | Size |
+|---|---|---|
+| `data/backtest_history.parquet` | Long-form `{symbol, date, Close, High, Volume}` for ~750 NSE symbols, ~10 years | ~30 MB |
+| `data/benchmarks.parquet` | Nifty 50 & Nifty 500 daily close history | < 1 MB |
+| `data/compositions.parquet` | Historical index constituent snapshots — used for anti-survivorship-bias filtering | < 1 MB |
+
+At startup the app appends any missing trading days from yfinance (tail delta only —
+no full re-download). No writes are made to disk; the delta is merged in memory for
+the session.
+
+#### Seeding or rebuilding the backtest baseline
+
+Run once after cloning, or to force a full refresh:
+
+```bash
+python scripts/refresh_backtest_parquet.py
+```
+
+This downloads ~10 years of OHLCV for all symbols in `constituents.json` plus both
+benchmark indices and writes the three Parquet files above. A full rebuild takes
+several minutes; subsequent startups are fast.
