@@ -1,9 +1,15 @@
+import os
 from zoneinfo import ZoneInfo
 
 IST = ZoneInfo("Asia/Kolkata")
 HISTORY_PERIOD = "2y"
-HISTORY_DAYS   = 750    # calendar days matching HISTORY_PERIOD, used for screener DB queries
-                        # (the backtest app uses its own parquet baseline — see data_backtest.py)
+HISTORY_DAYS   = 750    # calendar days ≈ 2y; screener requests last 550 of these for scoring
+
+# ── Screener parquet paths (relative to repo root) ──────────────────────────
+_DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+SCREENER_OHLCV_PARQUET   = os.path.join(_DATA_DIR, "screener_ohlcv.parquet")
+STAGE2_CACHE_PARQUET     = os.path.join(_DATA_DIR, "stage2_cache.parquet")
+MOMENTUM_CACHE_PARQUET   = os.path.join(_DATA_DIR, "momentum_cache.parquet")
 MIN_VOLUME = 100_000
 VOL_AVG_PERIOD = 10
 HH_HL_LOOKBACK = 50

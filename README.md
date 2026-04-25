@@ -20,20 +20,20 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 ## Architecture
 
 ```
-app.py                  ← Screener  (DB-backed, real-time)
-app_backtest.py         ← Backtester (Parquet-backed, no DB required)
+app.py                  ← Screener  (Parquet-backed, no external DB required)
+app_backtest.py         ← Backtester (Parquet-backed, no external DB required)
 
 Shared modules:
   stage2_engine.py      Weinstein 8-point scoring, RSI, consolidation detection
   momentum_engine.py    Sharpe ratio computation across multiple lookback periods
   backtest_engine.py    Portfolio rebalancing logic, NAV tracking
   charts.py             Plotly chart builders
-  data.py               Screener data layer (PostgreSQL → yfinance fallback)
+  data.py               Screener data layer (Parquet + yfinance delta)
   data_backtest.py      Backtester data layer (Parquet + yfinance delta)
   config.py             Shared constants
 ```
 
-The two apps are fully independent — the backtester runs without a database connection.
+Both apps are fully self-contained — no external database or credentials required.
 
 ---
 
@@ -54,15 +54,25 @@ pip install -r requirements.txt
 
 ---
 
-## Environment Setup
+## Data Setup
 
-The screener reads live prices from a PostgreSQL database (Supabase / Neon). Create a `.env` file in the project root:
+Both apps use local Parquet files under `data/` — no external database or credentials needed.
 
+### Seed the screener baseline (first run only)
+
+```bash
+python scripts/refresh_screener_parquet.py
 ```
-DATABASE_URL=postgresql://user:password@host:port/dbname
+
+This downloads ~2 years of OHLCV for all ~750 NSE symbols and writes `data/screener_ohlcv.parquet` (~10 MB). Run it once after cloning. After that the app performs incremental delta fetches at startup automatically.
+
+To force a full rebuild later:
+
+```bash
+python scripts/refresh_screener_parquet.py --full
 ```
 
-The backtester does **not** require a database — it uses bundled Parquet files under `data/` and fetches only the recent delta from Yahoo Finance.
+The backtester baseline (`data/backtest_history.parquet`) is committed to the repo — no seed step required.
 
 ---
 
@@ -96,7 +106,7 @@ Opens at `http://localhost:8501` (or `8502` if the screener is already running).
 
 **Phase Chart** plots a stock's daily rolling Stage 2 score as a colour-coded background band over its full price history. Supports log / linear Y-axis and fuzzy ticker lookup.
 
-Data flows: PostgreSQL (primary, updated once per trading day after 7 pm IST) → in-memory cache → yfinance fallback.
+Data flows: `data/screener_ohlcv.parquet` → score cache (`data/stage2_cache.parquet` / `data/momentum_cache.parquet`) → in-memory cache → yfinance delta fetch.
 
 ### Backtester (`app_backtest.py`)
 
@@ -119,9 +129,11 @@ Data flows: `data/backtest_history.parquet` (10-year baseline) → yfinance delt
 
 | Source | Used by | What it provides |
 |---|---|---|
-| PostgreSQL (Supabase / Neon) | Screener | Cached EOD OHLCV + derived metrics, ~10 years |
-| Yahoo Finance (yfinance) | Screener (fallback) · Backtester (delta) | Live and historical OHLCV |
+| `data/screener_ohlcv.parquet` | Screener | ~2 years of EOD OHLCV for all ~750 NSE symbols |
+| `data/stage2_cache.parquet` | Screener | Most-recent Stage 2 scores (avoids re-scoring on page load) |
+| `data/momentum_cache.parquet` | Screener | Most-recent Momentum scores |
 | `data/backtest_history.parquet` | Backtester | 10-year bundled OHLCV baseline |
 | `data/benchmarks.parquet` | Backtester | Nifty 50 & Nifty 500 benchmark history |
+| Yahoo Finance (yfinance) | Both (delta) | Incremental OHLCV updates since last parquet date |
 | `constituents.json` | Both | Index membership (Nifty 50 / 100 / 250 / 500 / Smallcap 250) |
 | `nse_holidays.json` | Screener | NSE trading calendar |

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Screener app — Stage 2, Momentum, Phase Chart. DB-backed via Supabase.
-Backtest lives in app_backtest.py (parquet-backed, no DB).
+Screener app — Stage 2, Momentum, Phase Chart. Parquet-backed, no external DB.
+Backtest lives in app_backtest.py (separate parquet baseline).
 """
 import difflib
 import json
@@ -16,13 +16,8 @@ from streamlit_autorefresh import st_autorefresh
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-import db
 from charts import phase_chart_figure
-from config import IST
+from config import IST, SCREENER_OHLCV_PARQUET
 from data import _load_constituents, _score_cache, fetch_chart_data
 from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
@@ -86,22 +81,15 @@ def _poll_job(kind: str, worker, submit_params: dict = None) -> bool:
     return False
 
 
-# ── DB INIT (once at startup) ──
+# ── PARQUET BASELINE CHECK (once at startup) ──
 @st.cache_resource
-def _init_db() -> bool:
-    """Attempt to initialise DB schema.  Returns True on success, False if DB is unavailable."""
-    try:
-        db.init_db()
-        return True
-    except Exception as _exc:
-        # DB unavailable at startup — app continues in yfinance-only mode.
-        # The warning is shown once per page load via the return value.
-        import sys
-        print(f"[WARN] DB init failed — running without persistent storage: {_exc}", file=sys.stderr)
-        return False
+def _check_baseline() -> bool:
+    """Return True if screener_ohlcv.parquet exists; warn once if missing."""
+    import os
+    return os.path.exists(SCREENER_OHLCV_PARQUET)
 
 
-_db_ok = _init_db()
+_baseline_ok = _check_baseline()
 
 # ── PAGE CONFIG & CSS ──
 st.set_page_config(
@@ -519,10 +507,11 @@ def main():
     user_token  = _get_user_token()
     idx_options = _load_index_options()
 
-    if not _db_ok:
+    if not _baseline_ok:
         st.warning(
-            "🔌 **Database offline** — running in yfinance-only mode. "
-            "Screeners still work, but results are not persisted to disk."
+            "⚠️ **screener_ohlcv.parquet not found** — first run will download ~2 years of data "
+            "from Yahoo Finance. Run `python scripts/refresh_screener_parquet.py` to seed the "
+            "baseline and commit it so future deploys start instantly."
         )
 
     with st.sidebar:

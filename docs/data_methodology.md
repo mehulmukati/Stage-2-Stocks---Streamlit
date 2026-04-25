@@ -20,30 +20,42 @@ Tier 1 — In-memory dict
    │  (same process, keyed by last trading date, 1-hour TTL)
    │  HIT → return immediately
    ▼
-Tier 2 — PostgreSQL (Neon)
-   │  (persists across restarts, checked if memory cache is stale)
-   │  HIT → load from DB, populate memory cache
+Tier 2 — Local Parquet files
+   │  (persists across restarts; checked if memory cache is stale)
+   │  HIT → load from file, populate memory cache
    ▼
 Tier 3 — yfinance (internet)
-      (only when DB is stale — fetches incrementally from last known date)
-      → upsert to DB → populate memory cache
+      (only when parquet is stale — fetches incrementally from last parquet date)
+      → merge into screener_ohlcv.parquet → populate memory cache
 ```
 
-This means the database is the source of truth. yfinance is only called when the DB has no data for the current trading date.
+The Parquet files are the on-disk source of truth. yfinance is only called when the parquet baseline has no data for the current trading date.
 
 ---
 
-## Database schema
+## Parquet file layout
 
-Three tables are maintained in PostgreSQL:
+| File | Contents | Size |
+|---|---|---|
+| `data/screener_ohlcv.parquet` | Long-form `{symbol, date, Open, High, Low, Close, Volume}` for ~750 NSE symbols, ~2 years | ~10 MB |
+| `data/stage2_cache.parquet` | Most-recent Stage 2 scores with a `cache_date` column | < 1 MB |
+| `data/momentum_cache.parquet` | Most-recent Momentum scores with a `cache_date` column | < 1 MB |
+| `data/backtest_history.parquet` | 10-year OHLCV baseline for the backtester | ~50 MB |
+| `data/benchmarks.parquet` | Nifty 50 & Nifty 500 daily close history | < 1 MB |
 
-| Table | Contents |
-|---|---|
-| `ohlcv` | Daily OHLCV (Open, High, Low, Close, Volume) for all NSE stocks |
-| `index_ohlcv` | Daily closing price for benchmark indices (Nifty 50, Nifty 500) |
-| `stage2_cache` | Computed Stage 2 scores keyed by trading date (avoids re-scoring on page load) |
+Score caches store only the most recent scored date. On read, the `cache_date` column is compared to the target trading date; a mismatch triggers a re-score and overwrites the file atomically.
 
-The `ohlcv` table holds approximately 10 years of history per symbol (~750 symbols × 2500 days ≈ 1.9 million rows).
+Concurrent writes are protected by a `threading.Lock` (same-process serialisation) plus an atomic `tempfile` + `os.replace()` rename so that readers always see either the complete old file or the complete new file.
+
+### Seeding the screener baseline
+
+Run once after cloning:
+
+```bash
+python scripts/refresh_screener_parquet.py
+```
+
+This downloads ~2 years of OHLCV for all symbols in `constituents.json` and writes `data/screener_ohlcv.parquet`. After the initial seed the app performs incremental delta fetches automatically at startup.
 
 ---
 
@@ -61,9 +73,13 @@ After-market cutoff is set at **7:00 pm IST**. Before 7 pm, the app uses the pre
 
 ## Incremental sync
 
-When the DB is stale, data is fetched only from 10 days before the least-recently-updated symbol, not the full history. This keeps incremental syncs fast (typically a few seconds).
+When the parquet baseline is stale, data is fetched from 5 days before the last parquet date (small overlap to avoid missing the most-recent partial day). This keeps incremental syncs fast (typically a few seconds).
 
-Full history (~10 years) is only fetched on first run or when the DB is found to be missing data beyond the earliest required date.
+A full rebuild is triggered only when: the parquet file does not exist, it is empty, or the latest date is more than ~2 years old. Force a full rebuild at any time with:
+
+```bash
+python scripts/refresh_screener_parquet.py --full
+```
 
 ---
 
