@@ -209,6 +209,9 @@ def get_latest_ohlcv_date() -> tuple[str | None, str | None]:
     Returns (global_max, conservative_min) where:
       global_max       = MAX(date) across all rows  → used to check if DB was synced recently
       conservative_min = MIN of per-symbol MAX dates → used as fetch-start to fill any gaps
+
+    MAX/MIN on a TEXT column with YYYY-MM-DD values sort correctly (lexicographic == chronological).
+    The existing ohlcv_date_idx B-tree is used for both aggregates.
     """
     with _get_conn() as conn:
         gmax = conn.execute("SELECT MAX(date) FROM ohlcv").fetchone()[0]
@@ -234,7 +237,7 @@ def load_ohlcv_all(period_days: int = 550) -> dict[str, pd.DataFrame]:
             """
             SELECT symbol, date, open, high, low, close, volume
             FROM ohlcv
-            WHERE date::date >= NOW() - make_interval(days => %s)
+            WHERE date >= (CURRENT_DATE - %s)::text
             ORDER BY symbol, date
             """,
             (int(period_days),),
@@ -264,7 +267,7 @@ def load_ohlcv_symbol(symbol: str, period_days: int = 750) -> pd.DataFrame:
             """
             SELECT date, open, high, low, close, volume
             FROM ohlcv
-            WHERE symbol = %s AND date::date >= NOW() - make_interval(days => %s)
+            WHERE symbol = %s AND date >= (CURRENT_DATE - %s)::text
             ORDER BY date
             """,
             (symbol, int(period_days)),

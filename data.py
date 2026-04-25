@@ -266,7 +266,11 @@ def _score_from_db(
     emit: Callable[[str, str], None] = _NOOP_EMIT,
 ) -> pd.DataFrame:
     """Load recent OHLCV from DB (or memory fallback), run the scorer, return a sorted DataFrame."""
-    period_days = 550 if for_momentum else 750
+    # 550 calendar days ≈ 392 trading days — enough for MA200 (200td) + MA_RISING_LOOKBACK (50td)
+    # + 52w-high (252td) with margin.  Both screeners use the same window so one DB read
+    # populates _mem_ohlcv for the other.  Stage 2 previously requested 750 days which exceeded
+    # the 2y table size and returned the whole table even with an index; 550 fits within it.
+    period_days = 550
     symbol_data: dict[str, pd.DataFrame] | None = None
 
     # Prefer in-memory cache when populated — avoids a full-table-scan query
