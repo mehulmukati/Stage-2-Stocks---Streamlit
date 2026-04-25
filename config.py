@@ -1,8 +1,9 @@
 from zoneinfo import ZoneInfo
 
 IST = ZoneInfo("Asia/Kolkata")
-HISTORY_PERIOD = "10y"
-HISTORY_DAYS   = 3650   # calendar days matching HISTORY_PERIOD, used for DB queries
+HISTORY_PERIOD = "2y"
+HISTORY_DAYS   = 750    # calendar days matching HISTORY_PERIOD, used for screener DB queries
+                        # (the backtest app uses its own parquet baseline — see data_backtest.py)
 MIN_VOLUME = 100_000
 VOL_AVG_PERIOD = 10
 HH_HL_LOOKBACK = 50

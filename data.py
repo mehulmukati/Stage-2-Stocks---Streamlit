@@ -255,121 +255,9 @@ def _sync_ohlcv_to_db(
                 _sync_latches.pop(target_date, None)
 
 
-# ──────────────────────────────────────────────
-# BENCHMARK SYNC
-# ──────────────────────────────────────────────
-BENCHMARK_TICKERS = {
-    "NIFTY50": "^NSEI",
-    "NIFTY500": "^CRSLDX",
-}
-
-def sync_benchmark_data() -> bool:
-    """Fetch Nifty 50 and Nifty 500 index close prices from yfinance and upsert to index_ohlcv table."""
-    with _cache_lock:
-        bc = _mem_cache["benchmark"]
-    now = datetime.now(IST)
-    if bc["ts"] is not None and (now - bc["ts"]).total_seconds() < 3600:
-        return True  # already synced this hour — skip all network/DB work
-
-    records = []
-    fetch_failed = False
-    fresh_series: dict[str, pd.Series] = {}  # built from yfinance; persisted to memory regardless of DB
-
-    for label, ticker in BENCHMARK_TICKERS.items():
-        try:
-            latest = db.get_latest_index_date(label)
-        except Exception:
-            latest = None  # DB unavailable — treat as uncached, do full download
-
-        if latest is None:
-            fetch_kwargs = {"period": "10y"}
-        else:
-            fetch_from = (
-                datetime.strptime(latest, "%Y-%m-%d") - timedelta(days=3)
-            ).strftime("%Y-%m-%d")
-            today = now.strftime("%Y-%m-%d")
-            if latest >= today:
-                continue
-            fetch_kwargs = {"start": fetch_from, "end": today}
-
-        try:
-            raw = yf.download(ticker, auto_adjust=True, progress=False, **fetch_kwargs)
-            if raw is None or raw.empty:
-                fetch_failed = True
-                continue
-            raw.columns = [c[0] if isinstance(c, tuple) else c for c in raw.columns]
-            label_records = []
-            for dt, row in raw.iterrows():
-                if pd.isna(row.get("Close")):
-                    continue
-                label_records.append({"symbol": label, "date": dt.date(), "close": float(row["Close"])})
-            records.extend(label_records)
-            # Build in-memory Series for fallback reads (DB-independent)
-            if label_records:
-                _df = pd.DataFrame(label_records)
-                _df["date"] = pd.to_datetime(_df["date"])
-                fresh_series[label] = _df.set_index("date")["close"]
-        except Exception:
-            fetch_failed = True
-            continue
-
-    # Merge freshly downloaded series into the in-memory benchmark cache.
-    # This means load_benchmark_series() can serve data even when the DB is down.
-    if fresh_series:
-        with _cache_lock:
-            existing = _mem_cache["benchmark"].get("data") or {}
-            merged = {**existing}
-            for lbl, s in fresh_series.items():
-                if lbl in merged and not merged[lbl].empty:
-                    merged[lbl] = pd.concat([merged[lbl], s]).groupby(level=0).last().sort_index()
-                else:
-                    merged[lbl] = s
-            _mem_cache["benchmark"]["data"] = merged
-
-    if records:
-        try:
-            db.upsert_index_ohlcv(records)
-        except Exception:
-            pass  # DB write failure is non-fatal; in-memory series already updated above
-
-    if not fetch_failed:
-        # Only advance the TTL when all fetches succeeded (or data was already current).
-        # A failed fetch leaves ts unchanged so the next call can retry immediately.
-        with _cache_lock:
-            _mem_cache["benchmark"]["ts"] = now
-    return True
-
-
-def load_benchmark_series() -> dict[str, pd.Series]:
-    """Return close price Series for each benchmark index, keyed by label. Cached in memory."""
-    with _cache_lock:
-        bc = _mem_cache["benchmark"]
-    if bc["data"] is not None:
-        return bc["data"]
-
-    # Tier 2: try DB
-    try:
-        result = {label: db.load_index_ohlcv(label) for label in BENCHMARK_TICKERS}
-        with _cache_lock:
-            _mem_cache["benchmark"]["data"] = result
-        return result
-    except Exception:
-        pass  # fall through to yfinance
-
-    # Tier 3: DB unavailable — download directly from yfinance
-    result = {}
-    for label, ticker in BENCHMARK_TICKERS.items():
-        try:
-            raw = yf.download(ticker, period="10y", auto_adjust=True, progress=False)
-            if raw is not None and not raw.empty:
-                raw.columns = [c[0] if isinstance(c, tuple) else c for c in raw.columns]
-                raw.index = pd.to_datetime(raw.index)
-                result[label] = raw["Close"]
-        except Exception:
-            result[label] = pd.Series(dtype=float)
-    with _cache_lock:
-        _mem_cache["benchmark"]["data"] = result
-    return result
+# sync_benchmark_data and load_benchmark_series removed — moved to data_backtest.py.
+# The backtest app is now fully parquet-backed; the screener app (app.py) does
+# not use benchmark series at all.
 
 
 def _score_from_db(
@@ -477,15 +365,13 @@ def fetch_chart_data(symbol: str) -> pd.DataFrame:
 _cache_lock = threading.RLock()
 
 _mem_cache: dict[str, dict] = {
-    "stage2":    {"date": None, "data": None},
-    "momentum":  {"date": None, "data": None, "ts": None},
-    "backtest":  {"date": None, "data": None, "ts": None},
-    "benchmark": {"data": None, "ts": None},
+    "stage2":   {"date": None, "data": None},
+    "momentum": {"date": None, "data": None, "ts": None},
 }
 
 # In-memory OHLCV store used as a DB fallback.  Populated by _sync_ohlcv_to_db()
-# whenever yfinance data is downloaded; consumed by _score_from_db() and
-# load_ohlcv_for_backtest() when db.load_ohlcv_all() raises an exception.
+# whenever yfinance data is downloaded; consumed by _score_from_db() when
+# db.load_ohlcv_all() raises an exception.
 # Format matches db.load_ohlcv_all(): {symbol: DataFrame(Open,High,Low,Close,Volume)}.
 _mem_ohlcv: dict[str, pd.DataFrame] = {}
 
@@ -511,99 +397,8 @@ def _get_target_key() -> str:
     return get_last_valid_trading_date(start, load_nse_holidays())
 
 
-def load_ohlcv_for_backtest(
-    emit: Callable[[str, str], None] = _NOOP_EMIT,
-) -> tuple[dict, str, str]:
-    """
-    3-tier load of the full OHLCV history for backtesting (~5 years).
-      Tier 1 — in-memory dict keyed by last trading date (TTL: 1 hour)
-      Tier 2 — PostgreSQL (persists across restarts; read without re-fetching if fresh)
-      Tier 3 — yfinance incremental sync when DB is stale
-    Returns (symbol_data, target_date, source) where source is 'memory' | 'db' | 'internet'.
-    """
-    target_key = _get_target_key()
-    constituents = _load_constituents()
-    if not constituents:
-        emit("error", "❌ constituents.json missing — check the data directory")
-        return {}, target_key, "error"
-    all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
-
-    with _cache_lock:
-        bc = _mem_cache["backtest"]
-    now = datetime.now()
-    if (
-        bc["data"] is not None
-        and bc["date"] == target_key
-        and bc["ts"]
-        and (now - bc["ts"]).total_seconds() < _MOMENTUM_TTL
-    ):
-        return bc["data"], target_key, "memory"
-
-    # Tier 3: sync from yfinance if DB is stale (also populates _mem_ohlcv as fallback)
-    _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
-
-    symbol_data: dict[str, pd.DataFrame] | None = None
-
-    # Prefer in-memory cache when populated — a 10y `date::date >= NOW() - ...`
-    # query against Supabase regularly hits the 60s statement timeout because
-    # the date column is TEXT and cannot use an index.
-    with _cache_lock:
-        if _mem_ohlcv:
-            symbol_data = dict(_mem_ohlcv)
-    if symbol_data:
-        emit("info", f"📦 Using in-memory OHLCV cache ({len(symbol_data)} symbols)")
-    else:
-        # Tier 2: load from DB
-        emit("info", f"📊 Loading {HISTORY_PERIOD} OHLCV history from database…")
-        try:
-            symbol_data = db.load_ohlcv_all(period_days=HISTORY_DAYS)
-        except Exception as _db_exc:
-            emit("warning", f"⚠️ DB read failed — using in-memory OHLCV cache: {_db_exc}")
-
-        # Cache successful DB reads into _mem_ohlcv so later calls skip the slow query.
-        if symbol_data:
-            with _cache_lock:
-                _mem_ohlcv.update(symbol_data)
-
-    # Fallback A: use whatever _sync_ohlcv_to_db or a prior load stored in _mem_ohlcv
-    if not symbol_data:
-        with _cache_lock:
-            symbol_data = dict(_mem_ohlcv)
-        if symbol_data:
-            emit("info", f"📦 Serving {len(symbol_data)} symbols from in-memory cache (DB offline)")
-
-    # Fallback B (last resort): both DB and memory are empty.
-    # This hits when a previous momentum run short-circuited _sync_ohlcv_to_db
-    # (DB looked fresh for the 550-day query) but the 10-year backtest query
-    # then fails or times out on the DB.  Force a real yfinance download.
-    if not symbol_data:
-        emit("warning", "⚠️ DB has no 10-year history and memory is empty — forcing fresh Yahoo Finance download…")
-        _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit, force_download=True)
-        with _cache_lock:
-            symbol_data = dict(_mem_ohlcv)
-        if symbol_data:
-            emit("info", f"📦 Serving {len(symbol_data)} symbols from fresh Yahoo Finance download")
-
-    source = "db"
-    if symbol_data:
-        with _cache_lock:
-            _mem_cache["backtest"] = {"date": target_key, "data": symbol_data, "ts": now}
-        if bc["data"] is not None and bc["date"] == target_key:
-            source = "memory"
-
-    return symbol_data or {}, target_key, source
-
-
-def load_compositions() -> pd.DataFrame:
-    """
-    Load historical index compositions for survivorship-bias-aware backtesting.
-    Returns a DataFrame with columns [INDEX_NAME, TIME_STAMP, SYMBOL], or empty if missing.
-    """
-    path = os.path.join(os.path.dirname(__file__), "data", "compositions.parquet")
-    if not os.path.exists(path):
-        return pd.DataFrame()
-    df = pd.read_parquet(path, columns=["INDEX_NAME", "TIME_STAMP", "SYMBOL"])
-    return df.dropna(subset=["SYMBOL"])
+# load_ohlcv_for_backtest and load_compositions removed — moved to data_backtest.py.
+# The backtest app reads from parquet; the screener app only needs resolve_screener_data.
 
 
 def resolve_screener_data(

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+"""
+Screener app — Stage 2, Momentum, Phase Chart. DB-backed via Supabase.
+Backtest lives in app_backtest.py (parquet-backed, no DB).
+"""
 import difflib
 import json
 import os
 import threading
 import uuid
 import warnings
-from datetime import date as _date, datetime
+from datetime import datetime
 
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
@@ -17,14 +21,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import db
-from backtest_engine import rolling_returns
-from charts import nav_chart_figure, phase_chart_figure, rolling_returns_figure
+from charts import phase_chart_figure
 from config import IST
 from data import _load_constituents, _mem_cache, fetch_chart_data
 from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
-from workers import backtest_worker, momentum_worker, stage2_worker
+from workers import momentum_worker, stage2_worker
 
 
 @st.cache_data(ttl=3600)
@@ -104,6 +107,7 @@ _db_ok = _init_db()
 st.set_page_config(
     page_title="Stock Screeners | Nifty 750", page_icon="📈", layout="wide"
 )
+# Backtest lives at app_backtest.py — link to it from the screener if desired.
 st.markdown(
     """
 <style>
@@ -358,142 +362,6 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
 
 
 # ──────────────────────────────────────────────
-# RESULTS — BACKTEST
-# ──────────────────────────────────────────────
-
-_WINDOW_MAP = {
-    "1 year": 252, "2 years": 504, "3 years": 756,
-    "5 years": 1260, "7 years": 1764, "10 years": 2520,
-}
-
-
-def backtest_results(params: dict):
-    st.markdown('<p class="hero">⏱ Momentum Backtest</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-hero">Classic vs Displacement Band Rule · Full vs Marginal Rebalance · Benchmarked vs Nifty 50 & Nifty 500</p>', unsafe_allow_html=True)
-    st.divider()
-
-    # rolling_window is display-only — pop before submitting so it doesn't go to worker.
-    roll_label = params.pop("rolling_window", "3 years")
-
-    if st.session_state.get("backtest_run_triggered"):
-        if params["n"] <= params["m"]:
-            st.session_state.pop("backtest_run_triggered", None)
-            st.session_state["backtest_param_error"] = "N (exit threshold) must be greater than M (entry threshold)."
-            return
-        st.session_state.pop("backtest_param_error", None)
-        # Snapshot all submitted params so the sidebar can restore widget values after a tab-switch.
-        st.session_state["bt_saved_params"] = {**params, "rolling_window": roll_label}
-
-    if "backtest_param_error" in st.session_state:
-        st.error(st.session_state["backtest_param_error"])
-        return
-
-    if _poll_job("backtest", backtest_worker, params):
-        return
-
-    result = st.session_state.get("backtest_cached_result")
-    if result is None:
-        st.info("Configure parameters in the sidebar and click **Run Backtest**.")
-        return
-
-    ohlcv_date = result.get("ohlcv_date")
-    ohlcv_source = result.get("ohlcv_source")
-    source_icon = {"memory": "⚡", "db": "💾", "internet": "🌐"}.get(ohlcv_source, "")
-    if ohlcv_date:
-        st.caption(f"{source_icon} OHLCV data as of **{ohlcv_date}** (source: {ohlcv_source})")
-
-    nav_df = result["nav"]
-    stats_df = result["stats"]
-
-    avg_turnover = result.get("avg_turnover_pct", 0.0)
-    total_cost_drag = result.get("total_cost_drag_pct", 0.0)
-    if isinstance(avg_turnover, dict):
-        turnover_str = f"C {avg_turnover.get('Classic', 0):.1f}% / D {avg_turnover.get('Displacement', 0):.1f}%"
-    else:
-        turnover_str = f"{avg_turnover:.1f}%"
-    if isinstance(total_cost_drag, dict):
-        drag_str = f"C {total_cost_drag.get('Classic', 0):.2f}% / D {total_cost_drag.get('Displacement', 0):.2f}%"
-    else:
-        drag_str = f"{total_cost_drag:.2f}%"
-
-    cols = st.columns(5)
-    cols[0].metric("Trading Days", len(result["trading_days"]))
-    cols[1].metric("Rebalances", len(result["rebalance_dates"]))
-    cols[2].metric("Avg Turnover / Rebalance", turnover_str)
-    cols[3].metric("Portfolio Size (M)", result.get("m", params.get("m", "—")))
-    cols[4].metric("Total Cost Drag", drag_str)
-
-    st.divider()
-
-    st.subheader("Portfolio NAV (base = 100)")
-    st.plotly_chart(nav_chart_figure(nav_df), width="stretch")
-
-    roll_days = _WINDOW_MAP.get(roll_label, 252)
-    st.subheader(f"Rolling {roll_label} CAGR (%)")
-    available_days = len(nav_df.dropna(how="all"))
-    if roll_days >= available_days:
-        st.warning(
-            f"⚠️ Rolling window ({roll_label} = {roll_days} trading days) exceeds available data "
-            f"({available_days} days). Select a shorter window or extend the backtest date range."
-        )
-    else:
-        st.plotly_chart(rolling_returns_figure(rolling_returns(nav_df, roll_days)), width="stretch")
-
-    st.subheader("Performance Summary")
-
-    _PORTFOLIO_ROWS = [
-        "Classic · Full", "Classic · Marginal",
-        "Displacement · Full", "Displacement · Marginal",
-    ]
-    available_portfolio = [r for r in _PORTFOLIO_ROWS if r in stats_df.index]
-    if available_portfolio:
-        banner_parts = []
-        for metric, label in [("CAGR (%)", "CAGR"), ("Sharpe", "Sharpe"), ("Calmar", "Calmar")]:
-            if metric in stats_df.columns:
-                col_vals = stats_df.loc[available_portfolio, metric].dropna()
-                if not col_vals.empty:
-                    banner_parts.append(f"**{label}** → {col_vals.idxmax()}")
-        if banner_parts:
-            st.info("🏆 Best strategy — " + " · ".join(banner_parts))
-
-    st.dataframe(
-        stats_df, width="stretch",
-        column_config={
-            "CAGR (%)":         st.column_config.NumberColumn("CAGR (%)", format="%.2f%%"),
-            "Sharpe":           st.column_config.NumberColumn("Sharpe", format="%.3f"),
-            "Max Drawdown (%)": st.column_config.NumberColumn("Max DD (%)", format="%.2f%%"),
-            "Calmar":           st.column_config.NumberColumn("Calmar", format="%.3f"),
-            "Sortino":          st.column_config.NumberColumn("Sortino", format="%.3f"),
-            "Avg Holdings":     st.column_config.NumberColumn("Avg Holdings", format="%.1f"),
-            "Avg Turnover (%)": st.column_config.NumberColumn("Avg Turnover (%)", format="%.1f"),
-            "Cost Drag (%)":    st.column_config.NumberColumn("Cost Drag (%)", format="%.3f"),
-            "Final NAV":        st.column_config.NumberColumn("Final NAV", format="%.2f"),
-        },
-    )
-
-    holdings_log = result.get("holdings_log", [])
-    if isinstance(holdings_log, dict):
-        for rule_name, log in holdings_log.items():
-            with st.expander(f"Rebalance Log — {rule_name} (last 10)"):
-                for entry in log[-10:][::-1]:
-                    ins = ", ".join(entry["entries"]) or "—"
-                    outs = ", ".join(entry["exits"]) or "—"
-                    st.markdown(
-                        f"**{entry['date'].date()}** · {len(entry['holdings'])} stocks · "
-                        f"**In:** {ins} · **Out:** {outs}"
-                    )
-    else:
-        with st.expander("Rebalance Log (last 10)"):
-            for entry in holdings_log[-10:][::-1]:
-                ins = ", ".join(entry["entries"]) or "—"
-                outs = ", ".join(entry["exits"]) or "—"
-                st.markdown(
-                    f"**{entry['date'].date()}** · {len(entry['holdings'])} stocks · "
-                    f"**In:** {ins} · **Out:** {outs}"
-                )
-
-
-# ──────────────────────────────────────────────
 # DOCS
 # ──────────────────────────────────────────────
 
@@ -511,7 +379,6 @@ _DOCS_SECTIONS = {
     "Stage 2 Screener":   "stage2_screener.md",
     "Momentum Screener":  "momentum_screener.md",
     "Phase Chart":        "phase_chart.md",
-    "Backtest":           "backtest.md",
     "Data & Methodology": "data_methodology.md",
 }
 
@@ -644,118 +511,25 @@ def _sidebar_momentum() -> dict:
     }
 
 
-def _sidebar_backtest(idx_options: list[str]) -> dict:
-    # Widget keys are cleared from session state on tab-switch.
-    # We initialise every key exactly once — preferring a saved-params snapshot
-    # when one exists, falling back to the hardcoded default otherwise.
-    # Widgets are then created WITHOUT a value= argument so there is never a
-    # conflict between session state and the widget's own default.
-    _s = st.session_state.get("bt_saved_params", {})
-
-    _defaults: dict = {
-        "bt_m":                ("m",                    20),
-        "bt_n":                ("n",                    30),
-        "bt_freq":             ("rebalance_freq",       "monthly"),
-        "bt_sort":             ("sort_method",          "Average of 3/6/9/12 months"),
-        "bt_rolling":          ("rolling_window",       "1 year"),
-        "bt_min_history":      ("min_history_days",     252),
-        "bt_cost_pct":         ("transaction_cost_pct", 0.1),
-        "bt_use_compositions": ("use_compositions",     True),
-    }
-    for _wk, (_pk, _fallback) in _defaults.items():
-        if _wk not in st.session_state:
-            st.session_state[_wk] = _s.get(_pk, _fallback)
-
-    if "bt_start" not in st.session_state:
-        st.session_state["bt_start"] = (
-            _date.fromisoformat(_s["start_date"]) if "start_date" in _s else _date(2021, 1, 1)
-        )
-    if "bt_end" not in st.session_state:
-        st.session_state["bt_end"] = (
-            _date.fromisoformat(_s["end_date"]) if "end_date" in _s else _date.today()
-        )
-    for _idx in idx_options:
-        _ck = f"bt_idx_{_idx}"
-        if _ck not in st.session_state:
-            st.session_state[_ck] = _idx in _s.get("universe", idx_options)
-
-    st.markdown("**Portfolio Parameters**")
-    bt_m    = st.number_input("Entry threshold M (top-M enters)", min_value=1, max_value=200, step=1, key="bt_m")
-    bt_n    = st.number_input("Exit threshold N (exits if > N)", min_value=2, max_value=300, step=1, key="bt_n")
-    bt_freq = st.selectbox("Rebalance frequency", ["weekly", "biweekly", "monthly"], key="bt_freq")
-    bt_sort = st.selectbox("Rank by Sharpe",
-                           ["Average of 3/6/9/12 months", "Average of 3/6 months",
-                            "1 year", "9 months", "6 months", "3 months"],
-                           key="bt_sort")
-
-    st.markdown("**Universe**")
-    bt_universe = []
-    bt_idx_cols = st.columns(2)
-    for i, idx in enumerate(idx_options):
-        if bt_idx_cols[i % 2].checkbox(idx, key=f"bt_idx_{idx}"):
-            bt_universe.append(idx)
-
-    st.markdown("**Date Range**")
-    bt_start   = st.date_input("Start date", key="bt_start")
-    bt_end     = st.date_input("End date", key="bt_end")
-    bt_rolling = st.selectbox("Rolling return window",
-                              ["1 year", "2 years", "3 years", "5 years", "7 years", "10 years"],
-                              key="bt_rolling")
-
-    st.markdown("**Realism Settings**")
-    bt_min_history = st.number_input(
-        "Min history (trading days)", min_value=63, max_value=1260, step=21, key="bt_min_history",
-        help="Minimum trading days of data a stock must have before it can be ranked. 252 ≈ 1 year.",
-    )
-    bt_cost_pct = st.slider(
-        "Transaction cost per trade (%)", min_value=0.0, max_value=1.0, step=0.05, key="bt_cost_pct",
-        help="One-way cost applied to each stock traded at rebalance (slippage + brokerage).",
-    )
-    bt_use_compositions = st.toggle(
-        "Use historical constituents (anti-survivorship)", key="bt_use_compositions",
-        help="Filter the universe to stocks that were actually in the index at each rebalance date.",
-    )
-    st.divider()
-    if st.button("▶ Run Backtest", type="primary", width="stretch", key="bt_run_btn"):
-        st.session_state["backtest_run_triggered"] = True
-
-    return {
-        "m":                    bt_m,
-        "n":                    bt_n,
-        "rebalance_freq":       bt_freq,
-        "sort_method":          bt_sort,
-        "universe":             bt_universe,
-        "start_date":           bt_start.strftime("%Y-%m-%d"),
-        "end_date":             bt_end.strftime("%Y-%m-%d"),
-        "rolling_window":       bt_rolling,
-        "transaction_cost_pct": bt_cost_pct,
-        "use_compositions":     bt_use_compositions,
-        "min_history_days":     bt_min_history,
-    }
-
-
 # ──────────────────────────────────────────────
 # MAIN
 # ──────────────────────────────────────────────
 
 def main():
-    user_token = _get_user_token()
+    user_token  = _get_user_token()
     idx_options = _load_index_options()
 
-    # Show a one-line banner if the database is unavailable.
-    # The app continues in yfinance-only mode — screeners still work, but
-    # results are not persisted and Stage 2 cache is in-memory only.
     if not _db_ok:
         st.warning(
             "🔌 **Database offline** — running in yfinance-only mode. "
-            "Screeners and backtest still work, but results are not persisted to disk."
+            "Screeners still work, but results are not persisted to disk."
         )
 
     with st.sidebar:
         st.markdown("### 🖥 Screener")
         screener = st.radio(
             "Screener",
-            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest", "📚 User Guide"],
+            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "📚 User Guide"],
             key="active_screener",
             horizontal=True,
             label_visibility="collapsed",
@@ -763,7 +537,7 @@ def main():
         st.divider()
 
         selected_indices = []
-        if screener not in ("📈 Phase Chart", "⏱ Backtest", "📚 User Guide"):
+        if screener not in ("📈 Phase Chart", "📚 User Guide"):
             st.markdown("### 📦 Indices")
             cols = st.columns(2)
             for i, idx in enumerate(idx_options):
@@ -779,17 +553,13 @@ def main():
             rsi_toggle, show_illiquid = _sidebar_stage2()
         elif screener == "🚀 Momentum":
             mom_filters = _sidebar_momentum()
-        elif screener == "⏱ Backtest":
-            bt_params = _sidebar_backtest(idx_options)
 
-    # ── AUTOREFRESH — only on the active screener tab while its job runs ──
-    # Firing globally for any background job caused the previous tab's content
-    # to bleed into the current tab during autorefresh-triggered reruns.
-    _kind_for_screener = {"📊 Stage 2": "stage2", "🚀 Momentum": "momentum", "⏱ Backtest": "backtest"}
+    # ── AUTOREFRESH — only while the active screener's job runs ──
+    _kind_for_screener = {"📊 Stage 2": "stage2", "🚀 Momentum": "momentum"}
     _active_kind = _kind_for_screener.get(screener)
     if _active_kind:
-        _active_job = registry.latest(user_token, _active_kind)
-        _run_triggered = st.session_state.get(f"{_active_kind}_run_triggered", False)
+        _active_job     = registry.latest(user_token, _active_kind)
+        _run_triggered  = st.session_state.get(f"{_active_kind}_run_triggered", False)
         if _run_triggered or (_active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
             st_autorefresh(interval=1500, key="job_autorefresh")
 
@@ -807,8 +577,6 @@ def main():
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
     elif screener == "📚 User Guide":
         render_docs()
-    elif screener == "⏱ Backtest":
-        backtest_results(bt_params)
     else:  # 🚀 Momentum
         momentum_results(selected_indices, idx_options, mom_filters)
 
