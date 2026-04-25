@@ -7,12 +7,16 @@ import threading
 from typing import Callable
 
 from backtest_engine import run_backtest
-from data import (
+
+# Screener workers stay on the DB-backed pipeline.
+from data import resolve_screener_data
+
+# Backtest worker uses the parquet-backed pipeline — no DB dependency.
+from data_backtest import (
     _load_constituents,
     load_benchmark_series,
     load_compositions,
     load_ohlcv_for_backtest,
-    resolve_screener_data,
     sync_benchmark_data,
 )
 
@@ -45,7 +49,8 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
     symbol_data, ohlcv_date, ohlcv_source = load_ohlcv_for_backtest(emit=emit)
     if not symbol_data:
         raise RuntimeError(
-            "No OHLCV data in database. Run the Momentum screener first to sync data."
+            "Backtest parquet missing or unreadable. "
+            "Run: python scripts/refresh_backtest_parquet.py"
         )
 
     if cancel_evt.is_set():

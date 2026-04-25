@@ -273,6 +273,7 @@ def run_backtest(
     full_weights: dict[str, float] = {}
     marg_weights: dict[str, float] = {}
     current_holdings: set[str] = set()
+    prev_rebalance_day = None   # needed to drift-adjust marg_weights at each rebalance
 
     nav_full = 100.0
     nav_marg = 100.0
@@ -304,8 +305,22 @@ def run_backtest(
 
             if band_rule == "displacement":
                 # Exit only when displaced by a rank-≤M entrant; portfolio stays ≤ M.
-                entries_wanted = sorted(top_m - current_holdings, key=ranked.index)
-                exits_eligible = sorted(current_holdings - top_n, key=ranked.index, reverse=True)
+                #
+                # Build a rank-lookup dict so we never call list.index() on a symbol
+                # that disappeared from `ranked` this period (e.g. delisted stock,
+                # data gap, failed volume filter). Such a stock gets rank=len(ranked)
+                # (worst possible) so it is treated as most-eligible for exit and
+                # least-eligible for entry — the correct behaviour.
+                rank_of = {s: i for i, s in enumerate(ranked)}
+                _worst = len(ranked)
+                entries_wanted = sorted(
+                    top_m - current_holdings, key=lambda s: rank_of.get(s, _worst)
+                )
+                exits_eligible = sorted(
+                    current_holdings - top_n,
+                    key=lambda s: rank_of.get(s, _worst),
+                    reverse=True,
+                )
                 free_slots = max(0, m - len(current_holdings))
                 entries = set(entries_wanted[:free_slots])
                 exits: set[str] = set()
@@ -342,7 +357,29 @@ def run_backtest(
             # full rebalance: equal weight all holdings
             full_weights = {s: 1.0 / size for s in new_holdings}
 
-            # marginal rebalance: redistribute only exited weight to entrants
+            # marginal rebalance: redistribute only exited weight to entrants.
+            #
+            # Before computing freed weight, drift-adjust marg_weights to reflect
+            # price movement since the previous rebalance.  Without this, all
+            # incumbent weights stay at their last-rebalance value (1/M), so
+            # freed = exits/M and per_entry = 1/M — every stock lands back at 1/M
+            # and Marginal collapses to Full.  With drift adjustment, winners carry
+            # higher weight into the redistribution, making the two strategies
+            # genuinely distinct.
+            if marg_weights and prev_rebalance_day is not None:
+                drifted: dict[str, float] = {}
+                for s, w in marg_weights.items():
+                    try:
+                        c = all_ohlcv[s]["Close"]
+                        p_prev = float(c.at[prev_rebalance_day]) if prev_rebalance_day in c.index else None
+                        p_now  = float(c.at[day])               if day  in c.index else None
+                        drifted[s] = w * (p_now / p_prev) if (p_prev and p_now and p_prev > 0) else w
+                    except Exception:
+                        drifted[s] = w
+                total_d = sum(drifted.values())
+                if total_d > 0:
+                    marg_weights = {s: w / total_d for s, w in drifted.items()}
+
             freed = sum(marg_weights.get(s, 0.0) for s in exits)
             new_marg = {s: marg_weights[s] for s in new_holdings - entries if s in marg_weights}
             if entries:
@@ -358,6 +395,7 @@ def run_backtest(
                 new_marg = {s: w / total_w for s, w in new_marg.items()}
             marg_weights = new_marg
 
+            prev_rebalance_day = day
             current_holdings = new_holdings
             holdings_log.append({
                 "date": day,
