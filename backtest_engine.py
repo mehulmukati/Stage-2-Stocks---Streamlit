@@ -276,17 +276,20 @@ def run_backtest(
 
     # ── initialise portfolios ──
     full_weights: dict[str, float] = {}
+    full_weights_prev: dict[str, float] = {}  # drift-adjusted full weights from prior rebalance
     marg_weights: dict[str, float] = {}
     current_holdings: set[str] = set()
-    prev_rebalance_day = None  # needed to drift-adjust marg_weights at each rebalance
+    prev_rebalance_day = None  # needed to drift-adjust weights at each rebalance
 
     nav_full = 100.0
     nav_marg = 100.0
 
     nav_records: list[dict] = []
     holdings_log: list[dict] = []
-    turnover_log: list[float] = []
-    cost_log: list[float] = []
+    turnover_log_full: list[float] = []
+    turnover_log_marg: list[float] = []
+    cost_log_full: list[float] = []
+    cost_log_marg: list[float] = []
     holdings_sizes: list[int] = []
 
     for i, day in enumerate(trading_days):
@@ -360,46 +363,57 @@ def run_backtest(
 
             size = len(new_holdings)
             holdings_sizes.append(size)
-            traded = len(exits) + len(entries)
-            turnover = traded / max(len(current_holdings), 1) if current_holdings else 1.0
-            turnover_log.append(turnover)
 
-            # ── transaction cost drag ──
-            # Deduct cost proportional to the fraction of portfolio traded.
-            # traded_fraction = (exits + entries) / portfolio_size (one-way)
+            # ── drift-adjust both weight trackers to reflect price movement since last rebalance ──
+            # This must happen before turnover calculations so exit weights use current market values.
+            if prev_rebalance_day is not None:
+
+                def _drift_weights(weights: dict[str, float]) -> dict[str, float]:
+                    if not weights:
+                        return weights
+                    drifted: dict[str, float] = {}
+                    for s, w in weights.items():
+                        try:
+                            c = all_ohlcv[s]["Close"]
+                            p_prev = float(c.at[prev_rebalance_day]) if prev_rebalance_day in c.index else None
+                            p_now = float(c.at[day]) if day in c.index else None
+                            drifted[s] = w * (p_now / p_prev) if (p_prev and p_now and p_prev > 0) else w
+                        except (KeyError, TypeError, ZeroDivisionError):
+                            drifted[s] = w
+                    total_d = sum(drifted.values())
+                    return {s: w / total_d for s, w in drifted.items()} if total_d > 0 else drifted
+
+                full_weights_prev = _drift_weights(full_weights_prev)
+                marg_weights = _drift_weights(marg_weights)
+
+            # ── weight-based turnover: separate for full and marginal ──
+            # Marginal: only exits are sold and entries bought; incumbents untouched.
+            traded_w_marg = sum(marg_weights.get(s, 0.0) for s in exits) + sum(1.0 / size for s in entries)
+            turnover_log_marg.append(traded_w_marg)
+
+            # Full: exits + entries + incumbents rebalanced back to 1/M.
+            traded_w_full = (
+                sum(full_weights_prev.get(s, 0.0) for s in exits)
+                + sum(1.0 / size for s in entries)
+                + sum(abs(full_weights_prev.get(s, 0.0) - 1.0 / size) for s in (new_holdings - entries))
+            )
+            turnover_log_full.append(traded_w_full)
+
+            # ── transaction cost drag — separate for full and marginal ──
             if i > 0 and transaction_cost_pct > 0 and size > 0:
-                traded_fraction = traded / size
-                cost_drag = traded_fraction * transaction_cost_pct
-                nav_full *= 1.0 - cost_drag
-                nav_marg *= 1.0 - cost_drag
-                cost_log.append(cost_drag)
+                cost_drag_full = traded_w_full * transaction_cost_pct
+                cost_drag_marg = traded_w_marg * transaction_cost_pct
+                nav_full *= 1.0 - cost_drag_full
+                nav_marg *= 1.0 - cost_drag_marg
+                cost_log_full.append(cost_drag_full)
+                cost_log_marg.append(cost_drag_marg)
 
             # full rebalance: equal weight all holdings
             full_weights = {s: 1.0 / size for s in new_holdings}
+            full_weights_prev = dict(full_weights)  # store for next rebalance's drift-adjust & turnover
 
             # marginal rebalance: redistribute only exited weight to entrants.
-            #
-            # Before computing freed weight, drift-adjust marg_weights to reflect
-            # price movement since the previous rebalance.  Without this, all
-            # incumbent weights stay at their last-rebalance value (1/M), so
-            # freed = exits/M and per_entry = 1/M — every stock lands back at 1/M
-            # and Marginal collapses to Full.  With drift adjustment, winners carry
-            # higher weight into the redistribution, making the two strategies
-            # genuinely distinct.
-            if marg_weights and prev_rebalance_day is not None:
-                drifted: dict[str, float] = {}
-                for s, w in marg_weights.items():
-                    try:
-                        c = all_ohlcv[s]["Close"]
-                        p_prev = float(c.at[prev_rebalance_day]) if prev_rebalance_day in c.index else None
-                        p_now = float(c.at[day]) if day in c.index else None
-                        drifted[s] = w * (p_now / p_prev) if (p_prev and p_now and p_prev > 0) else w
-                    except (KeyError, TypeError, ZeroDivisionError):
-                        drifted[s] = w
-                total_d = sum(drifted.values())
-                if total_d > 0:
-                    marg_weights = {s: w / total_d for s, w in drifted.items()}
-
+            # marg_weights is already drift-adjusted above, so freed weight reflects current prices.
             freed = sum(marg_weights.get(s, 0.0) for s in exits)
             new_marg = {s: marg_weights[s] for s in new_holdings - entries if s in marg_weights}
             if entries:
@@ -486,22 +500,27 @@ def run_backtest(
 
     stats_df = pd.DataFrame(stats).T
 
-    avg_turnover = round(np.mean(turnover_log) * 100, 1) if turnover_log else 0.0
-    total_cost_drag = round(sum(cost_log) * 100, 3) if cost_log else 0.0
+    avg_turnover_full = round(np.mean(turnover_log_full) * 100, 1) if turnover_log_full else 0.0
+    avg_turnover_marg = round(np.mean(turnover_log_marg) * 100, 1) if turnover_log_marg else 0.0
+    total_cost_full = round(sum(cost_log_full) * 100, 3) if cost_log_full else 0.0
+    total_cost_marg = round(sum(cost_log_marg) * 100, 3) if cost_log_marg else 0.0
     avg_holdings = round(float(np.mean(holdings_sizes)), 1) if holdings_sizes else 0.0
 
-    for col in ["Full Rebalance", "Marginal Rebalance"]:
-        if col in stats_df.index:
-            stats_df.loc[col, "Avg Holdings"] = avg_holdings
-            stats_df.loc[col, "Avg Turnover (%)"] = avg_turnover
-            stats_df.loc[col, "Cost Drag (%)"] = total_cost_drag
+    if "Full Rebalance" in stats_df.index:
+        stats_df.loc["Full Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Full Rebalance", "Avg Turnover (%)"] = avg_turnover_full
+        stats_df.loc["Full Rebalance", "Cost Drag (%)"] = total_cost_full
+    if "Marginal Rebalance" in stats_df.index:
+        stats_df.loc["Marginal Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Marginal Rebalance", "Avg Turnover (%)"] = avg_turnover_marg
+        stats_df.loc["Marginal Rebalance", "Cost Drag (%)"] = total_cost_marg
 
     return {
         "nav": nav_df,
         "stats": stats_df,
         "holdings_log": holdings_log,
-        "avg_turnover_pct": avg_turnover,
-        "total_cost_drag_pct": total_cost_drag,
+        "avg_turnover_pct": avg_turnover_full,
+        "total_cost_drag_pct": total_cost_full,
         "rebalance_dates": rebalance_dates,
         "trading_days": trading_days,
     }
