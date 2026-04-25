@@ -17,3 +17,7 @@ data/*.xls
 data/*.xlsx
 data/manual_overrides.json
 data/validation_report.csv
+
+# Runtime-generated score caches (derived from screener_ohlcv.parquet; stale next trading day)
+data/stage2_cache.parquet
+data/momentum_cache.parquet
