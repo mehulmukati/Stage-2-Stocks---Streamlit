@@ -136,6 +136,13 @@ def init_db():
                 created_at  TIMESTAMP DEFAULT NOW()
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS momentum_cache (
+                cache_date  DATE      PRIMARY KEY,
+                results     JSONB     NOT NULL,
+                created_at  TIMESTAMP DEFAULT NOW()
+            )
+        """)
         conn.commit()
 
 
@@ -364,6 +371,47 @@ def load_latest_stage2_cache() -> tuple[pd.DataFrame | None, str | None]:
     with _get_conn() as conn:
         row = conn.execute(
             "SELECT cache_date, results FROM stage2_cache ORDER BY cache_date DESC LIMIT 1"
+        ).fetchone()
+    if row:
+        date_str = row[0] if isinstance(row[0], str) else row[0].strftime("%Y-%m-%d")
+        return _jsonb_to_df(row[1]), date_str
+    return None, None
+
+
+# ──────────────────────────────────────────────
+# MOMENTUM CACHE — WRITE / READ
+# ──────────────────────────────────────────────
+def save_momentum_cache(cache_date: str, df: pd.DataFrame):
+    """Persist scored Momentum results for cache_date as JSON; overwrites any existing entry."""
+    payload = df.to_json(orient="records")
+    with _get_conn() as conn:
+        conn.execute(
+            """
+            INSERT INTO momentum_cache (cache_date, results)
+            VALUES (%s, %s)
+            ON CONFLICT (cache_date) DO UPDATE SET results=EXCLUDED.results, created_at=NOW()
+            """,
+            (cache_date, payload),
+        )
+        conn.commit()
+
+
+def load_momentum_cache(cache_date: str) -> pd.DataFrame | None:
+    """Return cached Momentum results for a specific trading date, or None if not found."""
+    with _get_conn() as conn:
+        row = conn.execute(
+            "SELECT results FROM momentum_cache WHERE cache_date = %s", (cache_date,)
+        ).fetchone()
+    if row:
+        return _jsonb_to_df(row[0])
+    return None
+
+
+def load_latest_momentum_cache() -> tuple[pd.DataFrame | None, str | None]:
+    """Return the most recent Momentum cache entry as (DataFrame, date_str) fallback."""
+    with _get_conn() as conn:
+        row = conn.execute(
+            "SELECT cache_date, results FROM momentum_cache ORDER BY cache_date DESC LIMIT 1"
         ).fetchone()
     if row:
         date_str = row[0] if isinstance(row[0], str) else row[0].strftime("%Y-%m-%d")

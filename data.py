@@ -1,3 +1,4 @@
+import functools
 import json
 import logging
 import os
@@ -23,11 +24,12 @@ from stage2_engine import check_weinstein_retest, score_stage2
 # ──────────────────────────────────────────────
 # HOLIDAY & TRADING DAY RESOLVER
 # ──────────────────────────────────────────────
-def load_nse_holidays() -> set:
-    """Load NSE market holidays from nse_holidays.json; returns a set of 'YYYY-MM-DD' strings."""
+@functools.lru_cache(maxsize=None)
+def load_nse_holidays() -> frozenset:
+    """Load NSE market holidays from nse_holidays.json; returns a frozenset of 'YYYY-MM-DD' strings."""
     path = os.path.join(os.path.dirname(__file__), "nse_holidays.json")
     if not os.path.exists(path):
-        return set()
+        return frozenset()
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     holidays = set()
@@ -39,10 +41,10 @@ def load_nse_holidays() -> set:
                 holidays.add(dt.strftime("%Y-%m-%d"))
             except ValueError:
                 continue
-    return holidays
+    return frozenset(holidays)
 
 
-def get_last_valid_trading_date(start_date_str: str, holidays: set) -> str:
+def get_last_valid_trading_date(start_date_str: str, holidays: frozenset) -> str:
     """Walk backwards from start_date_str to find the nearest weekday that is not an NSE holiday."""
     dt = datetime.strptime(start_date_str, "%Y-%m-%d")
     for _ in range(10):
@@ -55,6 +57,7 @@ def get_last_valid_trading_date(start_date_str: str, holidays: set) -> str:
 # ──────────────────────────────────────────────
 # CONSTITUENTS
 # ──────────────────────────────────────────────
+@functools.lru_cache(maxsize=None)
 def _load_constituents() -> dict:
     """Load index-to-symbols mapping from constituents.json; returns {} if missing."""
     const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
@@ -93,6 +96,45 @@ def _records_to_symbol_data(records: list[dict]) -> dict[str, pd.DataFrame]:
     return result
 
 
+def _parse_yfinance_download(raw: pd.DataFrame, tickers: list[str]) -> list[dict]:
+    """Parse a yfinance multi-ticker download into a flat list of OHLCV record dicts."""
+    def _f(v):
+        try:
+            f = float(v)
+            return None if pd.isna(f) else f
+        except (TypeError, ValueError):
+            return None
+
+    available = (
+        raw.columns.get_level_values(0).unique().tolist()
+        if isinstance(raw.columns, pd.MultiIndex)
+        else tickers
+    )
+    records = []
+    for t in tickers:
+        sym = t.replace(".NS", "")
+        try:
+            if t not in available:
+                continue
+            sub = raw[t].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
+            sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
+            for dt, row in sub.iterrows():
+                if pd.isna(row.get("Close")):
+                    continue
+                records.append({
+                    "symbol": sym,
+                    "date": dt.date(),
+                    "open": _f(row.get("Open")),
+                    "high": _f(row.get("High")),
+                    "low": _f(row.get("Low")),
+                    "close": float(row["Close"]),
+                    "volume": int(row.get("Volume") or 0),
+                })
+        except Exception:
+            continue
+    return records
+
+
 def _sync_ohlcv_to_db(
     all_symbols: list[str],
     target_date: str = None,
@@ -109,7 +151,7 @@ def _sync_ohlcv_to_db(
 
     When `force_download=True`, bypass the attempted-set guard AND the
     "DB already has fresh data" shortcut — do a real yfinance fetch and populate
-    `_mem_ohlcv`.  Used as a last-resort fallback when DB reads succeed for small
+    `_ohlcv_cache`.  Used as a last-resort fallback when DB reads succeed for small
     queries but fail/time-out for the backtest's 10-year query on flaky hosts.
     """
     # Already synced this process run — skip immediately (unless forced).
@@ -194,57 +236,19 @@ def _sync_ohlcv_to_db(
         if raw is None or raw.empty:
             return False
 
-        records = []
-        available = (
-            raw.columns.get_level_values(0).unique().tolist()
-            if isinstance(raw.columns, pd.MultiIndex)
-            else tickers
-        )
-
-        for t in tickers:
-            sym = t.replace(".NS", "")
-            try:
-                if t not in available:
-                    continue
-                sub = (
-                    raw[t].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
-                )
-                sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
-                for dt, row in sub.iterrows():
-                    if pd.isna(row.get("Close")):
-                        continue
-                    def _f(v):
-                        try:
-                            f = float(v)
-                            return None if pd.isna(f) else f
-                        except (TypeError, ValueError):
-                            return None
-                    records.append(
-                        {
-                            "symbol": sym,
-                            "date": dt.date(),
-                            "open": _f(row.get("Open")),
-                            "high": _f(row.get("High")),
-                            "low": _f(row.get("Low")),
-                            "close": float(row["Close"]),
-                            "volume": int(row.get("Volume") or 0),
-                        }
-                    )
-            except Exception:
-                continue
+        records = _parse_yfinance_download(raw, tickers)
 
         if records:
             # Always populate the in-memory fallback store so callers can use
-            # _mem_ohlcv when the DB is unavailable for reads.
+            # _ohlcv_cache when the DB is unavailable for reads.
             with _cache_lock:
-                _mem_ohlcv.update(_records_to_symbol_data(records))
+                _ohlcv_cache.update(_records_to_symbol_data(records))
             emit("info", f"💾 Saving {len(records):,} rows to database…")
             try:
                 db.upsert_ohlcv(records, emit=emit)
             except Exception as _db_exc:
                 emit("warning", f"⚠️ DB write failed — data cached in memory only: {_db_exc}")
-                # Note: we still mark the date attempted and return True because
-                # _mem_ohlcv was populated above and _score_from_db prefers it.
+                # _ohlcv_cache was populated above; _load_and_score will prefer it.
                 # The DB remains stale until the next cold start triggers a re-sync.
 
         if target_date:
@@ -264,15 +268,15 @@ def _sync_ohlcv_to_db(
 # not use benchmark series at all.
 
 
-def _score_from_db(
+def _load_and_score(
     constituents: dict,
     for_momentum: bool,
     emit: Callable[[str, str], None] = _NOOP_EMIT,
 ) -> pd.DataFrame:
-    """Load recent OHLCV from DB (or memory fallback), run the scorer, return a sorted DataFrame."""
+    """Load recent OHLCV from memory (preferred) or DB, run the scorer, return a sorted DataFrame."""
     # 550 calendar days ≈ 392 trading days — enough for MA200 (200td) + MA_RISING_LOOKBACK (50td)
     # + 52w-high (252td) with margin.  Both screeners use the same window so one DB read
-    # populates _mem_ohlcv for the other.  Stage 2 previously requested 750 days which exceeded
+    # populates _ohlcv_cache for the other.  Stage 2 previously requested 750 days which exceeded
     # the 2y table size and returned the whole table even with an index; 550 fits within it.
     period_days = 550
     symbol_data: dict[str, pd.DataFrame] | None = None
@@ -281,8 +285,8 @@ def _score_from_db(
     # against Supabase (the date column is TEXT, so `date::date >= NOW() - ...`
     # cannot use an index and routinely hits the 60s statement timeout).
     with _cache_lock:
-        if _mem_ohlcv:
-            symbol_data = dict(_mem_ohlcv)
+        if _ohlcv_cache:
+            symbol_data = dict(_ohlcv_cache)
     if symbol_data:
         emit("info", f"📦 Using in-memory OHLCV cache ({len(symbol_data)} symbols)")
     else:
@@ -291,14 +295,14 @@ def _score_from_db(
             symbol_data = db.load_ohlcv_all(period_days=period_days)
             if symbol_data:
                 with _cache_lock:
-                    _mem_ohlcv.update(symbol_data)
+                    _ohlcv_cache.update(symbol_data)
         except Exception as _db_exc:
             emit("warning", f"⚠️ DB read failed — using in-memory OHLCV cache: {_db_exc}")
 
     if not symbol_data:
         # Fallback A: use whatever _sync_ohlcv_to_db already downloaded to memory
         with _cache_lock:
-            symbol_data = dict(_mem_ohlcv)
+            symbol_data = dict(_ohlcv_cache)
 
     # Fallback B (last resort): force fresh yfinance download
     if not symbol_data:
@@ -306,7 +310,7 @@ def _score_from_db(
         all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
         _sync_ohlcv_to_db(all_symbols, emit=emit, force_download=True)
         with _cache_lock:
-            symbol_data = dict(_mem_ohlcv)
+            symbol_data = dict(_ohlcv_cache)
 
     if not symbol_data:
         emit("error", "❌ No OHLCV data available — DB is unreachable and Yahoo Finance download failed")
@@ -367,26 +371,26 @@ def fetch_chart_data(symbol: str) -> pd.DataFrame:
 # ──────────────────────────────────────────────
 # 3-TIER CACHE  (Memory → DB → Internet)
 # ──────────────────────────────────────────────
-# Guards every read and write of _mem_cache and _ohlcv_sync_attempted. Workers
-# in later phases will hit these from background threads; readers snapshot the
-# per-kind dict under the lock and then read fields off the (immutable-by-convention)
-# snapshot without holding the lock.
+# _cache_lock guards every read and write of _score_cache, _ohlcv_cache, and
+# _ohlcv_sync_attempted.  Workers in background threads snapshot per-kind dicts
+# under the lock and then read fields off the snapshot without holding it.
 _cache_lock = threading.RLock()
 
-_mem_cache: dict[str, dict] = {
+# Scored results cache — stores the output of the screener engines.
+# stage2 is keyed by trading date; momentum adds a TTL timestamp for intraday refresh.
+_score_cache: dict[str, dict] = {
     "stage2":   {"date": None, "data": None},
     "momentum": {"date": None, "data": None, "ts": None},
 }
 
-# In-memory OHLCV store used as a DB fallback.  Populated by _sync_ohlcv_to_db()
-# whenever yfinance data is downloaded; consumed by _score_from_db() when
-# db.load_ohlcv_all() raises an exception.
+# Raw OHLCV store — populated by _sync_ohlcv_to_db() whenever yfinance data is
+# downloaded; consumed by _load_and_score() when db.load_ohlcv_all() is unavailable.
 # Format matches db.load_ohlcv_all(): {symbol: DataFrame(Open,High,Low,Close,Volume)}.
-_mem_ohlcv: dict[str, pd.DataFrame] = {}
+_ohlcv_cache: dict[str, pd.DataFrame] = {}
 
 # Dates for which an OHLCV sync has already been attempted this session.
-# Prevents both screeners (and backtest) from hitting yfinance independently
-# when they share the same underlying OHLCV store.
+# Prevents both screeners from hitting yfinance independently when they share
+# the same underlying OHLCV store.
 _ohlcv_sync_attempted: set[str] = set()
 
 # Single-flight latch: the first background thread to sync a given target_date
@@ -416,9 +420,9 @@ def resolve_screener_data(
 ):
     """
     3-tier resolution for both screeners:
-      Tier 1 — in-memory (same process, keyed by trading date / TTL)
-      Tier 2 — SQLite/PostgreSQL (persists across restarts)
-      Tier 3 — yfinance internet fetch (only when DB is stale)
+      Tier 1 — in-memory (same process, keyed by trading date; momentum adds TTL)
+      Tier 2 — PostgreSQL (persists across restarts; consulted on cold start only)
+      Tier 3 — yfinance internet fetch (only when DB is stale or absent)
     Returns (df, date_str, source) where source is 'memory' | 'db' | 'internet' | 'error'.
     """
     target_key = _get_target_key()
@@ -432,9 +436,10 @@ def resolve_screener_data(
 
     if for_momentum:
         with _cache_lock:
-            mc = _mem_cache["momentum"]
+            mc = _score_cache["momentum"]
         now = datetime.now()
 
+        # Tier 1: memory with TTL — serve if data is fresh enough within this session.
         if (
             mc["data"] is not None
             and mc["date"] == target_key
@@ -443,43 +448,62 @@ def resolve_screener_data(
         ):
             return mc["data"], target_key, "memory"
 
-        _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
-        df = _score_from_db(constituents, for_momentum=True, emit=emit)
+        # Tier 2: DB cache — consulted only on cold start (no in-memory data for today).
+        # When TTL expires mid-session, skip straight to Tier 3 to get fresh scores.
+        if mc["data"] is None or mc["date"] != target_key:
+            try:
+                cached_df = db.load_momentum_cache(target_key)
+            except Exception:
+                cached_df = None
+            if cached_df is not None:
+                with _cache_lock:
+                    _score_cache["momentum"] = {"date": target_key, "data": cached_df, "ts": now}
+                return cached_df, target_key, "db"
 
-        source = "db" if (mc["data"] is None or mc["date"] != target_key) else "memory"
+        # Tier 3: score fresh from OHLCV.
+        _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
+        df = _load_and_score(constituents, for_momentum=True, emit=emit)
         if not df.empty:
+            try:
+                db.save_momentum_cache(target_key, df)
+            except Exception as _exc:
+                emit("warning", f"⚠️ Failed to save momentum cache to DB: {_exc}")
             with _cache_lock:
-                _mem_cache["momentum"] = {"date": target_key, "data": df, "ts": now}
-        return df, target_key, source
+                _score_cache["momentum"] = {"date": target_key, "data": df, "ts": now}
+        return df, target_key, "internet" if not df.empty else "error"
 
     else:
         with _cache_lock:
-            mc = _mem_cache["stage2"]
+            mc = _score_cache["stage2"]
 
+        # Tier 1: memory — serve if date matches.
         if mc["data"] is not None and mc["date"] == target_key:
             return mc["data"], target_key, "memory"
 
+        # Tier 2: DB cache — load pre-scored results for today's trading date.
         try:
             cached_df = db.load_stage2_cache(target_key)
         except Exception:
             cached_df = None  # DB unavailable; skip to re-score
         if cached_df is not None:
             with _cache_lock:
-                _mem_cache["stage2"] = {"date": target_key, "data": cached_df}
+                _score_cache["stage2"] = {"date": target_key, "data": cached_df}
             return cached_df, target_key, "db"
 
+        # Tier 3: sync OHLCV, score, persist.
         synced = _sync_ohlcv_to_db(all_symbols, target_date=target_key, emit=emit)
         if synced:
-            df = _score_from_db(constituents, for_momentum=False, emit=emit)
+            df = _load_and_score(constituents, for_momentum=False, emit=emit)
             if not df.empty:
                 try:
                     db.save_stage2_cache(target_key, df)
-                except Exception:
-                    pass  # non-fatal — results served from memory this session
+                except Exception as _exc:
+                    emit("warning", f"⚠️ Failed to save Stage 2 cache to DB: {_exc}")
                 with _cache_lock:
-                    _mem_cache["stage2"] = {"date": target_key, "data": df}
+                    _score_cache["stage2"] = {"date": target_key, "data": df}
                 return df, target_key, "internet"
 
+        # Last resort: serve the most recent available cache entry from DB.
         try:
             fallback_df, fallback_date = db.load_latest_stage2_cache()
         except Exception:

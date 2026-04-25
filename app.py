@@ -23,7 +23,7 @@ load_dotenv()
 import db
 from charts import phase_chart_figure
 from config import IST
-from data import _load_constituents, _mem_cache, fetch_chart_data
+from data import _load_constituents, _score_cache, fetch_chart_data
 from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
@@ -189,7 +189,7 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
 
     cached = st.session_state.get("stage2_cached_result")
     if cached is None:
-        proc = _mem_cache["stage2"]
+        proc = _score_cache["stage2"]
         if proc["data"] is not None and proc["date"] is not None:
             cached = {"df": proc["data"], "cache_date": proc["date"], "source": "memory"}
             st.session_state["stage2_cached_result"] = cached
@@ -280,7 +280,7 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
 
     cached = st.session_state.get("momentum_cached_result")
     if cached is None:
-        proc = _mem_cache["momentum"]
+        proc = _score_cache["momentum"]
         if proc["data"] is not None and proc["date"] is not None:
             cached = {"df": proc["data"], "cache_date": proc["date"], "source": "memory"}
             st.session_state["momentum_cached_result"] = cached

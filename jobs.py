@@ -10,9 +10,12 @@ import uuid
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Callable, Optional
+
+# Completed jobs older than this are evicted from the registry on the next submit().
+_JOB_TTL_SECONDS = 3600
 
 
 class JobStatus(str, Enum):
@@ -44,9 +47,25 @@ class JobRegistry:
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
         self._jobs: dict[str, dict[str, Job]] = {}
 
+    def _evict_stale(self) -> None:
+        """Remove user_token entries where every job is terminal and finished over TTL ago."""
+        terminal = {JobStatus.DONE, JobStatus.ERROR, JobStatus.CANCELLED}
+        cutoff = datetime.now() - timedelta(seconds=_JOB_TTL_SECONDS)
+        stale = [
+            token
+            for token, jobs in self._jobs.items()
+            if all(
+                j.status in terminal and j.finished_at is not None and j.finished_at < cutoff
+                for j in jobs.values()
+            )
+        ]
+        for token in stale:
+            del self._jobs[token]
+
     def submit(self, user_token: str, kind: str, params: dict, worker_fn: Callable) -> Job:
         """Cancel any running same-kind job for this user, then submit a new one."""
         with self._lock:
+            self._evict_stale()
             user_jobs = self._jobs.setdefault(user_token, {})
             old = user_jobs.get(kind)
             if old is not None and old.status in (JobStatus.QUEUED, JobStatus.RUNNING):
