@@ -8,6 +8,7 @@ Data pipeline: data_backtest.py (parquet + yfinance tail delta).
 
 import json
 import os
+import re
 import warnings
 from datetime import date as _date
 
@@ -66,8 +67,6 @@ _GUIDE_PATH = os.path.join(os.path.dirname(__file__), "backtest_user_guide.md")
 
 
 def _render_user_guide() -> None:
-    import re
-
     try:
         raw = open(_GUIDE_PATH, encoding="utf-8").read()
     except FileNotFoundError:

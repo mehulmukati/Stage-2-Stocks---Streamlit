@@ -43,6 +43,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
+from openpyxl import load_workbook
 
 # ---------------------------------------------------------------------------
 # 2. Constants
@@ -223,12 +224,6 @@ def parse_xlsx() -> pd.DataFrame:
 
     if not XLSX_PATH.exists():
         print("       [WARN] File not found — skipping.")
-        return pd.DataFrame(columns=SCHEMA)
-
-    try:
-        from openpyxl import load_workbook
-    except ImportError:
-        print("       [WARN] openpyxl not available — skipping.")
         return pd.DataFrame(columns=SCHEMA)
 
     records = []

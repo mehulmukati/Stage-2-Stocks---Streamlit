@@ -6,6 +6,8 @@ Each function signature: (params: dict, emit: Callable, cancel_evt: Event) -> di
 import threading
 from typing import Callable
 
+import pandas as pd
+
 from backtest_engine import run_backtest
 
 # Screener workers stay on the DB-backed pipeline.
@@ -90,8 +92,6 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
     result_disp = run_backtest(**common_kwargs, band_rule="displacement")
     if "error" in result_disp:
         raise RuntimeError(result_disp["error"])
-
-    import pandas as pd
 
     # ── merge NAV DataFrames ──
     nav_classic = result_classic["nav"].rename(

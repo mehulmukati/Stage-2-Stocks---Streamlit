@@ -58,6 +58,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
+from openpyxl import load_workbook
 from rapidfuzz import fuzz, process
 
 # =============================================================================
@@ -269,8 +270,6 @@ def parse_f2():
 def parse_f3():
     """Parse N750 xlsx. Returns DataFrame with INDEX_NAME, TIME_STAMP, SYMBOL."""
     log(f"S1.F3: reading {XLSX_PATH.name}")
-    from openpyxl import load_workbook
-
     wb = load_workbook(XLSX_PATH, read_only=True, data_only=True)
     records = []
     for sheet_tab, index_name in SHEET_TO_INDEX.items():
