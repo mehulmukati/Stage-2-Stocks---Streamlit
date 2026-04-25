@@ -63,34 +63,29 @@ _WINDOW_MAP = {
 # USER GUIDE
 # ──────────────────────────────────────────────
 _GUIDE_PATH = os.path.join(os.path.dirname(__file__), "backtest_user_guide.md")
-_GUIDE_TABS = [
-    "Overview",
-    "Entry & Exit Band (M / N)",
-    "Classic vs Displacement",
-    "Full vs Marginal Rebalance",
-    "Ranking & Scoring",
-    "Realism Settings",
-]
 
 
 def _render_user_guide() -> None:
+    import re
+
     try:
         raw = open(_GUIDE_PATH, encoding="utf-8").read()
     except FileNotFoundError:
         st.error("User guide file not found: backtest_user_guide.md")
         return
 
-    import re
-
     parts = re.split(r"^## (.+)$", raw, flags=re.MULTILINE)
     # parts = [preamble, title1, body1, title2, body2, ...]
-    section: dict[str, str] = {}
+    sections: dict[str, str] = {}
     for i in range(1, len(parts), 2):
-        section[parts[i].strip()] = parts[i + 1].strip()
+        sections[parts[i].strip()] = parts[i + 1].strip()
 
-    for tab, name in zip(st.tabs(_GUIDE_TABS), _GUIDE_TABS):
+    if not sections:
+        st.warning("No sections found in user guide.")
+        return
+
+    for tab, (name, content) in zip(st.tabs(list(sections.keys())), sections.items()):
         with tab:
-            content = section.get(name, "")
             if "<!-- warning -->" in content:
                 before, after = content.split("<!-- warning -->", 1)
                 st.markdown(before)
