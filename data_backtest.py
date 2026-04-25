@@ -30,9 +30,9 @@ Runtime flow:
 
 The parquet itself is rebuilt out-of-band by `scripts/refresh_backtest_parquet.py`.
 """
+
 from __future__ import annotations
 
-import json
 import os
 import threading
 from datetime import datetime, timedelta
@@ -42,6 +42,7 @@ import pandas as pd
 import yfinance as yf
 
 from config import IST
+from data import _load_constituents, get_last_valid_trading_date, load_nse_holidays  # noqa: F401
 
 _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
@@ -65,60 +66,21 @@ _baseline_bench: pd.DataFrame | None = None
 
 # Tier 1: merged (baseline + yfinance delta) cache, keyed by trading-day string.
 _merged_ohlcv: dict[str, dict[str, pd.DataFrame]] = {}  # {today_key: {symbol: df}}
-_merged_bench: dict[str, dict[str, pd.Series]] = {}     # {today_key: {label: series}}
+_merged_bench: dict[str, dict[str, pd.Series]] = {}  # {today_key: {label: series}}
 
 
 # ──────────────────────────────────────────────
-# Trading-day key (same semantics as data._get_target_key)
+# Trading-day key (delegates to data.py — single authoritative implementation)
 # ──────────────────────────────────────────────
-def _load_nse_holidays() -> set:
-    path = os.path.join(REPO_ROOT, "nse_holidays.json")
-    if not os.path.exists(path):
-        return set()
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    holidays: set = set()
-    for segment in data.values():
-        for entry in segment:
-            date_str = entry.get("tradingDate ", entry.get("tradingDate", "")).strip()
-            try:
-                dt = datetime.strptime(date_str, "%d-%b-%Y")
-                holidays.add(dt.strftime("%Y-%m-%d"))
-            except ValueError:
-                continue
-    return holidays
-
-
-def _last_valid_trading_date(start_date_str: str, holidays: set) -> str:
-    dt = datetime.strptime(start_date_str, "%Y-%m-%d")
-    for _ in range(10):
-        if dt.weekday() < 5 and dt.strftime("%Y-%m-%d") not in holidays:
-            return dt.strftime("%Y-%m-%d")
-        dt -= timedelta(days=1)
-    return start_date_str
-
-
 def _get_target_key() -> str:
     now = datetime.now(IST)
-    start = (
-        now.strftime("%Y-%m-%d")
-        if now.hour >= 19
-        else (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    )
-    return _last_valid_trading_date(start, _load_nse_holidays())
+    start = now.strftime("%Y-%m-%d") if now.hour >= 19 else (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    return get_last_valid_trading_date(start, load_nse_holidays())
 
 
 # ──────────────────────────────────────────────
-# Constituents & compositions (shared, DB-free)
+# Compositions (backtest-specific parquet; constituents shared via data.py)
 # ──────────────────────────────────────────────
-def _load_constituents() -> dict:
-    path = os.path.join(REPO_ROOT, "constituents.json")
-    if not os.path.exists(path):
-        return {}
-    with open(path, "r") as f:
-        return json.load(f)
-
-
 def load_compositions() -> pd.DataFrame:
     """Load historical index compositions for survivorship-bias-aware backtesting."""
     path = os.path.join(REPO_ROOT, "data", "compositions.parquet")
@@ -137,16 +99,13 @@ def _ensure_baseline_ohlcv(emit: Callable[[str, str], None]) -> pd.DataFrame:
         if _baseline_ohlcv is not None:
             return _baseline_ohlcv
     if not os.path.exists(OHLCV_PARQUET):
-        raise RuntimeError(
-            f"Missing {OHLCV_PARQUET}. Run: python scripts/refresh_backtest_parquet.py"
-        )
+        raise RuntimeError(f"Missing {OHLCV_PARQUET}. Run: python scripts/refresh_backtest_parquet.py")
     emit("info", f"📦 Loading 10y backtest baseline from {os.path.basename(OHLCV_PARQUET)}…")
     df = pd.read_parquet(OHLCV_PARQUET)
     df["date"] = pd.to_datetime(df["date"])
     with _lock:
         _baseline_ohlcv = df
-    emit("info", f"  ✅ {len(df):,} rows · {df['symbol'].nunique()} symbols · "
-                 f"through {df['date'].max().date()}")
+    emit("info", f"  ✅ {len(df):,} rows · {df['symbol'].nunique()} symbols · " f"through {df['date'].max().date()}")
     return df
 
 
@@ -156,9 +115,7 @@ def _ensure_baseline_bench(emit: Callable[[str, str], None]) -> pd.DataFrame:
         if _baseline_bench is not None:
             return _baseline_bench
     if not os.path.exists(BENCH_PARQUET):
-        raise RuntimeError(
-            f"Missing {BENCH_PARQUET}. Run: python scripts/refresh_backtest_parquet.py"
-        )
+        raise RuntimeError(f"Missing {BENCH_PARQUET}. Run: python scripts/refresh_backtest_parquet.py")
     df = pd.read_parquet(BENCH_PARQUET)
     df["date"] = pd.to_datetime(df["date"])
     with _lock:
@@ -200,11 +157,7 @@ def _fetch_ohlcv_delta(
     if raw is None or raw.empty:
         return pd.DataFrame(columns=["symbol", "date", "Close", "High", "Volume"])
 
-    available = (
-        raw.columns.get_level_values(0).unique().tolist()
-        if isinstance(raw.columns, pd.MultiIndex)
-        else tickers
-    )
+    available = raw.columns.get_level_values(0).unique().tolist() if isinstance(raw.columns, pd.MultiIndex) else tickers
 
     records = []
     for ticker in tickers:

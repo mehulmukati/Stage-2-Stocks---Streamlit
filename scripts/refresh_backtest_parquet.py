@@ -47,6 +47,7 @@ Usage
 
 Streamlit Cloud picks up the new baselines on its next redeploy.
 """
+
 from __future__ import annotations
 
 import json
@@ -102,8 +103,7 @@ def _load_symbols() -> tuple[list[str], int, int]:
     ex_members = historical - current
     universe = current | historical
     print(f"  Current members : {len(current)}")
-    print(f"  Historical ex-members: {len(ex_members)} "
-          f"(in compositions.parquet but not in constituents.json)")
+    print(f"  Historical ex-members: {len(ex_members)} " f"(in compositions.parquet but not in constituents.json)")
     print(f"  Full universe   : {len(universe)} symbols")
     return sorted(universe), len(current), len(ex_members)
 
@@ -117,8 +117,10 @@ def _fetch_ohlcv(symbols: list[str]) -> pd.DataFrame:
     no data for them; their presence in the ticker list is harmless.
     """
     tickers = [f"{s}.NS" for s in symbols]
-    print(f"▸ Downloading {HISTORY_PERIOD} of OHLCV for {len(tickers)} symbols…"
-          f"\n  (includes ex-members; some may be delisted and return partial/no data)")
+    print(
+        f"▸ Downloading {HISTORY_PERIOD} of OHLCV for {len(tickers)} symbols…"
+        f"\n  (includes ex-members; some may be delisted and return partial/no data)"
+    )
     t0 = time.time()
     raw = yf.download(
         tickers,
@@ -134,19 +136,13 @@ def _fetch_ohlcv(symbols: list[str]) -> pd.DataFrame:
         raise RuntimeError("yfinance returned empty frame")
 
     records: list[dict] = []
-    available = (
-        raw.columns.get_level_values(0).unique().tolist()
-        if isinstance(raw.columns, pd.MultiIndex)
-        else tickers
-    )
+    available = raw.columns.get_level_values(0).unique().tolist() if isinstance(raw.columns, pd.MultiIndex) else tickers
 
     for ticker in tickers:
         if ticker not in available:
             continue
         sym = ticker.replace(".NS", "")
-        sub = (
-            raw[ticker].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
-        )
+        sub = raw[ticker].dropna(how="all") if len(tickers) > 1 else raw.dropna(how="all")
         sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
         for dt, row in sub.iterrows():
             close = row.get("Close")
@@ -201,15 +197,10 @@ def _report(label: str, path: str, df: pd.DataFrame) -> None:
     if "symbol" in df.columns:
         symbols = df["symbol"].nunique()
         dmin, dmax = df["date"].min(), df["date"].max()
-        print(
-            f"  ✅ {label}: {len(df):,} rows · {symbols} symbols · "
-            f"{dmin} → {dmax} · {size_mb:.1f} MB"
-        )
+        print(f"  ✅ {label}: {len(df):,} rows · {symbols} symbols · " f"{dmin} → {dmax} · {size_mb:.1f} MB")
     else:
         dmin, dmax = df["date"].min(), df["date"].max()
-        print(
-            f"  ✅ {label}: {len(df):,} rows · {dmin} → {dmax} · {size_mb:.2f} MB"
-        )
+        print(f"  ✅ {label}: {len(df):,} rows · {dmin} → {dmax} · {size_mb:.2f} MB")
 
 
 def main() -> None:
@@ -228,11 +219,15 @@ def main() -> None:
 
     # Coverage report: how many ex-members actually had yfinance data?
     n_with_data = ohlcv_df["symbol"].nunique()
-    print(f"\n▸ Coverage: {n_with_data} symbols had yfinance data "
-          f"({n_current} current + {n_with_data - n_current} ex-members with data "
-          f"out of {n_ex} ex-members attempted)")
-    print(f"▸ Done at {datetime.now(IST):%Y-%m-%d %H:%M %Z}. "
-          f"Next steps: git add data/*.parquet && git commit && git push.")
+    print(
+        f"\n▸ Coverage: {n_with_data} symbols had yfinance data "
+        f"({n_current} current + {n_with_data - n_current} ex-members with data "
+        f"out of {n_ex} ex-members attempted)"
+    )
+    print(
+        f"▸ Done at {datetime.now(IST):%Y-%m-%d %H:%M %Z}. "
+        f"Next steps: git add data/*.parquet && git commit && git push."
+    )
 
 
 if __name__ == "__main__":

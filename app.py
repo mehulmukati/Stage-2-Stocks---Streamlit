@@ -3,11 +3,11 @@
 Screener app — Stage 2, Momentum, Phase Chart. Parquet-backed, no external DB.
 Backtest lives in app_backtest.py (separate parquet baseline).
 """
+
 import difflib
 import json
 import os
 import threading
-import uuid
 import warnings
 from datetime import datetime
 
@@ -22,6 +22,7 @@ from data import _load_constituents, _score_cache, fetch_chart_data
 from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
+from ui_helpers import _get_user_token, _poll_job
 from workers import momentum_worker, stage2_worker
 
 
@@ -34,67 +35,17 @@ _state_lock = threading.RLock()
 _last_chart_ticker: str = ""
 
 
-def _get_user_token() -> str:
-    if "user_token" not in st.session_state:
-        st.session_state["user_token"] = str(uuid.uuid4())
-    return st.session_state["user_token"]
-
-
-def _render_job_progress(job) -> None:
-    _icons = {"info": "▸", "warning": "⚠️", "error": "❌", "success": "✅"}
-    label = "⏳ Queued…" if job.status.value == "QUEUED" else "⏳ Running in background…"
-    with st.container(border=True):
-        st.markdown(f"**{label}**")
-        for ev in list(job.events):
-            st.write(f"{_icons.get(ev['level'], '▸')} {ev['msg']}")
-
-
-def _poll_job(kind: str, worker, submit_params: dict = None) -> bool:
-    """Submit (if triggered) and poll a background job.
-    Returns True if the caller should stop rendering (job in progress or errored).
-    On success, caches result in st.session_state[f"{kind}_cached_result"].
-    """
-    user_token = _get_user_token()
-    job_key_ss = f"{kind}_job_key"
-    cache_ss = f"{kind}_cached_result"
-
-    if st.session_state.pop(f"{kind}_run_triggered", False):
-        job = registry.submit(user_token, kind, submit_params or {}, worker)
-        st.session_state[job_key_ss] = job.key
-        st.session_state.pop(cache_ss, None)
-
-    job = registry.latest(user_token, kind)
-    job_key = st.session_state.get(job_key_ss)
-    if job is None or job.key != job_key:
-        return False
-
-    if job.status in (JobStatus.RUNNING, JobStatus.QUEUED):
-        _render_job_progress(job)
-        return True
-
-    st.session_state.pop(job_key_ss, None)
-    if job.status == JobStatus.DONE:
-        st.session_state[cache_ss] = job.result
-    elif job.status == JobStatus.ERROR:
-        st.error(f"❌ {job.error}")
-        return True
-    return False
-
-
 # ── PARQUET BASELINE CHECK (once at startup) ──
 @st.cache_resource
 def _check_baseline() -> bool:
     """Return True if screener_ohlcv.parquet exists; warn once if missing."""
-    import os
     return os.path.exists(SCREENER_OHLCV_PARQUET)
 
 
 _baseline_ok = _check_baseline()
 
 # ── PAGE CONFIG & CSS ──
-st.set_page_config(
-    page_title="Stock Screeners | Nifty 750", page_icon="📈", layout="wide"
-)
+st.set_page_config(page_title="Stock Screeners | Nifty 750", page_icon="📈", layout="wide")
 # Backtest lives at app_backtest.py — link to it from the screener if desired.
 st.markdown(
     """
@@ -110,6 +61,7 @@ st.markdown(
 # ──────────────────────────────────────────────
 # PHASE CHART
 # ──────────────────────────────────────────────
+
 
 def get_closest_symbol_match(ticker: str, threshold: float = 0.6) -> str | None:
     constituents = _load_constituents()
@@ -152,6 +104,7 @@ def render_phase_chart(ticker: str, use_log_scale: bool = True):
 # SHARED HELPERS
 # ──────────────────────────────────────────────
 
+
 def _render_source_banner(source: str, cache_date: str, count: int = None) -> None:
     suffix = f" · {count} stocks" if count is not None else ""
     if source == "memory":
@@ -165,6 +118,7 @@ def _render_source_banner(source: str, cache_date: str, count: int = None) -> No
 # ──────────────────────────────────────────────
 # RESULTS — STAGE 2
 # ──────────────────────────────────────────────
+
 
 def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid: bool):
     now_ist = datetime.now(IST).strftime("%d %b %Y · %I:%M %p IST")
@@ -220,10 +174,10 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
 
     def color_rows(row):
         bg_map = {
-            "🟢 Strong Stage 2":     "rgba(34, 197, 94, 0.18)",
-            "🟡 Likely Stage 2":     "rgba(234, 179, 8, 0.18)",
+            "🟢 Strong Stage 2": "rgba(34, 197, 94, 0.18)",
+            "🟡 Likely Stage 2": "rgba(234, 179, 8, 0.18)",
             "🟠 Early/Weak Stage 2": "rgba(249, 115, 22, 0.15)",
-            "⚪ Not Stage 2":        "rgba(0, 0, 0, 0)",
+            "⚪ Not Stage 2": "rgba(0, 0, 0, 0)",
         }
         return [f'background-color: {bg_map.get(row["Stage"], "rgba(0,0,0,0)")}'] * len(row)
 
@@ -232,30 +186,33 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
         width="stretch",
         hide_index=True,
         column_config={
-            "Symbol":    st.column_config.TextColumn("Ticker", width="medium"),
-            "Index":     st.column_config.TextColumn("Source", width="medium"),
-            "Stage":     st.column_config.TextColumn("Classification", width="medium"),
-            "Score":     st.column_config.NumberColumn("Score", format="%d/8", width="small"),
-            "Close":     st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
-            "Volume":    st.column_config.NumberColumn("Volume", format="%,d", width="small"),
-            "Avg_Vol":   st.column_config.NumberColumn("Avg Vol (10d)", format="%,d", width="small"),
+            "Symbol": st.column_config.TextColumn("Ticker", width="medium"),
+            "Index": st.column_config.TextColumn("Source", width="medium"),
+            "Stage": st.column_config.TextColumn("Classification", width="medium"),
+            "Score": st.column_config.NumberColumn("Score", format="%d/8", width="small"),
+            "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
+            "Volume": st.column_config.NumberColumn("Volume", format="%,d", width="small"),
+            "Avg_Vol": st.column_config.NumberColumn("Avg Vol (10d)", format="%,d", width="small"),
             "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio", format="%.2f x", width="small"),
-            "RSI":       st.column_config.NumberColumn("RSI(14)", format="%.1f", width="small"),
+            "RSI": st.column_config.NumberColumn("RSI(14)", format="%.1f", width="small"),
         },
         height=650,
     )
 
     csv = display_df.to_csv(index=False).encode("utf-8")
     st.download_button(
-        "📥 Download Results", csv,
+        "📥 Download Results",
+        csv,
         file_name=f"stage2_screener_{datetime.now(IST).strftime('%Y%m%d')}.csv",
-        mime="text/csv", width="stretch",
+        mime="text/csv",
+        width="stretch",
     )
 
 
 # ──────────────────────────────────────────────
 # RESULTS — MOMENTUM
 # ──────────────────────────────────────────────
+
 
 def momentum_results(selected_indices: list[str], idx_options: list[str], filters: dict):
     now_ist = datetime.now(IST).strftime("%d %b %Y · %I:%M %p IST")
@@ -283,7 +240,9 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
     display_df = full_df[full_df["Index"].isin(selected_indices)].copy() if selected_indices else full_df.copy()
 
     if filters["min_annual_return"] > 0:
-        display_df = display_df[display_df["1Y_Change"].notna() & (display_df["1Y_Change"] >= filters["min_annual_return"])]
+        display_df = display_df[
+            display_df["1Y_Change"].notna() & (display_df["1Y_Change"] >= filters["min_annual_return"])
+        ]
     if filters["close_above_100dma"]:
         display_df = display_df[display_df["DMA100"].notna() & (display_df["Close"] > display_df["DMA100"])]
     if filters["close_above_200dma"]:
@@ -309,15 +268,34 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
         return
 
     display_df = display_df.sort_values("Avg_Sharpe", ascending=False)
-    display_df = display_df[["Symbol", "Index", "Close", "Avg_Sharpe", "Volatility", "52w_High", "Vol_Median", "1Y_Change", "Pct_From_52W_High", "Circuit_Count"]]
-    display_df = display_df.rename(columns={
-        "Avg_Sharpe": "Sharpe", "Vol_Median": "Median Vol",
-        "1Y_Change": "1Y Change", "Pct_From_52W_High": "% from 52wH", "Circuit_Count": "Circuit Close",
-    })
+    display_df = display_df[
+        [
+            "Symbol",
+            "Index",
+            "Close",
+            "Avg_Sharpe",
+            "Volatility",
+            "52w_High",
+            "Vol_Median",
+            "1Y_Change",
+            "Pct_From_52W_High",
+            "Circuit_Count",
+        ]
+    ]
+    display_df = display_df.rename(
+        columns={
+            "Avg_Sharpe": "Sharpe",
+            "Vol_Median": "Median Vol",
+            "1Y_Change": "1Y Change",
+            "Pct_From_52W_High": "% from 52wH",
+            "Circuit_Count": "Circuit Close",
+        }
+    )
 
     c1, c2, c3 = st.columns(3)
     universe_label = (
-        "All Indices" if len(selected_indices) == len(idx_options)
+        "All Indices"
+        if len(selected_indices) == len(idx_options)
         else (", ".join(selected_indices) if selected_indices else "None")
     )
     c1.metric("Universe", universe_label)
@@ -325,17 +303,19 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
     c3.metric("Matches", len(display_df))
 
     st.dataframe(
-        display_df, width="stretch", hide_index=True,
+        display_df,
+        width="stretch",
+        hide_index=True,
         column_config={
-            "Symbol":        st.column_config.TextColumn("Symbol", width="medium"),
-            "Index":         st.column_config.TextColumn("Index", width="medium"),
-            "Close":         st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
-            "Sharpe":        st.column_config.NumberColumn("Sharpe", format="%.3f", width="small"),
-            "Volatility":    st.column_config.NumberColumn("Volatility (%)", format="%.1f%%", width="small"),
-            "52w_High":      st.column_config.NumberColumn("52w High", format="%.2f", width="small"),
-            "Median Vol":    st.column_config.NumberColumn("Median Vol", format="%,d", width="small"),
-            "1Y Change":     st.column_config.NumberColumn("1Y Change", format="%.2f%%", width="small"),
-            "% from 52wH":   st.column_config.NumberColumn("% from 52wH", format="%.2f%%", width="small"),
+            "Symbol": st.column_config.TextColumn("Symbol", width="medium"),
+            "Index": st.column_config.TextColumn("Index", width="medium"),
+            "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
+            "Sharpe": st.column_config.NumberColumn("Sharpe", format="%.3f", width="small"),
+            "Volatility": st.column_config.NumberColumn("Volatility (%)", format="%.1f%%", width="small"),
+            "52w_High": st.column_config.NumberColumn("52w High", format="%.2f", width="small"),
+            "Median Vol": st.column_config.NumberColumn("Median Vol", format="%,d", width="small"),
+            "1Y Change": st.column_config.NumberColumn("1Y Change", format="%.2f%%", width="small"),
+            "% from 52wH": st.column_config.NumberColumn("% from 52wH", format="%.2f%%", width="small"),
             "Circuit Close": st.column_config.NumberColumn("Circuit Close", format="%d", width="small"),
         },
         height=650,
@@ -343,15 +323,18 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
 
     csv = display_df.to_csv(index=False).encode("utf-8")
     st.download_button(
-        "📥 Download Results", csv,
+        "📥 Download Results",
+        csv,
         file_name=f"momentum_screener_{datetime.now(IST).strftime('%Y%m%d')}.csv",
-        mime="text/csv", width="stretch",
+        mime="text/csv",
+        width="stretch",
     )
 
 
 # ──────────────────────────────────────────────
 # DOCS
 # ──────────────────────────────────────────────
+
 
 @st.cache_resource
 def _load_index_options() -> list[str]:
@@ -363,10 +346,10 @@ def _load_index_options() -> list[str]:
 
 
 _DOCS_SECTIONS = {
-    "Overview":           "overview.md",
-    "Stage 2 Screener":   "stage2_screener.md",
-    "Momentum Screener":  "momentum_screener.md",
-    "Phase Chart":        "phase_chart.md",
+    "Overview": "overview.md",
+    "Stage 2 Screener": "stage2_screener.md",
+    "Momentum Screener": "momentum_screener.md",
+    "Phase Chart": "phase_chart.md",
     "Data & Methodology": "data_methodology.md",
 }
 
@@ -439,6 +422,7 @@ def render_docs():
 # SIDEBAR PANELS
 # ──────────────────────────────────────────────
 
+
 def _sidebar_phase_chart() -> str:
     global _last_chart_ticker
     st.markdown("**Stock Symbol**")
@@ -471,31 +455,53 @@ def _sidebar_stage2() -> tuple[bool, bool]:
 def _sidebar_momentum() -> dict:
     st.markdown("**Filters**")
     sort_options = [
-        "Average of 3/6/9/12 months", "Average of 3/6 months",
-        "1 year", "9 months", "6 months", "3 months",
+        "Average of 3/6/9/12 months",
+        "Average of 3/6 months",
+        "1 year",
+        "9 months",
+        "6 months",
+        "3 months",
     ]
-    sort_method        = st.selectbox("Sort by Sharpe", options=sort_options, index=0, key="mom_sort_method")
-    min_annual_return  = st.number_input("Min Annual Return (%)", min_value=0.0, max_value=1000.0, value=7.0, step=0.1, format="%.2f", key="mom_min_annual_return")
-    pct_from_52w_high  = st.number_input("Within % of 52w High", min_value=0, max_value=100, value=25, step=1, key="mom_pct_from_52w_high")
-    max_circuits       = st.number_input("Max Circuits (1yr)", min_value=0, max_value=100, value=18, step=1, key="mom_max_circuits")
+    sort_method = st.selectbox("Sort by Sharpe", options=sort_options, index=0, key="mom_sort_method")
+    min_annual_return = st.number_input(
+        "Min Annual Return (%)",
+        min_value=0.0,
+        max_value=1000.0,
+        value=7.0,
+        step=0.1,
+        format="%.2f",
+        key="mom_min_annual_return",
+    )
+    pct_from_52w_high = st.number_input(
+        "Within % of 52w High", min_value=0, max_value=100, value=25, step=1, key="mom_pct_from_52w_high"
+    )
+    max_circuits = st.number_input(
+        "Max Circuits (1yr)", min_value=0, max_value=100, value=18, step=1, key="mom_max_circuits"
+    )
     close_above_100dma = st.checkbox("Close > 100 DMA", value=False, key="mom_close_above_100dma")
     close_above_200dma = st.checkbox("Close > 200 DMA", value=True, key="mom_close_above_200dma")
-    pos_days_3m        = st.number_input("Pos Days 3M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_3m")
-    pos_days_6m        = st.number_input("Pos Days 6M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_6m")
-    pos_days_12m       = st.number_input("Pos Days 12M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_12m")
+    pos_days_3m = st.number_input(
+        "Pos Days 3M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_3m"
+    )
+    pos_days_6m = st.number_input(
+        "Pos Days 6M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_6m"
+    )
+    pos_days_12m = st.number_input(
+        "Pos Days 12M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_12m"
+    )
     st.divider()
     if st.button("🚀 Run", type="primary", width="stretch", key="mom_run_btn"):
         st.session_state["momentum_run_triggered"] = True
     return {
-        "sort_method":        sort_method,
-        "min_annual_return":  min_annual_return,
-        "pct_from_52w_high":  pct_from_52w_high,
-        "max_circuits":       max_circuits,
+        "sort_method": sort_method,
+        "min_annual_return": min_annual_return,
+        "pct_from_52w_high": pct_from_52w_high,
+        "max_circuits": max_circuits,
         "close_above_100dma": close_above_100dma,
         "close_above_200dma": close_above_200dma,
-        "pos_days_3m":        pos_days_3m,
-        "pos_days_6m":        pos_days_6m,
-        "pos_days_12m":       pos_days_12m,
+        "pos_days_3m": pos_days_3m,
+        "pos_days_6m": pos_days_6m,
+        "pos_days_12m": pos_days_12m,
     }
 
 
@@ -503,8 +509,9 @@ def _sidebar_momentum() -> dict:
 # MAIN
 # ──────────────────────────────────────────────
 
+
 def main():
-    user_token  = _get_user_token()
+    user_token = _get_user_token()
     idx_options = _load_index_options()
 
     if not _baseline_ok:
@@ -532,9 +539,7 @@ def main():
             for i, idx in enumerate(idx_options):
                 if cols[i % 2].checkbox(idx, value=True, key=f"shared_idx_{idx}"):
                     selected_indices.append(idx)
-            st.caption(
-                "💡 N50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market"
-            )
+            st.caption("💡 N50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market")
 
         if screener == "📈 Phase Chart":
             _sidebar_phase_chart()
@@ -547,8 +552,8 @@ def main():
     _kind_for_screener = {"📊 Stage 2": "stage2", "🚀 Momentum": "momentum"}
     _active_kind = _kind_for_screener.get(screener)
     if _active_kind:
-        _active_job     = registry.latest(user_token, _active_kind)
-        _run_triggered  = st.session_state.get(f"{_active_kind}_run_triggered", False)
+        _active_job = registry.latest(user_token, _active_kind)
+        _run_triggered = st.session_state.get(f"{_active_kind}_run_triggered", False)
         if _run_triggered or (_active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
             st_autorefresh(interval=1500, key="job_autorefresh")
 
@@ -556,7 +561,9 @@ def main():
         ticker = st.session_state.get("chart_ticker", "")
         if not ticker:
             st.markdown('<p class="hero">📈 Stage 2 Phase Chart</p>', unsafe_allow_html=True)
-            st.markdown('<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>', unsafe_allow_html=True)
+            st.markdown(
+                '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>', unsafe_allow_html=True
+            )
         else:
             col1, col2 = st.columns([0.85, 0.15])
             with col2:

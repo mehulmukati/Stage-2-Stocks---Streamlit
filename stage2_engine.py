@@ -1,10 +1,18 @@
 import numpy as np
 import pandas as pd
 
-from config import (BOUNCE_CONFIRMATION, CONSOLIDATION_LOOKBACK,
-                    CONSOLIDATION_RANGE_PCT, HH_HL_LOOKBACK, MA_RISING_LOOKBACK,
-                    MIN_VOLUME, RETEST_LOOKBACK_DAYS, RETEST_TOLERANCE,
-                    VOL_AVG_PERIOD, VOL_DRYUP_RATIO)
+from config import (
+    BOUNCE_CONFIRMATION,
+    CONSOLIDATION_LOOKBACK,
+    CONSOLIDATION_RANGE_PCT,
+    HH_HL_LOOKBACK,
+    MA_RISING_LOOKBACK,
+    MIN_VOLUME,
+    RETEST_LOOKBACK_DAYS,
+    RETEST_TOLERANCE,
+    VOL_AVG_PERIOD,
+    VOL_DRYUP_RATIO,
+)
 
 
 def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
@@ -22,7 +30,7 @@ def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
 
 def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
     """Vectorised daily Stage 2 score; returns df with Close/MA cols, Score (0-8), and Phase."""
-    c, h, l, v = df["Close"], df["High"], df["Low"], df["Volume"].astype(float)
+    c, v = df["Close"], df["Volume"].astype(float)
     ma50 = c.rolling(50).mean()
     ma150 = c.rolling(150).mean()
     ma200 = c.rolling(200).mean()
@@ -31,13 +39,11 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
     # Higher high: close broke above 50-day prior high
     higher_high = (c >= c.rolling(HH_HL_LOOKBACK).max().shift(1)).astype(int)
     # Higher low: recent 20-day low is above the 50-day low from HH_HL_LOOKBACK bars ago
-    higher_low = (
-        c.rolling(20).min().shift(1) > c.rolling(HH_HL_LOOKBACK).min().shift(HH_HL_LOOKBACK)
-    ).astype(int)
+    higher_low = (c.rolling(20).min().shift(1) > c.rolling(HH_HL_LOOKBACK).min().shift(HH_HL_LOOKBACK)).astype(int)
 
-    consol_range = (
-        c.rolling(CONSOLIDATION_LOOKBACK).max() - c.rolling(CONSOLIDATION_LOOKBACK).min()
-    ) / c.rolling(CONSOLIDATION_LOOKBACK).min()
+    consol_range = (c.rolling(CONSOLIDATION_LOOKBACK).max() - c.rolling(CONSOLIDATION_LOOKBACK).min()) / c.rolling(
+        CONSOLIDATION_LOOKBACK
+    ).min()
     consolidation = (consol_range < CONSOLIDATION_RANGE_PCT).astype(int)
 
     score = (
@@ -68,14 +74,14 @@ def score_stage2(df: pd.DataFrame) -> dict | None:
     """Score a stock on 8 Weinstein Stage 2 criteria; returns metric dict or None if insufficient data."""
     if len(df) < 250:
         return None
-    c, h, l, v = df["Close"], df["High"], df["Low"], df["Volume"]
+    c, v = df["Close"], df["Volume"]
     ma50 = c.rolling(50).mean()
     ma150 = c.rolling(150).mean()
     ma200 = c.rolling(200).mean()
     avg_vol = v.rolling(VOL_AVG_PERIOD).mean()
     rsi = _rsi_wilder(c)
 
-    c1, h1, l1, v1 = c.iloc[-1], h.iloc[-1], l.iloc[-1], v.iloc[-1]
+    c1, v1 = c.iloc[-1], v.iloc[-1]
     m50, m150, m200 = ma50.iloc[-1], ma150.iloc[-1], ma200.iloc[-1]
     r = rsi.iloc[-1]
     vr = v1 / avg_vol.iloc[-1] if avg_vol.iloc[-1] > 0 else 0
@@ -151,9 +157,7 @@ def check_weinstein_retest(df: pd.DataFrame) -> bool:
     # Shift by 1 — we want a pullback *after* the breakout day, not on it
     breakout_mask = breakout_mask.shift(1).fillna(False)
 
-    recent_breakouts = df.index[
-        breakout_mask & (df.index >= df.index[-RETEST_LOOKBACK_DAYS])
-    ]
+    recent_breakouts = df.index[breakout_mask & (df.index >= df.index[-RETEST_LOOKBACK_DAYS])]
     if len(recent_breakouts) == 0:
         return False
 
@@ -167,9 +171,8 @@ def check_weinstein_retest(df: pd.DataFrame) -> bool:
         return False
 
     pullback_low = pullback_period["Low"].min()
-    near_breakout = (
-        pullback_low <= breakout_level * (1 + RETEST_TOLERANCE)
-        and pullback_low >= breakout_level * (1 - RETEST_TOLERANCE)
+    near_breakout = pullback_low <= breakout_level * (1 + RETEST_TOLERANCE) and pullback_low >= breakout_level * (
+        1 - RETEST_TOLERANCE
     )
     if not near_breakout:
         return False

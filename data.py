@@ -4,6 +4,7 @@ import logging
 import os
 import tempfile
 import threading
+from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Callable
 
@@ -174,7 +175,6 @@ def _records_to_symbol_data(records: list[dict]) -> dict[str, pd.DataFrame]:
     """
     if not records:
         return {}
-    from collections import defaultdict
     buckets: dict[str, list] = defaultdict(list)
     for r in records:
         buckets[r["symbol"]].append(r)
@@ -183,10 +183,15 @@ def _records_to_symbol_data(records: list[dict]) -> dict[str, pd.DataFrame]:
         df = pd.DataFrame(rows).drop(columns="symbol")
         df["date"] = pd.to_datetime(df["date"])
         df = df.set_index("date").sort_index()
-        df = df.rename(columns={
-            "open": "Open", "high": "High", "low": "Low",
-            "close": "Close", "volume": "Volume",
-        })
+        df = df.rename(
+            columns={
+                "open": "Open",
+                "high": "High",
+                "low": "Low",
+                "close": "Close",
+                "volume": "Volume",
+            }
+        )
         df["Volume"] = df["Volume"].astype("Int64")
         result[sym] = df
     return result
@@ -194,6 +199,7 @@ def _records_to_symbol_data(records: list[dict]) -> dict[str, pd.DataFrame]:
 
 def _parse_yfinance_download(raw: pd.DataFrame, tickers: list[str]) -> list[dict]:
     """Parse a yfinance multi-ticker download into a flat list of OHLCV record dicts."""
+
     def _f(v):
         try:
             f = float(v)
@@ -201,11 +207,7 @@ def _parse_yfinance_download(raw: pd.DataFrame, tickers: list[str]) -> list[dict
         except (TypeError, ValueError):
             return None
 
-    available = (
-        raw.columns.get_level_values(0).unique().tolist()
-        if isinstance(raw.columns, pd.MultiIndex)
-        else tickers
-    )
+    available = raw.columns.get_level_values(0).unique().tolist() if isinstance(raw.columns, pd.MultiIndex) else tickers
     records = []
     for t in tickers:
         sym = t.replace(".NS", "")
@@ -217,16 +219,19 @@ def _parse_yfinance_download(raw: pd.DataFrame, tickers: list[str]) -> list[dict
             for dt, row in sub.iterrows():
                 if pd.isna(row.get("Close")):
                     continue
-                records.append({
-                    "symbol": sym,
-                    "date": dt.date(),
-                    "open": _f(row.get("Open")),
-                    "high": _f(row.get("High")),
-                    "low": _f(row.get("Low")),
-                    "close": float(row["Close"]),
-                    "volume": int(row.get("Volume") or 0),
-                })
-        except Exception:
+                records.append(
+                    {
+                        "symbol": sym,
+                        "date": dt.date(),
+                        "open": _f(row.get("Open")),
+                        "high": _f(row.get("High")),
+                        "low": _f(row.get("Low")),
+                        "close": float(row["Close"]),
+                        "volume": int(row.get("Volume") or 0),
+                    }
+                )
+        except Exception as exc:
+            logging.warning("yfinance parse error for %s: %s", sym, exc)
             continue
     return records
 
@@ -292,16 +297,13 @@ def _sync_ohlcv_to_parquet(
                 conservative_min = None
                 global_min = None
 
-        earliest_needed = (
-            datetime.now(IST) - timedelta(days=HISTORY_DAYS)
-        ).strftime("%Y-%m-%d")
+        earliest_needed = (datetime.now(IST) - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
 
         needs_backfill = global_min is None or global_min > earliest_needed
 
         if global_max is None or needs_backfill:
-            spinner_msg = (
-                f"🌐 Downloading {HISTORY_PERIOD} history for {len(tickers)} stocks"
-                + (" (backfilling missing history)…" if needs_backfill and global_max else "…")
+            spinner_msg = f"🌐 Downloading {HISTORY_PERIOD} history for {len(tickers)} stocks" + (
+                " (backfilling missing history)…" if needs_backfill and global_max else "…"
             )
             fetch_kwargs = {"period": HISTORY_PERIOD}
         else:
@@ -309,9 +311,7 @@ def _sync_ohlcv_to_parquet(
                 with _cache_lock:
                     _ohlcv_sync_attempted.add(target_date)
                 return True
-            fetch_from = (
-                datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=10)
-            ).strftime("%Y-%m-%d")
+            fetch_from = (datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=10)).strftime("%Y-%m-%d")
             today = datetime.now(IST).strftime("%Y-%m-%d")
             spinner_msg = f"🔄 Incremental update: fetching data since {fetch_from}…"
             fetch_kwargs = {"start": fetch_from, "end": today}
@@ -339,10 +339,15 @@ def _sync_ohlcv_to_parquet(
             # Build a DataFrame from new records (uppercase column names to match baseline)
             new_df = pd.DataFrame(records)
             new_df["date"] = pd.to_datetime(new_df["date"])
-            new_df = new_df.rename(columns={
-                "open": "Open", "high": "High", "low": "Low",
-                "close": "Close", "volume": "Volume",
-            })
+            new_df = new_df.rename(
+                columns={
+                    "open": "Open",
+                    "high": "High",
+                    "low": "Low",
+                    "close": "Close",
+                    "volume": "Volume",
+                }
+            )
             for col in ["Open", "High", "Low", "Close"]:
                 if col in new_df.columns:
                     new_df[col] = new_df[col].astype("float32")
@@ -494,7 +499,7 @@ _cache_lock = threading.RLock()
 # Scored results cache — stores the output of the screener engines.
 # stage2 is keyed by trading date; momentum adds a TTL timestamp for intraday refresh.
 _score_cache: dict[str, dict] = {
-    "stage2":   {"date": None, "data": None},
+    "stage2": {"date": None, "data": None},
     "momentum": {"date": None, "data": None, "ts": None},
 }
 
@@ -516,11 +521,7 @@ _sync_latches: dict[str, threading.Event] = {}
 def _get_target_key() -> str:
     """Return the last valid trading date string (cache key), with 19:00 IST after-market cutoff."""
     now = datetime.now(IST)
-    start = (
-        now.strftime("%Y-%m-%d")
-        if now.hour >= 19
-        else (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    )
+    start = now.strftime("%Y-%m-%d") if now.hour >= 19 else (now - timedelta(days=1)).strftime("%Y-%m-%d")
     return get_last_valid_trading_date(start, load_nse_holidays())
 
 
@@ -540,9 +541,7 @@ def resolve_screener_data(
     if not constituents:
         emit("error", "❌ constituents.json missing — check the data directory")
         return pd.DataFrame(), target_key, "error"
-    all_symbols = list(
-        dict.fromkeys([s for syms in constituents.values() for s in syms])
-    )
+    all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
 
     if for_momentum:
         with _cache_lock:

@@ -66,40 +66,53 @@ from rapidfuzz import fuzz, process
 DATA_DIR = Path(__file__).parent
 PROJECT_ROOT = DATA_DIR.parent
 
-CSV_PATH  = DATA_DIR / "index_const.csv"
-XLS_PATH  = DATA_DIR / "IndexInclExcl - Upto 2020.xls"
+CSV_PATH = DATA_DIR / "index_const.csv"
+XLS_PATH = DATA_DIR / "IndexInclExcl - Upto 2020.xls"
 XLSX_PATH = DATA_DIR / "N750 Historical Constituents - 202409 onwards.xlsx"
 
 OUT_COMPOSITIONS = DATA_DIR / "compositions.parquet"
-OUT_EVENTS       = DATA_DIR / "events.csv"
-OUT_MAP          = DATA_DIR / "scrip_symbol_map.csv"
-OUT_UNRESOLVED   = DATA_DIR / "scrip_symbol_unresolved.csv"
-OUT_OVERRIDES    = DATA_DIR / "manual_overrides.json"
-OUT_VALIDATION   = DATA_DIR / "validation_report.csv"
+OUT_EVENTS = DATA_DIR / "events.csv"
+OUT_MAP = DATA_DIR / "scrip_symbol_map.csv"
+OUT_UNRESOLVED = DATA_DIR / "scrip_symbol_unresolved.csv"
+OUT_OVERRIDES = DATA_DIR / "manual_overrides.json"
+OUT_VALIDATION = DATA_DIR / "validation_report.csv"
 OUT_CONSTITUENTS = PROJECT_ROOT / "constituents.json"
 
 # File 3 sheet name -> canonical index name (N100 empty, Sheet8 is a note)
 SHEET_TO_INDEX = {
-    "N50":      "NIFTY 50",
-    "NN50":     "NIFTY NEXT 50",
-    "N100":     "NIFTY 100",
-    "N200":     "NIFTY 200",
-    "MC150":    "NIFTY MIDCAP 150",
-    "SC250":    "NIFTY SMALLCAP 250",
+    "N50": "NIFTY 50",
+    "NN50": "NIFTY NEXT 50",
+    "N100": "NIFTY 100",
+    "N200": "NIFTY 200",
+    "MC150": "NIFTY MIDCAP 150",
+    "SC250": "NIFTY SMALLCAP 250",
     "Micro250": "NIFTY MICROCAP 250",
 }
 
 # Canonicalization suffixes/tokens to strip during name-symbol matching
 NAME_STRIPS = [
-    r"\blimited\b", r"\bltd\.?", r"\bpvt\.?", r"\bprivate\b",
-    r"\bcorporation\b", r"\bcorp\.?", r"\bincorporated\b", r"\binc\.?",
-    r"\bcompany\b", r"\bco\.?", r"\band\b", r"\(india\)", r"\(the\)",
-    r"\b&\b", r"\bindia\b", r"\s+",
+    r"\blimited\b",
+    r"\bltd\.?",
+    r"\bpvt\.?",
+    r"\bprivate\b",
+    r"\bcorporation\b",
+    r"\bcorp\.?",
+    r"\bincorporated\b",
+    r"\binc\.?",
+    r"\bcompany\b",
+    r"\bco\.?",
+    r"\band\b",
+    r"\(india\)",
+    r"\(the\)",
+    r"\b&\b",
+    r"\bindia\b",
+    r"\s+",
 ]
 
 # Fuzzy-match thresholds
 THRESHOLD_HIGH = 90  # auto-accept
-THRESHOLD_MED  = 70  # flag as needs_review
+THRESHOLD_MED = 70  # flag as needs_review
+
 
 # =============================================================================
 # 3. Helpers
@@ -127,8 +140,7 @@ def canonicalize_symbol(s: str) -> str:
     """Uppercase, strip hyphens/ampersands/spaces."""
     if s is None:
         return ""
-    return (str(s).upper().strip()
-            .replace("&", "").replace("-", "").replace(" ", ""))
+    return str(s).upper().strip().replace("&", "").replace("-", "").replace(" ", "")
 
 
 def canonicalize_index(s: str) -> str:
@@ -176,20 +188,27 @@ def parse_f1():
     # multi-line field. Python engine handles malformed rows (the ~41 with
     # unquoted embedded commas) more gracefully than the C engine.
     df = pd.read_csv(
-        CSV_PATH, skiprows=[1], on_bad_lines="skip",
-        dtype=str, encoding="utf-8", encoding_errors="replace",
-        engine="python", quoting=csv.QUOTE_NONE,
+        CSV_PATH,
+        skiprows=[1],
+        on_bad_lines="skip",
+        dtype=str,
+        encoding="utf-8",
+        encoding_errors="replace",
+        engine="python",
+        quoting=csv.QUOTE_NONE,
     )
     df.columns = [c.strip() for c in df.columns]
     df = df[~df["INDEX_NAME"].str.startswith("(", na=False)].copy()
-    df["TIME_STAMP"]  = pd.to_datetime(df["TIME_STAMP"], errors="coerce").dt.strftime("%Y-%m-%d")
-    df["CAP_WEIGHT"]  = pd.to_numeric(df["CAP_WEIGHT"], errors="coerce")
-    df["SYMBOL"]      = df["SYMBOL"].str.strip().str.upper()
-    df["INDEX_NAME"]  = df["INDEX_NAME"].map(canonicalize_index)
+    df["TIME_STAMP"] = pd.to_datetime(df["TIME_STAMP"], errors="coerce").dt.strftime("%Y-%m-%d")
+    df["CAP_WEIGHT"] = pd.to_numeric(df["CAP_WEIGHT"], errors="coerce")
+    df["SYMBOL"] = df["SYMBOL"].str.strip().str.upper()
+    df["INDEX_NAME"] = df["INDEX_NAME"].map(canonicalize_index)
     df = df.dropna(subset=["SYMBOL", "TIME_STAMP", "INDEX_NAME"])
     df = df.drop_duplicates(subset=["INDEX_NAME", "TIME_STAMP", "SYMBOL"])
-    log(f"       -> F1: {len(df):,} rows; {df['INDEX_NAME'].nunique()} indices; "
-        f"{df['SYMBOL'].nunique():,} symbols; dates {df['TIME_STAMP'].min()} to {df['TIME_STAMP'].max()}")
+    log(
+        f"       -> F1: {len(df):,} rows; {df['INDEX_NAME'].nunique()} indices; "
+        f"{df['SYMBOL'].nunique():,} symbols; dates {df['TIME_STAMP'].min()} to {df['TIME_STAMP'].max()}"
+    )
     return df
 
 
@@ -214,6 +233,7 @@ def parse_f2():
         sdf["INDEX_NAME"] = sdf["INDEX_NAME"].map(canonicalize_index)
         sdf["SCRIP_NAME"] = sdf["SCRIP_NAME"].astype(str).str.strip()
         sdf["EVENT_TYPE"] = sdf["_DESC"].map(normalize_description)
+
         # Parse dates: mix of datetime objects and DD-MM-YYYY strings
         def _parse_dt(v):
             if isinstance(v, datetime):
@@ -222,6 +242,7 @@ def parse_f2():
                 return pd.to_datetime(v, dayfirst=True, errors="coerce").strftime("%Y-%m-%d")
             except Exception:
                 return None
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             sdf["EVENT_DATE"] = sdf["EVENT_DATE"].map(_parse_dt)
@@ -230,13 +251,18 @@ def parse_f2():
         sdf = sdf[sdf["SCRIP_NAME"].str.len() > 0]
         frames.append(sdf)
 
-    df = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(
-        columns=["INDEX_NAME", "EVENT_DATE", "SCRIP_NAME", "EVENT_TYPE"])
+    df = (
+        pd.concat(frames, ignore_index=True)
+        if frames
+        else pd.DataFrame(columns=["INDEX_NAME", "EVENT_DATE", "SCRIP_NAME", "EVENT_TYPE"])
+    )
     df = df.drop_duplicates(subset=["INDEX_NAME", "EVENT_DATE", "SCRIP_NAME", "EVENT_TYPE"])
-    log(f"       -> F2: {len(df):,} events; {df['INDEX_NAME'].nunique()} indices; "
+    log(
+        f"       -> F2: {len(df):,} events; {df['INDEX_NAME'].nunique()} indices; "
         f"{df['SCRIP_NAME'].nunique():,} scrip names; "
-        f"INCL={len(df[df['EVENT_TYPE']=='INCL']):,}, EXCL={len(df[df['EVENT_TYPE']=='EXCL']):,}; "
-        f"dates {df['EVENT_DATE'].min()} to {df['EVENT_DATE'].max()}")
+        f"INCL={len(df[df['EVENT_TYPE'] == 'INCL']):,}, EXCL={len(df[df['EVENT_TYPE'] == 'EXCL']):,}; "
+        f"dates {df['EVENT_DATE'].min()} to {df['EVENT_DATE'].max()}"
+    )
     return df
 
 
@@ -244,6 +270,7 @@ def parse_f3():
     """Parse N750 xlsx. Returns DataFrame with INDEX_NAME, TIME_STAMP, SYMBOL."""
     log(f"S1.F3: reading {XLSX_PATH.name}")
     from openpyxl import load_workbook
+
     wb = load_workbook(XLSX_PATH, read_only=True, data_only=True)
     records = []
     for sheet_tab, index_name in SHEET_TO_INDEX.items():
@@ -270,18 +297,22 @@ def parse_f3():
                 sym = row[ci]
                 if sym is None or str(sym).strip() == "":
                     continue
-                records.append({
-                    "INDEX_NAME": canonicalize_index(index_name),
-                    "TIME_STAMP": dstr,
-                    "SYMBOL": str(sym).strip().upper(),
-                })
+                records.append(
+                    {
+                        "INDEX_NAME": canonicalize_index(index_name),
+                        "TIME_STAMP": dstr,
+                        "SYMBOL": str(sym).strip().upper(),
+                    }
+                )
     wb.close()
     df = pd.DataFrame(records)
     if not df.empty:
         df = df.drop_duplicates(subset=["INDEX_NAME", "TIME_STAMP", "SYMBOL"])
-    log(f"       -> F3: {len(df):,} rows; {df['INDEX_NAME'].nunique() if len(df) else 0} indices; "
+    log(
+        f"       -> F3: {len(df):,} rows; {df['INDEX_NAME'].nunique() if len(df) else 0} indices; "
         f"dates {df['TIME_STAMP'].min() if len(df) else 'NA'} to "
-        f"{df['TIME_STAMP'].max() if len(df) else 'NA'}")
+        f"{df['TIME_STAMP'].max() if len(df) else 'NA'}"
+    )
     return df
 
 
@@ -295,18 +326,23 @@ def load_manual_overrides() -> dict:
             raw = json.loads(OUT_OVERRIDES.read_text("utf-8"))
             # Skip metadata keys (start with _) and any non-string values (e.g. example dict)
             return {
-                k.strip(): v.strip().upper()
-                for k, v in raw.items()
-                if not k.startswith("_") and isinstance(v, str)
+                k.strip(): v.strip().upper() for k, v in raw.items() if not k.startswith("_") and isinstance(v, str)
             }
         except Exception as e:
             log(f"[WARN] could not parse {OUT_OVERRIDES.name}: {e}", "WARN")
     else:
         # Create empty stub so users know where to add overrides
-        OUT_OVERRIDES.write_text(json.dumps({
-            "_comment": "Hand-curated SCRIP_NAME -> SYMBOL overrides. Edit this file to fix mapping errors. Wins all automatic matches.",
-            "_example": {"Some Company Ltd.": "SOMECO"}
-        }, indent=2), encoding="utf-8")
+        OUT_OVERRIDES.write_text(
+            json.dumps(
+                {
+                    "_comment": "Hand-curated SCRIP_NAME -> SYMBOL overrides. "
+                    "Edit this file to fix mapping errors. Wins all automatic matches.",
+                    "_example": {"Some Company Ltd.": "SOMECO"},
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
     return {}
 
 
@@ -341,26 +377,30 @@ def build_mapping(f2_scrip_names, symbol_universe):
 
         # 1. Manual override
         if name_clean in overrides:
-            mapping_rows.append({
-                "SCRIP_NAME": name_clean,
-                "SYMBOL": overrides[name_clean],
-                "METHOD": "manual_override",
-                "CONFIDENCE": "high",
-                "SCORE": 100.0,
-            })
+            mapping_rows.append(
+                {
+                    "SCRIP_NAME": name_clean,
+                    "SYMBOL": overrides[name_clean],
+                    "METHOD": "manual_override",
+                    "CONFIDENCE": "high",
+                    "SCORE": 100.0,
+                }
+            )
             continue
 
         canon = canonicalize_name(name_clean)
 
         # 2. Exact canonical match
         if canon and canon in sym_canonical:
-            mapping_rows.append({
-                "SCRIP_NAME": name_clean,
-                "SYMBOL": sym_canonical[canon],
-                "METHOD": "exact_canonical",
-                "CONFIDENCE": "high",
-                "SCORE": 100.0,
-            })
+            mapping_rows.append(
+                {
+                    "SCRIP_NAME": name_clean,
+                    "SYMBOL": sym_canonical[canon],
+                    "METHOD": "exact_canonical",
+                    "CONFIDENCE": "high",
+                    "SCORE": 100.0,
+                }
+            )
             continue
 
         # 3. Fuzzy match via rapidfuzz (WRatio is robust to order/subsets)
@@ -369,32 +409,38 @@ def build_mapping(f2_scrip_names, symbol_universe):
             if best is not None:
                 matched_canon, score, _ = best
                 if score >= THRESHOLD_HIGH:
-                    mapping_rows.append({
-                        "SCRIP_NAME": name_clean,
-                        "SYMBOL": sym_canonical[matched_canon],
-                        "METHOD": "fuzzy_high",
-                        "CONFIDENCE": "high",
-                        "SCORE": float(score),
-                    })
+                    mapping_rows.append(
+                        {
+                            "SCRIP_NAME": name_clean,
+                            "SYMBOL": sym_canonical[matched_canon],
+                            "METHOD": "fuzzy_high",
+                            "CONFIDENCE": "high",
+                            "SCORE": float(score),
+                        }
+                    )
                     continue
                 else:  # 70-89
-                    mapping_rows.append({
-                        "SCRIP_NAME": name_clean,
-                        "SYMBOL": sym_canonical[matched_canon],
-                        "METHOD": "fuzzy_med",
-                        "CONFIDENCE": "medium",
-                        "SCORE": float(score),
-                    })
+                    mapping_rows.append(
+                        {
+                            "SCRIP_NAME": name_clean,
+                            "SYMBOL": sym_canonical[matched_canon],
+                            "METHOD": "fuzzy_med",
+                            "CONFIDENCE": "medium",
+                            "SCORE": float(score),
+                        }
+                    )
                     continue
 
         # 4. Unresolved
-        mapping_rows.append({
-            "SCRIP_NAME": name_clean,
-            "SYMBOL": None,
-            "METHOD": "unresolved",
-            "CONFIDENCE": "none",
-            "SCORE": 0.0,
-        })
+        mapping_rows.append(
+            {
+                "SCRIP_NAME": name_clean,
+                "SYMBOL": None,
+                "METHOD": "unresolved",
+                "CONFIDENCE": "none",
+                "SCORE": 0.0,
+            }
+        )
 
     df_map = pd.DataFrame(mapping_rows).drop_duplicates(subset=["SCRIP_NAME"])
 
@@ -443,8 +489,10 @@ def resolve_events(df_f2, df_map):
     # Dedupe
     df = df.drop_duplicates(subset=["INDEX_NAME", "EVENT_DATE", "SYMBOL", "EVENT_TYPE"])
 
-    log(f"     resolved events: {len(df):,}  "
-        f"(resolved_symbol={df['SYMBOL'].notna().sum():,}, unresolved={df['SYMBOL'].isna().sum():,})")
+    log(
+        f"     resolved events: {len(df):,}  "
+        f"(resolved_symbol={df['SYMBOL'].notna().sum():,}, unresolved={df['SYMBOL'].isna().sum():,})"
+    )
     return df, inception_dropped
 
 
@@ -488,8 +536,10 @@ def reconstruct(df_f1, df_f3, df_events):
     f2_indices = set(f2_ev.keys())
     orphans = f2_indices - anchored_indices
     if orphans:
-        log(f"     skipping {len(orphans)} orphan F2 indices (no F1/F3 anchor): "
-            f"{sorted(orphans)[:10]}{'...' if len(orphans) > 10 else ''}")
+        log(
+            f"     skipping {len(orphans)} orphan F2 indices (no F1/F3 anchor): "
+            f"{sorted(orphans)[:10]}{'...' if len(orphans) > 10 else ''}"
+        )
 
     # Build F1 industry/cap-weight lookup
     # For each (INDEX, SYMBOL, DATE), we have INDUSTRY/CAP_WEIGHT in F1. Build lookup:
@@ -544,33 +594,45 @@ def reconstruct(df_f1, df_f3, df_events):
             # Emit rows for this date
             for sym in sorted(state):
                 industry, capw = meta_for(index, sym)
-                composition_rows.append({
-                    "INDEX_NAME": index,
-                    "TIME_STAMP": d,
-                    "SYMBOL": sym,
-                    "INDUSTRY": industry,
-                    "CAP_WEIGHT": capw,
-                    "SOURCE": "RECONSTRUCTED",
-                    "ANCHOR_DATE": anchor_date,
-                    "CONFIDENCE": "high" if sym in anchor_state else "medium",
-                })
+                composition_rows.append(
+                    {
+                        "INDEX_NAME": index,
+                        "TIME_STAMP": d,
+                        "SYMBOL": sym,
+                        "INDUSTRY": industry,
+                        "CAP_WEIGHT": capw,
+                        "SOURCE": "RECONSTRUCTED",
+                        "ANCHOR_DATE": anchor_date,
+                        "CONFIDENCE": "high" if sym in anchor_state else "medium",
+                    }
+                )
             # Emit events for this date
             incls, excls = events[d]
             for sym in incls:
-                event_rows.append({
-                    "INDEX_NAME": index, "EVENT_DATE": d, "SYMBOL": sym,
-                    "EVENT_TYPE": "INCL", "SOURCE": "F2",
-                })
+                event_rows.append(
+                    {
+                        "INDEX_NAME": index,
+                        "EVENT_DATE": d,
+                        "SYMBOL": sym,
+                        "EVENT_TYPE": "INCL",
+                        "SOURCE": "F2",
+                    }
+                )
             for sym in excls:
-                event_rows.append({
-                    "INDEX_NAME": index, "EVENT_DATE": d, "SYMBOL": sym,
-                    "EVENT_TYPE": "EXCL", "SOURCE": "F2",
-                })
+                event_rows.append(
+                    {
+                        "INDEX_NAME": index,
+                        "EVENT_DATE": d,
+                        "SYMBOL": sym,
+                        "EVENT_TYPE": "EXCL",
+                        "SOURCE": "F2",
+                    }
+                )
             # Reverse events to get state for the next earlier date
             for sym in incls:
                 state.discard(sym)  # reverse inclusion = remove
             for sym in excls:
-                state.add(sym)      # reverse exclusion = add back
+                state.add(sym)  # reverse exclusion = add back
 
         # ----------------- FORWARD WALK -----------------
         state = set(anchor_state)
@@ -578,29 +640,27 @@ def reconstruct(df_f1, df_f3, df_events):
         anchor_src = source_of_snap[anchor_date]
         for sym in sorted(state):
             industry, capw = meta_for(index, sym)
-            composition_rows.append({
-                "INDEX_NAME": index,
-                "TIME_STAMP": anchor_date,
-                "SYMBOL": sym,
-                "INDUSTRY": industry,
-                "CAP_WEIGHT": capw,
-                "SOURCE": anchor_src,
-                "ANCHOR_DATE": anchor_date,
-                "CONFIDENCE": "ground_truth",
-            })
+            composition_rows.append(
+                {
+                    "INDEX_NAME": index,
+                    "TIME_STAMP": anchor_date,
+                    "SYMBOL": sym,
+                    "INDUSTRY": industry,
+                    "CAP_WEIGHT": capw,
+                    "SOURCE": anchor_src,
+                    "ANCHOR_DATE": anchor_date,
+                    "CONFIDENCE": "ground_truth",
+                }
+            )
 
         # All dates to visit post-anchor: union of F2 event dates and snapshot dates
         post_dates = sorted(
-            set(d for d in events.keys() if d > anchor_date)
-            | set(d for d in snapshots.keys() if d > anchor_date)
+            set(d for d in events.keys() if d > anchor_date) | set(d for d in snapshots.keys() if d > anchor_date)
         )
 
         prev_snap_date = anchor_date  # used for GAP_DIFF detection
-        prev_snap_state = set(anchor_state)
 
         for d in post_dates:
-            state_before_snap = set(state)
-
             # Apply F2 events at this date
             if d in events:
                 incls, excls = events[d]
@@ -610,15 +670,25 @@ def reconstruct(df_f1, df_f3, df_events):
                     state.add(sym)
                 # Emit events
                 for sym in incls:
-                    event_rows.append({
-                        "INDEX_NAME": index, "EVENT_DATE": d, "SYMBOL": sym,
-                        "EVENT_TYPE": "INCL", "SOURCE": "F2",
-                    })
+                    event_rows.append(
+                        {
+                            "INDEX_NAME": index,
+                            "EVENT_DATE": d,
+                            "SYMBOL": sym,
+                            "EVENT_TYPE": "INCL",
+                            "SOURCE": "F2",
+                        }
+                    )
                 for sym in excls:
-                    event_rows.append({
-                        "INDEX_NAME": index, "EVENT_DATE": d, "SYMBOL": sym,
-                        "EVENT_TYPE": "EXCL", "SOURCE": "F2",
-                    })
+                    event_rows.append(
+                        {
+                            "INDEX_NAME": index,
+                            "EVENT_DATE": d,
+                            "SYMBOL": sym,
+                            "EVENT_TYPE": "EXCL",
+                            "SOURCE": "F2",
+                        }
+                    )
 
             # Snap to snapshot if applicable
             if d in snapshots:
@@ -628,35 +698,53 @@ def reconstruct(df_f1, df_f3, df_events):
                 if missing or extra:
                     # Classify: gap_diff if this is first snapshot after a long gap
                     kind = "snapshot_diff"
-                    if source_of_snap[d] == "F3_SNAPSHOT" and prev_snap_date and \
-                       source_of_snap.get(prev_snap_date) == "F1_SNAPSHOT":
+                    if (
+                        source_of_snap[d] == "F3_SNAPSHOT"
+                        and prev_snap_date
+                        and source_of_snap.get(prev_snap_date) == "F1_SNAPSHOT"
+                    ):
                         kind = "gap_diff"
-                    validation_rows.append({
-                        "INDEX_NAME": index, "DATE": d,
-                        "MISSING_FROM_RECON": ",".join(sorted(missing)),
-                        "EXTRA_IN_RECON": ",".join(sorted(extra)),
-                        "N_MISSING": len(missing), "N_EXTRA": len(extra),
-                        "TYPE": kind,
-                    })
+                    validation_rows.append(
+                        {
+                            "INDEX_NAME": index,
+                            "DATE": d,
+                            "MISSING_FROM_RECON": ",".join(sorted(missing)),
+                            "EXTRA_IN_RECON": ",".join(sorted(extra)),
+                            "N_MISSING": len(missing),
+                            "N_EXTRA": len(extra),
+                            "TYPE": kind,
+                        }
+                    )
                     # Emit derived events to reconcile state to ground truth
-                    derived_src = "GAP_DIFF" if kind == "gap_diff" else (
-                        "F1_DIFF" if source_of_snap[d] == "F1_SNAPSHOT" else "F3_DIFF"
+                    derived_src = (
+                        "GAP_DIFF"
+                        if kind == "gap_diff"
+                        else ("F1_DIFF" if source_of_snap[d] == "F1_SNAPSHOT" else "F3_DIFF")
                     )
                     for sym in missing:  # these should have been INCL but we didn't know
-                        event_rows.append({
-                            "INDEX_NAME": index, "EVENT_DATE": d, "SYMBOL": sym,
-                            "EVENT_TYPE": "INCL", "SOURCE": derived_src,
-                        })
+                        event_rows.append(
+                            {
+                                "INDEX_NAME": index,
+                                "EVENT_DATE": d,
+                                "SYMBOL": sym,
+                                "EVENT_TYPE": "INCL",
+                                "SOURCE": derived_src,
+                            }
+                        )
                     for sym in extra:  # these should have been EXCL but we didn't know
-                        event_rows.append({
-                            "INDEX_NAME": index, "EVENT_DATE": d, "SYMBOL": sym,
-                            "EVENT_TYPE": "EXCL", "SOURCE": derived_src,
-                        })
+                        event_rows.append(
+                            {
+                                "INDEX_NAME": index,
+                                "EVENT_DATE": d,
+                                "SYMBOL": sym,
+                                "EVENT_TYPE": "EXCL",
+                                "SOURCE": derived_src,
+                            }
+                        )
                 state = set(truth)
                 src = source_of_snap[d]
                 conf = "ground_truth"
                 prev_snap_date = d
-                prev_snap_state = set(truth)
             else:
                 src = "RECONSTRUCTED"
                 conf = "high"
@@ -664,16 +752,18 @@ def reconstruct(df_f1, df_f3, df_events):
             # Emit composition rows
             for sym in sorted(state):
                 industry, capw = meta_for(index, sym)
-                composition_rows.append({
-                    "INDEX_NAME": index,
-                    "TIME_STAMP": d,
-                    "SYMBOL": sym,
-                    "INDUSTRY": industry,
-                    "CAP_WEIGHT": capw,
-                    "SOURCE": src,
-                    "ANCHOR_DATE": anchor_date,
-                    "CONFIDENCE": conf,
-                })
+                composition_rows.append(
+                    {
+                        "INDEX_NAME": index,
+                        "TIME_STAMP": d,
+                        "SYMBOL": sym,
+                        "INDUSTRY": industry,
+                        "CAP_WEIGHT": capw,
+                        "SOURCE": src,
+                        "ANCHOR_DATE": anchor_date,
+                        "CONFIDENCE": conf,
+                    }
+                )
 
     df_comp = pd.DataFrame(composition_rows)
     df_evt_unified = pd.DataFrame(event_rows).drop_duplicates(
@@ -694,8 +784,9 @@ def validate_and_report(df_comp, df_f1, df_f3, df_val):
     """Write validation_report.csv and print summary."""
     log("S5: writing validation report")
     if df_val.empty:
-        pd.DataFrame(columns=["INDEX_NAME", "DATE", "MISSING_FROM_RECON", "EXTRA_IN_RECON",
-                              "N_MISSING", "N_EXTRA", "TYPE"]).to_csv(OUT_VALIDATION, index=False)
+        pd.DataFrame(
+            columns=["INDEX_NAME", "DATE", "MISSING_FROM_RECON", "EXTRA_IN_RECON", "N_MISSING", "N_EXTRA", "TYPE"]
+        ).to_csv(OUT_VALIDATION, index=False)
     else:
         df_val.sort_values(["INDEX_NAME", "DATE"]).to_csv(OUT_VALIDATION, index=False, encoding="utf-8")
 
@@ -726,9 +817,6 @@ def refresh_constituents(df_comp):
         log("     [WARN] empty compositions, skipping constituents.json refresh", "WARN")
         return
 
-    # For each index, take the latest TIME_STAMP and collect symbols
-    latest_rows = df_comp.sort_values(["INDEX_NAME", "TIME_STAMP"]).groupby("INDEX_NAME").tail(10_000_000)
-    # Actually easier:
     latest_idx = df_comp.groupby("INDEX_NAME")["TIME_STAMP"].transform("max")
     latest = df_comp[df_comp["TIME_STAMP"] == latest_idx]
 
@@ -750,8 +838,7 @@ def refresh_constituents(df_comp):
     merged.update(out)
 
     OUT_CONSTITUENTS.write_text(json.dumps(merged, indent=2, ensure_ascii=False), encoding="utf-8")
-    log(f"     wrote {len(out)} reconstructed indices (+{len(merged) - len(out)} preserved) "
-        f"-> {OUT_CONSTITUENTS}")
+    log(f"     wrote {len(out)} reconstructed indices (+{len(merged) - len(out)} preserved) " f"-> {OUT_CONSTITUENTS}")
 
 
 # =============================================================================
@@ -800,8 +887,10 @@ def main():
     print(f"  F1 snapshots:              {len(df_f1):,} rows, {df_f1['INDEX_NAME'].nunique()} indices")
     print(f"  F2 events (raw):           {len(df_f2):,}")
     print(f"  F3 snapshots:              {len(df_f3):,} rows, {df_f3['INDEX_NAME'].nunique()} indices")
-    print(f"  Name-symbol map:           {len(df_map):,} names "
-          f"(resolved={df_map['SYMBOL'].notna().sum():,}, unresolved={df_map['SYMBOL'].isna().sum():,})")
+    print(
+        f"  Name-symbol map:           {len(df_map):,} names "
+        f"(resolved={df_map['SYMBOL'].notna().sum():,}, unresolved={df_map['SYMBOL'].isna().sum():,})"
+    )
     print(f"  Compositions (final):      {len(df_comp):,} rows")
     print(f"  Unique indices:            {df_comp['INDEX_NAME'].nunique()}")
     print(f"  Unique symbols:            {df_comp['SYMBOL'].nunique():,}")

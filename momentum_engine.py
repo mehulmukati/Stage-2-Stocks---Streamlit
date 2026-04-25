@@ -12,12 +12,8 @@ def _count_circuits(df: pd.DataFrame) -> int:
     pct_change = subset["Close"].pct_change() * 100
     circuit_count = 0
     for level in CIRCUIT_LEVELS:
-        upper = (pct_change >= level - CIRCUIT_TOLERANCE) & (
-            pct_change <= level + CIRCUIT_TOLERANCE
-        )
-        lower = (pct_change <= -level - CIRCUIT_TOLERANCE) & (
-            pct_change >= -level + CIRCUIT_TOLERANCE
-        )
+        upper = (pct_change >= level - CIRCUIT_TOLERANCE) & (pct_change <= level + CIRCUIT_TOLERANCE)
+        lower = (pct_change <= -level - CIRCUIT_TOLERANCE) & (pct_change >= -level + CIRCUIT_TOLERANCE)
         circuit_count += (upper | lower).sum()
     return int(circuit_count)
 
@@ -117,7 +113,7 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
         # tail(window) → pct_change().dropna() gives window-1 returns → rolling(window-1)
         P = window - 1
         r_mean = rets.rolling(P, min_periods=P).mean()
-        r_std  = rets.rolling(P, min_periods=P).std()
+        r_std = rets.rolling(P, min_periods=P).std()
         return (r_mean / r_std * np.sqrt(252)).where(r_std > 0)
 
     # Circuit hits: tail(252) → 251 pct_changes → rolling(252) includes 251 valid diffs
@@ -133,28 +129,30 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
     high_52w = h.rolling(252, min_periods=252).max()
 
     # 1Y change: c.iloc[-1] / c.iloc[-252] − 1 = c / c.shift(251) − 1 = pct_change(251)
-    return pd.DataFrame({
-        "Close":             c.round(2),
-        "52w_High":          high_52w.round(2),
-        "DMA100":            c.rolling(100, min_periods=100).mean().round(2),
-        "DMA200":            c.rolling(200, min_periods=200).mean().round(2),
-        "Vol_Median":        v.rolling(252, min_periods=252).median(),
-        "1Y_Change":         (c.pct_change(251) * 100).round(2),
-        "Pct_From_52W_High": ((c - high_52w) / high_52w * 100).round(2),
-        # tail(252) → pct_change → NaN at row 0, 251 real diffs → rolling(251)
-        "Circuit_Count":     circuit_hits.rolling(251, min_periods=251).sum(),
-        "Sharpe_3M":         _rolling_sharpe(63).round(3),
-        "Sharpe_6M":         _rolling_sharpe(126).round(3),
-        "Sharpe_9M":         _rolling_sharpe(189).round(3),
-        "Sharpe_1Y":         _rolling_sharpe(252).round(3),
-        "Volatility":        (rets.expanding(min_periods=2).std() * np.sqrt(252) * 100).round(1),
-        # tail(N).diff() skips row-0 NaN: N rows → N-1 real diffs → rolling(N-1) / (N-1)
-        "Pos_Days_3M":       (pos.rolling(62,  min_periods=62 ).sum() / 62  * 100).round(0),
-        "Pos_Days_6M":       (pos.rolling(125, min_periods=125).sum() / 125 * 100).round(0),
-        "Pos_Days_12M":      (pos.rolling(251, min_periods=251).sum() / 251 * 100).round(0),
-        "_count":            pd.Series(range(1, len(c) + 1), index=c.index, dtype=int),
-        "_missing_rate":     c.isna().expanding().mean(),
-    })
+    return pd.DataFrame(
+        {
+            "Close": c.round(2),
+            "52w_High": high_52w.round(2),
+            "DMA100": c.rolling(100, min_periods=100).mean().round(2),
+            "DMA200": c.rolling(200, min_periods=200).mean().round(2),
+            "Vol_Median": v.rolling(252, min_periods=252).median(),
+            "1Y_Change": (c.pct_change(251) * 100).round(2),
+            "Pct_From_52W_High": ((c - high_52w) / high_52w * 100).round(2),
+            # tail(252) → pct_change → NaN at row 0, 251 real diffs → rolling(251)
+            "Circuit_Count": circuit_hits.rolling(251, min_periods=251).sum(),
+            "Sharpe_3M": _rolling_sharpe(63).round(3),
+            "Sharpe_6M": _rolling_sharpe(126).round(3),
+            "Sharpe_9M": _rolling_sharpe(189).round(3),
+            "Sharpe_1Y": _rolling_sharpe(252).round(3),
+            "Volatility": (rets.expanding(min_periods=2).std() * np.sqrt(252) * 100).round(1),
+            # tail(N).diff() skips row-0 NaN: N rows → N-1 real diffs → rolling(N-1) / (N-1)
+            "Pos_Days_3M": (pos.rolling(62, min_periods=62).sum() / 62 * 100).round(0),
+            "Pos_Days_6M": (pos.rolling(125, min_periods=125).sum() / 125 * 100).round(0),
+            "Pos_Days_12M": (pos.rolling(251, min_periods=251).sum() / 251 * 100).round(0),
+            "_count": pd.Series(range(1, len(c) + 1), index=c.index, dtype=int),
+            "_missing_rate": c.isna().expanding().mean(),
+        }
+    )
 
 
 def _calculate_avg_sharpe(row, method: str) -> float | None:

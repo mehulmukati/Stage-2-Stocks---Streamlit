@@ -21,6 +21,7 @@ Usage
 After running, commit the updated file:
   git add data/screener_ohlcv.parquet && git commit -m "refresh screener parquet"
 """
+
 from __future__ import annotations
 
 import argparse
@@ -104,11 +105,7 @@ def _fetch_delta(symbols: list[str], from_date: str) -> pd.DataFrame:
 
 def _reshape(raw: pd.DataFrame, tickers: list[str]) -> pd.DataFrame:
     """Reshape yfinance multi-ticker download into long-form {symbol, date, Open, High, Low, Close, Volume}."""
-    available = (
-        raw.columns.get_level_values(0).unique().tolist()
-        if isinstance(raw.columns, pd.MultiIndex)
-        else tickers
-    )
+    available = raw.columns.get_level_values(0).unique().tolist() if isinstance(raw.columns, pd.MultiIndex) else tickers
     records = []
     for t in tickers:
         sym = t.replace(".NS", "")
@@ -121,21 +118,25 @@ def _reshape(raw: pd.DataFrame, tickers: list[str]) -> pd.DataFrame:
                 close = row.get("Close")
                 if pd.isna(close):
                     continue
+
                 def _f(v):
                     try:
                         fv = float(v)
                         return None if pd.isna(fv) else fv
                     except (TypeError, ValueError):
                         return None
-                records.append({
-                    "symbol": sym,
-                    "date": dt.date(),
-                    "Open":  _f(row.get("Open")),
-                    "High":  _f(row.get("High")),
-                    "Low":   _f(row.get("Low")),
-                    "Close": float(close),
-                    "Volume": int(row.get("Volume") or 0),
-                })
+
+                records.append(
+                    {
+                        "symbol": sym,
+                        "date": dt.date(),
+                        "Open": _f(row.get("Open")),
+                        "High": _f(row.get("High")),
+                        "Low": _f(row.get("Low")),
+                        "Close": float(close),
+                        "Volume": int(row.get("Volume") or 0),
+                    }
+                )
         except Exception as exc:
             print(f"  ⚠️  Skipped {sym}: {exc}")
             continue
@@ -186,24 +187,15 @@ def main(force_full: bool = False) -> None:
         global_max = existing["date"].max().strftime("%Y-%m-%d")
         print(f"  Baseline: {len(existing):,} rows · max date {global_max}")
 
-    earliest_needed = (
-        datetime.now(IST) - timedelta(days=750)
-    ).strftime("%Y-%m-%d")
+    earliest_needed = (datetime.now(IST) - timedelta(days=750)).strftime("%Y-%m-%d")
 
-    needs_full = (
-        force_full
-        or existing is None
-        or existing.empty
-        or global_max < earliest_needed
-    )
+    needs_full = force_full or existing is None or existing.empty or global_max < earliest_needed
 
     if needs_full:
         new_data = _fetch_full(symbols)
         merged = new_data
     else:
-        fetch_from = (
-            datetime.strptime(global_max, "%Y-%m-%d") - timedelta(days=5)
-        ).strftime("%Y-%m-%d")
+        fetch_from = (datetime.strptime(global_max, "%Y-%m-%d") - timedelta(days=5)).strftime("%Y-%m-%d")
         delta = _fetch_delta(symbols, from_date=fetch_from)
         if delta.empty:
             print("▸ Nothing to update.")

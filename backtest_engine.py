@@ -20,16 +20,17 @@ Survivorship-bias mitigations applied:
 from __future__ import annotations
 
 import logging
+
 import numpy as np
 import pandas as pd
 
 from config import MIN_VOLUME
 from momentum_engine import _calculate_avg_sharpe, precompute_metrics, score_momentum
 
-
 # ──────────────────────────────────────────────────────────────
 # HISTORICAL CONSTITUENT LOOKUP
 # ──────────────────────────────────────────────────────────────
+
 
 def _valid_symbols_at_date(
     comp_df: pd.DataFrame,
@@ -45,9 +46,7 @@ def _valid_symbols_at_date(
     if comp_df is None or comp_df.empty or not index_names:
         return None
 
-    eligible = comp_df[
-        comp_df["INDEX_NAME"].isin(index_names) & (comp_df["TIME_STAMP"] <= as_of)
-    ]
+    eligible = comp_df[comp_df["INDEX_NAME"].isin(index_names) & (comp_df["TIME_STAMP"] <= as_of)]
     if eligible.empty:
         return None
 
@@ -65,6 +64,7 @@ def _valid_symbols_at_date(
 # ──────────────────────────────────────────────────────────────
 # RANKING
 # ──────────────────────────────────────────────────────────────
+
 
 def _precompute_all_metrics(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
     """Pre-compute scoring metrics for every symbol once before the rebalance loop."""
@@ -108,7 +108,7 @@ def rank_universe_at_date(
             mdf = precomputed.get(sym)
             if mdf is None or mdf.empty:
                 continue
-            idx = mdf.index.searchsorted(as_of, side='right') - 1
+            idx = mdf.index.searchsorted(as_of, side="right") - 1
             if idx < 0 or idx >= len(mdf):
                 continue
             row = mdf.iloc[idx]
@@ -151,6 +151,7 @@ def rank_universe_at_date(
 # REBALANCE DATE GENERATION
 # ──────────────────────────────────────────────────────────────
 
+
 def _trading_days(all_ohlcv: dict[str, pd.DataFrame], start: pd.Timestamp, end: pd.Timestamp) -> pd.DatetimeIndex:
     """Union of all dates present in the OHLCV store within [start, end]."""
     dates: set = set()
@@ -182,9 +183,7 @@ def get_rebalance_dates(
     week_key = trading_days.isocalendar().week.values
     year_key = trading_days.isocalendar().year.values
 
-    dates_df = pd.DataFrame(
-        {"date": trading_days, "year": year_key, "week": week_key}
-    )
+    dates_df = pd.DataFrame({"date": trading_days, "year": year_key, "week": week_key})
     last_per_week = dates_df.groupby(["year", "week"])["date"].last().reset_index()
     last_per_week = last_per_week.sort_values("date").reset_index(drop=True)
 
@@ -197,6 +196,7 @@ def get_rebalance_dates(
 # ──────────────────────────────────────────────────────────────
 # DAILY NAV HELPERS
 # ──────────────────────────────────────────────────────────────
+
 
 def _daily_returns(all_ohlcv: dict[str, pd.DataFrame], symbols: list[str], dates: pd.DatetimeIndex) -> pd.DataFrame:
     """Return a DataFrame of daily close-to-close returns for given symbols over dates."""
@@ -213,6 +213,7 @@ def _daily_returns(all_ohlcv: dict[str, pd.DataFrame], symbols: list[str], dates
 # ──────────────────────────────────────────────────────────────
 # CORE BACKTEST
 # ──────────────────────────────────────────────────────────────
+
 
 def run_backtest(
     all_ohlcv: dict[str, pd.DataFrame],
@@ -277,7 +278,7 @@ def run_backtest(
     full_weights: dict[str, float] = {}
     marg_weights: dict[str, float] = {}
     current_holdings: set[str] = set()
-    prev_rebalance_day = None   # needed to drift-adjust marg_weights at each rebalance
+    prev_rebalance_day = None  # needed to drift-adjust marg_weights at each rebalance
 
     nav_full = 100.0
     nav_marg = 100.0
@@ -298,7 +299,9 @@ def run_backtest(
             # rankings are determined from T-1 close; trades execute at T close.
             rank_as_of = trading_days[i - 1] if i > 0 else day
             ranked = rank_universe_at_date(
-                all_ohlcv, rank_as_of, sort_method,
+                all_ohlcv,
+                rank_as_of,
+                sort_method,
                 valid_symbols=valid_syms,
                 min_history_days=min_history_days,
                 apply_volume_filter=apply_volume_filter,
@@ -327,9 +330,7 @@ def run_backtest(
                 holdings_after_wrh = current_holdings - wrh_exits
 
                 # Step 2 — fill free slots from WRH exits
-                entries_wanted = sorted(
-                    top_m - holdings_after_wrh, key=lambda s: rank_of.get(s, _worst)
-                )
+                entries_wanted = sorted(top_m - holdings_after_wrh, key=lambda s: rank_of.get(s, _worst))
                 free_slots = max(0, m - len(holdings_after_wrh))
                 entries = set(entries_wanted[:free_slots])
                 holdings_after_fill = holdings_after_wrh | entries
@@ -369,8 +370,8 @@ def run_backtest(
             if i > 0 and transaction_cost_pct > 0 and size > 0:
                 traded_fraction = traded / size
                 cost_drag = traded_fraction * transaction_cost_pct
-                nav_full *= (1.0 - cost_drag)
-                nav_marg *= (1.0 - cost_drag)
+                nav_full *= 1.0 - cost_drag
+                nav_marg *= 1.0 - cost_drag
                 cost_log.append(cost_drag)
 
             # full rebalance: equal weight all holdings
@@ -391,7 +392,7 @@ def run_backtest(
                     try:
                         c = all_ohlcv[s]["Close"]
                         p_prev = float(c.at[prev_rebalance_day]) if prev_rebalance_day in c.index else None
-                        p_now  = float(c.at[day])               if day  in c.index else None
+                        p_now = float(c.at[day]) if day in c.index else None
                         drifted[s] = w * (p_now / p_prev) if (p_prev and p_now and p_prev > 0) else w
                     except (KeyError, TypeError, ZeroDivisionError):
                         drifted[s] = w
@@ -416,13 +417,15 @@ def run_backtest(
 
             prev_rebalance_day = day
             current_holdings = new_holdings
-            holdings_log.append({
-                "date": day,
-                "holdings": sorted(current_holdings),
-                "entries": sorted(entries),
-                "exits": sorted(exits),
-                "valid_universe_size": len(valid_syms) if valid_syms else len(all_ohlcv),
-            })
+            holdings_log.append(
+                {
+                    "date": day,
+                    "holdings": sorted(current_holdings),
+                    "entries": sorted(entries),
+                    "exits": sorted(exits),
+                    "valid_universe_size": len(valid_syms) if valid_syms else len(all_ohlcv),
+                }
+            )
 
         # ── daily NAV update ──
         if i > 0 and current_holdings:
@@ -440,8 +443,8 @@ def run_backtest(
                     continue
                 port_ret_full += full_weights.get(sym, 0.0) * r
                 port_ret_marg += marg_weights.get(sym, 0.0) * r
-            nav_full *= (1 + port_ret_full)
-            nav_marg *= (1 + port_ret_marg)
+            nav_full *= 1 + port_ret_full
+            nav_marg *= 1 + port_ret_marg
 
         nav_records.append({"Date": day, "Full Rebalance": nav_full, "Marginal Rebalance": nav_marg})
 
@@ -469,7 +472,9 @@ def run_backtest(
         max_dd = drawdown.min()
         calmar = cagr / abs(max_dd) if max_dd != 0 else np.nan
         neg_ret = daily_ret[daily_ret < 0]
-        sortino = (daily_ret.mean() / neg_ret.std() * np.sqrt(252)) if len(neg_ret) > 1 and neg_ret.std() > 0 else np.nan
+        sortino = (
+            (daily_ret.mean() / neg_ret.std() * np.sqrt(252)) if len(neg_ret) > 1 and neg_ret.std() > 0 else np.nan
+        )
         stats[col] = {
             "CAGR (%)": round(cagr * 100, 2),
             "Sharpe": round(float(sharpe), 3) if not np.isnan(sharpe) else np.nan,
@@ -505,6 +510,7 @@ def run_backtest(
 # ──────────────────────────────────────────────────────────────
 # ROLLING RETURNS
 # ──────────────────────────────────────────────────────────────
+
 
 def rolling_returns(nav_df: pd.DataFrame, window_days: int) -> pd.DataFrame:
     """Return rolling annualised return / CAGR (%) for all columns in nav_df."""

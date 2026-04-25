@@ -54,10 +54,7 @@ class JobRegistry:
         stale = [
             token
             for token, jobs in self._jobs.items()
-            if all(
-                j.status in terminal and j.finished_at is not None and j.finished_at < cutoff
-                for j in jobs.values()
-            )
+            if all(j.status in terminal and j.finished_at is not None and j.finished_at < cutoff for j in jobs.values())
         ]
         for token in stale:
             del self._jobs[token]
