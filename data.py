@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import threading
 from datetime import datetime, timedelta
@@ -242,6 +243,9 @@ def _sync_ohlcv_to_db(
                 db.upsert_ohlcv(records, emit=emit)
             except Exception as _db_exc:
                 emit("warning", f"⚠️ DB write failed — data cached in memory only: {_db_exc}")
+                # Note: we still mark the date attempted and return True because
+                # _mem_ohlcv was populated above and _score_from_db prefers it.
+                # The DB remains stale until the next cold start triggers a re-sync.
 
         if target_date:
             with _cache_lock:
@@ -323,13 +327,14 @@ def _score_from_db(
                 if not for_momentum:
                     res["Retest"] = check_weinstein_retest(sub)
                 results.append(res)
-        except Exception:
+        except Exception as exc:
+            logging.warning("scoring failed for %s: %s", sym, exc)
             continue
 
     df = pd.DataFrame(results)
     if df.empty:
         return df
-    return df.sort_values("Score" if not for_momentum else "Close", ascending=False)
+    return df.sort_values("Score" if not for_momentum else "Sharpe_1Y", ascending=False, na_position="last")
 
 
 # ──────────────────────────────────────────────

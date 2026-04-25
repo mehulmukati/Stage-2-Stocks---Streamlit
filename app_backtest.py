@@ -9,7 +9,7 @@ import json
 import os
 import uuid
 import warnings
-from datetime import date as _date, datetime
+from datetime import date as _date
 
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
@@ -109,17 +109,52 @@ _WINDOW_MAP = {
 
 
 # ──────────────────────────────────────────────
+# USER GUIDE
+# ──────────────────────────────────────────────
+_GUIDE_PATH = os.path.join(os.path.dirname(__file__), "backtest_user_guide.md")
+_GUIDE_TABS = [
+    "Overview",
+    "Entry & Exit Band (M / N)",
+    "Classic vs Displacement",
+    "Full vs Marginal Rebalance",
+    "Ranking & Scoring",
+    "Realism Settings",
+]
+
+
+def _render_user_guide() -> None:
+    try:
+        raw = open(_GUIDE_PATH, encoding="utf-8").read()
+    except FileNotFoundError:
+        st.error("User guide file not found: backtest_user_guide.md")
+        return
+
+    import re
+    parts = re.split(r"^## (.+)$", raw, flags=re.MULTILINE)
+    # parts = [preamble, title1, body1, title2, body2, ...]
+    section: dict[str, str] = {}
+    for i in range(1, len(parts), 2):
+        section[parts[i].strip()] = parts[i + 1].strip()
+
+    for tab, name in zip(st.tabs(_GUIDE_TABS), _GUIDE_TABS):
+        with tab:
+            content = section.get(name, "")
+            if "<!-- warning -->" in content:
+                before, after = content.split("<!-- warning -->", 1)
+                st.markdown(before)
+                st.warning(
+                    "⚠️ **This is the most important realism control.** "
+                    "Leave it ON unless you have a specific reason to test without it."
+                )
+                st.markdown(after)
+            else:
+                st.markdown(content)
+
+
+# ──────────────────────────────────────────────
 # RESULTS
 # ──────────────────────────────────────────────
 def backtest_results(params: dict):
-    st.markdown('<p class="hero">⏱ Momentum Backtest</p>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="sub-hero">Classic vs Displacement Band Rule · '
-        'Full vs Marginal Rebalance · Benchmarked vs Nifty 50 & Nifty 500</p>',
-        unsafe_allow_html=True,
-    )
-    st.divider()
-
     roll_label = params.pop("rolling_window", "3 years")
 
     if st.session_state.get("backtest_run_triggered"):
@@ -236,15 +271,6 @@ def backtest_results(params: dict):
                         f"**{entry['date'].date()}** · {len(entry['holdings'])} stocks · "
                         f"**In:** {ins} · **Out:** {outs}"
                     )
-    else:
-        with st.expander("Rebalance Log (last 10)"):
-            for entry in holdings_log[-10:][::-1]:
-                ins  = ", ".join(entry["entries"]) or "—"
-                outs = ", ".join(entry["exits"])   or "—"
-                st.markdown(
-                    f"**{entry['date'].date()}** · {len(entry['holdings'])} stocks · "
-                    f"**In:** {ins} · **Out:** {outs}"
-                )
 
 
 # ──────────────────────────────────────────────
@@ -356,7 +382,18 @@ def main():
     if run_triggered or (active_job and active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
         st_autorefresh(interval=1500, key="job_autorefresh")
 
-    backtest_results(bt_params)
+    st.markdown('<p class="hero">⏱ Momentum Backtest</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">Classic vs Displacement Band Rule · '
+        'Full vs Marginal Rebalance · Benchmarked vs Nifty 50 & Nifty 500</p>',
+        unsafe_allow_html=True,
+    )
+
+    tab_bt, tab_guide = st.tabs(["📊 Backtest", "📖 User Guide"])
+    with tab_bt:
+        backtest_results(bt_params)
+    with tab_guide:
+        _render_user_guide()
 
 
 if __name__ == "__main__":

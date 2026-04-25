@@ -6,12 +6,28 @@ PHASE_COLORS = {
     "Early/Weak Stage 2": "rgba(249, 115, 22, 0.22)",
 }
 
+# Strategy colors — mid-range saturation so they read on both light and dark backgrounds.
+# Line dash encodes rebalance method; color encodes band rule.
 BT_COLORS = {
-    "Full Rebalance":     "#2563eb",
-    "Marginal Rebalance": "#16a34a",
-    "NIFTY50":            "#dc2626",
-    "NIFTY500":           "#d97706",
+    "Classic · Full":         "#3b82f6",  # blue-500
+    "Classic · Marginal":     "#a78bfa",  # violet-400
+    "Displacement · Full":    "#f59e0b",  # amber-500
+    "Displacement · Marginal": "#34d399", # emerald-400
+    "NIFTY50":                "#f87171",  # red-400
+    "NIFTY500":               "#fb923c",  # orange-400
+    # legacy keys (pre-rename format)
+    "Full Rebalance":         "#3b82f6",
+    "Marginal Rebalance":     "#a78bfa",
 }
+
+def _bt_line(col: str) -> dict:
+    """Return line style dict for a backtest series column."""
+    name = col.lower()
+    if "marginal" in name:
+        return dict(color=BT_COLORS.get(col, "#94a3b8"), width=2, dash="dash")
+    if "nifty" in name or "benchmark" in name:
+        return dict(color=BT_COLORS.get(col, "#94a3b8"), width=1.5, dash="dot")
+    return dict(color=BT_COLORS.get(col, "#94a3b8"), width=2.5, dash="solid")
 
 _T = "rgba(0,0,0,0)"
 _GRID = "rgba(128,128,128,0.2)"
@@ -51,8 +67,7 @@ def nav_chart_figure(nav_df) -> go.Figure:
     fig = go.Figure()
     for col in nav_df.columns:
         s = nav_df[col].dropna()
-        fig.add_trace(go.Scatter(x=s.index, y=s.values, name=col,
-                                 line=dict(color=BT_COLORS.get(col, "#94a3b8"), width=2)))
+        fig.add_trace(go.Scatter(x=s.index, y=s.values, name=col, line=_bt_line(col)))
     fig.update_layout(
         height=420, hovermode="x unified",
         yaxis=dict(title="NAV", showgrid=True, gridcolor=_GRID),
@@ -68,8 +83,7 @@ def rolling_returns_figure(roll_df) -> go.Figure:
     fig = go.Figure()
     for col in roll_df.columns:
         s = roll_df[col].dropna()
-        fig.add_trace(go.Scatter(x=s.index, y=s.values, name=col,
-                                 line=dict(color=BT_COLORS.get(col, "#94a3b8"), width=1.5)))
+        fig.add_trace(go.Scatter(x=s.index, y=s.values, name=col, line=_bt_line(col)))
     fig.add_hline(y=0, line_dash="dash", line_color="#94a3b8", line_width=1)
     fig.update_layout(
         height=360, hovermode="x unified",

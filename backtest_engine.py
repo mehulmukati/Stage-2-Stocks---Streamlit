@@ -19,6 +19,7 @@ Survivorship-bias mitigations applied:
 
 from __future__ import annotations
 
+import logging
 import numpy as np
 import pandas as pd
 
@@ -71,8 +72,8 @@ def _precompute_all_metrics(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.
     for sym, df in all_ohlcv.items():
         try:
             result[sym] = precompute_metrics(df)
-        except Exception:
-            pass
+        except Exception as exc:
+            logging.warning("precompute_metrics failed for %s: %s", sym, exc)
     return result
 
 
@@ -253,18 +254,21 @@ def run_backtest(
                            can be ranked (default 750 ≈ 3 years)
     apply_volume_filter  : exclude stocks with median volume < MIN_VOLUME
     band_rule            : 'classic'      — exit if rank > N, enter if rank ≤ M (may exceed M)
-                           'displacement' — exit only when displaced by a rank-≤M entrant;
+                           'displacement' — N is WRH (Worst Rank Held): rank > N exits
+                                            unconditionally; rank M+1..N incumbents stay
+                                            but can be displaced by new top-M entrants;
                                             portfolio size is always ≤ M
     """
     t0 = pd.Timestamp(start_date)
     t1 = pd.Timestamp(end_date)
 
     trading_days = _trading_days(all_ohlcv, t0, t1)
-    if len(trading_days) < 5:
-        return {"error": "Insufficient trading days in selected range."}
+    if len(trading_days) < 20:
+        return {"error": "Insufficient trading days in selected range (need at least one month of data)."}
 
     rebalance_dates = get_rebalance_dates(trading_days, rebalance_freq)
-    rebalance_set = set(rebalance_dates)
+    # Exclude the first trading day: we need T-1 close to rank without look-ahead bias.
+    rebalance_set = set(rebalance_dates) - {trading_days[0]}
 
     # Pre-compute rolling metrics once per symbol (O(symbols)) instead of per rebalance date
     precomputed = _precompute_all_metrics(all_ohlcv)
@@ -304,30 +308,45 @@ def run_backtest(
             top_n = set(ranked[:n])
 
             if band_rule == "displacement":
-                # Exit only when displaced by a rank-≤M entrant; portfolio stays ≤ M.
+                # N = WRH (Worst Rank Held): no stock ranked > N may be held — hard cap.
+                # Stocks ranked M+1..N may stay but are candidates for displacement.
                 #
-                # Build a rank-lookup dict so we never call list.index() on a symbol
-                # that disappeared from `ranked` this period (e.g. delisted stock,
-                # data gap, failed volume filter). Such a stock gets rank=len(ranked)
-                # (worst possible) so it is treated as most-eligible for exit and
-                # least-eligible for entry — the correct behaviour.
+                # Step 1: unconditionally exit all WRH violations (rank > N).
+                # Step 2: fill newly freed slots with top-M entrants (best rank first).
+                # Step 3: if still at M capacity, remaining top-M entrants displace the
+                #         worst-ranked incumbents whose rank > M (i.e., in the M+1..N band).
+                #
+                # rank_of gives O(1) lookup; stocks absent from `ranked` this period
+                # (delisted / data gap) get rank=len(ranked) — worst possible, so they
+                # are first in line to exit and last in line to enter.
                 rank_of = {s: i for i, s in enumerate(ranked)}
                 _worst = len(ranked)
+
+                # Step 1 — WRH exits (unconditional)
+                wrh_exits = current_holdings - top_n
+                holdings_after_wrh = current_holdings - wrh_exits
+
+                # Step 2 — fill free slots from WRH exits
                 entries_wanted = sorted(
-                    top_m - current_holdings, key=lambda s: rank_of.get(s, _worst)
+                    top_m - holdings_after_wrh, key=lambda s: rank_of.get(s, _worst)
                 )
-                exits_eligible = sorted(
-                    current_holdings - top_n,
-                    key=lambda s: rank_of.get(s, _worst),
-                    reverse=True,
-                )
-                free_slots = max(0, m - len(current_holdings))
+                free_slots = max(0, m - len(holdings_after_wrh))
                 entries = set(entries_wanted[:free_slots])
-                exits: set[str] = set()
+                holdings_after_fill = holdings_after_wrh | entries
+
+                # Step 3 — displacement: swap worst M+1..N incumbents for better top-M candidates
+                displaceable = sorted(
+                    [s for s in holdings_after_fill if s not in top_m],
+                    key=lambda s: rank_of.get(s, _worst),
+                    reverse=True,  # highest rank number = worst performer first
+                )
+                displacement_exits: set[str] = set()
                 for _i, stock in enumerate(entries_wanted[free_slots:]):
-                    if _i < len(exits_eligible):
+                    if _i < len(displaceable):
                         entries.add(stock)
-                        exits.add(exits_eligible[_i])
+                        displacement_exits.add(displaceable[_i])
+
+                exits = wrh_exits | displacement_exits
             else:
                 # classic: exit if rank > N, enter if rank ≤ M (may briefly exceed M)
                 exits = current_holdings - top_n
@@ -374,7 +393,7 @@ def run_backtest(
                         p_prev = float(c.at[prev_rebalance_day]) if prev_rebalance_day in c.index else None
                         p_now  = float(c.at[day])               if day  in c.index else None
                         drifted[s] = w * (p_now / p_prev) if (p_prev and p_now and p_prev > 0) else w
-                    except Exception:
+                    except (KeyError, TypeError, ZeroDivisionError):
                         drifted[s] = w
                 total_d = sum(drifted.values())
                 if total_d > 0:
@@ -417,6 +436,8 @@ def run_backtest(
                 if day not in closes.index or prev_day not in closes.index:
                     continue
                 r = closes[day] / closes[prev_day] - 1
+                if pd.isna(r):
+                    continue
                 port_ret_full += full_weights.get(sym, 0.0) * r
                 port_ret_marg += marg_weights.get(sym, 0.0) * r
             nav_full *= (1 + port_ret_full)
@@ -428,7 +449,7 @@ def run_backtest(
 
     # ── attach benchmarks ──
     for label, series in benchmarks.items():
-        s = series.reindex(trading_days).ffill().dropna()
+        s = series.reindex(trading_days).ffill(limit=5).dropna()
         if s.empty:
             continue
         nav_df[label] = (s / s.iloc[0]) * 100
