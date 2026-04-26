@@ -16,6 +16,8 @@ from streamlit_autorefresh import st_autorefresh
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+from app_backtest import _render_user_guide as _render_backtest_user_guide
+from app_backtest import _sidebar_backtest, backtest_results
 from charts import phase_chart_figure
 from config import IST, SCREENER_OHLCV_PARQUET
 from data import _load_constituents, _score_cache, fetch_chart_data
@@ -351,6 +353,7 @@ _DOCS_SECTIONS = {
     "Momentum Screener": "momentum_screener.md",
     "Phase Chart": "phase_chart.md",
     "Data & Methodology": "data_methodology.md",
+    "Momentum Backtest": "../backtest_user_guide.md",
 }
 
 _GUIDE_CSS = """
@@ -514,6 +517,11 @@ def main():
     user_token = _get_user_token()
     idx_options = _load_index_options()
 
+    bt_params: dict = {}
+    rsi_toggle = False
+    show_illiquid = False
+    mom_filters: dict = {}
+
     if not _baseline_ok:
         st.warning(
             "⚠️ **screener_ohlcv.parquet not found** — first run will download ~2 years of data "
@@ -525,7 +533,7 @@ def main():
         st.markdown("### 🖥 Screener")
         screener = st.radio(
             "Screener",
-            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "📚 User Guide"],
+            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest", "📚 User Guide"],
             key="active_screener",
             horizontal=True,
             label_visibility="collapsed",
@@ -533,7 +541,7 @@ def main():
         st.divider()
 
         selected_indices = []
-        if screener not in ("📈 Phase Chart", "📚 User Guide"):
+        if screener not in ("📈 Phase Chart", "📚 User Guide", "⏱ Backtest"):
             st.markdown("### 📦 Indices")
             cols = st.columns(2)
             for i, idx in enumerate(idx_options):
@@ -547,13 +555,19 @@ def main():
             rsi_toggle, show_illiquid = _sidebar_stage2()
         elif screener == "🚀 Momentum":
             mom_filters = _sidebar_momentum()
+        elif screener == "⏱ Backtest":
+            st.markdown("### ⏱ Backtest")
+            bt_params = _sidebar_backtest(idx_options)
 
     # ── AUTOREFRESH — only while the active screener's job runs ──
-    _kind_for_screener = {"📊 Stage 2": "stage2", "🚀 Momentum": "momentum"}
+    _kind_for_screener = {"📊 Stage 2": "stage2", "🚀 Momentum": "momentum", "⏱ Backtest": "backtest"}
     _active_kind = _kind_for_screener.get(screener)
     if _active_kind:
         _active_job = registry.latest(user_token, _active_kind)
-        _run_triggered = st.session_state.get(f"{_active_kind}_run_triggered", False)
+        _run_triggered = st.session_state.get(
+            "backtest_run_triggered" if _active_kind == "backtest" else f"{_active_kind}_run_triggered",
+            False,
+        )
         if _run_triggered or (_active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
             st_autorefresh(interval=1500, key="job_autorefresh")
 
@@ -571,6 +585,18 @@ def main():
             render_phase_chart(ticker, use_log_scale=use_log_scale)
     elif screener == "📊 Stage 2":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
+    elif screener == "⏱ Backtest":
+        st.markdown('<p class="hero">⏱ Momentum Backtest</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="sub-hero">Classic vs Displacement Band Rule · '
+            "Full vs Marginal Rebalance · Benchmarked vs Nifty 50 & Nifty 500</p>",
+            unsafe_allow_html=True,
+        )
+        tab_bt, tab_guide = st.tabs(["📊 Backtest", "📖 User Guide"])
+        with tab_bt:
+            backtest_results(bt_params)
+        with tab_guide:
+            _render_backtest_user_guide()
     elif screener == "📚 User Guide":
         render_docs()
     else:  # 🚀 Momentum

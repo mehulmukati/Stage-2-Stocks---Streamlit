@@ -23,20 +23,6 @@ from jobs import JobStatus, registry
 from ui_helpers import _get_user_token, _poll_job
 from workers import backtest_worker
 
-# ──────────────────────────────────────────────
-# PAGE CONFIG
-# ──────────────────────────────────────────────
-st.set_page_config(page_title="Momentum Backtest | Nifty 750", page_icon="⏱", layout="wide")
-st.markdown(
-    """
-<style>
-.hero { text-align: center; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.2rem; }
-.sub-hero { text-align: center; opacity: 0.6; margin-top: -8px; }
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
 
 @st.cache_resource
 def _load_index_options() -> list[str]:
@@ -324,6 +310,16 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
 # MAIN
 # ──────────────────────────────────────────────
 def main():
+    st.set_page_config(page_title="Momentum Backtest | Nifty 750", page_icon="⏱", layout="wide")
+    st.markdown(
+        """
+<style>
+.hero { text-align: center; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.2rem; }
+.sub-hero { text-align: center; opacity: 0.6; margin-top: -8px; }
+</style>
+""",
+        unsafe_allow_html=True,
+    )
     user_token = _get_user_token()
     idx_options = _load_index_options()
 
