@@ -191,6 +191,8 @@ def backtest_results(params: dict):
             "Avg Holdings": st.column_config.NumberColumn("Avg Holdings", format="%.1f"),
             "Avg Turnover (%)": st.column_config.NumberColumn("Avg Turnover (%)", format="%.1f"),
             "Cost Drag (%)": st.column_config.NumberColumn("Cost Drag (%)", format="%.3f"),
+            "Tax Drag (%)": st.column_config.NumberColumn("Tax Drag (%)", format="%.3f"),
+            "Brokerage Drag (%)": st.column_config.NumberColumn("Brok Drag (%)", format="%.3f"),
             "Final NAV": st.column_config.NumberColumn("Final NAV", format="%.2f"),
         },
     )
@@ -223,6 +225,10 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "bt_min_history": ("min_history_days", 252),
         "bt_cost_pct": ("transaction_cost_pct", 0.1),
         "bt_use_compositions": ("use_compositions", True),
+        "bt_initial_capital": ("initial_capital", 1_000_000),
+        "bt_brokerage_per_sale": ("brokerage_per_sale", 0.0),
+        "bt_stcg_rate": ("stcg_rate", 20.0),
+        "bt_ltcg_rate": ("ltcg_rate", 12.5),
     }
     for _wk, (_pk, _fallback) in _defaults.items():
         if _wk not in st.session_state:
@@ -287,6 +293,51 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         key="bt_use_compositions",
         help="Filter the universe to stocks that were actually in the index at each rebalance date.",
     )
+    with st.expander("India Tax & Brokerage", expanded=False):
+        bt_india_on = st.toggle("Enable India-specific costs", value=False, key="bt_india_on")
+        if bt_india_on:
+            bt_initial_capital = st.number_input(
+                "Initial capital (INR)",
+                min_value=100_000,
+                max_value=100_000_000,
+                value=st.session_state.get("bt_initial_capital", 1_000_000),
+                step=100_000,
+                key="bt_initial_capital",
+                format="%d",
+                help="Used to convert flat Rs brokerage per sale into NAV drag.",
+            )
+            bt_brokerage_per_sale = st.number_input(
+                "Brokerage per sale (Rs)",
+                min_value=0.0,
+                max_value=100.0,
+                value=st.session_state.get("bt_brokerage_per_sale", 15.0),
+                step=1.0,
+                key="bt_brokerage_per_sale",
+                help="Flat charge per stock sold (exits only). No charge on buys.",
+            )
+            bt_stcg_rate = st.slider(
+                "STCG rate (%)",
+                min_value=0.0,
+                max_value=30.0,
+                value=st.session_state.get("bt_stcg_rate", 20.0),
+                step=0.5,
+                key="bt_stcg_rate",
+                help="Tax on gains from holdings held ≤ 12 calendar months. Current India rate: 20%.",
+            )
+            bt_ltcg_rate = st.slider(
+                "LTCG rate (%)",
+                min_value=0.0,
+                max_value=20.0,
+                value=st.session_state.get("bt_ltcg_rate", 12.5),
+                step=0.5,
+                key="bt_ltcg_rate",
+                help="Tax on gains from holdings held > 12 calendar months. Current India rate: 12.5%.",
+            )
+        else:
+            bt_initial_capital = st.session_state.get("bt_initial_capital", 1_000_000)
+            bt_brokerage_per_sale = 0.0
+            bt_stcg_rate = 0.0
+            bt_ltcg_rate = 0.0
     st.divider()
     if st.button("▶ Run Backtest", type="primary", width="stretch", key="bt_run_btn"):
         st.session_state["backtest_run_triggered"] = True
@@ -303,6 +354,10 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "transaction_cost_pct": bt_cost_pct,
         "use_compositions": bt_use_compositions,
         "min_history_days": bt_min_history,
+        "initial_capital": bt_initial_capital,
+        "brokerage_per_sale": bt_brokerage_per_sale,
+        "stcg_rate": bt_stcg_rate / 100.0,
+        "ltcg_rate": bt_ltcg_rate / 100.0,
     }
 
 

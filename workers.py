@@ -78,6 +78,10 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         transaction_cost_pct=params["transaction_cost_pct"] / 100.0,
         min_history_days=params["min_history_days"],
         apply_volume_filter=True,
+        brokerage_per_sale=params.get("brokerage_per_sale", 0.0),
+        initial_capital=params.get("initial_capital", 1_000_000),
+        ltcg_rate=params.get("ltcg_rate", 0.0),
+        stcg_rate=params.get("stcg_rate", 0.0),
     )
 
     emit("info", f"Running Classic band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")

@@ -23,9 +23,108 @@ import logging
 
 import numpy as np
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 from config import MIN_VOLUME
 from momentum_engine import _calculate_avg_sharpe, precompute_metrics, score_momentum
+
+# ──────────────────────────────────────────────────────────────
+# UTILITY
+# ──────────────────────────────────────────────────────────────
+
+
+def _close_price(all_ohlcv: dict, sym: str, date: pd.Timestamp) -> float | None:
+    try:
+        c = all_ohlcv[sym]["Close"]
+        return float(c.at[date]) if date in c.index else None
+    except (KeyError, TypeError):
+        return None
+
+
+def _financial_year(date: pd.Timestamp) -> int:
+    """India FY Apr–Mar. Returns start year: Apr 2021–Mar 2022 → 2021."""
+    return date.year if date.month >= 4 else date.year - 1
+
+
+def _compute_fy_tax(
+    fy: int,
+    st_gains: float,
+    st_losses: float,
+    lt_gains: float,
+    lt_losses: float,
+    cf_st: list,
+    cf_lt: list,
+    stcg_rate: float,
+    ltcg_rate: float,
+) -> tuple[float, list, list]:
+    """
+    Compute India CGT for one financial year with carry-forward loss offset.
+
+    cf_st / cf_lt : list of (expiry_fy, amount) — ST / LT carry-forward loss buckets.
+    Returns       : (tax_amount_in_nav_units, updated_cf_st, updated_cf_lt).
+
+    Loss offset rules:
+      - Current-year ST losses  → offset ST gains first, then LT gains.
+      - Current-year LT losses  → offset LT gains only.
+      - Carry-forward ST losses → oldest first, offset remaining ST then LT gains.
+      - Carry-forward LT losses → oldest first, offset remaining LT gains only.
+      - Unabsorbed losses carried forward for 8 years (usable up to fy+8 inclusive).
+    """
+    # Expire buckets whose usability window has passed (expiry_fy < fy means already past)
+    cf_st = [(e, a) for e, a in cf_st if e >= fy]
+    cf_lt = [(e, a) for e, a in cf_lt if e >= fy]
+
+    # ── Step 1: net within current year ──
+    net_st = st_gains - st_losses
+    net_lt = lt_gains - lt_losses
+
+    # ── Step 2: excess current-year ST loss → offset LT gains ──
+    carry_st_new = 0.0
+    if net_st < 0:
+        st_excess = -net_st
+        net_st = 0.0
+        absorbed = min(st_excess, max(net_lt, 0.0))
+        net_lt -= absorbed
+        carry_st_new = st_excess - absorbed  # whatever couldn't be absorbed → CF
+
+    carry_lt_new = 0.0
+    if net_lt < 0:
+        carry_lt_new = -net_lt
+        net_lt = 0.0
+
+    # ── Step 3: apply carry-forward ST losses (oldest first) ──
+    new_cf_st = []
+    for exp, amt in sorted(cf_st):
+        if net_st > 0 and amt > 0:
+            used = min(amt, net_st)
+            net_st -= used
+            amt -= used
+        if net_lt > 0 and amt > 0:
+            used = min(amt, net_lt)
+            net_lt -= used
+            amt -= used
+        if amt > 0:
+            new_cf_st.append((exp, amt))
+
+    # ── Step 4: apply carry-forward LT losses (oldest first) ──
+    new_cf_lt = []
+    for exp, amt in sorted(cf_lt):
+        if net_lt > 0 and amt > 0:
+            used = min(amt, net_lt)
+            net_lt -= used
+            amt -= used
+        if amt > 0:
+            new_cf_lt.append((exp, amt))
+
+    # ── Step 5: add current year's new carry-forward entries ──
+    if carry_st_new > 0:
+        new_cf_st.append((fy + 8, carry_st_new))
+    if carry_lt_new > 0:
+        new_cf_lt.append((fy + 8, carry_lt_new))
+
+    tax = net_st * stcg_rate + net_lt * ltcg_rate
+    return tax, new_cf_st, new_cf_lt
+
 
 # ──────────────────────────────────────────────────────────────
 # HISTORICAL CONSTITUENT LOOKUP
@@ -230,6 +329,10 @@ def run_backtest(
     min_history_days: int = 750,
     apply_volume_filter: bool = True,
     band_rule: str = "classic",
+    brokerage_per_sale: float = 0.0,
+    initial_capital: float = 1_000_000.0,
+    ltcg_rate: float = 0.0,
+    stcg_rate: float = 0.0,
 ) -> dict:
     """
     Run both portfolio variants and return NAV series + summary stats.
@@ -259,6 +362,12 @@ def run_backtest(
                                             unconditionally; rank M+1..N incumbents stay
                                             but can be displaced by new top-M entrants;
                                             portfolio size is always ≤ M
+    brokerage_per_sale   : flat brokerage in INR charged per stock sold (exits only); 0 = disabled
+    initial_capital      : portfolio size in INR used to convert flat Rs brokerage → NAV drag
+    ltcg_rate            : long-term capital gains tax rate (fraction) applied to gains on
+                           holdings held > 12 calendar months (e.g. 0.125 for 12.5%)
+    stcg_rate            : short-term capital gains tax rate (fraction) applied to gains on
+                           holdings held ≤ 12 calendar months (e.g. 0.20 for 20%)
     """
     t0 = pd.Timestamp(start_date)
     t1 = pd.Timestamp(end_date)
@@ -291,6 +400,23 @@ def run_backtest(
     cost_log_full: list[float] = []
     cost_log_marg: list[float] = []
     holdings_sizes: list[int] = []
+
+    entry_prices: dict[str, float] = {}
+    entry_dates: dict[str, pd.Timestamp] = {}
+    tax_log_full: list[float] = []
+    tax_log_marg: list[float] = []
+    brok_log_full: list[float] = []
+    brok_log_marg: list[float] = []
+
+    # FY-level CGT accumulators (reset each new FY)
+    current_fy: int | None = None
+    fy_st_g_full = fy_st_l_full = fy_lt_g_full = fy_lt_l_full = 0.0
+    fy_st_g_marg = fy_st_l_marg = fy_lt_g_marg = fy_lt_l_marg = 0.0
+    # Carry-forward loss buckets: list of (expiry_fy, amount)
+    cf_st_full: list[tuple[int, float]] = []
+    cf_lt_full: list[tuple[int, float]] = []
+    cf_st_marg: list[tuple[int, float]] = []
+    cf_lt_marg: list[tuple[int, float]] = []
 
     for i, day in enumerate(trading_days):
         # ── rebalance ──
@@ -408,6 +534,114 @@ def run_backtest(
                 cost_log_full.append(cost_drag_full)
                 cost_log_marg.append(cost_drag_marg)
 
+            # ── flat brokerage per sale (exits only, no charge on buys) ──
+            if i > 0 and brokerage_per_sale > 0 and initial_capital > 0 and exits:
+                n_exits = len(exits)
+                brok_drag_full = (brokerage_per_sale * n_exits) / (initial_capital * nav_full / 100.0)
+                brok_drag_marg = (brokerage_per_sale * n_exits) / (initial_capital * nav_marg / 100.0)
+                nav_full *= 1.0 - brok_drag_full
+                nav_marg *= 1.0 - brok_drag_marg
+                brok_log_full.append(brok_drag_full)
+                brok_log_marg.append(brok_drag_marg)
+            else:
+                brok_log_full.append(0.0)
+                brok_log_marg.append(0.0)
+
+            # ── capital gains tax (India LTCG / STCG, FY-level with carry-forward) ──
+            if ltcg_rate > 0 or stcg_rate > 0:
+                day_fy = _financial_year(day)
+
+                # ── FY boundary: close out prior FY and apply its tax ──
+                if current_fy is not None and day_fy != current_fy:
+                    tax_full, cf_st_full, cf_lt_full = _compute_fy_tax(
+                        current_fy,
+                        fy_st_g_full,
+                        fy_st_l_full,
+                        fy_lt_g_full,
+                        fy_lt_l_full,
+                        cf_st_full,
+                        cf_lt_full,
+                        stcg_rate,
+                        ltcg_rate,
+                    )
+                    tax_marg, cf_st_marg, cf_lt_marg = _compute_fy_tax(
+                        current_fy,
+                        fy_st_g_marg,
+                        fy_st_l_marg,
+                        fy_lt_g_marg,
+                        fy_lt_l_marg,
+                        cf_st_marg,
+                        cf_lt_marg,
+                        stcg_rate,
+                        ltcg_rate,
+                    )
+                    drag_full = tax_full / nav_full if nav_full > 0 else 0.0
+                    drag_marg = tax_marg / nav_marg if nav_marg > 0 else 0.0
+                    nav_full *= 1.0 - drag_full
+                    nav_marg *= 1.0 - drag_marg
+                    tax_log_full.append(drag_full)
+                    tax_log_marg.append(drag_marg)
+                    # Reset FY accumulators
+                    fy_st_g_full = fy_st_l_full = fy_lt_g_full = fy_lt_l_full = 0.0
+                    fy_st_g_marg = fy_st_l_marg = fy_lt_g_marg = fy_lt_l_marg = 0.0
+                    current_fy = day_fy
+                elif current_fy is None:
+                    current_fy = day_fy
+
+                # ── Accumulate this rebalance's realised gains/losses into FY buckets ──
+                if i > 0 and exits:
+                    for sym in exits:
+                        ep = entry_prices.get(sym)
+                        ed = entry_dates.get(sym)
+                        if not ep or ep <= 0 or ed is None:
+                            continue
+                        xp = _close_price(all_ohlcv, sym, day)
+                        if xp is None:
+                            continue
+                        gain_pct = xp / ep - 1.0
+                        denom = 1.0 + gain_pct
+                        if denom == 0:
+                            continue
+                        is_long_term = day > ed + relativedelta(months=12)
+
+                        # Full variant
+                        pos_full = nav_full * full_weights_prev.get(sym, 0.0)
+                        gain_full = pos_full * gain_pct / denom
+                        if is_long_term:
+                            if gain_full >= 0:
+                                fy_lt_g_full += gain_full
+                            else:
+                                fy_lt_l_full += abs(gain_full)
+                        else:
+                            if gain_full >= 0:
+                                fy_st_g_full += gain_full
+                            else:
+                                fy_st_l_full += abs(gain_full)
+
+                        # Marginal variant
+                        pos_marg = nav_marg * marg_weights.get(sym, 0.0)
+                        gain_marg = pos_marg * gain_pct / denom
+                        if is_long_term:
+                            if gain_marg >= 0:
+                                fy_lt_g_marg += gain_marg
+                            else:
+                                fy_lt_l_marg += abs(gain_marg)
+                        else:
+                            if gain_marg >= 0:
+                                fy_st_g_marg += gain_marg
+                            else:
+                                fy_st_l_marg += abs(gain_marg)
+
+            # ── record entry prices/dates for new entrants; clear exits ──
+            for sym in entries:
+                p = _close_price(all_ohlcv, sym, day)
+                if p is not None:
+                    entry_prices[sym] = p
+                    entry_dates[sym] = day
+            for sym in exits:
+                entry_prices.pop(sym, None)
+                entry_dates.pop(sym, None)
+
             # full rebalance: equal weight all holdings
             full_weights = {s: 1.0 / size for s in new_holdings}
             full_weights_prev = dict(full_weights)  # store for next rebalance's drift-adjust & turnover
@@ -464,6 +698,42 @@ def run_backtest(
 
     nav_df = pd.DataFrame(nav_records).set_index("Date")
 
+    # ── apply CGT for the final (possibly partial) financial year ──
+    if (ltcg_rate > 0 or stcg_rate > 0) and current_fy is not None:
+        tax_full, cf_st_full, cf_lt_full = _compute_fy_tax(
+            current_fy,
+            fy_st_g_full,
+            fy_st_l_full,
+            fy_lt_g_full,
+            fy_lt_l_full,
+            cf_st_full,
+            cf_lt_full,
+            stcg_rate,
+            ltcg_rate,
+        )
+        tax_marg, cf_st_marg, cf_lt_marg = _compute_fy_tax(
+            current_fy,
+            fy_st_g_marg,
+            fy_st_l_marg,
+            fy_lt_g_marg,
+            fy_lt_l_marg,
+            cf_st_marg,
+            cf_lt_marg,
+            stcg_rate,
+            ltcg_rate,
+        )
+        drag_full = tax_full / nav_full if nav_full > 0 else 0.0
+        drag_marg = tax_marg / nav_marg if nav_marg > 0 else 0.0
+        nav_full *= 1.0 - drag_full
+        nav_marg *= 1.0 - drag_marg
+        tax_log_full.append(drag_full)
+        tax_log_marg.append(drag_marg)
+        # Update final row in nav_records to reflect post-tax NAV
+        if nav_records:
+            nav_records[-1]["Full Rebalance"] = nav_full
+            nav_records[-1]["Marginal Rebalance"] = nav_marg
+        nav_df = pd.DataFrame(nav_records).set_index("Date")
+
     # ── attach benchmarks ──
     for label, series in benchmarks.items():
         s = series.reindex(trading_days).ffill(limit=5).dropna()
@@ -505,15 +775,23 @@ def run_backtest(
     total_cost_full = round(sum(cost_log_full) * 100, 3) if cost_log_full else 0.0
     total_cost_marg = round(sum(cost_log_marg) * 100, 3) if cost_log_marg else 0.0
     avg_holdings = round(float(np.mean(holdings_sizes)), 1) if holdings_sizes else 0.0
+    total_tax_full = round(sum(tax_log_full) * 100, 3) if tax_log_full else 0.0
+    total_tax_marg = round(sum(tax_log_marg) * 100, 3) if tax_log_marg else 0.0
+    total_brok_full = round(sum(brok_log_full) * 100, 3) if brok_log_full else 0.0
+    total_brok_marg = round(sum(brok_log_marg) * 100, 3) if brok_log_marg else 0.0
 
     if "Full Rebalance" in stats_df.index:
         stats_df.loc["Full Rebalance", "Avg Holdings"] = avg_holdings
         stats_df.loc["Full Rebalance", "Avg Turnover (%)"] = avg_turnover_full
         stats_df.loc["Full Rebalance", "Cost Drag (%)"] = total_cost_full
+        stats_df.loc["Full Rebalance", "Tax Drag (%)"] = total_tax_full
+        stats_df.loc["Full Rebalance", "Brokerage Drag (%)"] = total_brok_full
     if "Marginal Rebalance" in stats_df.index:
         stats_df.loc["Marginal Rebalance", "Avg Holdings"] = avg_holdings
         stats_df.loc["Marginal Rebalance", "Avg Turnover (%)"] = avg_turnover_marg
         stats_df.loc["Marginal Rebalance", "Cost Drag (%)"] = total_cost_marg
+        stats_df.loc["Marginal Rebalance", "Tax Drag (%)"] = total_tax_marg
+        stats_df.loc["Marginal Rebalance", "Brokerage Drag (%)"] = total_brok_marg
 
     return {
         "nav": nav_df,
@@ -521,6 +799,8 @@ def run_backtest(
         "holdings_log": holdings_log,
         "avg_turnover_pct": avg_turnover_full,
         "total_cost_drag_pct": total_cost_full,
+        "total_tax_drag_pct": total_tax_full,
+        "total_brokerage_drag_pct": total_brok_full,
         "rebalance_dates": rebalance_dates,
         "trading_days": trading_days,
     }
