@@ -200,9 +200,13 @@ listings entirely; lower values (e.g., 126) let younger stocks in sooner.
 | Weekly | Fast | High | High |
 | Biweekly | Moderate | Medium | Medium |
 | Monthly | Slow | Low | Low |
+| Quarterly | Very slow | Very low | Very low |
+| Half-yearly | Minimal | Minimal | Minimal |
 
 Monthly rebalancing is usually the best trade-off between responsiveness and cost
-unless the strategy has very fast momentum signals.
+unless the strategy has very fast momentum signals. Quarterly and half-yearly are
+suited to low-turnover strategies or tax-conscious portfolios where fewer rebalances
+reduce realised gains.
 
 ## Data Files
 

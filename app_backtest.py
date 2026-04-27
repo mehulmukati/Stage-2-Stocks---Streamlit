@@ -248,7 +248,11 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
     st.markdown("**Portfolio Parameters**")
     bt_m = st.number_input("Entry threshold M (top-M enters)", min_value=1, max_value=200, step=1, key="bt_m")
     bt_n = st.number_input("Exit threshold N (exits if > N)", min_value=2, max_value=300, step=1, key="bt_n")
-    bt_freq = st.selectbox("Rebalance frequency", ["weekly", "biweekly", "monthly"], key="bt_freq")
+    bt_freq = st.selectbox(
+        "Rebalance frequency",
+        ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"],
+        key="bt_freq",
+    )
     bt_sort = st.selectbox(
         "Rank by Sharpe",
         ["Average of 3/6/9/12 months", "Average of 3/6 months", "1 year", "9 months", "6 months", "3 months"],

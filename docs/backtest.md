@@ -26,6 +26,8 @@ Available frequencies:
 | **Monthly** | Rebalances on the last trading day of each calendar month |
 | **Biweekly** | Rebalances on the last trading day of every other calendar week |
 | **Weekly** | Rebalances on the last trading day of each calendar week |
+| **Quarterly** | Rebalances on the last trading day of each calendar quarter |
+| **Half-yearly** | Rebalances on the last trading day of each half-year (Jan–Jun, Jul–Dec) |
 
 ### Two portfolio variants
 

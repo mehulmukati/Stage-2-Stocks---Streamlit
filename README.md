@@ -10,7 +10,7 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 |---|---|
 | Stage 2 Breakout screener (Weinstein 8-point score) | 4 simultaneous portfolio strategies |
 | Momentum screener (Sharpe ratio ranking) | Entry/exit band parameters (M / N) |
-| Phase Chart — rolling Stage 2 score for any ticker | Weekly / biweekly / monthly rebalance |
+| Phase Chart — rolling Stage 2 score for any ticker | Weekly / biweekly / monthly / quarterly / half-yearly rebalance |
 | Fuzzy ticker search (typo-tolerant) | Anti-survivorship-bias via historical constituents |
 | CSV export | Transaction-cost drag modelling |
 | Live auto-refresh during background data sync | NAV chart, rolling CAGR, and drawdown metrics |
