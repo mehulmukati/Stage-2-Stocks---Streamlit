@@ -255,7 +255,16 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
     )
     bt_sort = st.selectbox(
         "Rank by Sharpe",
-        ["Average of 3/6/9/12 months", "Average of 3/6 months", "1 year", "9 months", "6 months", "3 months"],
+        [
+            "Average of 3/6/9/12 months",
+            "Average of 1/3/6/12 months",
+            "Average of 1/3/12 months",
+            "Average of 3/6 months",
+            "1 year",
+            "9 months",
+            "6 months",
+            "3 months",
+        ],
         key="bt_sort",
     )
 

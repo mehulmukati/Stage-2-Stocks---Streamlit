@@ -140,6 +140,7 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
             "Pct_From_52W_High": ((c - high_52w) / high_52w * 100).round(2),
             # tail(252) → pct_change → NaN at row 0, 251 real diffs → rolling(251)
             "Circuit_Count": circuit_hits.rolling(251, min_periods=251).sum(),
+            "Sharpe_1M": _rolling_sharpe(21).round(3),
             "Sharpe_3M": _rolling_sharpe(63).round(3),
             "Sharpe_6M": _rolling_sharpe(126).round(3),
             "Sharpe_9M": _rolling_sharpe(189).round(3),
@@ -174,6 +175,18 @@ def _calculate_avg_sharpe(row, method: str) -> float | None:
         return sum(sharpes) / len(sharpes) if sharpes else None
     elif method == "Average of 3/6 months":
         for k in ["Sharpe_3M", "Sharpe_6M"]:
+            v = row.get(k)
+            if v is not None and not pd.isna(v):
+                sharpes.append(v)
+        return sum(sharpes) / len(sharpes) if sharpes else None
+    elif method == "Average of 1/3/6/12 months":
+        for k in ["Sharpe_1M", "Sharpe_3M", "Sharpe_6M", "Sharpe_1Y"]:
+            v = row.get(k)
+            if v is not None and not pd.isna(v):
+                sharpes.append(v)
+        return sum(sharpes) / len(sharpes) if sharpes else None
+    elif method == "Average of 1/3/12 months":
+        for k in ["Sharpe_1M", "Sharpe_3M", "Sharpe_1Y"]:
             v = row.get(k)
             if v is not None and not pd.isna(v):
                 sharpes.append(v)
