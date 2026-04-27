@@ -257,6 +257,7 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "Rank by Sharpe",
         [
             "Average of 3/6/9/12 months",
+            "Average of 1/3/6/9/12 months",
             "Average of 1/3/6/12 months",
             "Average of 1/3/12 months",
             "Average of 3/6 months",

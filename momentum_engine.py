@@ -191,4 +191,10 @@ def _calculate_avg_sharpe(row, method: str) -> float | None:
             if v is not None and not pd.isna(v):
                 sharpes.append(v)
         return sum(sharpes) / len(sharpes) if sharpes else None
+    elif method == "Average of 1/3/6/9/12 months":
+        for k in ["Sharpe_1M", "Sharpe_3M", "Sharpe_6M", "Sharpe_9M", "Sharpe_1Y"]:
+            v = row.get(k)
+            if v is not None and not pd.isna(v):
+                sharpes.append(v)
+        return sum(sharpes) / len(sharpes) if sharpes else None
     return None

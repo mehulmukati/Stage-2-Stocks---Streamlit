@@ -1,24 +1,27 @@
 """
-Batch backtest: grid search over M, N, and rebalance frequency.
+Batch backtest: grid search over M, N, rebalance frequency, and band rule.
+
+Usage:
+  python batch_backtest.py [--sort-method METHOD] [--output FILE]
 
 Fixed parameters:
   Universe    : All 5 indices (Nifty 750)
-  Rank method : Average of 3/6/9/12 months
-  Date range  : 2017-07-01 → 2026-04-27
+  Date range  : 2017-07-01 to 2026-04-27
   Tx cost     : 0.1% one-way (0.001 fraction)
   STCG        : 20%  | LTCG: 12.5%
   Min history : 252 trading days
   Compositions: enabled (survivorship-bias mitigation)
 
 Grid:
-  M ∈ {15, 20, 25, 30}
-  N ∈ {30, 40, 50, 60, 75, 100}, N > M
-  Freq ∈ {weekly, biweekly, monthly, quarterly, half-yearly}
-  Band rules  : classic + displacement (both run per combination)
+  M in {15, 20, 25, 30}
+  N in {30, 40, 50, 60, 75, 100}, N > M
+  Freq in {weekly, biweekly, monthly, quarterly, half-yearly}
+  Band rules: classic + displacement
 
-Total backtest calls: 23 M/N pairs × 5 freqs × 2 bands = 230
+Total backtest calls: 23 M/N pairs x 5 freqs x 2 bands = 230
 """
 
+import argparse
 import itertools
 import sys
 import time
@@ -28,7 +31,25 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 
-# ── parameters ────────────────────────────────────────────────────────────────
+# ── CLI args ──────────────────────────────────────────────────────────────────
+_parser = argparse.ArgumentParser()
+_parser.add_argument(
+    "--sort-method",
+    default="Average of 3/6/9/12 months",
+    help="Sharpe ranking method passed to the backtest engine",
+)
+_parser.add_argument(
+    "--output",
+    default="batch_results.csv",
+    help="Output CSV file path",
+)
+_args = _parser.parse_args()
+
+SORT_METHOD = _args.sort_method
+FINAL_FILE = _args.output
+CHECKPOINT_FILE = FINAL_FILE.replace(".csv", "_ckpt.csv")
+
+# ── fixed grid parameters ─────────────────────────────────────────────────────
 M_VALUES = [15, 20, 25, 30]
 N_VALUES = [30, 40, 50, 60, 75, 100]
 FREQS = ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"]
@@ -42,14 +63,11 @@ ALL_5_INDICES = [
 ]
 START_DATE = "2017-07-01"
 END_DATE = "2026-04-27"
-SORT_METHOD = "Average of 3/6/9/12 months"
-TX_COST = 0.001  # 0.1% as fraction (already converted)
+TX_COST = 0.001
 MIN_HISTORY = 252
 STCG = 0.20
 LTCG = 0.125
 INITIAL_CAPITAL = 1_000_000.0
-CHECKPOINT_FILE = "batch_results_checkpoint.csv"
-FINAL_FILE = "batch_results.csv"
 
 STAT_COLS = [
     "CAGR (%)",
@@ -72,7 +90,7 @@ def emit(level: str, msg: str) -> None:
 
 
 def load_data():
-    print("Loading data (one-time)…", flush=True)
+    print(f"Loading data for sort_method={SORT_METHOD!r} ...", flush=True)
     from data_backtest import (
         _load_constituents,
         load_benchmark_series,
@@ -92,11 +110,7 @@ def load_data():
 
     compositions_df = load_compositions()
     benchmarks = load_benchmark_series()
-
-    print(
-        f"  Data loaded: {len(symbol_data)} symbols | as-of {ohlcv_date} | source={src}",
-        flush=True,
-    )
+    print(f"  {len(symbol_data)} symbols | as-of {ohlcv_date} | source={src}", flush=True)
     return symbol_data, compositions_df, benchmarks
 
 
@@ -135,7 +149,14 @@ def extract_rows(result, m, n, freq, band):
         if variant not in stats_df.index:
             continue
         s = stats_df.loc[variant]
-        row = {"M": m, "N": n, "Freq": freq, "Band": band, "Variant": variant}
+        row = {
+            "SortMethod": SORT_METHOD,
+            "M": m,
+            "N": n,
+            "Freq": freq,
+            "Band": band,
+            "Variant": variant,
+        }
         for col in STAT_COLS:
             row[col] = s.get(col, float("nan"))
         rows.append(row)
@@ -143,125 +164,21 @@ def extract_rows(result, m, n, freq, band):
 
 
 def build_grid():
-    combos = []
-    for m, n, freq, band in itertools.product(M_VALUES, N_VALUES, FREQS, BANDS):
-        if n > m:
-            combos.append((m, n, freq, band))
-    return combos
-
-
-def print_table(df: pd.DataFrame, title: str, n_rows: int = 30) -> None:
-    print(f"\n{'='*110}")
-    print(f"  {title}")
-    print(f"{'='*110}")
-    display_cols = [
-        "M",
-        "N",
-        "Freq",
-        "Band",
-        "Variant",
-        "CAGR (%)",
-        "Sharpe",
-        "Max Drawdown (%)",
-        "Calmar",
-        "Avg Holdings",
-        "Avg Turnover (%)",
-        "Cost Drag (%)",
-        "Tax Drag (%)",
-    ]
-    cols = [c for c in display_cols if c in df.columns]
-    subset = df[cols].head(n_rows)
-    pd.set_option("display.max_columns", None)
-    pd.set_option("display.width", 200)
-    pd.set_option("display.float_format", "{:.3f}".format)
-    print(subset.to_string(index=False))
-
-
-def analyse_and_recommend(df: pd.DataFrame) -> None:
-    print(f"\n{'='*110}")
-    print("  ANALYSIS & RECOMMENDATION")
-    print(f"{'='*110}")
-
-    # Best Sharpe per frequency
-    print("\n-- Best Sharpe by Frequency --")
-    freq_best = (
-        df.groupby("Freq")
-        .apply(lambda g: g.nlargest(1, "Sharpe"))
-        .reset_index(drop=True)[
-            ["Freq", "M", "N", "Band", "Variant", "CAGR (%)", "Sharpe", "Max Drawdown (%)", "Calmar"]
-        ]
-    )
-    print(freq_best.to_string(index=False))
-
-    # Overall best by Sharpe
-    best = df.nlargest(1, "Sharpe").iloc[0]
-    print("\n-- OVERALL BEST (by Sharpe) --")
-    print(
-        f"  M={int(best['M'])}, N={int(best['N'])}, Freq={best['Freq']}, Band={best['Band']}, Variant={best['Variant']}"
-    )
-    print(f"  CAGR:         {best['CAGR (%)']:.2f}%")
-    print(f"  Sharpe:       {best['Sharpe']:.3f}")
-    print(f"  Max Drawdown: {best['Max Drawdown (%)']:.2f}%")
-    print(f"  Calmar:       {best['Calmar']:.3f}")
-    if not pd.isna(best.get("Avg Holdings")):
-        print(f"  Avg Holdings: {best['Avg Holdings']:.1f}")
-    if not pd.isna(best.get("Avg Turnover (%)")):
-        print(f"  Avg Turnover: {best['Avg Turnover (%)']:.1f}%")
-    if not pd.isna(best.get("Cost Drag (%)")):
-        print(f"  Cost Drag:    {best['Cost Drag (%)']:.3f}%")
-    if not pd.isna(best.get("Tax Drag (%)")):
-        print(f"  Tax Drag:     {best['Tax Drag (%)']:.3f}%")
-
-    # Top-5 by Sharpe
-    print("\n-- Top 10 Combinations by Sharpe --")
-    top10 = df.nlargest(10, "Sharpe")[
-        [
-            "M",
-            "N",
-            "Freq",
-            "Band",
-            "Variant",
-            "CAGR (%)",
-            "Sharpe",
-            "Max Drawdown (%)",
-            "Calmar",
-            "Avg Holdings",
-            "Avg Turnover (%)",
-        ]
-    ]
-    print(top10.to_string(index=False))
-
-    # Rationale
-    print("\n-- RATIONALE --")
-    top3 = df.nlargest(3, "Sharpe")
-    m_vals = top3["M"].tolist()
-    n_vals = top3["N"].tolist()
-    freq_vals = top3["Freq"].tolist()
-    band_vals = top3["Band"].tolist()
-    print(
-        f"  The top combinations by risk-adjusted return (Sharpe) cluster around "
-        f"M={m_vals[0]}, N={n_vals[0]} with {freq_vals[0]} rebalancing ({band_vals[0]} rule).\n"
-        f"  Secondary contenders: M={m_vals[1]}/N={n_vals[1]} ({freq_vals[1]}, {band_vals[1]}) "
-        f"and M={m_vals[2]}/N={n_vals[2]} ({freq_vals[2]}, {band_vals[2]}).\n"
-        f"\n"
-        f"  Key trade-offs observed in the grid:\n"
-        f"  • Tighter bands (small N-M gap) → higher turnover, higher cost drag, but faster exits from losers.\n"
-        f"  • Wider bands (large N-M gap) → lower turnover, lower friction, but slower response to rank changes.\n"
-        f"  • Lower M → concentrated portfolio, higher individual stock risk, potentially higher CAGR.\n"
-        f"  • Higher M → more diversified, smoother NAV, lower Calmar if max-DD rises.\n"
-        f"  • Monthly/quarterly frequencies typically dominate weekly/biweekly on a post-cost basis.\n"
-        f"  • Displacement rule often matches or exceeds Classic rule by capping holdings at exactly M,\n"
-        f"    maintaining a tighter, higher-conviction book."
-    )
+    return [(m, n, freq, band) for m, n, freq, band in itertools.product(M_VALUES, N_VALUES, FREQS, BANDS) if n > m]
 
 
 def main():
     t0 = time.time()
+    print(f"\n{'='*80}", flush=True)
+    print(f"  BATCH BACKTEST  |  sort_method={SORT_METHOD!r}", flush=True)
+    print(f"  output -> {FINAL_FILE}", flush=True)
+    print(f"{'='*80}\n", flush=True)
+
     symbol_data, compositions_df, benchmarks = load_data()
 
     combos = build_grid()
     total = len(combos)
-    print(f"\nGrid: {total} runs ({len(M_VALUES)}x{len(N_VALUES)-1}x{len(FREQS)}x{len(BANDS)} max, minus N<=M)\n")
+    print(f"\nGrid: {total} runs\n", flush=True)
 
     all_rows = []
     for i, (m, n, freq, band) in enumerate(combos, 1):
@@ -278,28 +195,19 @@ def main():
             print(f"  OK {elapsed:.1f}s  Sharpe=[{sharpe_str}]", flush=True)
         except Exception as exc:
             elapsed = time.time() - t1
-            print(f"  ERR {elapsed:.1f}s  ERROR: {exc}", flush=True)
+            print(f"  ERR {elapsed:.1f}s  {exc}", flush=True)
 
-        # Checkpoint after every run
         if all_rows:
             pd.DataFrame(all_rows).to_csv(CHECKPOINT_FILE, index=False)
 
     if not all_rows:
-        print("No results collected — aborting.")
+        print("No results collected -- aborting.")
         return
 
     df = pd.DataFrame(all_rows)
     df.to_csv(FINAL_FILE, index=False)
-    print(f"\nSaved {len(df)} rows to {FINAL_FILE}")
-
-    # Sort by Sharpe descending for display
-    df_sorted = df.sort_values("Sharpe", ascending=False).reset_index(drop=True)
-
-    print_table(df_sorted, "ALL RESULTS — sorted by Sharpe (top 30)")
-    analyse_and_recommend(df_sorted)
-
-    total_mins = (time.time() - t0) / 60
-    print(f"\nTotal elapsed: {total_mins:.1f} minutes")
+    elapsed_total = (time.time() - t0) / 60
+    print(f"\nDone. {len(df)} rows -> {FINAL_FILE}  ({elapsed_total:.1f} min)")
 
 
 if __name__ == "__main__":

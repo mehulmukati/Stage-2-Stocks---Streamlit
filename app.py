@@ -459,6 +459,7 @@ def _sidebar_momentum() -> dict:
     st.markdown("**Filters**")
     sort_options = [
         "Average of 3/6/9/12 months",
+        "Average of 1/3/6/9/12 months",
         "Average of 1/3/6/12 months",
         "Average of 1/3/12 months",
         "Average of 3/6 months",
