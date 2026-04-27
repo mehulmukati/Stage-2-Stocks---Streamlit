@@ -265,9 +265,11 @@ def get_rebalance_dates(
 ) -> list[pd.Timestamp]:
     """
     Return rebalance dates from trading_days based on freq:
-      'weekly'   – last trading day of each calendar week
-      'biweekly' – last trading day of every other calendar week
-      'monthly'  – last trading day of each calendar month
+      'weekly'     – last trading day of each calendar week
+      'biweekly'   – last trading day of every other calendar week
+      'monthly'    – last trading day of each calendar month
+      'quarterly'  – last trading day of each calendar quarter
+      'half-yearly'– last trading day of each half-year (Jan–Jun, Jul–Dec)
     """
     if trading_days.empty:
         return []
@@ -276,6 +278,15 @@ def get_rebalance_dates(
 
     if freq == "monthly":
         grouped = series.groupby([series.dt.year, series.dt.month])
+        return [grp.iloc[-1] for _, grp in grouped]
+
+    if freq == "quarterly":
+        grouped = series.groupby([series.dt.year, series.dt.quarter])
+        return [grp.iloc[-1] for _, grp in grouped]
+
+    if freq == "half-yearly":
+        half = (series.dt.month - 1) // 6
+        grouped = series.groupby([series.dt.year, half])
         return [grp.iloc[-1] for _, grp in grouped]
 
     # week number per year
@@ -343,7 +354,7 @@ def run_backtest(
     benchmarks           : label  → close price Series (e.g. 'NIFTY50', 'NIFTY500')
     m                    : enter portfolio if ranked ≤ m  (1-based)
     n                    : exit  portfolio if ranked >  n  (n > m)
-    rebalance_freq       : 'weekly' | 'biweekly' | 'monthly'
+    rebalance_freq       : 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'half-yearly'
     sort_method          : passed to _calculate_avg_sharpe
     start_date           : 'YYYY-MM-DD'
     end_date             : 'YYYY-MM-DD'
@@ -359,9 +370,10 @@ def run_backtest(
     apply_volume_filter  : exclude stocks with median volume < MIN_VOLUME
     band_rule            : 'classic'      — exit if rank > N, enter if rank ≤ M (may exceed M)
                            'displacement' — N is WRH (Worst Rank Held): rank > N exits
-                                            unconditionally; rank M+1..N incumbents stay
-                                            but can be displaced by new top-M entrants;
-                                            portfolio size is always ≤ M
+                                            unconditionally; rank M+1..N incumbents are a
+                                            buffer zone and stay until their rank exceeds N;
+                                            new top-M entrants only fill slots freed by WRH
+                                            exits — they do not displace buffer incumbents
     brokerage_per_sale   : flat brokerage in INR charged per stock sold (exits only); 0 = disabled
     initial_capital      : portfolio size in INR used to convert flat Rs brokerage → NAV drag
     ltcg_rate            : long-term capital gains tax rate (fraction) applied to gains on
@@ -441,12 +453,10 @@ def run_backtest(
 
             if band_rule == "displacement":
                 # N = WRH (Worst Rank Held): no stock ranked > N may be held — hard cap.
-                # Stocks ranked M+1..N may stay but are candidates for displacement.
-                #
-                # Step 1: unconditionally exit all WRH violations (rank > N).
-                # Step 2: fill newly freed slots with top-M entrants (best rank first).
-                # Step 3: if still at M capacity, remaining top-M entrants displace the
-                #         worst-ranked incumbents whose rank > M (i.e., in the M+1..N band).
+                # Stocks ranked M+1..N are a buffer zone: they stay until their rank
+                # exceeds N, at which point they exit and a top-M entrant fills the slot.
+                # A new top-M stock may ONLY enter through a slot freed by a WRH exit;
+                # it does not actively displace buffer-zone incumbents ranked M+1..N.
                 #
                 # rank_of gives O(1) lookup; stocks absent from `ranked` this period
                 # (delisted / data gap) get rank=len(ranked) — worst possible, so they
@@ -454,29 +464,16 @@ def run_backtest(
                 rank_of = {s: i for i, s in enumerate(ranked)}
                 _worst = len(ranked)
 
-                # Step 1 — WRH exits (unconditional)
+                # Step 1 — WRH exits (unconditional): rank > N must leave
                 wrh_exits = current_holdings - top_n
                 holdings_after_wrh = current_holdings - wrh_exits
 
-                # Step 2 — fill free slots from WRH exits
+                # Step 2 — fill free slots opened by WRH exits with best top-M entrants
                 entries_wanted = sorted(top_m - holdings_after_wrh, key=lambda s: rank_of.get(s, _worst))
                 free_slots = max(0, m - len(holdings_after_wrh))
                 entries = set(entries_wanted[:free_slots])
-                holdings_after_fill = holdings_after_wrh | entries
 
-                # Step 3 — displacement: swap worst M+1..N incumbents for better top-M candidates
-                displaceable = sorted(
-                    [s for s in holdings_after_fill if s not in top_m],
-                    key=lambda s: rank_of.get(s, _worst),
-                    reverse=True,  # highest rank number = worst performer first
-                )
-                displacement_exits: set[str] = set()
-                for _i, stock in enumerate(entries_wanted[free_slots:]):
-                    if _i < len(displaceable):
-                        entries.add(stock)
-                        displacement_exits.add(displaceable[_i])
-
-                exits = wrh_exits | displacement_exits
+                exits = wrh_exits
             else:
                 # classic: exit if rank > N, enter if rank ≤ M (may briefly exceed M)
                 exits = current_holdings - top_n
