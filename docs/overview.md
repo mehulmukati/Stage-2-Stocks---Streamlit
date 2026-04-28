@@ -32,10 +32,10 @@ The ideal buy point is the **Stage 2 breakout** — when the stock clears a cons
 
 ## Data source and freshness
 
-- Prices are sourced from **Yahoo Finance** via yfinance and stored in a **PostgreSQL database** (Neon).
-- Data is synced incrementally once per session, with a 3-tier cache (memory → database → internet).
-- The database covers approximately **10 years** of daily OHLCV history.
-- The screener cache key is the last valid NSE trading date (weekday, non-holiday). Results update once per trading day after 7 pm IST.
+- Prices are sourced from **Yahoo Finance** via yfinance and stored in **local Parquet files** under `data/`.
+- Data is synced incrementally once per session, with a 3-tier cache (memory → Parquet → yfinance).
+- The screener baseline covers approximately **2 years** of OHLCV history; the backtester baseline covers **10 years**.
+- The screener cache key is the last valid NSE trading date (weekday, non-holiday). Results are recomputed when the parquet is stale relative to that date.
 
 ---
 

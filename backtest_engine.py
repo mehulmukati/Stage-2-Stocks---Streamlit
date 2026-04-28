@@ -3,7 +3,7 @@ Momentum portfolio backtester.
 
 Entry rule : stock enters portfolio if it ranks in top-M
 Exit rule  : stock leaves portfolio if it falls out of top-N  (N > M)
-Rebalance  : weekly | biweekly | monthly
+Rebalance  : weekly | biweekly | monthly | quarterly | half-yearly
 
 Two portfolio variants are tracked simultaneously:
   - Full rebalance   : every rebalance date all holdings reset to equal weight (1/size)
@@ -11,7 +11,7 @@ Two portfolio variants are tracked simultaneously:
 
 Survivorship-bias mitigations applied:
   - Historical constituent filter via compositions.parquet (only stocks in-index at each date)
-  - Minimum 750 trading-day history required before a stock can be ranked
+  - Minimum history required before a stock can be ranked (configurable; default 252 trading days)
   - Stocks with > 5% missing close prices excluded (suspended / bad data)
   - Volume filter: median volume must meet MIN_VOLUME threshold
   - Transaction costs deducted at each rebalance

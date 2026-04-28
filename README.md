@@ -135,5 +135,6 @@ Data flows: `data/backtest_history.parquet` (10-year baseline) → yfinance delt
 | `data/backtest_history.parquet` | Backtester | 10-year bundled OHLCV baseline |
 | `data/benchmarks.parquet` | Backtester | Nifty 50 & Nifty 500 benchmark history |
 | Yahoo Finance (yfinance) | Both (delta) | Incremental OHLCV updates since last parquet date |
-| `constituents.json` | Both | Index membership (Nifty 50 / 100 / 250 / 500 / Smallcap 250) |
+| `data/compositions.parquet` | Backtester | Historical index constituent snapshots — anti-survivorship-bias filtering |
+| `constituents.json` | Both | Index membership (Nifty 50 / Next 50 / Midcap 150 / Smallcap 250 / Microcap 250) |
 | `nse_holidays.json` | Screener | NSE trading calendar |

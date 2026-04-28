@@ -43,6 +43,16 @@ _parser.add_argument(
     default="batch_results.csv",
     help="Output CSV file path",
 )
+_parser.add_argument(
+    "--m-values",
+    default="15,20,25,30",
+    help="Comma-separated M values to include (e.g. 15,20)",
+)
+_parser.add_argument(
+    "--bands",
+    default="classic,displacement",
+    help="Comma-separated band rules to include (e.g. classic)",
+)
 _args = _parser.parse_args()
 
 SORT_METHOD = _args.sort_method
@@ -50,10 +60,10 @@ FINAL_FILE = _args.output
 CHECKPOINT_FILE = FINAL_FILE.replace(".csv", "_ckpt.csv")
 
 # ── fixed grid parameters ─────────────────────────────────────────────────────
-M_VALUES = [15, 20, 25, 30]
+M_VALUES = [int(x) for x in _args.m_values.split(",")]
 N_VALUES = [30, 40, 50, 60, 75, 100]
 FREQS = ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"]
-BANDS = ["classic", "displacement"]
+BANDS = [x.strip() for x in _args.bands.split(",")]
 ALL_5_INDICES = [
     "Nifty 50",
     "Nifty Next 50",
