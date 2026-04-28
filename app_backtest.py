@@ -18,7 +18,7 @@ from streamlit_autorefresh import st_autorefresh
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 from backtest_engine import rolling_returns
-from charts import nav_chart_figure, rolling_returns_figure
+from charts import nav_chart_figure, portfolio_churn_figure, rolling_returns_figure
 from jobs import JobStatus, registry
 from ui_helpers import _get_user_token, _poll_job
 from workers import backtest_worker
@@ -160,6 +160,11 @@ def backtest_results(params: dict):
     else:
         st.plotly_chart(rolling_returns_figure(rolling_returns(nav_df, roll_days)), width="stretch")
 
+    churn_log = result.get("holdings_log", {})
+    if isinstance(churn_log, dict) and churn_log:
+        st.subheader("Portfolio Churn per Rebalance")
+        st.plotly_chart(portfolio_churn_figure(churn_log), width="stretch")
+
     st.subheader("Performance Summary")
 
     _PORTFOLIO_ROWS = [
@@ -196,6 +201,44 @@ def backtest_results(params: dict):
             "Final NAV": st.column_config.NumberColumn("Final NAV", format="%.2f"),
         },
     )
+
+    dl_log = result.get("holdings_log", {})
+    if isinstance(dl_log, dict) and dl_log:
+        import pandas as _pd
+
+        dl_rows = []
+        for rule_name, log in dl_log.items():
+            for rebal_idx, entry in enumerate(log, start=1):
+                dl_rows.append(
+                    {
+                        "Rebalance #": rebal_idx,
+                        "Date": entry["date"].date(),
+                        "Band Rule": rule_name,
+                        "#Holdings": len(entry["holdings"]),
+                        "#Entries": len(entry["entries"]),
+                        "#Exits": len(entry["exits"]),
+                        "Full Turnover %": entry.get("full_turnover_pct", ""),
+                        "Marginal Turnover %": entry.get("marg_turnover_pct", ""),
+                        "Entries (tickers)": "; ".join(entry["entries"]),
+                        "Exits (tickers)": "; ".join(entry["exits"]),
+                        "All Holdings": "; ".join(entry["holdings"]),
+                        "Valid Universe Size": entry.get("valid_universe_size", ""),
+                    }
+                )
+        dl_csv = _pd.DataFrame(dl_rows).to_csv(index=False).encode("utf-8")
+        _p = st.session_state.get("bt_saved_params", params)
+        _fname = (
+            f"backtest_rebalance_log_{_p.get('m', 'M')}_{_p.get('n', 'N')}_"
+            f"{_p.get('rebalance_freq', 'freq')}_"
+            f"{_p.get('start_date', '')}_to_{_p.get('end_date', '')}.csv"
+        )
+        st.download_button(
+            "📥 Download Full Rebalance Log",
+            dl_csv,
+            file_name=_fname,
+            mime="text/csv",
+            width="stretch",
+        )
 
     holdings_log = result.get("holdings_log", [])
     if isinstance(holdings_log, dict):

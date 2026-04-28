@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 PHASE_COLORS = {
     "Strong Stage 2": "rgba(34, 197, 94, 0.25)",
@@ -126,4 +127,105 @@ def rolling_returns_figure(roll_df) -> go.Figure:
         plot_bgcolor=_T,
         paper_bgcolor=_T,
     )
+    return fig
+
+
+def portfolio_churn_figure(holdings_log: dict) -> go.Figure:
+    """Bar chart of entries/exits counts + turnover % lines per rebalance date."""
+    _T = "rgba(0,0,0,0)"
+    _GRID = "rgba(128,128,128,0.2)"
+    _ENTRY_COLORS = {"Classic": "rgba(59,130,246,0.6)", "Displacement": "rgba(245,158,11,0.6)"}
+    _EXIT_COLORS = {"Classic": "rgba(167,139,250,0.6)", "Displacement": "rgba(52,211,153,0.6)"}
+    _FULL_COLORS = {"Classic": "#3b82f6", "Displacement": "#f59e0b"}
+    _MARG_COLORS = {"Classic": "#a78bfa", "Displacement": "#34d399"}
+
+    rule_names = [r for r in ("Classic", "Displacement") if r in holdings_log]
+    n_rows = len(rule_names)
+
+    fig = make_subplots(
+        rows=n_rows,
+        cols=1,
+        shared_xaxes=True,
+        specs=[[{"secondary_y": True}] for _ in rule_names],
+        subplot_titles=rule_names,
+        vertical_spacing=0.14,
+    )
+
+    for row_idx, rule in enumerate(rule_names, start=1):
+        log = holdings_log[rule]
+        dates = [e["date"] for e in log]
+        n_entries = [len(e["entries"]) for e in log]
+        n_exits = [len(e["exits"]) for e in log]
+        full_to = [e.get("full_turnover_pct", 0.0) for e in log]
+        marg_to = [e.get("marg_turnover_pct", 0.0) for e in log]
+        show_leg = row_idx == 1
+
+        fig.add_trace(
+            go.Bar(
+                x=dates,
+                y=n_entries,
+                name="Entries",
+                marker_color=_ENTRY_COLORS[rule],
+                legendgroup="entries",
+                showlegend=show_leg,
+            ),
+            row=row_idx,
+            col=1,
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Bar(
+                x=dates,
+                y=[-v for v in n_exits],
+                name="Exits",
+                marker_color=_EXIT_COLORS[rule],
+                legendgroup="exits",
+                showlegend=show_leg,
+            ),
+            row=row_idx,
+            col=1,
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=dates,
+                y=full_to,
+                name="Full Turnover %",
+                mode="lines+markers",
+                line=dict(color=_FULL_COLORS[rule], width=2),
+                legendgroup="full_to",
+                showlegend=show_leg,
+            ),
+            row=row_idx,
+            col=1,
+            secondary_y=True,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=dates,
+                y=marg_to,
+                name="Marg Turnover %",
+                mode="lines+markers",
+                line=dict(color=_MARG_COLORS[rule], width=2, dash="dash"),
+                legendgroup="marg_to",
+                showlegend=show_leg,
+            ),
+            row=row_idx,
+            col=1,
+            secondary_y=True,
+        )
+
+    fig.update_layout(
+        height=280 * n_rows,
+        barmode="overlay",
+        hovermode="x unified",
+        legend=dict(orientation="h", y=-0.12),
+        margin=dict(l=50, r=60, t=50, b=55),
+        plot_bgcolor=_T,
+        paper_bgcolor=_T,
+    )
+    for row_idx in range(1, n_rows + 1):
+        fig.update_yaxes(title_text="# Stocks", row=row_idx, col=1, secondary_y=False, showgrid=True, gridcolor=_GRID)
+        fig.update_yaxes(title_text="Turnover %", row=row_idx, col=1, secondary_y=True, showgrid=False)
+    fig.update_xaxes(showgrid=False)
     return fig
