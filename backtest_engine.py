@@ -27,6 +27,7 @@ from dateutil.relativedelta import relativedelta
 
 from config import MIN_VOLUME
 from momentum_engine import _calculate_avg_sharpe, precompute_metrics, score_momentum
+from stage2_engine import compute_rolling_stage2
 
 # ──────────────────────────────────────────────────────────────
 # UTILITY
@@ -173,6 +174,17 @@ def _precompute_all_metrics(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.
             result[sym] = precompute_metrics(df)
         except Exception as exc:
             logging.warning("precompute_metrics failed for %s: %s", sym, exc)
+    return result
+
+
+def _precompute_stage2_scores(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.Series]:
+    """Pre-compute Stage 2 score series per symbol for fast .asof() lookup."""
+    result: dict[str, pd.Series] = {}
+    for sym, df in all_ohlcv.items():
+        try:
+            result[sym] = compute_rolling_stage2(df)["Score"]
+        except Exception as exc:
+            logging.warning("compute_rolling_stage2 failed for %s: %s", sym, exc)
     return result
 
 
@@ -344,6 +356,10 @@ def run_backtest(
     initial_capital: float = 1_000_000.0,
     ltcg_rate: float = 0.0,
     stcg_rate: float = 0.0,
+    stage2_drop_exit: bool = False,
+    stage2_drop_threshold: int = 2,
+    stage2_entry_filter: bool = False,
+    stage2_entry_threshold: int = 2,
 ) -> dict:
     """
     Run both portfolio variants and return NAV series + summary stats.
@@ -394,6 +410,7 @@ def run_backtest(
 
     # Pre-compute rolling metrics once per symbol (O(symbols)) instead of per rebalance date
     precomputed = _precompute_all_metrics(all_ohlcv)
+    stage2_precomputed = _precompute_stage2_scores(all_ohlcv) if (stage2_drop_exit or stage2_entry_filter) else {}
 
     # ── initialise portfolios ──
     full_weights: dict[str, float] = {}
@@ -401,6 +418,7 @@ def run_backtest(
     marg_weights: dict[str, float] = {}
     current_holdings: set[str] = set()
     prev_rebalance_day = None  # needed to drift-adjust weights at each rebalance
+    prev_stage2_scores: dict[str, float] = {}  # Stage 2 score at previous rebalance per holding
 
     nav_full = 100.0
     nav_marg = 100.0
@@ -478,11 +496,47 @@ def run_backtest(
                 # classic: exit if rank > N, enter if rank ≤ M (may briefly exceed M)
                 exits = current_holdings - top_n
                 entries = top_m - current_holdings
+                if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
+                    stage2_jumpers = {
+                        sym
+                        for sym in ranked
+                        if sym not in current_holdings
+                        and (s2 := stage2_precomputed.get(sym)) is not None
+                        and not pd.isna(curr := s2.asof(rank_as_of))
+                        and (prev := prev_stage2_scores.get(sym)) is not None
+                        and (curr - prev) >= stage2_entry_threshold
+                    }
+                    entries = entries | stage2_jumpers
+                if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
+                    for sym in list(current_holdings - exits):
+                        s2_series = stage2_precomputed.get(sym)
+                        if s2_series is None:
+                            continue
+                        curr_score = s2_series.asof(rank_as_of)
+                        prev_score = prev_stage2_scores.get(sym)
+                        if (
+                            prev_score is not None
+                            and not pd.isna(curr_score)
+                            and (prev_score - curr_score) >= stage2_drop_threshold
+                        ):
+                            exits.add(sym)
 
             new_holdings = (current_holdings - exits) | entries
 
             if not new_holdings:
                 new_holdings = top_m if top_m else current_holdings
+
+            # Update Stage 2 score baseline for next rebalance.
+            # Track full ranked universe (not just holdings) so entry-jump signal
+            # can detect score rises on stocks we don't yet own.
+            if (stage2_drop_exit or stage2_entry_filter) and stage2_precomputed:
+                prev_stage2_scores.clear()
+                for sym in ranked:
+                    s2_series = stage2_precomputed.get(sym)
+                    if s2_series is not None:
+                        score = s2_series.asof(rank_as_of)
+                        if not pd.isna(score):
+                            prev_stage2_scores[sym] = float(score)
 
             size = len(new_holdings)
             holdings_sizes.append(size)

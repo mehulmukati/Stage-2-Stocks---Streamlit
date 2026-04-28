@@ -272,6 +272,10 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "bt_brokerage_per_sale": ("brokerage_per_sale", 0.0),
         "bt_stcg_rate": ("stcg_rate", 20.0),
         "bt_ltcg_rate": ("ltcg_rate", 12.5),
+        "bt_stage2_drop_exit": ("stage2_drop_exit", False),
+        "bt_stage2_drop_threshold": ("stage2_drop_threshold", 2),
+        "bt_stage2_entry_filter": ("stage2_entry_filter", False),
+        "bt_stage2_entry_threshold": ("stage2_entry_threshold", 2),
     }
     for _wk, (_pk, _fallback) in _defaults.items():
         if _wk not in st.session_state:
@@ -296,6 +300,46 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"],
         key="bt_freq",
     )
+    if bt_freq == "weekly":
+        with st.expander("Weekly Stage 2 signals (classic only)", expanded=False):
+            st.markdown("**Entry filter**")
+            bt_stage2_entry_filter = st.toggle(
+                "Enter on Stage 2 score jump",
+                key="bt_stage2_entry_filter",
+                help="Classic mode only: also allow a stock to enter if its Weinstein Stage 2 score (0–8) "
+                "rises by the threshold or more since last week — even if it isn't in the top-M momentum rank.",
+            )
+            bt_stage2_entry_threshold = st.number_input(
+                "Score jump threshold",
+                min_value=1,
+                max_value=4,
+                step=1,
+                key="bt_stage2_entry_threshold",
+                help="Stage 2 points that must rise in one week to trigger entry (e.g. 2 means score 4→6).",
+                disabled=not bt_stage2_entry_filter,
+            )
+            st.markdown("**Exit signal**")
+            bt_stage2_drop_exit = st.toggle(
+                "Exit on Stage 2 score drop",
+                key="bt_stage2_drop_exit",
+                help="Also exit a held stock if its Weinstein Stage 2 score drops by the threshold "
+                "or more versus last week's score.",
+            )
+            bt_stage2_drop_threshold = st.number_input(
+                "Score drop threshold",
+                min_value=1,
+                max_value=4,
+                step=1,
+                key="bt_stage2_drop_threshold",
+                help="Stage 2 points that must fall in one week to trigger exit (e.g. 2 means score 6→4).",
+                disabled=not bt_stage2_drop_exit,
+            )
+    else:
+        bt_stage2_entry_filter = False
+        bt_stage2_entry_threshold = st.session_state.get("bt_stage2_entry_threshold", 2)
+        bt_stage2_drop_exit = False
+        bt_stage2_drop_threshold = st.session_state.get("bt_stage2_drop_threshold", 2)
+
     bt_sort = st.selectbox(
         "Rank by Sharpe",
         [
@@ -415,6 +459,10 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "brokerage_per_sale": bt_brokerage_per_sale,
         "stcg_rate": bt_stcg_rate / 100.0,
         "ltcg_rate": bt_ltcg_rate / 100.0,
+        "stage2_drop_exit": bt_stage2_drop_exit,
+        "stage2_drop_threshold": int(bt_stage2_drop_threshold),
+        "stage2_entry_filter": bt_stage2_entry_filter,
+        "stage2_entry_threshold": int(bt_stage2_entry_threshold),
     }
 
 
