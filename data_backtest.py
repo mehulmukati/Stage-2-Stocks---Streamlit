@@ -10,10 +10,12 @@ Provides the same public surface that `workers.backtest_worker` already uses:
 
 No DB. Ever. Caching tiers:
 
-  Tier 1  module-level dict keyed by today_IST   — serves hot reruns in <1 ms
-  Tier 1b module-level baseline DataFrame        — amortizes pd.read_parquet
-  Tier 2  data/backtest_history.parquet on disk  — committed to repo
-  Tier 3  yfinance                               — tail delta only (last_date+1 → today)
+  Tier 1   module-level dict keyed by today_IST   — serves hot reruns in <1 ms
+  Tier 1b  module-level baseline DataFrame        — amortizes pd.read_parquet
+  Tier 2   data/backtest_history.parquet on disk  — committed to repo
+  Tier 2.5 data/backtest_delta.parquet on disk    — gitignored local delta cache;
+             accumulates yfinance tail rows so restarts skip re-fetching known dates
+  Tier 3   yfinance                               — only truly new dates not in Tier 2/2.5
 
 Survivorship bias:
   The parquet is built from the UNION of current constituents AND historical
@@ -23,12 +25,13 @@ Survivorship bias:
   to only stocks actually in the index at that time.
 
 Runtime flow:
-  1. Baseline parquet → memory (once per container lifetime).
-  2. Compute gap vs today_IST; if > 0, yfinance-download only the missing tail
-     and merge in memory. No disk writes.
+  1. Baseline parquet + delta cache (if present) → memory (once per container).
+  2. Compute gap vs today_IST; if > 0, yfinance-download only the missing tail,
+     merge in memory, and persist those rows to the delta cache parquet.
   3. Cache the merged per-symbol dict under today_IST for the rest of the day.
 
-The parquet itself is rebuilt out-of-band by `scripts/refresh_backtest_parquet.py`.
+The committed parquet is rebuilt out-of-band by `scripts/refresh_backtest_parquet.py`.
+After a rebuild the delta cache becomes redundant (overlapping rows are deduped on load).
 """
 
 from __future__ import annotations
@@ -49,6 +52,10 @@ _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 OHLCV_PARQUET = os.path.join(REPO_ROOT, "data", "backtest_history.parquet")
 BENCH_PARQUET = os.path.join(REPO_ROOT, "data", "benchmarks.parquet")
+
+# Gitignored local delta caches — accumulate yfinance tail rows across restarts.
+DELTA_PARQUET = os.path.join(REPO_ROOT, "data", "backtest_delta.parquet")
+BENCH_DELTA_PARQUET = os.path.join(REPO_ROOT, "data", "benchmarks_delta.parquet")
 
 BENCHMARK_TICKERS = {
     "Nifty 50": "^NSEI",
@@ -103,9 +110,21 @@ def _ensure_baseline_ohlcv(emit: Callable[[str, str], None]) -> pd.DataFrame:
     emit("info", f"📦 Loading 10y backtest baseline from {os.path.basename(OHLCV_PARQUET)}…")
     df = pd.read_parquet(OHLCV_PARQUET)
     df["date"] = pd.to_datetime(df["date"])
+    # Tier 2.5 — merge local delta cache (gitignored) to extend baseline without re-fetching.
+    if os.path.exists(DELTA_PARQUET):
+        try:
+            delta_df = pd.read_parquet(DELTA_PARQUET)
+            delta_df["date"] = pd.to_datetime(delta_df["date"])
+            if not delta_df.empty:
+                df = pd.concat([df, delta_df], ignore_index=True)
+                df = df.drop_duplicates(subset=["symbol", "date"], keep="last")
+                df = df.sort_values(["symbol", "date"]).reset_index(drop=True)
+                emit("info", f"  📂 Delta cache: +{len(delta_df):,} rows through {delta_df['date'].max().date()}")
+        except Exception as exc:
+            emit("warning", f"⚠️ Delta cache unreadable, ignoring: {exc}")
     with _lock:
         _baseline_ohlcv = df
-    emit("info", f"  ✅ {len(df):,} rows · {df['symbol'].nunique()} symbols · " f"through {df['date'].max().date()}")
+    emit("info", f"  ✅ {len(df):,} rows · {df['symbol'].nunique()} symbols · through {df['date'].max().date()}")
     return df
 
 
@@ -118,13 +137,66 @@ def _ensure_baseline_bench(emit: Callable[[str, str], None]) -> pd.DataFrame:
         raise RuntimeError(f"Missing {BENCH_PARQUET}. Run: python scripts/refresh_backtest_parquet.py")
     df = pd.read_parquet(BENCH_PARQUET)
     df["date"] = pd.to_datetime(df["date"])
+    # Tier 2.5 — merge benchmark delta cache.
+    if os.path.exists(BENCH_DELTA_PARQUET):
+        try:
+            delta_df = pd.read_parquet(BENCH_DELTA_PARQUET)
+            delta_df["date"] = pd.to_datetime(delta_df["date"])
+            if not delta_df.empty:
+                df = pd.concat([df, delta_df], ignore_index=True)
+                df = df.drop_duplicates(subset=["date"], keep="last")
+                df = df.sort_values("date").reset_index(drop=True)
+        except Exception:
+            pass  # non-fatal — gracefully fall back to base parquet
     with _lock:
         _baseline_bench = df
     return df
 
 
 # ──────────────────────────────────────────────
-# Delta fetch (Tier 3, memory-only)
+# Delta cache writers (Tier 2.5 — gitignored local parquets)
+# ──────────────────────────────────────────────
+def _save_ohlcv_delta(new_df: pd.DataFrame, emit: Callable[[str, str], None]) -> None:
+    """Persist freshly fetched OHLCV rows to the local delta cache (non-fatal on error)."""
+    if new_df.empty:
+        return
+    with _lock:
+        try:
+            if os.path.exists(DELTA_PARQUET):
+                existing = pd.read_parquet(DELTA_PARQUET)
+                existing["date"] = pd.to_datetime(existing["date"])
+                combined = pd.concat([existing, new_df], ignore_index=True)
+                combined = combined.drop_duplicates(subset=["symbol", "date"], keep="last")
+                combined = combined.sort_values(["symbol", "date"]).reset_index(drop=True)
+            else:
+                combined = new_df.copy()
+            combined.to_parquet(DELTA_PARQUET, index=False)
+            emit("info", f"  💾 Delta cache saved ({len(combined):,} rows through {combined['date'].max().date()})")
+        except Exception as exc:
+            emit("warning", f"⚠️ Could not save delta cache: {exc}")
+
+
+def _save_bench_delta(new_df: pd.DataFrame) -> None:
+    """Persist freshly fetched benchmark rows to the local delta cache (non-fatal on error)."""
+    if new_df.empty:
+        return
+    with _lock:
+        try:
+            if os.path.exists(BENCH_DELTA_PARQUET):
+                existing = pd.read_parquet(BENCH_DELTA_PARQUET)
+                existing["date"] = pd.to_datetime(existing["date"])
+                combined = pd.concat([existing, new_df], ignore_index=True)
+                combined = combined.drop_duplicates(subset=["date"], keep="last")
+                combined = combined.sort_values("date").reset_index(drop=True)
+            else:
+                combined = new_df.copy()
+            combined.to_parquet(BENCH_DELTA_PARQUET, index=False)
+        except Exception:
+            pass  # non-fatal
+
+
+# ──────────────────────────────────────────────
+# Delta fetch (Tier 3 — yfinance, only truly new dates)
 # ──────────────────────────────────────────────
 def _fetch_ohlcv_delta(
     all_symbols: list[str],
@@ -282,6 +354,7 @@ def load_ohlcv_for_backtest(
             merged = merged.sort_values(["symbol", "date"]).reset_index(drop=True)
             source = "parquet+delta"
             emit("info", f"  ✅ Merged {len(delta):,} delta rows")
+            _save_ohlcv_delta(delta, emit)
 
     symbol_data = _long_to_symbol_dict(merged)
     with _lock:
@@ -311,6 +384,7 @@ def load_benchmark_series() -> dict[str, pd.Series]:
             delta["date"] = pd.to_datetime(delta["date"])
             base = pd.concat([base, delta], ignore_index=True)
             base = base.drop_duplicates(subset=["date"], keep="last").sort_values("date")
+            _save_bench_delta(delta)
 
     result: dict[str, pd.Series] = {}
     for col in base.columns:
