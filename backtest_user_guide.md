@@ -208,20 +208,72 @@ unless the strategy has very fast momentum signals. Quarterly and half-yearly ar
 suited to low-turnover strategies or tax-conscious portfolios where fewer rebalances
 reduce realised gains.
 
+## Reading the Results
+
+#### Portfolio NAV chart
+All four strategies plus both benchmarks start at 100 and compound daily. A final NAV of
+350 means 250% total return over the period. Hover for unified tooltips across all series.
+
+#### Rolling CAGR chart
+Shows the annualised return an investor would have earned over a rolling window ending at
+each date. Persistent positivity indicates consistent compounding; dips below 0 show
+periods where the strategy was underwater on that rolling horizon.
+
+#### Portfolio Churn per Rebalance
+Displayed between the Rolling CAGR chart and the Performance Summary. Two subplots (one
+per band rule) each show:
+- **Bars (left axis):** stocks entering above the zero line (positive), stocks exiting
+  below (negative) — immediate visual of how active each rebalance was
+- **Lines (right axis):** Full Rebalance and Marginal Rebalance turnover % for that event
+
+High-churn spikes correlate directly with cost drag. Wide M/N bands reduce bar heights.
+
+#### Performance Summary table
+| Metric | What it means |
+|---|---|
+| **CAGR (%)** | Compound Annual Growth Rate over the full period |
+| **Sharpe** | Annualised risk-adjusted return (no risk-free rate deducted) |
+| **Max Drawdown (%)** | Largest peak-to-trough decline |
+| **Calmar** | CAGR ÷ Max Drawdown — reward per unit of drawdown risk |
+| **Sortino** | Like Sharpe but only penalises downside volatility |
+| **Avg Turnover (%)** | Mean fraction of the portfolio traded per rebalance |
+| **Cost Drag (%)** | Cumulative NAV drag from transaction costs over the full period |
+
+#### Download Full Rebalance Log
+The **📥 Download Full Rebalance Log** button exports a CSV with every rebalance event.
+Each row covers one rebalance date for one band rule and includes:
+- Entry and exit ticker lists
+- `Holdings (Full Weights %)` and `Holdings (Marg Weights %)` — exact allocation for
+  every stock in `TICKER:X.XXXX%` format
+- Per-rebalance turnover % for both variants
+- Valid universe size at that date
+
+Useful for auditing specific rebalance decisions or analysing weight drift over time.
+
 ## Data Files
 
 The backtester is fully self-contained — no internet connection is required after the
-initial seed. All data lives in committed Parquet files under `data/`.
+initial seed. Committed Parquet files provide the historical baseline; a gitignored
+local delta cache accumulates yfinance tail rows so restarts skip re-fetching known dates.
 
-| File | Contents | Size |
+| File | Committed | Contents |
 |---|---|---|
-| `data/backtest_history.parquet` | Long-form `{symbol, date, Close, High, Volume}` for ~750 NSE symbols, ~10 years | ~30 MB |
-| `data/benchmarks.parquet` | Nifty 50 & Nifty 500 daily close history | < 1 MB |
-| `data/compositions.parquet` | Historical index constituent snapshots — used for anti-survivorship-bias filtering | < 1 MB |
+| `data/backtest_history.parquet` | ✅ Yes | Long-form `{symbol, date, Close, High, Volume}` for ~750 NSE symbols, ~10 years |
+| `data/benchmarks.parquet` | ✅ Yes | Nifty 50 & Nifty 500 daily close history |
+| `data/compositions.parquet` | ✅ Yes | Historical index constituent snapshots for anti-survivorship-bias filtering |
+| `data/backtest_delta.parquet` | ❌ Gitignored | Local delta cache — yfinance tail rows accumulated across restarts |
+| `data/benchmarks_delta.parquet` | ❌ Gitignored | Same for benchmark data |
 
-At startup the app appends any missing trading days from yfinance (tail delta only —
-no full re-download). No writes are made to disk; the delta is merged in memory for
-the session.
+**Data load order at startup:**
+1. Committed baseline parquet
+2. Local delta cache (if present) — extends baseline without re-fetching
+3. yfinance — only dates not yet covered by either parquet
+4. New rows saved back to the delta cache for future restarts
+
+The delta cache is transparent — if missing or corrupted, the app falls back to
+fetching from yfinance as before. After a baseline rebuild
+(`scripts/refresh_backtest_parquet.py`) the delta becomes redundant; overlapping
+rows are silently deduped on the next load.
 
 #### Seeding or rebuilding the backtest baseline
 

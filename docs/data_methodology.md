@@ -8,7 +8,9 @@ Yahoo Finance provides **adjusted close prices** (adjusted for splits and divide
 
 ---
 
-## 3-tier cache
+## Cache architecture
+
+### Screener — 3-tier cache
 
 Data flows through three tiers to minimise redundant fetches:
 
@@ -17,10 +19,10 @@ Request
    │
    ▼
 Tier 1 — In-memory dict
-   │  (same process, keyed by last trading date, 1-hour TTL)
+   │  (same process, keyed by last trading date)
    │  HIT → return immediately
    ▼
-Tier 2 — Local Parquet files
+Tier 2 — screener_ohlcv.parquet on disk
    │  (persists across restarts; checked if memory cache is stale)
    │  HIT → load from file, populate memory cache
    ▼
@@ -29,17 +31,60 @@ Tier 3 — yfinance (internet)
       → merge into screener_ohlcv.parquet → populate memory cache
 ```
 
-The Parquet files are the on-disk source of truth. yfinance is only called when the parquet baseline has no data for the current trading date.
+The screener parquet is updated in-place on each delta fetch.
+
+### Backtester — 4-tier cache
+
+The backtester keeps the committed baseline parquet read-only (so git stays clean) and
+maintains a separate gitignored delta cache for tail rows:
+
+```
+Request
+   │
+   ▼
+Tier 1 — In-memory dict
+   │  (keyed by target trading date; survives for the container lifetime)
+   │  HIT → return immediately
+   ▼
+Tier 1b — In-memory baseline DataFrame
+   │  (materialised once from Tier 2 + 2.5 combined; amortises read_parquet)
+   │  HIT → compute gap, skip to Tier 3 if needed
+   ▼
+Tier 2 — backtest_history.parquet (committed to repo, never written at runtime)
+   +
+Tier 2.5 — backtest_delta.parquet (gitignored, grows with each fetch)
+   │  Merged on first load; last_date = max(Tier 2, Tier 2.5)
+   ▼
+Tier 3 — yfinance (internet)
+      Only dates after max(Tier 2, Tier 2.5) last date
+      → new rows appended to backtest_delta.parquet → populate memory cache
+```
+
+This means on a typical day after the first run, the gap is 0 or 1 day and yfinance
+is either skipped entirely or fetches just that day's data. The committed baseline
+never changes between explicit rebuilds.
 
 ---
 
 ## Parquet file layout
 
-| File | Contents | Size |
+### Screener
+
+| File | Committed | Contents |
 |---|---|---|
-| `data/screener_ohlcv.parquet` | Long-form `{symbol, date, Open, High, Low, Close, Volume}` for ~750 NSE symbols, ~2 years | ~10 MB |
-| `data/stage2_cache.parquet` | Most-recent Stage 2 scores with a `cache_date` column | < 1 MB |
-| `data/momentum_cache.parquet` | Most-recent Momentum scores with a `cache_date` column | < 1 MB |
+| `data/screener_ohlcv.parquet` | ✅ | Long-form `{symbol, date, Open, High, Low, Close, Volume}` for ~750 NSE symbols, ~2 years |
+| `data/stage2_cache.parquet` | ❌ Gitignored | Most-recent Stage 2 scores with a `cache_date` column |
+| `data/momentum_cache.parquet` | ❌ Gitignored | Most-recent Momentum scores with a `cache_date` column |
+
+### Backtester
+
+| File | Committed | Contents |
+|---|---|---|
+| `data/backtest_history.parquet` | ✅ | Long-form `{symbol, date, Close, High, Volume}` for ~750 NSE symbols, ~10 years |
+| `data/benchmarks.parquet` | ✅ | Nifty 50 & Nifty 500 daily close history |
+| `data/compositions.parquet` | ✅ | Historical index constituent snapshots |
+| `data/backtest_delta.parquet` | ❌ Gitignored | Accumulated yfinance tail rows (OHLCV) since last baseline rebuild |
+| `data/benchmarks_delta.parquet` | ❌ Gitignored | Accumulated yfinance tail rows for benchmarks |
 
 Score caches store only the most recent scored date. On read, the `cache_date` column is compared to the target trading date; a mismatch triggers a re-score and overwrites the file atomically.
 

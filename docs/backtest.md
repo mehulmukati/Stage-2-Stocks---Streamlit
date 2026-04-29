@@ -82,6 +82,29 @@ If composition data is unavailable for a given date, the filter falls back to th
 ### NAV chart (base = 100)
 All series start at 100 and compound from there. A final NAV of 350 means the portfolio returned 250% over the period.
 
+### Portfolio churn chart
+Displayed between the rolling CAGR chart and the performance summary. Shows, for each rebalance date:
+
+- **Bars (primary axis):** number of stocks entering (above the line) and exiting (below the line) the portfolio
+- **Lines (secondary axis):** Full Rebalance and Marginal Rebalance turnover % for that event
+
+One subplot per band rule (Classic on top, Displacement below) with a shared time axis. Useful for spotting periods of unusually high churn that may drive cost drag.
+
+### Rebalance log download
+The **📥 Download Full Rebalance Log** button (below the performance summary table) exports a CSV with one row per rebalance event per band rule. Columns:
+
+| Column | Description |
+|---|---|
+| `Rebalance #` | Sequential rebalance index |
+| `Date` | Rebalance date |
+| `Band Rule` | Classic or Displacement |
+| `#Holdings` / `#Entries` / `#Exits` | Stock counts |
+| `Full Turnover %` / `Marginal Turnover %` | Portfolio turnover for each variant |
+| `Entries (tickers)` / `Exits (tickers)` | Semicolon-separated ticker lists |
+| `Holdings (Full Weights %)` | `TICKER:X.XXXX%` pairs for the full rebalance variant |
+| `Holdings (Marg Weights %)` | Same for the marginal rebalance variant |
+| `Valid Universe Size` | Eligible stocks in the universe on that date |
+
 ### Performance summary table
 
 | Metric | Definition |

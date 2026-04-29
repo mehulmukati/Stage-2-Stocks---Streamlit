@@ -14,6 +14,8 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 | Fuzzy ticker search (typo-tolerant) | Anti-survivorship-bias via historical constituents |
 | CSV export | Transaction-cost drag modelling |
 | Live auto-refresh during background data sync | NAV chart, rolling CAGR, and drawdown metrics |
+| | Portfolio churn chart — entries/exits and turnover % per rebalance |
+| | Full rebalance log CSV download — every rebalance event with tickers, weights, and turnover |
 
 ---
 
@@ -121,7 +123,7 @@ Runs four portfolio variants in a single pass:
 
 Outputs: NAV equity curve vs Nifty 50 & Nifty 500 benchmarks, rolling CAGR chart, performance table (CAGR, Sharpe, Calmar, Sortino, max drawdown, turnover, cost drag), and per-strategy rebalance logs.
 
-Data flows: `data/backtest_history.parquet` (10-year baseline) → yfinance delta (last parquet date → today) → in-memory cache.
+Data flows: `data/backtest_history.parquet` (10-year baseline) → `data/backtest_delta.parquet` (gitignored local delta cache) → yfinance (only dates not yet cached) → in-memory cache.
 
 ---
 
@@ -132,9 +134,11 @@ Data flows: `data/backtest_history.parquet` (10-year baseline) → yfinance delt
 | `data/screener_ohlcv.parquet` | Screener | ~2 years of EOD OHLCV for all ~750 NSE symbols |
 | `data/stage2_cache.parquet` | Screener | Most-recent Stage 2 scores (avoids re-scoring on page load) |
 | `data/momentum_cache.parquet` | Screener | Most-recent Momentum scores |
-| `data/backtest_history.parquet` | Backtester | 10-year bundled OHLCV baseline |
-| `data/benchmarks.parquet` | Backtester | Nifty 50 & Nifty 500 benchmark history |
-| Yahoo Finance (yfinance) | Both (delta) | Incremental OHLCV updates since last parquet date |
+| `data/backtest_history.parquet` | Backtester | 10-year bundled OHLCV baseline (committed) |
+| `data/benchmarks.parquet` | Backtester | Nifty 50 & Nifty 500 benchmark history (committed) |
+| `data/backtest_delta.parquet` | Backtester | Gitignored local delta cache — yfinance tail rows accumulated across restarts |
+| `data/benchmarks_delta.parquet` | Backtester | Same for benchmark data |
+| Yahoo Finance (yfinance) | Both (delta) | Only dates not already in local parquets |
 | `data/compositions.parquet` | Backtester | Historical index constituent snapshots — anti-survivorship-bias filtering |
 | `constituents.json` | Both | Index membership (Nifty 50 / Next 50 / Midcap 150 / Smallcap 250 / Microcap 250) |
 | `nse_holidays.json` | Screener | NSE trading calendar |
