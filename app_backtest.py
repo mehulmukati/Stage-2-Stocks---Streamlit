@@ -206,22 +206,32 @@ def backtest_results(params: dict):
     if isinstance(dl_log, dict) and dl_log:
         import pandas as _pd
 
+        def _fmt_weights(w_dict: dict, holdings: list) -> str:
+            """Serialise weight dict as 'TICKER:X.XX%; ...' in holdings order."""
+            if not w_dict:
+                return ""
+            return "; ".join(f"{s}:{w_dict.get(s, 0.0):.4f}%" for s in holdings)
+
         dl_rows = []
         for rule_name, log in dl_log.items():
             for rebal_idx, entry in enumerate(log, start=1):
+                holdings = entry["holdings"]  # already sorted
+                fw = entry.get("full_weights", {})
+                mw = entry.get("marg_weights", {})
                 dl_rows.append(
                     {
                         "Rebalance #": rebal_idx,
                         "Date": entry["date"].date(),
                         "Band Rule": rule_name,
-                        "#Holdings": len(entry["holdings"]),
+                        "#Holdings": len(holdings),
                         "#Entries": len(entry["entries"]),
                         "#Exits": len(entry["exits"]),
                         "Full Turnover %": entry.get("full_turnover_pct", ""),
                         "Marginal Turnover %": entry.get("marg_turnover_pct", ""),
                         "Entries (tickers)": "; ".join(entry["entries"]),
                         "Exits (tickers)": "; ".join(entry["exits"]),
-                        "All Holdings": "; ".join(entry["holdings"]),
+                        "Holdings (Full Weights %)": _fmt_weights(fw, holdings),
+                        "Holdings (Marg Weights %)": _fmt_weights(mw, holdings),
                         "Valid Universe Size": entry.get("valid_universe_size", ""),
                     }
                 )

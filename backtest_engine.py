@@ -725,6 +725,9 @@ def run_backtest(
                     "valid_universe_size": len(valid_syms) if valid_syms else len(all_ohlcv),
                     "full_turnover_pct": round(traded_w_full * 100, 2),
                     "marg_turnover_pct": round(traded_w_marg * 100, 2),
+                    # snapshot weights at this rebalance (copies — originals rebind next iteration)
+                    "full_weights": {s: round(w * 100, 4) for s, w in full_weights.items()},
+                    "marg_weights": {s: round(w * 100, 4) for s, w in marg_weights.items()},
                 }
             )
 
