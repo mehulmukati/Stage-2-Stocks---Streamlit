@@ -469,6 +469,10 @@ def run_backtest(
             top_m = set(ranked[:m])
             top_n = set(ranked[:n])
 
+            # Reason dicts — populated per branch, consumed at log time
+            entry_reasons: dict[str, str] = {}
+            exit_reasons: dict[str, str] = {}
+
             if band_rule == "displacement":
                 # N = WRH (Worst Rank Held): no stock ranked > N may be held — hard cap.
                 # Stocks ranked M+1..N are a buffer zone: they stay until their rank
@@ -484,29 +488,49 @@ def run_backtest(
 
                 # Step 1 — WRH exits (unconditional): rank > N must leave
                 wrh_exits = current_holdings - top_n
+                for sym in wrh_exits:
+                    r = rank_of.get(sym, _worst) + 1
+                    exit_reasons[sym] = f"rank #{r}" if sym in rank_of else "left universe"
                 holdings_after_wrh = current_holdings - wrh_exits
 
                 # Step 2 — fill free slots opened by WRH exits with best top-M entrants
                 entries_wanted = sorted(top_m - holdings_after_wrh, key=lambda s: rank_of.get(s, _worst))
                 free_slots = max(0, m - len(holdings_after_wrh))
                 entries = set(entries_wanted[:free_slots])
+                for sym in entries:
+                    entry_reasons[sym] = f"rank #{rank_of.get(sym, _worst) + 1}"
 
                 exits = wrh_exits
             else:
                 # classic: exit if rank > N, enter if rank ≤ M (may briefly exceed M)
+                rank_pos = {s: i + 1 for i, s in enumerate(ranked)}  # 1-indexed
+
                 exits = current_holdings - top_n
+                for sym in exits:
+                    exit_reasons[sym] = f"rank #{rank_pos[sym]}" if sym in rank_pos else "left universe"
+
                 entries = top_m - current_holdings
+                for sym in entries:
+                    entry_reasons[sym] = f"rank #{rank_pos.get(sym, '?')}"
+
                 if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
-                    stage2_jumpers = {
-                        sym
-                        for sym in ranked
-                        if sym not in current_holdings
-                        and (s2 := stage2_precomputed.get(sym)) is not None
-                        and not pd.isna(curr := s2.asof(rank_as_of))
-                        and (prev := prev_stage2_scores.get(sym)) is not None
-                        and (curr - prev) >= stage2_entry_threshold
-                    }
-                    entries = entries | stage2_jumpers
+                    for sym in ranked:
+                        if sym in current_holdings or sym in entries:
+                            continue
+                        s2 = stage2_precomputed.get(sym)
+                        if s2 is None:
+                            continue
+                        curr_s2 = s2.asof(rank_as_of)
+                        if pd.isna(curr_s2):
+                            continue
+                        prev_s2 = prev_stage2_scores.get(sym)
+                        if prev_s2 is None:
+                            continue
+                        delta = curr_s2 - prev_s2
+                        if delta >= stage2_entry_threshold:
+                            entries = entries | {sym}
+                            entry_reasons[sym] = f"S2 +{int(delta)}"
+
                 if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
                     for sym in list(current_holdings - exits):
                         s2_series = stage2_precomputed.get(sym)
@@ -520,6 +544,7 @@ def run_backtest(
                             and (prev_score - curr_score) >= stage2_drop_threshold
                         ):
                             exits.add(sym)
+                            exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
 
             new_holdings = (current_holdings - exits) | entries
 
@@ -720,8 +745,8 @@ def run_backtest(
                 {
                     "date": day,
                     "holdings": sorted(current_holdings),
-                    "entries": sorted(entries),
-                    "exits": sorted(exits),
+                    "entries": [f"{s} ({entry_reasons[s]})" if s in entry_reasons else s for s in sorted(entries)],
+                    "exits": [f"{s} ({exit_reasons[s]})" if s in exit_reasons else s for s in sorted(exits)],
                     "valid_universe_size": len(valid_syms) if valid_syms else len(all_ohlcv),
                     "full_turnover_pct": round(traded_w_full * 100, 2),
                     "marg_turnover_pct": round(traded_w_marg * 100, 2),
