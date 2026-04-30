@@ -1,3 +1,4 @@
+import plotly.colors
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -228,4 +229,77 @@ def portfolio_churn_figure(holdings_log: dict) -> go.Figure:
         fig.update_yaxes(title_text="# Stocks", row=row_idx, col=1, secondary_y=False, showgrid=True, gridcolor=_GRID)
         fig.update_yaxes(title_text="Turnover %", row=row_idx, col=1, secondary_y=True, showgrid=False)
     fig.update_xaxes(showgrid=False)
+    return fig
+
+
+# ── Portfolio weights chart ────────────────────────────────────────────────────
+
+_PALETTE = plotly.colors.qualitative.Light24 + plotly.colors.qualitative.Plotly
+_TICKER_COLOR_CACHE: dict[str, str] = {}
+
+
+def _ticker_color(ticker: str) -> str:
+    """Return a consistent color for a ticker, cycling through _PALETTE."""
+    if ticker not in _TICKER_COLOR_CACHE:
+        _TICKER_COLOR_CACHE[ticker] = _PALETTE[len(_TICKER_COLOR_CACHE) % len(_PALETTE)]
+    return _TICKER_COLOR_CACHE[ticker]
+
+
+def portfolio_weights_figure(rule_entries: list[dict], rule_name: str, weight_type: str = "marg") -> go.Figure:
+    """Stacked bar chart of one weight type per rebalance date.
+
+    weight_type: "full" for equal weights, "marg" for momentum weights.
+    Holdings are sorted ascending by average marg weight so the highest-avg
+    ticker's trace is rendered last and sits on top of every bar.
+    Hover text identifies the ticker and its weight for that date.
+    """
+    if not rule_entries:
+        return go.Figure()
+
+    weight_key = "full_weights" if weight_type == "full" else "marg_weights"
+    weight_label = "Full (equal)" if weight_type == "full" else "Marginal (momentum)"
+
+    dates = [e["date"] for e in rule_entries]
+
+    # Always sort by avg marg weight so order is consistent across both charts
+    ticker_sums: dict[str, list[float]] = {}
+    for entry in rule_entries:
+        for ticker, w in entry.get("marg_weights", {}).items():
+            ticker_sums.setdefault(ticker, []).append(w)
+
+    # Ascending sort → highest-avg tickers added last → on top of stack
+    tickers_sorted = sorted(ticker_sums, key=lambda t: sum(ticker_sums[t]) / len(ticker_sums[t]))
+
+    fig = go.Figure()
+
+    for ticker in tickers_sorted:
+        y = [e.get(weight_key, {}).get(ticker) for e in rule_entries]
+        fig.add_trace(
+            go.Bar(
+                x=dates,
+                y=y,
+                name=ticker,
+                showlegend=False,
+                marker=dict(color=_ticker_color(ticker)),
+                customdata=[ticker] * len(dates),
+                hovertemplate="<b>%{customdata}</b><br>%{y:.2f}%<extra></extra>",
+            )
+        )
+
+    fig.update_layout(
+        title=dict(
+            text=f"{rule_name} · {weight_label} Weights<br><sup>Hover for ticker & weight</sup>",
+            font=dict(size=14),
+        ),
+        barmode="stack",
+        bargap=0.15,
+        height=500,
+        hovermode="closest",
+        xaxis=dict(showgrid=False, type="date"),
+        yaxis=dict(title="Weight (%)", showgrid=True, gridcolor=_GRID),
+        showlegend=False,
+        margin=dict(l=50, r=20, t=70, b=40),
+        plot_bgcolor=_T,
+        paper_bgcolor=_T,
+    )
     return fig

@@ -12,13 +12,14 @@ import re
 import warnings
 from datetime import date as _date
 
+import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 from backtest_engine import rolling_returns
-from charts import nav_chart_figure, portfolio_churn_figure, rolling_returns_figure
+from charts import nav_chart_figure, portfolio_churn_figure, portfolio_weights_figure, rolling_returns_figure
 from jobs import JobStatus, registry
 from ui_helpers import _get_user_token, _poll_job
 from workers import backtest_worker
@@ -165,6 +166,12 @@ def backtest_results(params: dict):
         st.subheader("Portfolio Churn per Rebalance")
         st.plotly_chart(portfolio_churn_figure(churn_log), width="stretch")
 
+        st.subheader("Portfolio Weights per Rebalance")
+        for rule_name in ("Classic", "Displacement"):
+            entries = churn_log.get(rule_name, [])
+            if entries:
+                _show_weights_chart(entries, rule_name)
+
     st.subheader("Performance Summary")
 
     _PORTFOLIO_ROWS = [
@@ -204,7 +211,6 @@ def backtest_results(params: dict):
 
     dl_log = result.get("holdings_log", {})
     if isinstance(dl_log, dict) and dl_log:
-        import pandas as _pd
 
         def _fmt_weights(w_dict: dict, holdings: list) -> str:
             """Serialise weight dict as 'TICKER:X.XX%; ...' in holdings order."""
@@ -235,7 +241,7 @@ def backtest_results(params: dict):
                         "Valid Universe Size": entry.get("valid_universe_size", ""),
                     }
                 )
-        dl_csv = _pd.DataFrame(dl_rows).to_csv(index=False).encode("utf-8")
+        dl_csv = pd.DataFrame(dl_rows).to_csv(index=False).encode("utf-8")
         _p = st.session_state.get("bt_saved_params", params)
         _fname = (
             f"backtest_rebalance_log_{_p.get('m', 'M')}_{_p.get('n', 'N')}_"
@@ -477,6 +483,113 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
 
 
 # ──────────────────────────────────────────────
+# WEIGHTS CHART DISPLAY HELPER
+# ──────────────────────────────────────────────
+_WEIGHTS_INLINE_THRESHOLD = 50
+
+
+_WT_LABELS = {"full": "Full (equal)", "marg": "Marginal (momentum)"}
+
+
+def _show_weights_chart(entries: list[dict], rule_name: str, file_stem: str = "") -> None:
+    """Render 2 charts (full + marg) for one rule, inline or as HTML downloads."""
+    large = len(entries) >= _WEIGHTS_INLINE_THRESHOLD
+    if large:
+        st.info(
+            f"**{rule_name}** has {len(entries)} rebalances — too large to render inline. "
+            "Download the interactive charts to view them in your browser."
+        )
+
+    for wt in ("full", "marg"):
+        fig = portfolio_weights_figure(entries, rule_name, weight_type=wt)
+        label = _WT_LABELS[wt]
+        if not large:
+            st.plotly_chart(fig, width="stretch")
+        else:
+            fname = f"{file_stem or rule_name.lower()}_{wt}_weights.html"
+            html_bytes = fig.to_html(full_html=True, include_plotlyjs="cdn").encode("utf-8")
+            st.download_button(
+                label=f"⬇ Download {rule_name} · {label} weights (HTML)",
+                data=html_bytes,
+                file_name=fname,
+                mime="text/html",
+                key=f"dl_weights_{rule_name}_{wt}_{file_stem}",
+            )
+
+
+# ──────────────────────────────────────────────
+# WEIGHTS CSV UPLOAD
+# ──────────────────────────────────────────────
+def _parse_rebalance_csv(rule_df: pd.DataFrame) -> list[dict]:
+    """Convert rebalance log CSV rows for one band rule into holdings_log entry format."""
+
+    def _parse_weights(cell) -> dict[str, float]:
+        out: dict[str, float] = {}
+        if not isinstance(cell, str) or not cell.strip():
+            return out
+        for part in cell.split(";"):
+            part = part.strip()
+            if ":" in part:
+                ticker, val = part.split(":", 1)
+                try:
+                    out[ticker.strip()] = float(val.replace("%", "").strip())
+                except ValueError:
+                    pass
+        return out
+
+    entries = []
+    for _, row in rule_df.iterrows():
+        entries.append(
+            {
+                "date": pd.Timestamp(row["Date"]),
+                "full_weights": _parse_weights(row.get("Holdings (Full Weights %)", "")),
+                "marg_weights": _parse_weights(row.get("Holdings (Marg Weights %)", "")),
+            }
+        )
+    return entries
+
+
+def _render_weights_csv_uploader() -> None:
+    st.divider()
+    st.subheader("📊 Portfolio Weights — Upload Rebalance Log")
+    uploaded = st.file_uploader(
+        "Upload a downloaded rebalance log CSV to visualise portfolio weights",
+        type="csv",
+        key="weights_csv",
+    )
+    if not uploaded:
+        return
+
+    with st.status("Building weight charts…", expanded=True) as status:
+        st.write("Parsing CSV…")
+        try:
+            df = pd.read_csv(uploaded)
+        except Exception as exc:
+            status.update(label="Failed to parse CSV", state="error")
+            st.error(f"Could not parse CSV: {exc}")
+            return
+
+        rendered = False
+        for rule_name in ("Classic", "Displacement"):
+            rule_df = df[df["Band Rule"] == rule_name]
+            if rule_df.empty:
+                continue
+            st.write(f"Building {rule_name} charts ({len(rule_df)} rebalances)…")
+            entries = _parse_rebalance_csv(rule_df)
+            if entries:
+                _show_weights_chart(
+                    entries, rule_name, file_stem=uploaded.name.replace(".csv", f"_{rule_name.lower()}")
+                )
+                rendered = True
+
+        if not rendered:
+            status.update(label="No data found", state="error")
+            st.warning("No Classic or Displacement rows found in the uploaded CSV.")
+        else:
+            status.update(label="Charts ready", state="complete", expanded=False)
+
+
+# ──────────────────────────────────────────────
 # MAIN
 # ──────────────────────────────────────────────
 def main():
@@ -513,6 +626,7 @@ def main():
     tab_bt, tab_guide = st.tabs(["📊 Backtest", "📖 User Guide"])
     with tab_bt:
         backtest_results(bt_params)
+        _render_weights_csv_uploader()
     with tab_guide:
         _render_user_guide()
 
