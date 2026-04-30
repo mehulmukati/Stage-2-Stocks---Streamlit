@@ -112,14 +112,16 @@ Data flows: `data/screener_ohlcv.parquet` → score cache (`data/stage2_cache.pa
 
 ### Backtester (`app_backtest.py`)
 
-Runs four portfolio variants in a single pass:
+Runs six portfolio variants in a single pass:
 
 | Variant | Band rule | Weight method |
 |---|---|---|
 | Classic · Full | Standard entry (≤ M) / exit (> N) | Equal-weight reset each rebalance |
-| Classic · Marginal | Standard bands | Incumbents keep price-drifted weights |
-| Displacement · Full | Incumbents in M+1…N band displaceable | Equal-weight reset |
-| Displacement · Marginal | Displacement rule | Price-drifted weights |
+| Classic · Marginal | Standard bands | Slot-fill: freed exit weight to entrants; incumbents drift |
+| Classic · Prop | Standard bands | Prop-fill: entrants at 1/n; surplus freed weight to all survivors |
+| Displacement · Full | Incumbents in M+1…N band, exits only at rank > N | Equal-weight reset |
+| Displacement · Marginal | Displacement rule | Slot-fill: freed exit weight to entrants; incumbents drift |
+| Displacement · Prop | Displacement rule | Prop-fill: entrants at 1/n; surplus freed weight to all survivors |
 
 Outputs: NAV equity curve vs Nifty 50 & Nifty 500 benchmarks, rolling CAGR chart, performance table (CAGR, Sharpe, Calmar, Sortino, max drawdown, turnover, cost drag), and per-strategy rebalance logs.
 

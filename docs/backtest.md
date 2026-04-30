@@ -29,14 +29,15 @@ Available frequencies:
 | **Quarterly** | Rebalances on the last trading day of each calendar quarter |
 | **Half-yearly** | Rebalances on the last trading day of each half-year (Jan–Jun, Jul–Dec) |
 
-### Two portfolio variants
+### Three portfolio variants
 
 | Variant | Weight rule |
 |---|---|
 | **Full Rebalance** | On every rebalance, all holdings are reset to equal weight (1/M) |
-| **Marginal Rebalance** | Only the weight freed by exiting stocks is redistributed to entrants; incumbents keep their price-drifted weights |
+| **Marginal Rebalance (Slot-fill)** | Freed exit capital goes entirely to new entrants (entrant weight = freed ÷ n_entries); incumbents keep their price-drifted weights |
+| **Prop Rebalance (Prop-fill)** | Entrants are always seeded at equal weight (1/portfolio size); any surplus freed capital is redistributed proportionally to all survivors via normalisation |
 
-The full rebalance is simpler and easier to execute in practice. The marginal rebalance approximates how a real portfolio might drift between rebalances.
+The full rebalance is simplest to execute. Slot-fill marginal lets winners run and directs exit proceeds into new positions. Prop-fill marginal also lets winners run, but always gives new entrants a fair equal-weight starting allocation — incumbents absorb any surplus freed capital.
 
 ---
 
@@ -86,7 +87,7 @@ All series start at 100 and compound from there. A final NAV of 350 means the po
 Displayed between the rolling CAGR chart and the performance summary. Shows, for each rebalance date:
 
 - **Bars (primary axis):** number of stocks entering (above the line) and exiting (below the line) the portfolio
-- **Lines (secondary axis):** Full Rebalance and Marginal Rebalance turnover % for that event
+- **Lines (secondary axis):** Full, Marginal (slot-fill), and Prop (prop-fill) turnover % for that event
 
 One subplot per band rule (Classic on top, Displacement below) with a shared time axis. Useful for spotting periods of unusually high churn that may drive cost drag.
 
@@ -99,10 +100,11 @@ The **📥 Download Full Rebalance Log** button (below the performance summary t
 | `Date` | Rebalance date |
 | `Band Rule` | Classic or Displacement |
 | `#Holdings` / `#Entries` / `#Exits` | Stock counts |
-| `Full Turnover %` / `Marginal Turnover %` | Portfolio turnover for each variant |
+| `Full Turnover %` / `Marginal Turnover %` / `Prop Turnover %` | Portfolio turnover for each variant |
 | `Entries (tickers)` / `Exits (tickers)` | Semicolon-separated ticker lists |
 | `Holdings (Full Weights %)` | `TICKER:X.XXXX%` pairs for the full rebalance variant |
-| `Holdings (Marg Weights %)` | Same for the marginal rebalance variant |
+| `Holdings (Marg Weights %)` | Same for the slot-fill marginal variant |
+| `Holdings (Prop Weights %)` | Same for the prop-fill marginal variant |
 | `Valid Universe Size` | Eligible stocks in the universe on that date |
 
 ### Performance summary table

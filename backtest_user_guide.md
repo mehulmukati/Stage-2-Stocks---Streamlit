@@ -6,16 +6,18 @@ universe is scored by its Sharpe ratio, ranked best → worst, and a band rule d
 which stocks enter or exit the portfolio. NAV is tracked daily and compared against
 Nifty 50 and Nifty 500 benchmarks.
 
-#### Four strategies, always compared
-The backtest simultaneously runs **4 portfolio variants** so you can compare them
+#### Six strategies, always compared
+The backtest simultaneously runs **6 portfolio variants** so you can compare them
 side-by-side without re-running:
 
 | Strategy | Band Rule | Weight Method |
 |---|---|---|
 | Classic · Full | Classic | Equal-weight reset each rebalance |
-| Classic · Marginal | Classic | Incumbents keep price-drifted weight |
+| Classic · Marginal | Classic | Slot-fill: freed exit weight split equally among entrants |
+| Classic · Prop | Classic | Prop-fill: entrants seeded at 1/n; surplus freed weight flows to all survivors |
 | Displacement · Full | Displacement | Equal-weight reset each rebalance |
-| Displacement · Marginal | Displacement | Incumbents keep price-drifted weight |
+| Displacement · Marginal | Displacement | Slot-fill: freed exit weight split equally among entrants |
+| Displacement · Prop | Displacement | Prop-fill: entrants seeded at 1/n; surplus freed weight flows to all survivors |
 
 #### How to use it
 1. Set **M**, **N**, frequency, and ranking method in the sidebar.
@@ -102,41 +104,51 @@ At every rebalance date, **all holdings are reset to equal weight** (1 / portfol
 - Implicitly mean-reverting: overweight winners are trimmed, underweight laggards are topped up.
 - Higher turnover cost (all weights are touched every period, even unchanged holdings).
 
-#### Marginal rebalance
-Only **entering and exiting stocks** trigger weight changes. Incumbents keep whatever
-weight they have drifted to since the last rebalance.
+#### Marginal rebalance — two variants
 
-- Price-drifted weights: a stock up 30% since the last rebalance carries 30% more weight.
-- Lower turnover (unchanged incumbents are not touched).
-- Implicit momentum factor in the weights — recent winners carry more portfolio weight.
+Only **entering and exiting stocks** trigger explicit weight changes. Incumbents keep
+whatever weight they have drifted to since the last rebalance — recent winners carry
+more portfolio weight (momentum factor embedded in the weights).
 
-**Weight assignment for entrants depends on whether any stocks exit that period:**
+The two variants differ in how they assign weight to **new entrants**:
 
-*When exits are present:* the combined weight freed by exiting stocks is split equally
-among entrants. Incumbents are not touched beyond their natural price drift.
+**Slot-fill (Classic · Marginal / Displacement · Marginal)**
 
-*When there are only entries (no exits):* there is no freed weight to redistribute.
-Each entrant is seeded at `1 / portfolio_size` (equal-weight share of the new total),
-and all weights are then normalised to 1. The practical effect is that incumbents are
-**diluted proportionally** to make room for entrants. With *k* entrants joining a
-portfolio of *size* stocks, entrants each receive `1 / (size + k)` and every incumbent
-weight is scaled by `size / (size + k)`.
+- When exits are present: the freed exit weight is split equally among entrants.
+  Incumbents are untouched. A large exit gives the new entrant a large starting weight.
+- When there are no exits (entry-only, classic rule): entrants are seeded at
+  `1 / portfolio_size` and all weights are normalised to 1 — incumbents are diluted
+  proportionally to make room.
 
-> **Example:** 5 incumbents (equal 20% each), 2 entrants, no exits → portfolio size = 7.
-> After normalisation: each incumbent = 15.6%, each entrant = 11.1%.
-> Incumbents yield ~22% of the portfolio collectively to the two new arrivals.
+**Prop-fill (Classic · Prop / Displacement · Prop)**
+
+- Entrants are **always** seeded at `1 / portfolio_size` regardless of how much weight
+  was freed by exits. After normalisation:
+  - If freed capital > entrant allocation: surplus flows proportionally to all survivors
+    (incumbents gain weight — they absorb the extra freed capital).
+  - If freed capital < entrant allocation (or no exits): incumbents are diluted, same as
+    the slot-fill no-exit case.
+- Net effect: entrants always start at a fair equal-weight position; the size of the exit
+  doesn't inflate the entrant's opening stake.
+
+> **Example (slot-fill vs prop-fill with a large exit):**
+> Portfolio of 20 stocks; one 8% position exits; one new stock enters.
+> - Slot-fill: entrant gets 8% (the full freed weight). Large boost.
+> - Prop-fill: entrant gets 1/20 = 5%; remaining 3% freed weight distributed to all 19
+>   survivors (each gains ~0.16%).
 
 #### When each works better
 
-| | Full | Marginal |
-|---|---|---|
-| Style | Mean-reverting | Trend-following |
-| Turnover | Higher | Lower |
-| Transaction cost | Higher | Lower |
-| Winner concentration | Avoided (reset each time) | Allowed (drift compounds) |
+| | Full | Marginal (slot-fill) | Marginal (prop-fill) |
+|---|---|---|---|
+| Style | Mean-reverting | Trend-following | Trend-following |
+| Entrant weight | 1/size always | freed ÷ n_entries | 1/size always |
+| Turnover | Higher | Lower | Lower |
+| Winner concentration | Avoided (reset each time) | Allowed (drift + slot boost) | Allowed (drift, fair entry) |
 
 > **Tip:** In strong trending markets, Displacement + Marginal often wins. In choppy
-> markets, Classic + Full may be more robust.
+> markets, Classic + Full may be more robust. Prop-fill is a useful middle ground —
+> entrants aren't disadvantaged when the exit that created the vacancy was a large position.
 
 ## Ranking & Scoring
 
@@ -211,7 +223,7 @@ reduce realised gains.
 ## Reading the Results
 
 #### Portfolio NAV chart
-All four strategies plus both benchmarks start at 100 and compound daily. A final NAV of
+All six strategies plus both benchmarks start at 100 and compound daily. A final NAV of
 350 means 250% total return over the period. Hover for unified tooltips across all series.
 
 #### Rolling CAGR chart
@@ -224,7 +236,7 @@ Displayed between the Rolling CAGR chart and the Performance Summary. Two subplo
 per band rule) each show:
 - **Bars (left axis):** stocks entering above the zero line (positive), stocks exiting
   below (negative) — immediate visual of how active each rebalance was
-- **Lines (right axis):** Full Rebalance and Marginal Rebalance turnover % for that event
+- **Lines (right axis):** Full, Marginal (slot-fill), and Prop (prop-fill) turnover % for that event
 
 High-churn spikes correlate directly with cost drag. Wide M/N bands reduce bar heights.
 
@@ -243,9 +255,9 @@ High-churn spikes correlate directly with cost drag. Wide M/N bands reduce bar h
 The **📥 Download Full Rebalance Log** button exports a CSV with every rebalance event.
 Each row covers one rebalance date for one band rule and includes:
 - Entry and exit ticker lists
-- `Holdings (Full Weights %)` and `Holdings (Marg Weights %)` — exact allocation for
-  every stock in `TICKER:X.XXXX%` format
-- Per-rebalance turnover % for both variants
+- `Holdings (Full Weights %)`, `Holdings (Marg Weights %)`, and `Holdings (Prop Weights %)` —
+  exact allocation for every stock in `TICKER:X.XXXX%` format
+- Per-rebalance turnover % for all three variants
 - Valid universe size at that date
 
 Useful for auditing specific rebalance decisions or analysing weight drift over time.
