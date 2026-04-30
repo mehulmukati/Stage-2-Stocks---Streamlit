@@ -415,38 +415,47 @@ def run_backtest(
     # ── initialise portfolios ──
     full_weights: dict[str, float] = {}
     full_weights_prev: dict[str, float] = {}  # drift-adjusted full weights from prior rebalance
-    marg_weights: dict[str, float] = {}
+    marg_weights: dict[str, float] = {}  # slot-fill marginal weights
+    prop_weights: dict[str, float] = {}  # prop-fill marginal weights
     current_holdings: set[str] = set()
     prev_rebalance_day = None  # needed to drift-adjust weights at each rebalance
     prev_stage2_scores: dict[str, float] = {}  # Stage 2 score at previous rebalance per holding
 
     nav_full = 100.0
     nav_marg = 100.0
+    nav_prop = 100.0
 
     nav_records: list[dict] = []
     holdings_log: list[dict] = []
     turnover_log_full: list[float] = []
     turnover_log_marg: list[float] = []
+    turnover_log_prop: list[float] = []
     cost_log_full: list[float] = []
     cost_log_marg: list[float] = []
+    cost_log_prop: list[float] = []
     holdings_sizes: list[int] = []
 
     entry_prices: dict[str, float] = {}
     entry_dates: dict[str, pd.Timestamp] = {}
     tax_log_full: list[float] = []
     tax_log_marg: list[float] = []
+    tax_log_prop: list[float] = []
     brok_log_full: list[float] = []
     brok_log_marg: list[float] = []
+    brok_log_prop: list[float] = []
 
     # FY-level CGT accumulators (reset each new FY)
     current_fy: int | None = None
     fy_st_g_full = fy_st_l_full = fy_lt_g_full = fy_lt_l_full = 0.0
     fy_st_g_marg = fy_st_l_marg = fy_lt_g_marg = fy_lt_l_marg = 0.0
+    fy_st_g_prop = fy_st_l_prop = fy_lt_g_prop = fy_lt_l_prop = 0.0
     # Carry-forward loss buckets: list of (expiry_fy, amount)
     cf_st_full: list[tuple[int, float]] = []
     cf_lt_full: list[tuple[int, float]] = []
     cf_st_marg: list[tuple[int, float]] = []
     cf_lt_marg: list[tuple[int, float]] = []
+    cf_st_prop: list[tuple[int, float]] = []
+    cf_lt_prop: list[tuple[int, float]] = []
 
     for i, day in enumerate(trading_days):
         # ── rebalance ──
@@ -566,8 +575,8 @@ def run_backtest(
             size = len(new_holdings)
             holdings_sizes.append(size)
 
-            # ── drift-adjust both weight trackers to reflect price movement since last rebalance ──
-            # This must happen before turnover calculations so exit weights use current market values.
+            # ── drift-adjust all weight trackers to reflect price movement since last rebalance ──
+            # This must happen before weight assignment so exit weights use current market values.
             if prev_rebalance_day is not None:
 
                 def _drift_weights(weights: dict[str, float]) -> dict[str, float]:
@@ -587,13 +596,48 @@ def run_backtest(
 
                 full_weights_prev = _drift_weights(full_weights_prev)
                 marg_weights = _drift_weights(marg_weights)
+                prop_weights = _drift_weights(prop_weights)
 
-            # ── weight-based turnover: separate for full and marginal ──
-            # Marginal: only exits are sold and entries bought; incumbents untouched.
-            traded_w_marg = sum(marg_weights.get(s, 0.0) for s in exits) + sum(1.0 / size for s in entries)
-            turnover_log_marg.append(traded_w_marg)
+            # ── save drift-adjusted weights before assignment (needed for turnover diff + CGT) ──
+            old_marg_weights = dict(marg_weights)
+            old_prop_weights = dict(prop_weights)
 
-            # Full: exits + entries + incumbents rebalanced back to 1/M.
+            # ── compute new weights for all three tracks ──
+
+            # Full rebalance: equal weight all holdings
+            new_full = {s: 1.0 / size for s in new_holdings}
+
+            # Slot-fill marginal: freed capital goes entirely to new entrants
+            freed_slot = sum(marg_weights.get(s, 0.0) for s in exits)
+            new_slot: dict[str, float] = {s: marg_weights[s] for s in new_holdings - entries if s in marg_weights}
+            if entries:
+                per_entry_slot = (freed_slot / len(entries)) if freed_slot > 0 else (1.0 / size)
+                for s in entries:
+                    new_slot[s] = per_entry_slot
+            if not new_slot:
+                new_slot = {s: 1.0 / size for s in new_holdings}
+            total_w = sum(new_slot.values())
+            if total_w > 0:
+                new_slot = {s: w / total_w for s, w in new_slot.items()}
+
+            # Prop-fill marginal: entrants always seeded at 1/size; normalization redistributes
+            # surplus freed capital to all survivors (incumbents + entrants) proportionally.
+            new_prop: dict[str, float] = {s: prop_weights[s] for s in new_holdings - entries if s in prop_weights}
+            if entries:
+                for s in entries:
+                    new_prop[s] = 1.0 / size
+            if not new_prop:
+                new_prop = {s: 1.0 / size for s in new_holdings}
+            total_w = sum(new_prop.values())
+            if total_w > 0:
+                new_prop = {s: w / total_w for s, w in new_prop.items()}
+
+            # ── weight-based turnover: abs-diff formula captures all implicit weight changes ──
+            # For each variant: traded = Σ|old_w(s) - new_w(s)| over all affected stocks.
+            # This counts exits (old→0), entries (0→new), incumbent rebalances, and implicit
+            # sells/buys caused by normalization when freed capital != entrant allocation.
+            universe = new_holdings | exits
+
             traded_w_full = (
                 sum(full_weights_prev.get(s, 0.0) for s in exits)
                 + sum(1.0 / size for s in entries)
@@ -601,27 +645,40 @@ def run_backtest(
             )
             turnover_log_full.append(traded_w_full)
 
-            # ── transaction cost drag — separate for full and marginal ──
+            traded_w_marg = sum(abs(old_marg_weights.get(s, 0.0) - new_slot.get(s, 0.0)) for s in universe)
+            turnover_log_marg.append(traded_w_marg)
+
+            traded_w_prop = sum(abs(old_prop_weights.get(s, 0.0) - new_prop.get(s, 0.0)) for s in universe)
+            turnover_log_prop.append(traded_w_prop)
+
+            # ── transaction cost drag — separate for full, marginal, and prop ──
             if i > 0 and transaction_cost_pct > 0 and size > 0:
                 cost_drag_full = traded_w_full * transaction_cost_pct
                 cost_drag_marg = traded_w_marg * transaction_cost_pct
+                cost_drag_prop = traded_w_prop * transaction_cost_pct
                 nav_full *= 1.0 - cost_drag_full
                 nav_marg *= 1.0 - cost_drag_marg
+                nav_prop *= 1.0 - cost_drag_prop
                 cost_log_full.append(cost_drag_full)
                 cost_log_marg.append(cost_drag_marg)
+                cost_log_prop.append(cost_drag_prop)
 
             # ── flat brokerage per sale (exits only, no charge on buys) ──
             if i > 0 and brokerage_per_sale > 0 and initial_capital > 0 and exits:
                 n_exits = len(exits)
                 brok_drag_full = (brokerage_per_sale * n_exits) / (initial_capital * nav_full / 100.0)
                 brok_drag_marg = (brokerage_per_sale * n_exits) / (initial_capital * nav_marg / 100.0)
+                brok_drag_prop = (brokerage_per_sale * n_exits) / (initial_capital * nav_prop / 100.0)
                 nav_full *= 1.0 - brok_drag_full
                 nav_marg *= 1.0 - brok_drag_marg
+                nav_prop *= 1.0 - brok_drag_prop
                 brok_log_full.append(brok_drag_full)
                 brok_log_marg.append(brok_drag_marg)
+                brok_log_prop.append(brok_drag_prop)
             else:
                 brok_log_full.append(0.0)
                 brok_log_marg.append(0.0)
+                brok_log_prop.append(0.0)
 
             # ── capital gains tax (India LTCG / STCG, FY-level with carry-forward) ──
             if ltcg_rate > 0 or stcg_rate > 0:
@@ -651,20 +708,36 @@ def run_backtest(
                         stcg_rate,
                         ltcg_rate,
                     )
+                    tax_prop, cf_st_prop, cf_lt_prop = _compute_fy_tax(
+                        current_fy,
+                        fy_st_g_prop,
+                        fy_st_l_prop,
+                        fy_lt_g_prop,
+                        fy_lt_l_prop,
+                        cf_st_prop,
+                        cf_lt_prop,
+                        stcg_rate,
+                        ltcg_rate,
+                    )
                     drag_full = tax_full / nav_full if nav_full > 0 else 0.0
                     drag_marg = tax_marg / nav_marg if nav_marg > 0 else 0.0
+                    drag_prop = tax_prop / nav_prop if nav_prop > 0 else 0.0
                     nav_full *= 1.0 - drag_full
                     nav_marg *= 1.0 - drag_marg
+                    nav_prop *= 1.0 - drag_prop
                     tax_log_full.append(drag_full)
                     tax_log_marg.append(drag_marg)
+                    tax_log_prop.append(drag_prop)
                     # Reset FY accumulators
                     fy_st_g_full = fy_st_l_full = fy_lt_g_full = fy_lt_l_full = 0.0
                     fy_st_g_marg = fy_st_l_marg = fy_lt_g_marg = fy_lt_l_marg = 0.0
+                    fy_st_g_prop = fy_st_l_prop = fy_lt_g_prop = fy_lt_l_prop = 0.0
                     current_fy = day_fy
                 elif current_fy is None:
                     current_fy = day_fy
 
                 # ── Accumulate this rebalance's realised gains/losses into FY buckets ──
+                # Use drift-adjusted old weights (saved before assignment) for position sizing.
                 if i > 0 and exits:
                     for sym in exits:
                         ep = entry_prices.get(sym)
@@ -694,8 +767,8 @@ def run_backtest(
                             else:
                                 fy_st_l_full += abs(gain_full)
 
-                        # Marginal variant
-                        pos_marg = nav_marg * marg_weights.get(sym, 0.0)
+                        # Slot-fill marginal variant (use old drift-adjusted weights)
+                        pos_marg = nav_marg * old_marg_weights.get(sym, 0.0)
                         gain_marg = pos_marg * gain_pct / denom
                         if is_long_term:
                             if gain_marg >= 0:
@@ -708,6 +781,20 @@ def run_backtest(
                             else:
                                 fy_st_l_marg += abs(gain_marg)
 
+                        # Prop-fill marginal variant (use old drift-adjusted weights)
+                        pos_prop = nav_prop * old_prop_weights.get(sym, 0.0)
+                        gain_prop = pos_prop * gain_pct / denom
+                        if is_long_term:
+                            if gain_prop >= 0:
+                                fy_lt_g_prop += gain_prop
+                            else:
+                                fy_lt_l_prop += abs(gain_prop)
+                        else:
+                            if gain_prop >= 0:
+                                fy_st_g_prop += gain_prop
+                            else:
+                                fy_st_l_prop += abs(gain_prop)
+
             # ── record entry prices/dates for new entrants; clear exits ──
             for sym in entries:
                 p = _close_price(all_ohlcv, sym, day)
@@ -718,26 +805,11 @@ def run_backtest(
                 entry_prices.pop(sym, None)
                 entry_dates.pop(sym, None)
 
-            # full rebalance: equal weight all holdings
-            full_weights = {s: 1.0 / size for s in new_holdings}
-            full_weights_prev = dict(full_weights)  # store for next rebalance's drift-adjust & turnover
-
-            # marginal rebalance: redistribute only exited weight to entrants.
-            # marg_weights is already drift-adjusted above, so freed weight reflects current prices.
-            freed = sum(marg_weights.get(s, 0.0) for s in exits)
-            new_marg = {s: marg_weights[s] for s in new_holdings - entries if s in marg_weights}
-            if entries:
-                per_entry = (freed / len(entries)) if freed > 0 else (1.0 / size)
-                for s in entries:
-                    new_marg[s] = per_entry
-            # if portfolio was empty before, seed equal weight
-            if not new_marg:
-                new_marg = {s: 1.0 / size for s in new_holdings}
-            # normalise so weights sum to 1
-            total_w = sum(new_marg.values())
-            if total_w > 0:
-                new_marg = {s: w / total_w for s, w in new_marg.items()}
-            marg_weights = new_marg
+            # ── store pre-computed weights (calculated above before turnover/costs) ──
+            full_weights = new_full
+            full_weights_prev = dict(new_full)  # store for next rebalance's drift-adjust & turnover
+            marg_weights = new_slot
+            prop_weights = new_prop
 
             prev_rebalance_day = day
             current_holdings = new_holdings
@@ -750,9 +822,11 @@ def run_backtest(
                     "valid_universe_size": len(valid_syms) if valid_syms else len(all_ohlcv),
                     "full_turnover_pct": round(traded_w_full * 100, 2),
                     "marg_turnover_pct": round(traded_w_marg * 100, 2),
+                    "prop_turnover_pct": round(traded_w_prop * 100, 2),
                     # snapshot weights at this rebalance (copies — originals rebind next iteration)
                     "full_weights": {s: round(w * 100, 4) for s, w in full_weights.items()},
                     "marg_weights": {s: round(w * 100, 4) for s, w in marg_weights.items()},
+                    "prop_weights": {s: round(w * 100, 4) for s, w in prop_weights.items()},
                 }
             )
 
@@ -761,6 +835,7 @@ def run_backtest(
             prev_day = trading_days[i - 1]
             port_ret_full = 0.0
             port_ret_marg = 0.0
+            port_ret_prop = 0.0
             for sym in current_holdings:
                 if sym not in all_ohlcv:
                     continue
@@ -772,10 +847,14 @@ def run_backtest(
                     continue
                 port_ret_full += full_weights.get(sym, 0.0) * r
                 port_ret_marg += marg_weights.get(sym, 0.0) * r
+                port_ret_prop += prop_weights.get(sym, 0.0) * r
             nav_full *= 1 + port_ret_full
             nav_marg *= 1 + port_ret_marg
+            nav_prop *= 1 + port_ret_prop
 
-        nav_records.append({"Date": day, "Full Rebalance": nav_full, "Marginal Rebalance": nav_marg})
+        nav_records.append(
+            {"Date": day, "Full Rebalance": nav_full, "Marginal Rebalance": nav_marg, "Prop Rebalance": nav_prop}
+        )
 
     nav_df = pd.DataFrame(nav_records).set_index("Date")
 
@@ -803,16 +882,31 @@ def run_backtest(
             stcg_rate,
             ltcg_rate,
         )
+        tax_prop, cf_st_prop, cf_lt_prop = _compute_fy_tax(
+            current_fy,
+            fy_st_g_prop,
+            fy_st_l_prop,
+            fy_lt_g_prop,
+            fy_lt_l_prop,
+            cf_st_prop,
+            cf_lt_prop,
+            stcg_rate,
+            ltcg_rate,
+        )
         drag_full = tax_full / nav_full if nav_full > 0 else 0.0
         drag_marg = tax_marg / nav_marg if nav_marg > 0 else 0.0
+        drag_prop = tax_prop / nav_prop if nav_prop > 0 else 0.0
         nav_full *= 1.0 - drag_full
         nav_marg *= 1.0 - drag_marg
+        nav_prop *= 1.0 - drag_prop
         tax_log_full.append(drag_full)
         tax_log_marg.append(drag_marg)
+        tax_log_prop.append(drag_prop)
         # Update final row in nav_records to reflect post-tax NAV
         if nav_records:
             nav_records[-1]["Full Rebalance"] = nav_full
             nav_records[-1]["Marginal Rebalance"] = nav_marg
+            nav_records[-1]["Prop Rebalance"] = nav_prop
         nav_df = pd.DataFrame(nav_records).set_index("Date")
 
     # ── attach benchmarks ──
@@ -853,13 +947,17 @@ def run_backtest(
 
     avg_turnover_full = round(np.mean(turnover_log_full) * 100, 1) if turnover_log_full else 0.0
     avg_turnover_marg = round(np.mean(turnover_log_marg) * 100, 1) if turnover_log_marg else 0.0
+    avg_turnover_prop = round(np.mean(turnover_log_prop) * 100, 1) if turnover_log_prop else 0.0
     total_cost_full = round(sum(cost_log_full) * 100, 3) if cost_log_full else 0.0
     total_cost_marg = round(sum(cost_log_marg) * 100, 3) if cost_log_marg else 0.0
+    total_cost_prop = round(sum(cost_log_prop) * 100, 3) if cost_log_prop else 0.0
     avg_holdings = round(float(np.mean(holdings_sizes)), 1) if holdings_sizes else 0.0
     total_tax_full = round(sum(tax_log_full) * 100, 3) if tax_log_full else 0.0
     total_tax_marg = round(sum(tax_log_marg) * 100, 3) if tax_log_marg else 0.0
+    total_tax_prop = round(sum(tax_log_prop) * 100, 3) if tax_log_prop else 0.0
     total_brok_full = round(sum(brok_log_full) * 100, 3) if brok_log_full else 0.0
     total_brok_marg = round(sum(brok_log_marg) * 100, 3) if brok_log_marg else 0.0
+    total_brok_prop = round(sum(brok_log_prop) * 100, 3) if brok_log_prop else 0.0
 
     if "Full Rebalance" in stats_df.index:
         stats_df.loc["Full Rebalance", "Avg Holdings"] = avg_holdings
@@ -873,15 +971,29 @@ def run_backtest(
         stats_df.loc["Marginal Rebalance", "Cost Drag (%)"] = total_cost_marg
         stats_df.loc["Marginal Rebalance", "Tax Drag (%)"] = total_tax_marg
         stats_df.loc["Marginal Rebalance", "Brokerage Drag (%)"] = total_brok_marg
+    if "Prop Rebalance" in stats_df.index:
+        stats_df.loc["Prop Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Prop Rebalance", "Avg Turnover (%)"] = avg_turnover_prop
+        stats_df.loc["Prop Rebalance", "Cost Drag (%)"] = total_cost_prop
+        stats_df.loc["Prop Rebalance", "Tax Drag (%)"] = total_tax_prop
+        stats_df.loc["Prop Rebalance", "Brokerage Drag (%)"] = total_brok_prop
 
     return {
         "nav": nav_df,
         "stats": stats_df,
         "holdings_log": holdings_log,
         "avg_turnover_pct": avg_turnover_full,
+        "avg_turnover_pct_marg": avg_turnover_marg,
+        "avg_turnover_pct_prop": avg_turnover_prop,
         "total_cost_drag_pct": total_cost_full,
+        "total_cost_drag_pct_marg": total_cost_marg,
+        "total_cost_drag_pct_prop": total_cost_prop,
         "total_tax_drag_pct": total_tax_full,
+        "total_tax_drag_pct_marg": total_tax_marg,
+        "total_tax_drag_pct_prop": total_tax_prop,
         "total_brokerage_drag_pct": total_brok_full,
+        "total_brokerage_drag_pct_marg": total_brok_marg,
+        "total_brokerage_drag_pct_prop": total_brok_prop,
         "rebalance_dates": rebalance_dates,
         "trading_days": trading_days,
     }

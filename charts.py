@@ -13,19 +13,24 @@ PHASE_COLORS = {
 BT_COLORS = {
     "Classic · Full": "#3b82f6",  # blue-500
     "Classic · Marginal": "#a78bfa",  # violet-400
+    "Classic · Prop": "#2dd4bf",  # teal-400
     "Displacement · Full": "#f59e0b",  # amber-500
     "Displacement · Marginal": "#34d399",  # emerald-400
+    "Displacement · Prop": "#f472b6",  # pink-400
     "NIFTY50": "#f87171",  # red-400
     "NIFTY500": "#fb923c",  # orange-400
     # legacy keys (pre-rename format)
     "Full Rebalance": "#3b82f6",
     "Marginal Rebalance": "#a78bfa",
+    "Prop Rebalance": "#2dd4bf",
 }
 
 
 def _bt_line(col: str) -> dict:
     """Return line style dict for a backtest series column."""
     name = col.lower()
+    if "prop" in name:
+        return dict(color=BT_COLORS.get(col, "#94a3b8"), width=2, dash="dashdot")
     if "marginal" in name:
         return dict(color=BT_COLORS.get(col, "#94a3b8"), width=2, dash="dash")
     if "nifty" in name or "benchmark" in name:
@@ -139,6 +144,7 @@ def portfolio_churn_figure(holdings_log: dict) -> go.Figure:
     _EXIT_COLORS = {"Classic": "rgba(167,139,250,0.6)", "Displacement": "rgba(52,211,153,0.6)"}
     _FULL_COLORS = {"Classic": "#3b82f6", "Displacement": "#f59e0b"}
     _MARG_COLORS = {"Classic": "#a78bfa", "Displacement": "#34d399"}
+    _PROP_COLORS = {"Classic": "#2dd4bf", "Displacement": "#f472b6"}
 
     rule_names = [r for r in ("Classic", "Displacement") if r in holdings_log]
     n_rows = len(rule_names)
@@ -159,6 +165,7 @@ def portfolio_churn_figure(holdings_log: dict) -> go.Figure:
         n_exits = [len(e["exits"]) for e in log]
         full_to = [e.get("full_turnover_pct", 0.0) for e in log]
         marg_to = [e.get("marg_turnover_pct", 0.0) for e in log]
+        prop_to = [e.get("prop_turnover_pct", 0.0) for e in log]
         show_leg = row_idx == 1
 
         fig.add_trace(
@@ -215,6 +222,20 @@ def portfolio_churn_figure(holdings_log: dict) -> go.Figure:
             col=1,
             secondary_y=True,
         )
+        fig.add_trace(
+            go.Scatter(
+                x=dates,
+                y=prop_to,
+                name="Prop Turnover %",
+                mode="lines+markers",
+                line=dict(color=_PROP_COLORS[rule], width=2, dash="dashdot"),
+                legendgroup="prop_to",
+                showlegend=show_leg,
+            ),
+            row=row_idx,
+            col=1,
+            secondary_y=True,
+        )
 
     fig.update_layout(
         height=280 * n_rows,
@@ -256,8 +277,12 @@ def portfolio_weights_figure(rule_entries: list[dict], rule_name: str, weight_ty
     if not rule_entries:
         return go.Figure()
 
-    weight_key = "full_weights" if weight_type == "full" else "marg_weights"
-    weight_label = "Full (equal)" if weight_type == "full" else "Marginal (momentum)"
+    if weight_type == "full":
+        weight_key, weight_label = "full_weights", "Full (equal)"
+    elif weight_type == "prop":
+        weight_key, weight_label = "prop_weights", "Prop (prop-fill)"
+    else:
+        weight_key, weight_label = "marg_weights", "Marginal (slot-fill)"
 
     dates = [e["date"] for e in rule_entries]
 

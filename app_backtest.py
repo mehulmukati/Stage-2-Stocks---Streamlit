@@ -177,8 +177,10 @@ def backtest_results(params: dict):
     _PORTFOLIO_ROWS = [
         "Classic · Full",
         "Classic · Marginal",
+        "Classic · Prop",
         "Displacement · Full",
         "Displacement · Marginal",
+        "Displacement · Prop",
     ]
     available_portfolio = [r for r in _PORTFOLIO_ROWS if r in stats_df.index]
     if available_portfolio:
@@ -224,6 +226,7 @@ def backtest_results(params: dict):
                 holdings = entry["holdings"]  # already sorted
                 fw = entry.get("full_weights", {})
                 mw = entry.get("marg_weights", {})
+                pw = entry.get("prop_weights", {})
                 dl_rows.append(
                     {
                         "Rebalance #": rebal_idx,
@@ -234,10 +237,12 @@ def backtest_results(params: dict):
                         "#Exits": len(entry["exits"]),
                         "Full Turnover %": entry.get("full_turnover_pct", ""),
                         "Marginal Turnover %": entry.get("marg_turnover_pct", ""),
+                        "Prop Turnover %": entry.get("prop_turnover_pct", ""),
                         "Entries (tickers)": "; ".join(entry["entries"]),
                         "Exits (tickers)": "; ".join(entry["exits"]),
                         "Holdings (Full Weights %)": _fmt_weights(fw, holdings),
                         "Holdings (Marg Weights %)": _fmt_weights(mw, holdings),
+                        "Holdings (Prop Weights %)": _fmt_weights(pw, holdings),
                         "Valid Universe Size": entry.get("valid_universe_size", ""),
                     }
                 )
@@ -488,7 +493,7 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
 _WEIGHTS_INLINE_THRESHOLD = 50
 
 
-_WT_LABELS = {"full": "Full (equal)", "marg": "Marginal (momentum)"}
+_WT_LABELS = {"full": "Full (equal)", "marg": "Marginal (slot-fill)", "prop": "Prop (prop-fill)"}
 
 
 def _show_weights_chart(entries: list[dict], rule_name: str, file_stem: str = "") -> None:
@@ -500,7 +505,7 @@ def _show_weights_chart(entries: list[dict], rule_name: str, file_stem: str = ""
             "Download the interactive charts to view them in your browser."
         )
 
-    for wt in ("full", "marg"):
+    for wt in ("full", "marg", "prop"):
         fig = portfolio_weights_figure(entries, rule_name, weight_type=wt)
         label = _WT_LABELS[wt]
         if not large:

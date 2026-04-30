@@ -109,22 +109,26 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         columns={
             "Full Rebalance": "Classic · Full",
             "Marginal Rebalance": "Classic · Marginal",
+            "Prop Rebalance": "Classic · Prop",
         }
     )
-    nav_disp = result_disp["nav"][["Full Rebalance", "Marginal Rebalance"]].rename(
+    nav_disp = result_disp["nav"][["Full Rebalance", "Marginal Rebalance", "Prop Rebalance"]].rename(
         columns={
             "Full Rebalance": "Displacement · Full",
             "Marginal Rebalance": "Displacement · Marginal",
+            "Prop Rebalance": "Displacement · Prop",
         }
     )
     nav_merged = nav_classic.join(nav_disp, how="outer")
 
     # ── merge stats DataFrames ──
-    bench_rows = [r for r in result_classic["stats"].index if r not in ("Full Rebalance", "Marginal Rebalance")]
+    _strategy_rows = ("Full Rebalance", "Marginal Rebalance", "Prop Rebalance")
+    bench_rows = [r for r in result_classic["stats"].index if r not in _strategy_rows]
     stats_classic = result_classic["stats"].rename(
         index={
             "Full Rebalance": "Classic · Full",
             "Marginal Rebalance": "Classic · Marginal",
+            "Prop Rebalance": "Classic · Prop",
         }
     )
     stats_disp = (
@@ -134,13 +138,14 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
             index={
                 "Full Rebalance": "Displacement · Full",
                 "Marginal Rebalance": "Displacement · Marginal",
+                "Prop Rebalance": "Displacement · Prop",
             }
         )
     )
     stats_merged = pd.concat(
         [
-            stats_classic.loc[["Classic · Full", "Classic · Marginal"]],
-            stats_disp.loc[["Displacement · Full", "Displacement · Marginal"]],
+            stats_classic.loc[["Classic · Full", "Classic · Marginal", "Classic · Prop"]],
+            stats_disp.loc[["Displacement · Full", "Displacement · Marginal", "Displacement · Prop"]],
             stats_classic.loc[bench_rows],
         ]
     )
@@ -156,9 +161,25 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
             "Classic": result_classic["avg_turnover_pct"],
             "Displacement": result_disp["avg_turnover_pct"],
         },
+        "avg_turnover_pct_marg": {
+            "Classic": result_classic["avg_turnover_pct_marg"],
+            "Displacement": result_disp["avg_turnover_pct_marg"],
+        },
+        "avg_turnover_pct_prop": {
+            "Classic": result_classic["avg_turnover_pct_prop"],
+            "Displacement": result_disp["avg_turnover_pct_prop"],
+        },
         "total_cost_drag_pct": {
             "Classic": result_classic["total_cost_drag_pct"],
             "Displacement": result_disp["total_cost_drag_pct"],
+        },
+        "total_cost_drag_pct_marg": {
+            "Classic": result_classic["total_cost_drag_pct_marg"],
+            "Displacement": result_disp["total_cost_drag_pct_marg"],
+        },
+        "total_cost_drag_pct_prop": {
+            "Classic": result_classic["total_cost_drag_pct_prop"],
+            "Displacement": result_disp["total_cost_drag_pct_prop"],
         },
         "rebalance_dates": result_classic["rebalance_dates"],
         "trading_days": result_classic["trading_days"],
