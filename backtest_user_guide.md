@@ -74,11 +74,11 @@ top-M stock needs the slot. When the portfolio is at M capacity and a stock rank
 ≤ M wants to enter, it displaces the **worst-ranked incumbent** in the M+1..N band.
 If there is no such incumbent (everyone is already ≤ M), no displacement happens.
 
-**Three-step rebalance logic:**
+**Two-step rebalance logic:**
 1. Exit all stocks with rank > N unconditionally (WRH).
-2. Fill newly freed slots with top-M stocks (best rank first).
-3. If still at M capacity: each remaining top-M entrant swaps out the worst-ranked
-   M+1..N incumbent, one-for-one.
+2. Fill newly freed slots with top-M stocks (best rank first), up to the hard cap of M.
+   Stocks in the M+1..N buffer zone are never actively displaced — they only lose their
+   seat when a WRH exit (or a Stage 2 drop exit, if that signal is enabled) frees a slot.
 
 #### The analogy
 > **Classic** = "Remove anyone who falls below the cut line, no matter what."
@@ -219,6 +219,43 @@ Monthly rebalancing is usually the best trade-off between responsiveness and cos
 unless the strategy has very fast momentum signals. Quarterly and half-yearly are
 suited to low-turnover strategies or tax-conscious portfolios where fewer rebalances
 reduce realised gains.
+
+## Weekly Stage 2 Signals
+
+Available only when **Rebalance frequency = Weekly**. Both signals apply to Classic and Displacement band rules.
+
+#### Entry filter — Enter on Stage 2 score jump
+Allows a stock outside the top-M to enter the portfolio if its Weinstein Stage 2 score
+(0–8) rises by **≥ threshold** points since the previous week's rebalance.
+
+- **Classic:** the stock enters alongside normal top-M entrants (portfolio may briefly
+  exceed M if many signals fire simultaneously).
+- **Displacement:** Stage 2 jump candidates join the slot-fill candidate pool alongside
+  top-M entrants, ordered by momentum rank. The hard cap of M is always preserved — a
+  Stage 2 jumper only enters if a slot was freed by a WRH exit or Stage 2 drop exit in
+  the same week.
+
+Entry reason in the rebalance log: `S2 +N` (e.g. `S2 +3` means score rose 3 points).
+
+#### Exit signal — Exit on Stage 2 score drop
+Forces a held stock to exit if its Stage 2 score falls by **≥ threshold** points since
+the previous rebalance, regardless of its momentum rank. Useful for cutting structurally
+deteriorating positions before the momentum rank catches up.
+
+In **Displacement** mode, slots freed by Stage 2 drop exits are filled in the same
+rebalance — capital is not left idle until the following week.
+
+Exit reason in the rebalance log: `S2 -N` (e.g. `S2 -2` means score fell 2 points).
+
+#### Score jump / drop threshold
+Both signals share the same configurable threshold (1–4 points). The default of **2**
+means a single-point drift won't trigger; only a meaningful multi-point shift will.
+
+> **Tip:** Stage 2 signals add a structural/trend filter on top of the momentum rank.
+> They are most useful when momentum alone is generating too many false entries (stocks
+> with high Sharpe but deteriorating MA structure). Combining a Stage 2 drop exit with
+> Displacement mode is particularly effective: a structural breakdown exits the position
+> early, and the freed slot is immediately refilled from the top-M candidate pool.
 
 ## Reading the Results
 

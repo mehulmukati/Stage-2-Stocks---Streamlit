@@ -64,6 +64,24 @@ A stock must have at least this many days of history before it can be ranked. De
 ### Transaction cost per trade (%)
 One-way cost applied to each stock that enters or exits the portfolio at rebalance. Default is 0.1% (10 basis points). This covers brokerage and slippage. The cost drag accumulates over the full simulation and is reported in the summary.
 
+### Weekly Stage 2 signals
+
+Available only when rebalance frequency is set to **Weekly**. Both signals work with Classic and Displacement band rules.
+
+**Entry filter — Enter on Stage 2 score jump**
+
+Allows a stock to enter the portfolio if its Weinstein Stage 2 score (0–8) rises by a configurable threshold (default: 2 points) since the previous week — even if the stock is not in the top-M momentum rank. The score jump threshold is set separately (1–4 points).
+
+In **Classic** mode, the stock enters alongside normal top-M entrants and may temporarily push holdings above M.
+
+In **Displacement** mode, Stage 2 jump stocks join the candidate pool for freed slots alongside top-M entrants, ordered by momentum rank. The hard cap of M is always preserved — a Stage 2 jumper only enters if a slot was freed by a WRH exit or a Stage 2 drop exit in the same week.
+
+**Exit signal — Exit on Stage 2 score drop**
+
+Forces a held stock to exit if its Stage 2 score falls by the configured threshold (default: 2 points) in one week, regardless of its momentum rank. Useful for cutting positions that are deteriorating structurally before the rank signal catches up.
+
+In **Displacement** mode, Stage 2 drop exits free slots immediately — the same rebalance refills them from the candidate pool (top-M plus any Stage 2 jump stocks), so capital is not left idle.
+
 ---
 
 ## Survivorship bias mitigation

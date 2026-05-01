@@ -322,13 +322,15 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         key="bt_freq",
     )
     if bt_freq == "weekly":
-        with st.expander("Weekly Stage 2 signals (classic only)", expanded=False):
+        with st.expander("Weekly Stage 2 signals", expanded=False):
             st.markdown("**Entry filter**")
             bt_stage2_entry_filter = st.toggle(
                 "Enter on Stage 2 score jump",
                 key="bt_stage2_entry_filter",
-                help="Classic mode only: also allow a stock to enter if its Weinstein Stage 2 score (0–8) "
-                "rises by the threshold or more since last week — even if it isn't in the top-M momentum rank.",
+                help="Also allow a stock to enter if its Weinstein Stage 2 score (0–8) rises by the threshold "
+                "or more since last week — even if it isn't in the top-M momentum rank. "
+                "In displacement mode, Stage 2 jumpers compete with top-M entrants for freed slots "
+                "(hard cap of M is preserved).",
             )
             bt_stage2_entry_threshold = st.number_input(
                 "Score jump threshold",

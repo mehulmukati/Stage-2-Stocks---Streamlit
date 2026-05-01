@@ -388,8 +388,10 @@ def run_backtest(
                            'displacement' — N is WRH (Worst Rank Held): rank > N exits
                                             unconditionally; rank M+1..N incumbents are a
                                             buffer zone and stay until their rank exceeds N;
-                                            new top-M entrants only fill slots freed by WRH
-                                            exits — they do not displace buffer incumbents
+                                            new entrants (top-M or Stage 2 jumpers) only fill
+                                            slots freed by WRH or Stage 2 drop exits — they
+                                            do not displace buffer incumbents; hard cap of M
+                                            is always preserved
     brokerage_per_sale   : flat brokerage in INR charged per stock sold (exits only); 0 = disabled
     initial_capital      : portfolio size in INR used to convert flat Rs brokerage → NAV drag
     ltcg_rate            : long-term capital gains tax rate (fraction) applied to gains on
@@ -486,8 +488,8 @@ def run_backtest(
                 # N = WRH (Worst Rank Held): no stock ranked > N may be held — hard cap.
                 # Stocks ranked M+1..N are a buffer zone: they stay until their rank
                 # exceeds N, at which point they exit and a top-M entrant fills the slot.
-                # A new top-M stock may ONLY enter through a slot freed by a WRH exit;
-                # it does not actively displace buffer-zone incumbents ranked M+1..N.
+                # A new top-M stock may ONLY enter through a slot freed by a WRH exit
+                # or a Stage 2 drop exit — it does not displace buffer-zone incumbents.
                 #
                 # rank_of gives O(1) lookup; stocks absent from `ranked` this period
                 # (delisted / data gap) get rank=len(ranked) — worst possible, so they
@@ -502,14 +504,58 @@ def run_backtest(
                     exit_reasons[sym] = f"rank #{r}" if sym in rank_of else "left universe"
                 holdings_after_wrh = current_holdings - wrh_exits
 
-                # Step 2 — fill free slots opened by WRH exits with best top-M entrants
-                entries_wanted = sorted(top_m - holdings_after_wrh, key=lambda s: rank_of.get(s, _worst))
-                free_slots = max(0, m - len(holdings_after_wrh))
+                # Step 2 — Stage 2 drop exits: free additional slots this rebalance
+                s2_exits: set[str] = set()
+                if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
+                    for sym in list(holdings_after_wrh):
+                        s2_series = stage2_precomputed.get(sym)
+                        if s2_series is None:
+                            continue
+                        curr_score = s2_series.asof(rank_as_of)
+                        prev_score = prev_stage2_scores.get(sym)
+                        if (
+                            prev_score is not None
+                            and not pd.isna(curr_score)
+                            and (prev_score - curr_score) >= stage2_drop_threshold
+                        ):
+                            s2_exits.add(sym)
+                            exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
+
+                exits = wrh_exits | s2_exits
+                holdings_after_exits = current_holdings - exits
+
+                # Step 3 — build candidate pool: top-M entrants + Stage 2 jumpers
+                # Both compete for freed slots, ordered by momentum rank (hard cap stays M).
+                candidates: set[str] = top_m - holdings_after_exits
+                s2_jump_deltas: dict[str, int] = {}
+                if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
+                    for sym in ranked:
+                        if sym in holdings_after_exits or sym in candidates:
+                            continue
+                        s2 = stage2_precomputed.get(sym)
+                        if s2 is None:
+                            continue
+                        curr_s2 = s2.asof(rank_as_of)
+                        if pd.isna(curr_s2):
+                            continue
+                        prev_s2 = prev_stage2_scores.get(sym)
+                        if prev_s2 is None:
+                            continue
+                        delta = curr_s2 - prev_s2
+                        if delta >= stage2_entry_threshold:
+                            candidates.add(sym)
+                            s2_jump_deltas[sym] = int(delta)
+
+                # Step 4 — fill freed slots from combined candidates, ordered by rank
+                entries_wanted = sorted(candidates, key=lambda s: rank_of.get(s, _worst))
+                free_slots = max(0, m - len(holdings_after_exits))
                 entries = set(entries_wanted[:free_slots])
                 for sym in entries:
-                    entry_reasons[sym] = f"rank #{rank_of.get(sym, _worst) + 1}"
+                    if sym in s2_jump_deltas:
+                        entry_reasons[sym] = f"S2 +{s2_jump_deltas[sym]}"
+                    else:
+                        entry_reasons[sym] = f"rank #{rank_of.get(sym, _worst) + 1}"
 
-                exits = wrh_exits
             else:
                 # classic: exit if rank > N, enter if rank ≤ M (may briefly exceed M)
                 rank_pos = {s: i + 1 for i, s in enumerate(ranked)}  # 1-indexed

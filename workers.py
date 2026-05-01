@@ -100,7 +100,14 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         raise RuntimeError("Cancelled")
 
     emit("info", f"Running Displacement band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
-    result_disp = run_backtest(**common_kwargs, band_rule="displacement")
+    result_disp = run_backtest(
+        **common_kwargs,
+        band_rule="displacement",
+        stage2_drop_exit=params.get("stage2_drop_exit", False),
+        stage2_drop_threshold=params.get("stage2_drop_threshold", 2),
+        stage2_entry_filter=params.get("stage2_entry_filter", False),
+        stage2_entry_threshold=params.get("stage2_entry_threshold", 2),
+    )
     if "error" in result_disp:
         raise RuntimeError(result_disp["error"])
 
