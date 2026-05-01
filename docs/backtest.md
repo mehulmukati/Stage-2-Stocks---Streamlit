@@ -61,6 +61,14 @@ Select which indices to draw from. Only stocks that were constituents of the sel
 ### Min history (trading days)
 A stock must have at least this many days of history before it can be ranked. Default is 252 (1 year). Raising this to 500–750 days excludes recently-listed stocks with thin history — more conservative but reduces the available universe, especially in early years.
 
+### Max position size (%)
+
+Maximum weight any single stock may hold after rebalance. Excess above the cap is redistributed proportionally to all smaller positions (iteratively, until stable). Default is 0 (no cap).
+
+This setting is mainly relevant for **Marginal** and **Prop** rebalance variants, where a sudden mass exit can channel the combined freed weight into a single new entrant, pushing it past 50% of the portfolio in one step. Setting a cap of 15% prevents this while leaving normal price-drift accumulation intact.
+
+For **Full Rebalance**, equal weighting is enforced at every rebalance anyway, so the cap has no practical effect.
+
 ### Transaction cost per trade (%)
 One-way cost applied to each stock that enters or exits the portfolio at rebalance. Default is 0.1% (10 basis points). This covers brokerage and slippage. The cost drag accumulates over the full simulation and is reported in the summary.
 

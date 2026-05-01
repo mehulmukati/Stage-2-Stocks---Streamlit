@@ -412,6 +412,19 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         key="bt_cost_pct",
         help="One-way cost applied to each stock traded at rebalance (slippage + brokerage).",
     )
+    bt_max_position_pct = st.slider(
+        "Max position size (%)",
+        min_value=0,
+        max_value=50,
+        step=1,
+        key="bt_max_position_pct",
+        help=(
+            "Maximum weight any single stock may hold after rebalance (%). "
+            "Excess above this cap is redistributed proportionally to all smaller positions. "
+            "0 = no cap (default). Recommended: 15% for Marginal/Prop variants to prevent "
+            "concentration from large exits funnelling weight into a single entrant."
+        ),
+    )
     bt_use_compositions = st.toggle(
         "Use historical constituents (anti-survivorship)",
         key="bt_use_compositions",
@@ -486,6 +499,7 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "stage2_drop_threshold": int(bt_stage2_drop_threshold),
         "stage2_entry_filter": bt_stage2_entry_filter,
         "stage2_entry_threshold": int(bt_stage2_entry_threshold),
+        "max_position_pct": bt_max_position_pct if bt_max_position_pct > 0 else None,
     }
 
 

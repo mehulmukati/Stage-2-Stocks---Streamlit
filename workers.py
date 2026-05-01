@@ -82,6 +82,7 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         initial_capital=params.get("initial_capital", 1_000_000),
         ltcg_rate=params.get("ltcg_rate", 0.0),
         stcg_rate=params.get("stcg_rate", 0.0),
+        max_position_pct=params.get("max_position_pct") or None,
     )
 
     emit("info", f"Running Classic band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")

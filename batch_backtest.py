@@ -70,6 +70,12 @@ _parser.add_argument(
     default=2,
     help="Stage 2 score drop threshold to trigger exit (default 2)",
 )
+_parser.add_argument(
+    "--max-position-pct",
+    type=float,
+    default=0.0,
+    help="Max position size cap (%%). 0 = no cap (default).",
+)
 _args = _parser.parse_args()
 
 SORT_METHOD = _args.sort_method
@@ -84,6 +90,7 @@ BANDS = [x.strip() for x in _args.bands.split(",")]
 VARIANTS = [v.strip() for v in _args.variants.split(",")]
 STAGE2_DROP_EXIT = _args.stage2_drop_exit
 STAGE2_DROP_THRESHOLD = _args.stage2_drop_threshold
+MAX_POSITION_PCT = _args.max_position_pct if _args.max_position_pct > 0 else None
 ALL_5_INDICES = [
     "Nifty 50",
     "Nifty Next 50",
@@ -169,6 +176,7 @@ def run_one(symbol_data, compositions_df, benchmarks, m, n, freq, band):
         stage2_drop_exit=STAGE2_DROP_EXIT,
         stage2_drop_threshold=STAGE2_DROP_THRESHOLD,
         stage2_entry_filter=False,
+        max_position_pct=MAX_POSITION_PCT,
     )
     if "error" in result:
         raise RuntimeError(result["error"])
@@ -190,6 +198,7 @@ def extract_rows(result, m, n, freq, band):
             "Band": band,
             "Variant": variant,
             "Stage2DropThreshold": STAGE2_DROP_THRESHOLD if STAGE2_DROP_EXIT else 0,
+            "MaxPositionPct": MAX_POSITION_PCT if MAX_POSITION_PCT else 0,
         }
         for col in STAT_COLS:
             row[col] = s.get(col, float("nan"))

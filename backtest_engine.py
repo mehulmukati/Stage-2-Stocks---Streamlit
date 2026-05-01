@@ -337,6 +337,37 @@ def _daily_returns(all_ohlcv: dict[str, pd.DataFrame], symbols: list[str], dates
 # ──────────────────────────────────────────────────────────────
 
 
+def _apply_weight_cap(weights: dict[str, float], cap: float) -> dict[str, float]:
+    """Trim positions exceeding cap using water-filling: cap top-k positions and scale the rest.
+
+    If cap < 1/n (infeasible), falls back to equal weights.
+    """
+    if not weights or cap <= 0.0 or cap >= 1.0:
+        return weights
+    n = len(weights)
+    total = sum(weights.values())
+    if total <= 0:
+        return weights
+    # Sort descending by normalised weight
+    ordered = sorted(((s, v / total) for s, v in weights.items()), key=lambda x: -x[1])
+    for k in range(n + 1):
+        if k == n or (1.0 - k * cap) <= 0:
+            # Infeasible: cap too tight — return equal weights
+            return {s: 1.0 / n for s, _ in ordered}
+        remaining = 1.0 - k * cap
+        free = ordered[k:]
+        free_total = sum(v for _, v in free)
+        if free_total <= 0:
+            return {s: 1.0 / n for s, _ in ordered}
+        scale = remaining / free_total
+        if ordered[k][1] * scale <= cap + 1e-9:
+            result = {s: cap for s, _ in ordered[:k]}
+            for s, v in free:
+                result[s] = v * scale
+            return result
+    return {s: 1.0 / n for s, _ in ordered}
+
+
 def run_backtest(
     all_ohlcv: dict[str, pd.DataFrame],
     benchmarks: dict[str, pd.Series],
@@ -360,6 +391,7 @@ def run_backtest(
     stage2_drop_threshold: int = 2,
     stage2_entry_filter: bool = False,
     stage2_entry_threshold: int = 2,
+    max_position_pct: float | None = None,
 ) -> dict:
     """
     Run both portfolio variants and return NAV series + summary stats.
@@ -677,6 +709,13 @@ def run_backtest(
             total_w = sum(new_prop.values())
             if total_w > 0:
                 new_prop = {s: w / total_w for s, w in new_prop.items()}
+
+            # ── position cap: trim any overweight position, redistribute to smaller positions ──
+            if max_position_pct:
+                _cap = max_position_pct / 100.0
+                new_full = _apply_weight_cap(new_full, _cap)
+                new_slot = _apply_weight_cap(new_slot, _cap)
+                new_prop = _apply_weight_cap(new_prop, _cap)
 
             # ── weight-based turnover: abs-diff formula captures all implicit weight changes ──
             # For each variant: traded = Σ|old_w(s) - new_w(s)| over all affected stocks.

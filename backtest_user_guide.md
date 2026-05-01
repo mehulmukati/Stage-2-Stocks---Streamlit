@@ -181,6 +181,22 @@ of these fail:
 
 ## Realism Settings
 
+#### Max position size (%)
+Maximum weight any single stock may hold **after** each rebalance. When a stock's
+assigned weight would exceed this cap, the excess is redistributed proportionally
+to all smaller positions (iteratively, if redistribution would push another stock
+over the cap). Default 0 = no cap.
+
+This guard is most important for **Marginal** and **Prop** variants:
+- In those variants, incumbents drift with prices between rebalances.
+- A mass-exit event (many stocks exiting simultaneously) can funnel their combined
+  freed weight into just one or two new entrants.
+- With M=20, a single stock can reach 50%+ of the portfolio in a single rebalance
+  if several large positions exit at once.
+
+**Recommended setting: 15%** for Marginal or Prop variants. For Full Rebalance,
+equal-weight reset prevents concentration anyway, so the cap has no practical effect.
+
 #### Transaction cost per trade (%)
 One-way cost (brokerage + slippage) applied to each stock **traded** at rebalance.
 The traded fraction of the portfolio (entries + exits ÷ portfolio size) is multiplied
