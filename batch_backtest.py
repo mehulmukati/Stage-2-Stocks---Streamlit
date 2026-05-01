@@ -53,6 +53,11 @@ _parser.add_argument(
     default="classic,displacement",
     help="Comma-separated band rules to include (e.g. classic)",
 )
+_parser.add_argument(
+    "--variants",
+    default="Full Rebalance,Marginal Rebalance",
+    help="Comma-separated variant names to extract (e.g. 'Prop Rebalance')",
+)
 _args = _parser.parse_args()
 
 SORT_METHOD = _args.sort_method
@@ -64,6 +69,7 @@ M_VALUES = [int(x) for x in _args.m_values.split(",")]
 N_VALUES = [30, 40, 50, 60, 75, 100]
 FREQS = ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"]
 BANDS = [x.strip() for x in _args.bands.split(",")]
+VARIANTS = [v.strip() for v in _args.variants.split(",")]
 ALL_5_INDICES = [
     "Nifty 50",
     "Nifty Next 50",
@@ -155,7 +161,7 @@ def run_one(symbol_data, compositions_df, benchmarks, m, n, freq, band):
 def extract_rows(result, m, n, freq, band):
     rows = []
     stats_df = result["stats"]
-    for variant in ["Full Rebalance", "Marginal Rebalance"]:
+    for variant in VARIANTS:
         if variant not in stats_df.index:
             continue
         s = stats_df.loc[variant]
