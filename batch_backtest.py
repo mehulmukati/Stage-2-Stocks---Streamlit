@@ -58,6 +58,18 @@ _parser.add_argument(
     default="Full Rebalance,Marginal Rebalance",
     help="Comma-separated variant names to extract (e.g. 'Prop Rebalance')",
 )
+_parser.add_argument(
+    "--stage2-drop-exit",
+    action="store_true",
+    default=False,
+    help="Enable Stage 2 drop-exit signal (weekly only)",
+)
+_parser.add_argument(
+    "--stage2-drop-threshold",
+    type=int,
+    default=2,
+    help="Stage 2 score drop threshold to trigger exit (default 2)",
+)
 _args = _parser.parse_args()
 
 SORT_METHOD = _args.sort_method
@@ -70,6 +82,8 @@ N_VALUES = [30, 40, 50, 60, 75, 100]
 FREQS = ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"]
 BANDS = [x.strip() for x in _args.bands.split(",")]
 VARIANTS = [v.strip() for v in _args.variants.split(",")]
+STAGE2_DROP_EXIT = _args.stage2_drop_exit
+STAGE2_DROP_THRESHOLD = _args.stage2_drop_threshold
 ALL_5_INDICES = [
     "Nifty 50",
     "Nifty Next 50",
@@ -152,6 +166,9 @@ def run_one(symbol_data, compositions_df, benchmarks, m, n, freq, band):
         ltcg_rate=LTCG,
         stcg_rate=STCG,
         band_rule=band,
+        stage2_drop_exit=STAGE2_DROP_EXIT,
+        stage2_drop_threshold=STAGE2_DROP_THRESHOLD,
+        stage2_entry_filter=False,
     )
     if "error" in result:
         raise RuntimeError(result["error"])
@@ -172,6 +189,7 @@ def extract_rows(result, m, n, freq, band):
             "Freq": freq,
             "Band": band,
             "Variant": variant,
+            "Stage2DropThreshold": STAGE2_DROP_THRESHOLD if STAGE2_DROP_EXIT else 0,
         }
         for col in STAT_COLS:
             row[col] = s.get(col, float("nan"))
@@ -185,8 +203,10 @@ def build_grid():
 
 def main():
     t0 = time.time()
+    s2_str = f"drop_exit=True threshold={STAGE2_DROP_THRESHOLD}" if STAGE2_DROP_EXIT else "stage2=OFF"
     print(f"\n{'='*80}", flush=True)
     print(f"  BATCH BACKTEST  |  sort_method={SORT_METHOD!r}", flush=True)
+    print(f"  {s2_str}", flush=True)
     print(f"  output -> {FINAL_FILE}", flush=True)
     print(f"{'='*80}\n", flush=True)
 
