@@ -2,4 +2,6 @@
 max-line-length = 120
 extend-ignore =
     # imports after warnings.filterwarnings() / bootstrap code — intentional in all app files
-    E402
+    E402,
+    # black formats slice spacing as `s[a : b]` which conflicts with E203
+    E203

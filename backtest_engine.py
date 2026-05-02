@@ -711,6 +711,9 @@ def run_backtest(
                 new_prop = {s: w / total_w for s, w in new_prop.items()}
 
             # ── position cap: trim any overweight position, redistribute to smaller positions ──
+            pre_cap_full = {s: round(w * 100, 4) for s, w in new_full.items()}
+            pre_cap_slot = {s: round(w * 100, 4) for s, w in new_slot.items()}
+            pre_cap_prop = {s: round(w * 100, 4) for s, w in new_prop.items()}
             if max_position_pct:
                 _cap = max_position_pct / 100.0
                 new_full = _apply_weight_cap(new_full, _cap)
@@ -912,6 +915,10 @@ def run_backtest(
                     "full_weights": {s: round(w * 100, 4) for s, w in full_weights.items()},
                     "marg_weights": {s: round(w * 100, 4) for s, w in marg_weights.items()},
                     "prop_weights": {s: round(w * 100, 4) for s, w in prop_weights.items()},
+                    # pre-cap weights (same as above when max_position_pct is None)
+                    "pre_cap_full_weights": pre_cap_full,
+                    "pre_cap_marg_weights": pre_cap_slot,
+                    "pre_cap_prop_weights": pre_cap_prop,
                 }
             )
 
