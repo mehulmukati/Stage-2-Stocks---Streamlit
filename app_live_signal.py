@@ -371,6 +371,68 @@ def live_signal_results(params: dict) -> None:
         v = portfolio_value * weight_pct / 100
         return int(v / price) if price and price > 0 else None
 
+    def _allocate_qtys(
+        buy_targets: dict[str, float],
+        sell_targets: dict[str, float],
+        prices: dict[str, float],
+    ) -> dict[str, int]:
+        """Joint integer allocation: minimise weight deviation s.t. sell ₹ ≈ buy ₹.
+
+        Uses a two-phase greedy:
+          Phase 1 — unconstrained optimal: round each stock to nearest integer share.
+          Phase 2 — cash-balance correction: iteratively apply the cheapest single-share
+                    adjustment (scored by weight-deviation cost per unit remainder) until
+                    |sell_cash - buy_cash| ≤ half the cheapest stock price.
+        """
+        all_targets = {**buy_targets, **sell_targets}
+        if not all_targets:
+            return {}
+        priced = {t: all_targets[t] for t in all_targets if prices.get(t, 0) > 0}
+        if not priced:
+            return {}
+
+        exact = {t: priced[t] / prices[t] for t in priced}
+        f = {t: int(exact[t]) for t in exact}  # floor quantities
+        r = {t: exact[t] - f[t] for t in exact}  # remainders ∈ [0, 1)
+        d = {t: 1 if r[t] >= 0.5 else 0 for t in exact}  # phase-1: round to nearest
+
+        def _gap() -> float:
+            s = sum((f[t] + d[t]) * prices[t] for t in sell_targets if t in f)
+            b = sum((f[t] + d[t]) * prices[t] for t in buy_targets if t in f)
+            return s - b  # positive → sell side heavy, negative → buy side heavy
+
+        tol = min(prices[t] for t in priced) / 2
+
+        for _ in range(200):
+            g = _gap()
+            if abs(g) <= tol:
+                break
+            candidates: list[tuple] = []
+            for t in sell_targets:
+                if t not in f:
+                    continue
+                if g < 0 and d[t] == 0:  # bump sell up → gap increases toward 0
+                    candidates.append((1 - 2 * r[t], +prices[t], t, +1))
+                if g > 0 and d[t] >= 1:  # un-bump sell → gap decreases toward 0
+                    candidates.append((2 * r[t] - 1, -prices[t], t, -1))
+            for t in buy_targets:
+                if t not in f:
+                    continue
+                if g > 0 and d[t] == 0:  # bump buy up → gap decreases toward 0
+                    candidates.append((1 - 2 * r[t], -prices[t], t, +1))
+                if g < 0 and d[t] >= 1:  # un-bump buy → gap increases toward 0
+                    candidates.append((2 * r[t] - 1, +prices[t], t, -1))
+            if not candidates:
+                break
+            candidates.sort()
+            score, delta_gap, best, delta_d = candidates[0]
+            if abs(g + delta_gap) < abs(g):
+                d[best] += delta_d
+            else:
+                break
+
+        return {t: f[t] + d[t] for t in exact}
+
     # ── pre-cap weights for trimming callout ─────────────────────────────────
     pre_cap_key = "pre_cap_marg_weights" if "Marginal" in params["variant"] else "pre_cap_full_weights"
     pre_cap_weights: dict[str, float] = current.get(pre_cap_key, {})
@@ -406,6 +468,32 @@ def live_signal_results(params: dict) -> None:
             )
             st.warning("\n".join(lines))
 
+    # ── joint quantity allocation (pre-compute before rendering any table) ────
+    # Exits are independent of entries; allocate separately.
+    _exit_sell_targets = {t: prev_weights.get(t, weights.get(t, 0.0)) * portfolio_value / 100 for t in exits}
+    exit_qtys: dict[str, int] = _allocate_qtys({}, _exit_sell_targets, close_prices)
+
+    # Entries and hold-trims are two sides of the same cash flow; allocate jointly.
+    _is_marginal_alloc = params["variant"] != "Full Rebalance"
+    _target_eq_alloc = round(100.0 / len(holdings), 4) if holdings else 0.0
+    _buy_targets: dict[str, float] = {t: weights.get(t, 0.0) * portfolio_value / 100 for t in entries}
+    _sell_targets: dict[str, float] = {}
+    if _is_marginal_alloc:
+        for t in incumbents:
+            _cur_w = weights.get(t, 0.0)
+            _prev_w = prev_weights.get(t, 0.0) if previous else _cur_w
+            _delta_w = _cur_w - _prev_w
+            if _delta_w < -0.001:
+                _sell_targets[t] = abs(_delta_w) * portfolio_value / 100
+    else:
+        for t in incumbents:
+            _delta_w = _target_eq_alloc - weights.get(t, 0.0)
+            if _delta_w > 0.001:
+                _buy_targets[t] = _delta_w * portfolio_value / 100
+            elif _delta_w < -0.001:
+                _sell_targets[t] = abs(_delta_w) * portfolio_value / 100
+    joint_qtys: dict[str, int] = _allocate_qtys(_buy_targets, _sell_targets, close_prices)
+
     # ── EXITS ────────────────────────────────────────────────────────────────
     st.markdown("---")
     if exits:
@@ -418,7 +506,7 @@ def live_signal_results(params: dict) -> None:
                     "Ticker": t,
                     "Weight held (%)": w,
                     "Value (₹)": _val(w),
-                    "Qty to sell": _qty(t, w),
+                    "Qty to sell": exit_qtys.get(t),
                     "Exit reason": r or "WRH",
                 }
             )
@@ -499,7 +587,7 @@ def live_signal_results(params: dict) -> None:
                     "Ticker": t,
                     "Target weight (%)": w,
                     "Value (₹)": _val(w),
-                    "Qty to buy": _qty(t, w),
+                    "Qty to buy": joint_qtys.get(t),
                     "Entry reason": r or "Top-M",
                 }
             )
@@ -552,13 +640,14 @@ def live_signal_results(params: dict) -> None:
                 delta_w = cur_w - prev_w  # negative = need to sell
                 row["Change (%)"] = round(delta_w, 4)
                 row["Trade value (₹)"] = _val(abs(delta_w))
-                row["Qty"] = _qty(t, abs(delta_w))
-                row["Action"] = "SELL" if delta_w < -0.001 else "HOLD"
+                qty = joint_qtys.get(t, 0)
+                row["Qty"] = qty
+                row["Action"] = "SELL" if (delta_w < -0.001 and qty > 0) else "HOLD"
             else:
                 row["Target weight (%)"] = target_eq
                 row["Target value (₹)"] = _val(target_eq)
                 delta_w = target_eq - cur_w
-                row["Qty delta"] = _qty(t, abs(delta_w))
+                row["Qty delta"] = joint_qtys.get(t, 0)
                 row["Action"] = "BUY" if delta_w > 0 else "SELL"
             inc_rows.append(row)
 
@@ -621,7 +710,7 @@ def live_signal_results(params: dict) -> None:
                 "Action": "SELL",
                 "Target Weight (%)": 0.0,
                 "Value (₹)": _val(w),
-                "Qty": _qty(t, w) or "",
+                "Qty": exit_qtys.get(t, "") or "",
                 "Reason": r or "WRH",
                 **_base,
             }
@@ -634,7 +723,7 @@ def live_signal_results(params: dict) -> None:
                 "Action": "BUY",
                 "Target Weight (%)": w,
                 "Value (₹)": _val(w),
-                "Qty": _qty(t, w) or "",
+                "Qty": joint_qtys.get(t, "") or "",
                 "Reason": r or "Top-M",
                 **_base,
             }
