@@ -460,6 +460,64 @@ def _load_and_score(
 
 
 # ──────────────────────────────────────────────
+# UNIVERSE COVERAGE ANALYSIS
+# ──────────────────────────────────────────────
+_MIN_SCORING_ROWS = 250  # matches score_stage2 / score_momentum threshold
+_OHLCV_WINDOW_DAYS = 550  # matches _load_and_score cutoff
+
+
+@st.cache_data(ttl=3600)
+def get_universe_coverage() -> dict:
+    """Return per-index and per-symbol coverage stats against the scoring threshold."""
+    constituents = _load_constituents()
+    if not constituents:
+        return {}
+
+    baseline = _load_screener_baseline()
+    cutoff = pd.Timestamp.now() - pd.Timedelta(days=_OHLCV_WINDOW_DAYS)
+    if not baseline.empty:
+        windowed = baseline[pd.to_datetime(baseline["date"]) >= cutoff]
+        row_counts: dict[str, int] = windowed.groupby("symbol").size().to_dict()
+    else:
+        row_counts = {}
+
+    all_symbols = list(dict.fromkeys(s for syms in constituents.values() for s in syms))
+    total = len(all_symbols)
+    missing_all: list[dict] = []
+
+    by_index: dict[str, dict] = {}
+    for index_name, syms in constituents.items():
+        missing: list[dict] = []
+        for sym in syms:
+            rows = row_counts.get(sym, 0)
+            if rows < _MIN_SCORING_ROWS:
+                missing.append(
+                    {
+                        "Symbol": sym,
+                        "Index": index_name,
+                        "Trading Days": rows,
+                        "Days Until Eligible": max(0, _MIN_SCORING_ROWS - rows),
+                        "Weeks Until Eligible": max(0, -(-(_MIN_SCORING_ROWS - rows) // 5)),  # ceiling div
+                    }
+                )
+        by_index[index_name] = {
+            "total": len(syms),
+            "scored": len(syms) - len(missing),
+            "missing": sorted(missing, key=lambda x: x["Trading Days"]),
+        }
+        missing_all.extend(missing)
+
+    scored = total - len(missing_all)
+    missing_all.sort(key=lambda x: x["Trading Days"])
+
+    return {
+        "summary": {"total": total, "scored": scored, "missing_count": len(missing_all)},
+        "by_index": by_index,
+        "all_missing": missing_all,
+    }
+
+
+# ──────────────────────────────────────────────
 # SINGLE-SYMBOL CHART DATA
 # ──────────────────────────────────────────────
 @st.cache_data(ttl=3600)

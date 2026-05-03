@@ -11,6 +11,7 @@ import threading
 import warnings
 from datetime import datetime
 
+import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
@@ -18,9 +19,10 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 from app_backtest import _render_user_guide as _render_backtest_user_guide
 from app_backtest import _sidebar_backtest, backtest_results
+from app_live_signal import _sidebar_live_signal, live_signal_results
 from charts import phase_chart_figure
 from config import IST, SCREENER_OHLCV_PARQUET
-from data import _load_constituents, _score_cache, fetch_chart_data
+from data import _load_constituents, _score_cache, fetch_chart_data, get_universe_coverage
 from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
@@ -118,6 +120,87 @@ def _render_source_banner(source: str, cache_date: str, count: int = None) -> No
 
 
 # ──────────────────────────────────────────────
+# RESULTS — COVERAGE
+# ──────────────────────────────────────────────
+
+
+def coverage_results():
+    st.markdown('<p class="hero">📋 Universe Coverage</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">Why some index constituents are absent from the screener</p>',
+        unsafe_allow_html=True,
+    )
+
+    cov = get_universe_coverage()
+    if not cov:
+        st.error("Could not load coverage data — constituents.json or parquet may be missing.")
+        return
+
+    s = cov["summary"]
+
+    st.markdown(
+        """
+Both screeners (**Stage 2** and **Momentum**) require a stock to have at least **250 trading days**
+of price history within the last 550 calendar days before it can be scored. Stocks that fall below
+this threshold — typically recent IPOs or newly-added index constituents — are silently excluded
+from the universe count. They will appear automatically once they accumulate enough data.
+"""
+    )
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Total Constituents", s["total"])
+    c2.metric("Currently Scored", s["scored"])
+    c3.metric("Not Yet Eligible", s["missing_count"])
+
+    st.divider()
+
+    # Per-index breakdown table
+    st.subheader("By Index")
+    index_rows = []
+    for idx_name, d in cov["by_index"].items():
+        pct = round(d["scored"] / d["total"] * 100, 1) if d["total"] else 0
+        index_rows.append(
+            {
+                "Index": idx_name,
+                "Constituents": d["total"],
+                "Scored": d["scored"],
+                "Missing": len(d["missing"]),
+                "Coverage %": pct,
+            }
+        )
+    st.dataframe(pd.DataFrame(index_rows), hide_index=True, use_container_width=True)
+
+    st.divider()
+
+    # Full missing-symbol table
+    st.subheader(f"Excluded Symbols ({s['missing_count']} total)")
+    st.caption(
+        "Sorted by trading days available (ascending — closest to qualifying first). "
+        "Refreshes automatically when the parquet is updated."
+    )
+
+    if cov["all_missing"]:
+        missing_df = pd.DataFrame(cov["all_missing"])
+        st.dataframe(
+            missing_df,
+            hide_index=True,
+            use_container_width=True,
+            column_config={
+                "Symbol": st.column_config.TextColumn("Symbol", width="small"),
+                "Index": st.column_config.TextColumn("Index", width="medium"),
+                "Trading Days": st.column_config.NumberColumn("Trading Days", format="%d", width="small"),
+                "Days Until Eligible": st.column_config.NumberColumn("Days Until Eligible", format="%d", width="small"),
+                "Weeks Until Eligible": st.column_config.NumberColumn(
+                    "Weeks Until Eligible", format="%d wks", width="small"
+                ),
+            },
+            height=min(50 + len(cov["all_missing"]) * 35, 800),
+        )
+    else:
+        st.success("All constituents have sufficient data to be scored.")
+
+
+# ──────────────────────────────────────────────
 # RESULTS — STAGE 2
 # ──────────────────────────────────────────────
 
@@ -170,7 +253,11 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Cache Date", cache_date)
-    c2.metric("Total Universe", len(df))
+    c2.metric(
+        "Total Universe",
+        len(df),
+        help="Stocks with ≥250 days of price history. See the 📋 Coverage tab for the full list of excluded symbols.",
+    )
     c3.metric("Matches", len(display_df))
     c4.metric("Strong Stage 2", len(display_df[display_df["Score"] >= 6]))
 
@@ -301,7 +388,11 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
         else (", ".join(selected_indices) if selected_indices else "None")
     )
     c1.metric("Universe", universe_label)
-    c2.metric("Total in Universe", len(full_df))
+    c2.metric(
+        "Total in Universe",
+        len(full_df),
+        help="Stocks with ≥250 days of price history. See the 📋 Coverage tab for the full list of excluded symbols.",
+    )
     c3.metric("Matches", len(display_df))
 
     st.dataframe(
@@ -521,6 +612,7 @@ def main():
     idx_options = _load_index_options()
 
     bt_params: dict = {}
+    ls_params: dict = {}
     rsi_toggle = False
     show_illiquid = False
     mom_filters: dict = {}
@@ -536,7 +628,15 @@ def main():
         st.markdown("### 🖥 Screener")
         screener = st.radio(
             "Screener",
-            options=["📊 Stage 2", "🚀 Momentum", "📈 Phase Chart", "⏱ Backtest", "📚 User Guide"],
+            options=[
+                "📊 Stage 2",
+                "🚀 Momentum",
+                "📋 Coverage",
+                "📈 Phase Chart",
+                "⏱ Backtest",
+                "📡 Live Signal",
+                "📚 User Guide",
+            ],
             key="active_screener",
             horizontal=True,
             label_visibility="collapsed",
@@ -544,7 +644,7 @@ def main():
         st.divider()
 
         selected_indices = []
-        if screener not in ("📈 Phase Chart", "📚 User Guide", "⏱ Backtest"):
+        if screener not in ("📈 Phase Chart", "📚 User Guide", "⏱ Backtest", "📋 Coverage", "📡 Live Signal"):
             st.markdown("### 📦 Indices")
             cols = st.columns(2)
             for i, idx in enumerate(idx_options):
@@ -558,9 +658,13 @@ def main():
             rsi_toggle, show_illiquid = _sidebar_stage2()
         elif screener == "🚀 Momentum":
             mom_filters = _sidebar_momentum()
+        elif screener == "📋 Coverage":
+            pass
         elif screener == "⏱ Backtest":
             st.markdown("### ⏱ Backtest")
             bt_params = _sidebar_backtest(idx_options)
+        elif screener == "📡 Live Signal":
+            ls_params = _sidebar_live_signal(idx_options)
 
     # ── AUTOREFRESH — only while the active screener's job runs ──
     _kind_for_screener = {"📊 Stage 2": "stage2", "🚀 Momentum": "momentum", "⏱ Backtest": "backtest"}
@@ -586,6 +690,8 @@ def main():
             with col2:
                 use_log_scale = st.toggle("Log Y-Axis", value=True, key="chart_log_scale_toggle")
             render_phase_chart(ticker, use_log_scale=use_log_scale)
+    elif screener == "📋 Coverage":
+        coverage_results()
     elif screener == "📊 Stage 2":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
     elif screener == "⏱ Backtest":
@@ -600,6 +706,13 @@ def main():
             backtest_results(bt_params)
         with tab_guide:
             _render_backtest_user_guide()
+    elif screener == "📡 Live Signal":
+        st.markdown('<p class="hero">📡 Live Signal</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="sub-hero">Weekly trade instructions from a momentum rebalance snapshot</p>',
+            unsafe_allow_html=True,
+        )
+        live_signal_results(ls_params)
     elif screener == "📚 User Guide":
         render_docs()
     else:  # 🚀 Momentum
