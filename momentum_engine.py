@@ -145,7 +145,7 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
             "Sharpe_6M": _rolling_sharpe(126).round(3),
             "Sharpe_9M": _rolling_sharpe(189).round(3),
             "Sharpe_1Y": _rolling_sharpe(252).round(3),
-            "Volatility": (rets.expanding(min_periods=2).std() * np.sqrt(252) * 100).round(1),
+            "Volatility": (rets.rolling(252, min_periods=63).std() * np.sqrt(252) * 100).round(1),
             # tail(N).diff() skips row-0 NaN: N rows → N-1 real diffs → rolling(N-1) / (N-1)
             "Pos_Days_3M": (pos.rolling(62, min_periods=62).sum() / 62 * 100).round(0),
             "Pos_Days_6M": (pos.rolling(125, min_periods=125).sum() / 125 * 100).round(0),

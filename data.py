@@ -2,6 +2,7 @@ import functools
 import json
 import logging
 import os
+import re
 import tempfile
 import threading
 from collections import defaultdict
@@ -548,19 +549,26 @@ def get_universe_coverage() -> dict:
 # ──────────────────────────────────────────────
 # SINGLE-SYMBOL CHART DATA
 # ──────────────────────────────────────────────
+_VALID_TICKER_RE = re.compile(r"^[A-Z0-9&\-]{1,20}$")
+
+
 @st.cache_data(ttl=3600)
 def fetch_chart_data(symbol: str) -> pd.DataFrame:
     """Return OHLCV DataFrame for one symbol (up to 2y); tries parquet baseline, falls back to yfinance."""
+    clean = symbol.strip().upper()
+    if not _VALID_TICKER_RE.match(clean):
+        logging.warning("fetch_chart_data: invalid ticker format %r — returning empty", symbol)
+        return pd.DataFrame()
     baseline = _load_screener_baseline()
     if not baseline.empty:
-        sym_data = baseline[baseline["symbol"] == symbol.upper()]
+        sym_data = baseline[baseline["symbol"] == clean]
         if not sym_data.empty:
             sub = sym_data.drop(columns="symbol").copy()
             sub["date"] = pd.to_datetime(sub["date"])
             return sub.set_index("date").sort_index()
     try:
         raw = yf.download(
-            f"{symbol.upper()}.NS",
+            f"{clean}.NS",
             period="2y",
             auto_adjust=True,
             progress=False,

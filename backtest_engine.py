@@ -154,6 +154,9 @@ def _valid_symbols_at_date(
     for idx_name in index_names:
         idx_rows = eligible[eligible["INDEX_NAME"] == idx_name]
         if idx_rows.empty:
+            logging.warning(
+                "Index %r not found in compositions_df as of %s — skipping filter for this index", idx_name, as_of
+            )
             continue
         latest_ts = idx_rows["TIME_STAMP"].max()
         valid.update(idx_rows.loc[idx_rows["TIME_STAMP"] == latest_ts, "SYMBOL"])
@@ -265,10 +268,10 @@ def rank_universe_at_date(
 
 def _trading_days(all_ohlcv: dict[str, pd.DataFrame], start: pd.Timestamp, end: pd.Timestamp) -> pd.DatetimeIndex:
     """Union of all dates present in the OHLCV store within [start, end]."""
-    dates: set = set()
-    for df in all_ohlcv.values():
-        dates.update(df.index[(df.index >= start) & (df.index <= end)].tolist())
-    return pd.DatetimeIndex(sorted(dates))
+    if not all_ohlcv:
+        return pd.DatetimeIndex([])
+    combined = pd.concat([df["Close"].loc[start:end] for df in all_ohlcv.values()], axis=1)
+    return combined.index
 
 
 def get_rebalance_dates(
@@ -713,6 +716,9 @@ def run_backtest(
     precomputed = _precompute_all_metrics(all_ohlcv)
     stage2_precomputed = _precompute_stage2_scores(all_ohlcv) if (stage2_drop_exit or stage2_entry_filter) else {}
 
+    # Pre-build returns matrix so daily NAV update uses O(1) row lookups instead of per-symbol index ops
+    returns_matrix = _daily_returns(all_ohlcv, list(all_ohlcv.keys()), trading_days)
+
     # ── initialise portfolios ──
     full_weights: dict[str, float] = {}
     full_weights_prev: dict[str, float] = {}  # drift-adjusted full weights from prior rebalance
@@ -1048,22 +1054,18 @@ def run_backtest(
 
         # ── daily NAV update ──
         if i > 0 and current_holdings:
-            prev_day = trading_days[i - 1]
             port_ret_full = 0.0
             port_ret_marg = 0.0
             port_ret_prop = 0.0
-            for sym in current_holdings:
-                if sym not in all_ohlcv:
-                    continue
-                closes = all_ohlcv[sym]["Close"]
-                if day not in closes.index or prev_day not in closes.index:
-                    continue
-                r = closes[day] / closes[prev_day] - 1
-                if pd.isna(r):
-                    continue
-                port_ret_full += full_weights.get(sym, 0.0) * r
-                port_ret_marg += marg_weights.get(sym, 0.0) * r
-                port_ret_prop += prop_weights.get(sym, 0.0) * r
+            if day in returns_matrix.index:
+                row = returns_matrix.loc[day]
+                for sym in current_holdings:
+                    r = row.get(sym, np.nan)
+                    if pd.isna(r):
+                        continue
+                    port_ret_full += full_weights.get(sym, 0.0) * r
+                    port_ret_marg += marg_weights.get(sym, 0.0) * r
+                    port_ret_prop += prop_weights.get(sym, 0.0) * r
             nav_full *= 1 + port_ret_full
             nav_marg *= 1 + port_ret_marg
             nav_prop *= 1 + port_ret_prop
