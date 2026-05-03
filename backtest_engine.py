@@ -333,6 +333,255 @@ def _daily_returns(all_ohlcv: dict[str, pd.DataFrame], symbols: list[str], dates
 
 
 # ──────────────────────────────────────────────────────────────
+# REBALANCE HELPERS
+# ──────────────────────────────────────────────────────────────
+
+
+def _drift_weights(
+    weights: dict[str, float],
+    all_ohlcv: dict[str, pd.DataFrame],
+    prev_day: pd.Timestamp,
+    curr_day: pd.Timestamp,
+) -> dict[str, float]:
+    """Adjust portfolio weights to reflect price drift between two rebalance dates."""
+    if not weights:
+        return weights
+    drifted: dict[str, float] = {}
+    for s, w in weights.items():
+        try:
+            closes = all_ohlcv[s]["Close"]
+            p_prev = float(closes.at[prev_day]) if prev_day in closes.index else None
+            p_now = float(closes.at[curr_day]) if curr_day in closes.index else None
+            drifted[s] = w * (p_now / p_prev) if (p_prev and p_now and p_prev > 0) else w
+        except (KeyError, TypeError, ZeroDivisionError):
+            drifted[s] = w
+    total_d = sum(drifted.values())
+    return {s: w / total_d for s, w in drifted.items()} if total_d > 0 else drifted
+
+
+def _compute_holdings_classic(
+    current_holdings: set[str],
+    top_m: set[str],
+    top_n: set[str],
+    ranked: list[str],
+    stage2_precomputed: dict[str, pd.Series],
+    rank_as_of: pd.Timestamp,
+    prev_stage2_scores: dict[str, float],
+    stage2_entry_filter: bool,
+    stage2_drop_exit: bool,
+    stage2_entry_threshold: int,
+    stage2_drop_threshold: int,
+    rebalance_freq: str,
+) -> tuple[set[str], set[str], dict[str, str], dict[str, str]]:
+    """
+    Classic band rule: exit if rank > N, enter if rank ≤ M (may briefly exceed M).
+    Optional Stage 2 filters add/remove holdings on top of the momentum band rule.
+    Returns (entries, exits, entry_reasons, exit_reasons).
+    """
+    rank_pos = {s: rank_idx + 1 for rank_idx, s in enumerate(ranked)}
+
+    exits: set[str] = current_holdings - top_n
+    exit_reasons: dict[str, str] = {
+        sym: (f"rank #{rank_pos[sym]}" if sym in rank_pos else "left universe") for sym in exits
+    }
+
+    entries: set[str] = top_m - current_holdings
+    entry_reasons: dict[str, str] = {sym: f"rank #{rank_pos.get(sym, '?')}" for sym in entries}
+
+    if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
+        for sym in ranked:
+            if sym in current_holdings or sym in entries:
+                continue
+            s2 = stage2_precomputed.get(sym)
+            if s2 is None:
+                continue
+            curr_s2 = s2.asof(rank_as_of)
+            if pd.isna(curr_s2):
+                continue
+            prev_s2 = prev_stage2_scores.get(sym)
+            if prev_s2 is None:
+                continue
+            if curr_s2 - prev_s2 >= stage2_entry_threshold:
+                entries = entries | {sym}
+                entry_reasons[sym] = f"S2 +{int(curr_s2 - prev_s2)}"
+
+    if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
+        for sym in list(current_holdings - exits):
+            s2_series = stage2_precomputed.get(sym)
+            if s2_series is None:
+                continue
+            curr_score = s2_series.asof(rank_as_of)
+            prev_score = prev_stage2_scores.get(sym)
+            if (
+                prev_score is not None
+                and not pd.isna(curr_score)
+                and (prev_score - curr_score) >= stage2_drop_threshold
+            ):
+                exits.add(sym)
+                exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
+
+    return entries, exits, entry_reasons, exit_reasons
+
+
+def _compute_holdings_displacement(
+    current_holdings: set[str],
+    top_m: set[str],
+    top_n: set[str],
+    ranked: list[str],
+    m: int,
+    stage2_precomputed: dict[str, pd.Series],
+    rank_as_of: pd.Timestamp,
+    prev_stage2_scores: dict[str, float],
+    stage2_entry_filter: bool,
+    stage2_drop_exit: bool,
+    stage2_entry_threshold: int,
+    stage2_drop_threshold: int,
+    rebalance_freq: str,
+) -> tuple[set[str], set[str], dict[str, str], dict[str, str]]:
+    """
+    Displacement band rule: N is the Worst Rank Held (WRH).
+    Stocks ranked > N exit unconditionally; stocks ranked M+1..N sit in a buffer zone
+    and stay until their rank exceeds N. New entrants (top-M or S2 jumpers) fill freed
+    slots only — they never displace buffer-zone incumbents. Hard cap stays at M.
+    Returns (entries, exits, entry_reasons, exit_reasons).
+    """
+    # rank_of: O(1) lookup; stocks absent from `ranked` get rank = len(ranked) (worst).
+    rank_of = {s: rank_idx for rank_idx, s in enumerate(ranked)}
+    _worst = len(ranked)
+
+    # Step 1 — WRH exits: rank > N must leave unconditionally
+    wrh_exits: set[str] = current_holdings - top_n
+    exit_reasons: dict[str, str] = {
+        sym: (f"rank #{rank_of.get(sym, _worst) + 1}" if sym in rank_of else "left universe") for sym in wrh_exits
+    }
+    holdings_after_wrh = current_holdings - wrh_exits
+
+    # Step 2 — Stage 2 drop exits: free additional slots
+    s2_exits: set[str] = set()
+    if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
+        for sym in list(holdings_after_wrh):
+            s2_series = stage2_precomputed.get(sym)
+            if s2_series is None:
+                continue
+            curr_score = s2_series.asof(rank_as_of)
+            prev_score = prev_stage2_scores.get(sym)
+            if (
+                prev_score is not None
+                and not pd.isna(curr_score)
+                and (prev_score - curr_score) >= stage2_drop_threshold
+            ):
+                s2_exits.add(sym)
+                exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
+
+    exits = wrh_exits | s2_exits
+    holdings_after_exits = current_holdings - exits
+
+    # Step 3 — build candidate pool: top-M new entrants + Stage 2 score jumpers
+    candidates: set[str] = top_m - holdings_after_exits
+    s2_jump_deltas: dict[str, int] = {}
+    if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
+        for sym in ranked:
+            if sym in holdings_after_exits or sym in candidates:
+                continue
+            s2 = stage2_precomputed.get(sym)
+            if s2 is None:
+                continue
+            curr_s2 = s2.asof(rank_as_of)
+            if pd.isna(curr_s2):
+                continue
+            prev_s2 = prev_stage2_scores.get(sym)
+            if prev_s2 is None:
+                continue
+            delta = curr_s2 - prev_s2
+            if delta >= stage2_entry_threshold:
+                candidates.add(sym)
+                s2_jump_deltas[sym] = int(delta)
+
+    # Step 4 — fill freed slots from combined candidates, best rank first
+    entries_wanted = sorted(candidates, key=lambda s: rank_of.get(s, _worst))
+    free_slots = max(0, m - len(holdings_after_exits))
+    entries: set[str] = set(entries_wanted[:free_slots])
+    entry_reasons: dict[str, str] = {
+        sym: (f"S2 +{s2_jump_deltas[sym]}" if sym in s2_jump_deltas else f"rank #{rank_of.get(sym, _worst) + 1}")
+        for sym in entries
+    }
+
+    return entries, exits, entry_reasons, exit_reasons
+
+
+def _compute_weight_variants(
+    new_holdings: set[str],
+    entries: set[str],
+    exits: set[str],
+    marg_weights: dict[str, float],
+    prop_weights: dict[str, float],
+    size: int,
+) -> tuple[dict[str, float], dict[str, float], dict[str, float]]:
+    """
+    Compute the three weight vectors after a rebalance:
+      Full rebalance    : equal weight 1/size for all holdings.
+      Slot-fill marginal: freed capital split equally among new entrants only.
+      Prop-fill marginal: entrants seeded at 1/size; normalization redistributes surplus.
+    Returns (new_full, new_slot, new_prop).
+    """
+    new_full = {s: 1.0 / size for s in new_holdings}
+
+    freed_slot = sum(marg_weights.get(s, 0.0) for s in exits)
+    new_slot: dict[str, float] = {s: marg_weights[s] for s in new_holdings - entries if s in marg_weights}
+    if entries:
+        per_entry_slot = (freed_slot / len(entries)) if freed_slot > 0 else (1.0 / size)
+        for s in entries:
+            new_slot[s] = per_entry_slot
+    if not new_slot:
+        new_slot = {s: 1.0 / size for s in new_holdings}
+    total_w = sum(new_slot.values())
+    if total_w > 0:
+        new_slot = {s: w / total_w for s, w in new_slot.items()}
+
+    new_prop: dict[str, float] = {s: prop_weights[s] for s in new_holdings - entries if s in prop_weights}
+    if entries:
+        for s in entries:
+            new_prop[s] = 1.0 / size
+    if not new_prop:
+        new_prop = {s: 1.0 / size for s in new_holdings}
+    total_w = sum(new_prop.values())
+    if total_w > 0:
+        new_prop = {s: w / total_w for s, w in new_prop.items()}
+
+    return new_full, new_slot, new_prop
+
+
+def _compute_summary_stats(nav_df: pd.DataFrame) -> pd.DataFrame:
+    """Compute per-column CAGR / Sharpe / drawdown / Calmar / Sortino from a NAV DataFrame."""
+    stats = {}
+    for col in nav_df.columns:
+        s = nav_df[col].dropna()
+        if len(s) < 2:
+            continue
+        daily_ret = s.pct_change().dropna()
+        n_days = len(s)
+        cagr = (s.iloc[-1] / s.iloc[0]) ** (252 / (n_days - 1)) - 1
+        sharpe = (daily_ret.mean() / daily_ret.std() * np.sqrt(252)) if daily_ret.std() > 0 else np.nan
+        rolling_max = s.cummax()
+        drawdown = (s - rolling_max) / rolling_max
+        max_dd = drawdown.min()
+        calmar = cagr / abs(max_dd) if max_dd != 0 else np.nan
+        neg_ret = daily_ret[daily_ret < 0]
+        sortino = (
+            (daily_ret.mean() / neg_ret.std() * np.sqrt(252)) if len(neg_ret) > 1 and neg_ret.std() > 0 else np.nan
+        )
+        stats[col] = {
+            "CAGR (%)": round(cagr * 100, 2),
+            "Sharpe": round(float(sharpe), 3) if not np.isnan(sharpe) else np.nan,
+            "Max Drawdown (%)": round(max_dd * 100, 2),
+            "Calmar": round(float(calmar), 3) if not np.isnan(calmar) else np.nan,
+            "Sortino": round(float(sortino), 3) if not np.isnan(sortino) else np.nan,
+            "Final NAV": round(s.iloc[-1], 2),
+        }
+    return pd.DataFrame(stats).T
+
+
+# ──────────────────────────────────────────────────────────────
 # CORE BACKTEST
 # ──────────────────────────────────────────────────────────────
 
@@ -431,8 +680,26 @@ def run_backtest(
     stcg_rate            : short-term capital gains tax rate (fraction) applied to gains on
                            holdings held ≤ 12 calendar months (e.g. 0.20 for 20%)
     """
-    t0 = pd.Timestamp(start_date)
-    t1 = pd.Timestamp(end_date)
+    # ── input validation ──
+    if m < 1 or n < 1:
+        return {"error": f"M ({m}) and N ({n}) must both be ≥ 1."}
+    if m >= n:
+        return {"error": f"Entry band M ({m}) must be strictly less than exit band N ({n})."}
+    try:
+        t0 = pd.Timestamp(start_date)
+        t1 = pd.Timestamp(end_date)
+    except Exception:
+        return {"error": f"Invalid date format: start_date={start_date!r}, end_date={end_date!r}. Use 'YYYY-MM-DD'."}
+    if t0 >= t1:
+        return {"error": f"start_date ({start_date}) must be before end_date ({end_date})."}
+    if not (0.0 <= transaction_cost_pct <= 0.05):
+        return {"error": f"transaction_cost_pct ({transaction_cost_pct:.4f}) must be between 0 and 0.05 (5%)."}
+    if not (0.0 <= ltcg_rate <= 1.0):
+        return {"error": f"ltcg_rate ({ltcg_rate}) must be between 0 and 1."}
+    if not (0.0 <= stcg_rate <= 1.0):
+        return {"error": f"stcg_rate ({stcg_rate}) must be between 0 and 1."}
+    if max_position_pct is not None and not (0.0 < max_position_pct <= 100.0):
+        return {"error": f"max_position_pct ({max_position_pct}) must be between 0 (exclusive) and 100."}
 
     trading_days = _trading_days(all_ohlcv, t0, t1)
     if len(trading_days) < 20:
@@ -512,126 +779,24 @@ def run_backtest(
             top_m = set(ranked[:m])
             top_n = set(ranked[:n])
 
-            # Reason dicts — populated per branch, consumed at log time
-            entry_reasons: dict[str, str] = {}
-            exit_reasons: dict[str, str] = {}
-
+            _s2_kwargs = dict(
+                stage2_precomputed=stage2_precomputed,
+                rank_as_of=rank_as_of,
+                prev_stage2_scores=prev_stage2_scores,
+                stage2_entry_filter=stage2_entry_filter,
+                stage2_drop_exit=stage2_drop_exit,
+                stage2_entry_threshold=stage2_entry_threshold,
+                stage2_drop_threshold=stage2_drop_threshold,
+                rebalance_freq=rebalance_freq,
+            )
             if band_rule == "displacement":
-                # N = WRH (Worst Rank Held): no stock ranked > N may be held — hard cap.
-                # Stocks ranked M+1..N are a buffer zone: they stay until their rank
-                # exceeds N, at which point they exit and a top-M entrant fills the slot.
-                # A new top-M stock may ONLY enter through a slot freed by a WRH exit
-                # or a Stage 2 drop exit — it does not displace buffer-zone incumbents.
-                #
-                # rank_of gives O(1) lookup; stocks absent from `ranked` this period
-                # (delisted / data gap) get rank=len(ranked) — worst possible, so they
-                # are first in line to exit and last in line to enter.
-                rank_of = {s: i for i, s in enumerate(ranked)}
-                _worst = len(ranked)
-
-                # Step 1 — WRH exits (unconditional): rank > N must leave
-                wrh_exits = current_holdings - top_n
-                for sym in wrh_exits:
-                    r = rank_of.get(sym, _worst) + 1
-                    exit_reasons[sym] = f"rank #{r}" if sym in rank_of else "left universe"
-                holdings_after_wrh = current_holdings - wrh_exits
-
-                # Step 2 — Stage 2 drop exits: free additional slots this rebalance
-                s2_exits: set[str] = set()
-                if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
-                    for sym in list(holdings_after_wrh):
-                        s2_series = stage2_precomputed.get(sym)
-                        if s2_series is None:
-                            continue
-                        curr_score = s2_series.asof(rank_as_of)
-                        prev_score = prev_stage2_scores.get(sym)
-                        if (
-                            prev_score is not None
-                            and not pd.isna(curr_score)
-                            and (prev_score - curr_score) >= stage2_drop_threshold
-                        ):
-                            s2_exits.add(sym)
-                            exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
-
-                exits = wrh_exits | s2_exits
-                holdings_after_exits = current_holdings - exits
-
-                # Step 3 — build candidate pool: top-M entrants + Stage 2 jumpers
-                # Both compete for freed slots, ordered by momentum rank (hard cap stays M).
-                candidates: set[str] = top_m - holdings_after_exits
-                s2_jump_deltas: dict[str, int] = {}
-                if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
-                    for sym in ranked:
-                        if sym in holdings_after_exits or sym in candidates:
-                            continue
-                        s2 = stage2_precomputed.get(sym)
-                        if s2 is None:
-                            continue
-                        curr_s2 = s2.asof(rank_as_of)
-                        if pd.isna(curr_s2):
-                            continue
-                        prev_s2 = prev_stage2_scores.get(sym)
-                        if prev_s2 is None:
-                            continue
-                        delta = curr_s2 - prev_s2
-                        if delta >= stage2_entry_threshold:
-                            candidates.add(sym)
-                            s2_jump_deltas[sym] = int(delta)
-
-                # Step 4 — fill freed slots from combined candidates, ordered by rank
-                entries_wanted = sorted(candidates, key=lambda s: rank_of.get(s, _worst))
-                free_slots = max(0, m - len(holdings_after_exits))
-                entries = set(entries_wanted[:free_slots])
-                for sym in entries:
-                    if sym in s2_jump_deltas:
-                        entry_reasons[sym] = f"S2 +{s2_jump_deltas[sym]}"
-                    else:
-                        entry_reasons[sym] = f"rank #{rank_of.get(sym, _worst) + 1}"
-
+                entries, exits, entry_reasons, exit_reasons = _compute_holdings_displacement(
+                    current_holdings, top_m, top_n, ranked, m, **_s2_kwargs
+                )
             else:
-                # classic: exit if rank > N, enter if rank ≤ M (may briefly exceed M)
-                rank_pos = {s: i + 1 for i, s in enumerate(ranked)}  # 1-indexed
-
-                exits = current_holdings - top_n
-                for sym in exits:
-                    exit_reasons[sym] = f"rank #{rank_pos[sym]}" if sym in rank_pos else "left universe"
-
-                entries = top_m - current_holdings
-                for sym in entries:
-                    entry_reasons[sym] = f"rank #{rank_pos.get(sym, '?')}"
-
-                if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
-                    for sym in ranked:
-                        if sym in current_holdings or sym in entries:
-                            continue
-                        s2 = stage2_precomputed.get(sym)
-                        if s2 is None:
-                            continue
-                        curr_s2 = s2.asof(rank_as_of)
-                        if pd.isna(curr_s2):
-                            continue
-                        prev_s2 = prev_stage2_scores.get(sym)
-                        if prev_s2 is None:
-                            continue
-                        delta = curr_s2 - prev_s2
-                        if delta >= stage2_entry_threshold:
-                            entries = entries | {sym}
-                            entry_reasons[sym] = f"S2 +{int(delta)}"
-
-                if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
-                    for sym in list(current_holdings - exits):
-                        s2_series = stage2_precomputed.get(sym)
-                        if s2_series is None:
-                            continue
-                        curr_score = s2_series.asof(rank_as_of)
-                        prev_score = prev_stage2_scores.get(sym)
-                        if (
-                            prev_score is not None
-                            and not pd.isna(curr_score)
-                            and (prev_score - curr_score) >= stage2_drop_threshold
-                        ):
-                            exits.add(sym)
-                            exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
+                entries, exits, entry_reasons, exit_reasons = _compute_holdings_classic(
+                    current_holdings, top_m, top_n, ranked, **_s2_kwargs
+                )
 
             new_holdings = (current_holdings - exits) | entries
 
@@ -656,59 +821,18 @@ def run_backtest(
             # ── drift-adjust all weight trackers to reflect price movement since last rebalance ──
             # This must happen before weight assignment so exit weights use current market values.
             if prev_rebalance_day is not None:
-
-                def _drift_weights(weights: dict[str, float]) -> dict[str, float]:
-                    if not weights:
-                        return weights
-                    drifted: dict[str, float] = {}
-                    for s, w in weights.items():
-                        try:
-                            c = all_ohlcv[s]["Close"]
-                            p_prev = float(c.at[prev_rebalance_day]) if prev_rebalance_day in c.index else None
-                            p_now = float(c.at[day]) if day in c.index else None
-                            drifted[s] = w * (p_now / p_prev) if (p_prev and p_now and p_prev > 0) else w
-                        except (KeyError, TypeError, ZeroDivisionError):
-                            drifted[s] = w
-                    total_d = sum(drifted.values())
-                    return {s: w / total_d for s, w in drifted.items()} if total_d > 0 else drifted
-
-                full_weights_prev = _drift_weights(full_weights_prev)
-                marg_weights = _drift_weights(marg_weights)
-                prop_weights = _drift_weights(prop_weights)
+                full_weights_prev = _drift_weights(full_weights_prev, all_ohlcv, prev_rebalance_day, day)
+                marg_weights = _drift_weights(marg_weights, all_ohlcv, prev_rebalance_day, day)
+                prop_weights = _drift_weights(prop_weights, all_ohlcv, prev_rebalance_day, day)
 
             # ── save drift-adjusted weights before assignment (needed for turnover diff + CGT) ──
             old_marg_weights = dict(marg_weights)
             old_prop_weights = dict(prop_weights)
 
             # ── compute new weights for all three tracks ──
-
-            # Full rebalance: equal weight all holdings
-            new_full = {s: 1.0 / size for s in new_holdings}
-
-            # Slot-fill marginal: freed capital goes entirely to new entrants
-            freed_slot = sum(marg_weights.get(s, 0.0) for s in exits)
-            new_slot: dict[str, float] = {s: marg_weights[s] for s in new_holdings - entries if s in marg_weights}
-            if entries:
-                per_entry_slot = (freed_slot / len(entries)) if freed_slot > 0 else (1.0 / size)
-                for s in entries:
-                    new_slot[s] = per_entry_slot
-            if not new_slot:
-                new_slot = {s: 1.0 / size for s in new_holdings}
-            total_w = sum(new_slot.values())
-            if total_w > 0:
-                new_slot = {s: w / total_w for s, w in new_slot.items()}
-
-            # Prop-fill marginal: entrants always seeded at 1/size; normalization redistributes
-            # surplus freed capital to all survivors (incumbents + entrants) proportionally.
-            new_prop: dict[str, float] = {s: prop_weights[s] for s in new_holdings - entries if s in prop_weights}
-            if entries:
-                for s in entries:
-                    new_prop[s] = 1.0 / size
-            if not new_prop:
-                new_prop = {s: 1.0 / size for s in new_holdings}
-            total_w = sum(new_prop.values())
-            if total_w > 0:
-                new_prop = {s: w / total_w for s, w in new_prop.items()}
+            new_full, new_slot, new_prop = _compute_weight_variants(
+                new_holdings, entries, exits, marg_weights, prop_weights, size
+            )
 
             # ── position cap: trim any overweight position, redistribute to smaller positions ──
             pre_cap_full = {s: round(w * 100, 4) for s, w in new_full.items()}
@@ -836,8 +960,8 @@ def run_backtest(
                         if xp is None:
                             continue
                         gain_pct = xp / ep - 1.0
-                        denom = 1.0 + gain_pct
-                        if denom == 0:
+                        denom = 1.0 + gain_pct  # = xp / ep
+                        if abs(denom) < 1e-9:
                             continue
                         is_long_term = day > ed + relativedelta(months=12)
 
@@ -1009,33 +1133,7 @@ def run_backtest(
         nav_df[label] = (s / s.iloc[0]) * 100
 
     # ── stats ──
-    stats = {}
-    for col in nav_df.columns:
-        s = nav_df[col].dropna()
-        if len(s) < 2:
-            continue
-        daily_ret = s.pct_change().dropna()
-        n_days = len(s)
-        cagr = (s.iloc[-1] / s.iloc[0]) ** (252 / (n_days - 1)) - 1
-        sharpe = (daily_ret.mean() / daily_ret.std() * np.sqrt(252)) if daily_ret.std() > 0 else np.nan
-        rolling_max = s.cummax()
-        drawdown = (s - rolling_max) / rolling_max
-        max_dd = drawdown.min()
-        calmar = cagr / abs(max_dd) if max_dd != 0 else np.nan
-        neg_ret = daily_ret[daily_ret < 0]
-        sortino = (
-            (daily_ret.mean() / neg_ret.std() * np.sqrt(252)) if len(neg_ret) > 1 and neg_ret.std() > 0 else np.nan
-        )
-        stats[col] = {
-            "CAGR (%)": round(cagr * 100, 2),
-            "Sharpe": round(float(sharpe), 3) if not np.isnan(sharpe) else np.nan,
-            "Max Drawdown (%)": round(max_dd * 100, 2),
-            "Calmar": round(float(calmar), 3) if not np.isnan(calmar) else np.nan,
-            "Sortino": round(float(sortino), 3) if not np.isnan(sortino) else np.nan,
-            "Final NAV": round(s.iloc[-1], 2),
-        }
-
-    stats_df = pd.DataFrame(stats).T
+    stats_df = _compute_summary_stats(nav_df)
 
     avg_turnover_full = round(np.mean(turnover_log_full) * 100, 1) if turnover_log_full else 0.0
     avg_turnover_marg = round(np.mean(turnover_log_marg) * 100, 1) if turnover_log_marg else 0.0

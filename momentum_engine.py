@@ -156,45 +156,29 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+# Maps each sort-method label to the Sharpe columns it averages.
+# Single-element lists return that column directly; multi-element lists are averaged.
+_SHARPE_METHOD_KEYS: dict[str, list[str]] = {
+    "1 year": ["Sharpe_1Y"],
+    "1Y": ["Sharpe_1Y"],
+    "3 months": ["Sharpe_3M"],
+    "3M": ["Sharpe_3M"],
+    "6 months": ["Sharpe_6M"],
+    "6M": ["Sharpe_6M"],
+    "9 months": ["Sharpe_9M"],
+    "9M": ["Sharpe_9M"],
+    "Average of 3/6/9/12 months": ["Sharpe_3M", "Sharpe_6M", "Sharpe_9M", "Sharpe_1Y"],
+    "Average of 3/6 months": ["Sharpe_3M", "Sharpe_6M"],
+    "Average of 1/3/6/12 months": ["Sharpe_1M", "Sharpe_3M", "Sharpe_6M", "Sharpe_1Y"],
+    "Average of 1/3/12 months": ["Sharpe_1M", "Sharpe_3M", "Sharpe_1Y"],
+    "Average of 1/3/6/9/12 months": ["Sharpe_1M", "Sharpe_3M", "Sharpe_6M", "Sharpe_9M", "Sharpe_1Y"],
+}
+
+
 def _calculate_avg_sharpe(row, method: str) -> float | None:
     """Return a composite Sharpe score for a row based on the selected sort method."""
-    sharpes = []
-    if method in ["1 year", "1Y"]:
-        return row.get("Sharpe_1Y")
-    elif method in ["3 months", "3M"]:
-        return row.get("Sharpe_3M")
-    elif method in ["6 months", "6M"]:
-        return row.get("Sharpe_6M")
-    elif method in ["9 months", "9M"]:
-        return row.get("Sharpe_9M")
-    elif method == "Average of 3/6/9/12 months":
-        for k in ["Sharpe_3M", "Sharpe_6M", "Sharpe_9M", "Sharpe_1Y"]:
-            v = row.get(k)
-            if v is not None and not pd.isna(v):
-                sharpes.append(v)
-        return sum(sharpes) / len(sharpes) if sharpes else None
-    elif method == "Average of 3/6 months":
-        for k in ["Sharpe_3M", "Sharpe_6M"]:
-            v = row.get(k)
-            if v is not None and not pd.isna(v):
-                sharpes.append(v)
-        return sum(sharpes) / len(sharpes) if sharpes else None
-    elif method == "Average of 1/3/6/12 months":
-        for k in ["Sharpe_1M", "Sharpe_3M", "Sharpe_6M", "Sharpe_1Y"]:
-            v = row.get(k)
-            if v is not None and not pd.isna(v):
-                sharpes.append(v)
-        return sum(sharpes) / len(sharpes) if sharpes else None
-    elif method == "Average of 1/3/12 months":
-        for k in ["Sharpe_1M", "Sharpe_3M", "Sharpe_1Y"]:
-            v = row.get(k)
-            if v is not None and not pd.isna(v):
-                sharpes.append(v)
-        return sum(sharpes) / len(sharpes) if sharpes else None
-    elif method == "Average of 1/3/6/9/12 months":
-        for k in ["Sharpe_1M", "Sharpe_3M", "Sharpe_6M", "Sharpe_9M", "Sharpe_1Y"]:
-            v = row.get(k)
-            if v is not None and not pd.isna(v):
-                sharpes.append(v)
-        return sum(sharpes) / len(sharpes) if sharpes else None
-    return None
+    keys = _SHARPE_METHOD_KEYS.get(method)
+    if keys is None:
+        return None
+    vals = [v for k in keys if (v := row.get(k)) is not None and not pd.isna(v)]
+    return sum(vals) / len(vals) if vals else None

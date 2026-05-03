@@ -36,6 +36,7 @@ After a rebuild the delta cache becomes redundant (overlapping rows are deduped 
 
 from __future__ import annotations
 
+import logging
 import os
 import threading
 from datetime import datetime, timedelta
@@ -44,8 +45,7 @@ from typing import Callable
 import pandas as pd
 import yfinance as yf
 
-from config import IST
-from data import _load_constituents, get_last_valid_trading_date, load_nse_holidays  # noqa: F401
+from data import _get_target_key, _load_constituents, get_last_valid_trading_date, load_nse_holidays  # noqa: F401
 
 _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
@@ -74,15 +74,6 @@ _baseline_bench: pd.DataFrame | None = None
 # Tier 1: merged (baseline + yfinance delta) cache, keyed by trading-day string.
 _merged_ohlcv: dict[str, dict[str, pd.DataFrame]] = {}  # {today_key: {symbol: df}}
 _merged_bench: dict[str, dict[str, pd.Series]] = {}  # {today_key: {label: series}}
-
-
-# ──────────────────────────────────────────────
-# Trading-day key (delegates to data.py — single authoritative implementation)
-# ──────────────────────────────────────────────
-def _get_target_key() -> str:
-    now = datetime.now(IST)
-    start = now.strftime("%Y-%m-%d") if now.hour >= 19 else (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    return get_last_valid_trading_date(start, load_nse_holidays())
 
 
 # ──────────────────────────────────────────────
@@ -146,8 +137,8 @@ def _ensure_baseline_bench(emit: Callable[[str, str], None]) -> pd.DataFrame:
                 df = pd.concat([df, delta_df], ignore_index=True)
                 df = df.drop_duplicates(subset=["date"], keep="last")
                 df = df.sort_values("date").reset_index(drop=True)
-        except Exception:
-            pass  # non-fatal — gracefully fall back to base parquet
+        except Exception as exc:
+            logging.warning("Benchmark delta cache unreadable, ignoring: %s", exc)
     with _lock:
         _baseline_bench = df
     return df
@@ -301,7 +292,6 @@ def _long_to_symbol_dict(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
     for sym, grp in df.groupby("symbol", sort=False):
         sub = grp.drop(columns="symbol").copy()
         sub = sub.set_index("date").sort_index()
-        sub.columns = [c for c in sub.columns]  # already ["Close", "High", "Volume"]
         sub["Volume"] = sub["Volume"].astype("Int64")
         result[sym] = sub
     return result

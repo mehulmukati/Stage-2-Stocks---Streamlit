@@ -38,8 +38,9 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
 
     # Higher high: close broke above 50-day prior high
     higher_high = (c >= c.rolling(HH_HL_LOOKBACK).max().shift(1)).astype(int)
-    # Higher low: recent 20-day low is above the 50-day low from HH_HL_LOOKBACK bars ago
-    higher_low = (c.rolling(20).min().shift(1) > c.rolling(HH_HL_LOOKBACK).min().shift(HH_HL_LOOKBACK)).astype(int)
+    # Higher low: recent 20-day low is above the 50-day low from HH_HL_LOOKBACK bars ago.
+    # shift(HH_HL_LOOKBACK - 1) aligns with score_stage2's iloc[-HH_HL_LOOKBACK] (position n-50).
+    higher_low = (c.rolling(20).min().shift(1) > c.rolling(HH_HL_LOOKBACK).min().shift(HH_HL_LOOKBACK - 1)).astype(int)
 
     consol_range = (c.rolling(CONSOLIDATION_LOOKBACK).max() - c.rolling(CONSOLIDATION_LOOKBACK).min()) / c.rolling(
         CONSOLIDATION_LOOKBACK
@@ -150,23 +151,32 @@ def check_weinstein_retest(df: pd.DataFrame) -> bool:
     v = df["Volume"]
     avg_vol = v.rolling(VOL_AVG_PERIOD).mean()
 
-    # 1. Find the most recent 50-day closing-high breakout with volume confirmation
+    # 1. Find the most recent 50-day closing-high breakout with volume confirmation.
+    # Use >= with a tiny tolerance instead of == to avoid float32/float64 equality
+    # failures that arise from parquet round-trip precision loss.
     hh_50 = c.rolling(50).max()
-    breakout_mask = (c == hh_50) & (v / avg_vol >= 2.0)
+    breakout_mask = (c >= hh_50 * 0.9999) & (v / avg_vol >= 2.0)
 
-    # Shift by 1 — we want a pullback *after* the breakout day, not on it
-    breakout_mask = breakout_mask.shift(1).fillna(False)
+    # Shift by 1 to restrict the search window to breakouts that happened at
+    # least one day before today (we need post-breakout bars to exist).
+    shifted_mask = breakout_mask.shift(1).fillna(False)
+    recent_window_start = df.index[-RETEST_LOOKBACK_DAYS]
+    recent_shifted = df.index[shifted_mask & (df.index >= recent_window_start)]
 
-    recent_breakouts = df.index[breakout_mask & (df.index >= df.index[-RETEST_LOOKBACK_DAYS])]
-    if len(recent_breakouts) == 0:
+    if len(recent_shifted) == 0:
         return False
 
-    last_breakout_idx = recent_breakouts[-1]
-    breakout_level = c.loc[last_breakout_idx]
-    breakout_vol = v.loc[last_breakout_idx]
+    # The shifted index is 1 day after the actual breakout day; walk back to get it.
+    last_shifted_idx = recent_shifted[-1]
+    shifted_pos = df.index.get_loc(last_shifted_idx)
+    actual_breakout_day = df.index[shifted_pos - 1]
+
+    breakout_level = c.loc[actual_breakout_day]
+    breakout_vol = v.loc[actual_breakout_day]
 
     # 2. Check that price pulled back to within ±RETEST_TOLERANCE of the breakout level
-    pullback_period = df.loc[last_breakout_idx:].iloc[1:]  # exclude breakout day itself
+    # Start from the day after the breakout.
+    pullback_period = df.iloc[shifted_pos:]
     if pullback_period.empty:
         return False
 

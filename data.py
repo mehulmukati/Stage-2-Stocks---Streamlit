@@ -111,13 +111,14 @@ def _load_screener_baseline() -> pd.DataFrame:
     with _cache_lock:
         if _screener_baseline is not None:
             return _screener_baseline
-    if not os.path.exists(SCREENER_OHLCV_PARQUET):
-        return pd.DataFrame()
-    df = pd.read_parquet(SCREENER_OHLCV_PARQUET)
-    df["date"] = pd.to_datetime(df["date"])
-    with _cache_lock:
+        # Hold the lock through the read so only one thread pays the I/O cost
+        # and no reader can observe a half-initialised baseline.
+        if not os.path.exists(SCREENER_OHLCV_PARQUET):
+            return pd.DataFrame()
+        df = pd.read_parquet(SCREENER_OHLCV_PARQUET)
+        df["date"] = pd.to_datetime(df["date"])
         _screener_baseline = df
-    return df
+        return df
 
 
 def _long_to_symbol_dict(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
@@ -156,11 +157,32 @@ def _load_latest_score_cache(path: str) -> tuple[pd.DataFrame | None, str | None
     return (match.reset_index(drop=True) if not match.empty else None), latest
 
 
+_SCORE_CACHE_MAX_DATES = 5  # rolling window kept in each score-cache parquet
+
+
 def _save_score_cache(path: str, target_date: str, df: pd.DataFrame) -> None:
-    """Persist scored results for target_date to a score-cache parquet (overwrites)."""
+    """Persist scored results for target_date to a score-cache parquet.
+
+    Keeps the last _SCORE_CACHE_MAX_DATES trading days so stale-parquet fallback
+    (_load_latest_score_cache) can serve a recent result even after a weekend
+    or holiday when the target date hasn't been scored yet.
+    """
     out = df.copy()
     out["cache_date"] = target_date
     with _parquet_write_lock:
+        if os.path.exists(path):
+            try:
+                existing = pd.read_parquet(path)
+                # Drop any prior entry for today (idempotent re-score) then append.
+                existing = existing[existing["cache_date"].astype(str) != target_date]
+                all_dates = sorted(existing["cache_date"].astype(str).unique())
+                # Evict oldest entries beyond the rolling window.
+                if len(all_dates) >= _SCORE_CACHE_MAX_DATES:
+                    keep = set(all_dates[-(_SCORE_CACHE_MAX_DATES - 1) :])
+                    existing = existing[existing["cache_date"].astype(str).isin(keep)]
+                out = pd.concat([existing, out], ignore_index=True)
+            except Exception:
+                pass  # corrupted cache — overwrite cleanly with today's data
         _write_parquet_atomic(out, path)
 
 
@@ -369,12 +391,18 @@ def _sync_ohlcv_to_parquet(
                     _write_parquet_atomic(merged, SCREENER_OHLCV_PARQUET)
                 with _cache_lock:
                     _screener_baseline = merged
+                    # Clear the symbol dict so _load_and_score rebuilds from the full
+                    # merged baseline rather than using only the short delta records.
+                    # An incremental fetch only covers the tail (days since last sync);
+                    # leaving those short per-symbol DataFrames in _ohlcv_cache would
+                    # cause every stock to fail the ≥250-row scoring guard.
+                    _ohlcv_cache.clear()
             except Exception as _exc:
                 emit("warning", f"⚠️ Parquet write failed — data cached in memory only: {_exc}")
-
-            # Always update in-memory symbol dict so _load_and_score can use it immediately
-            with _cache_lock:
-                _ohlcv_cache.update(_records_to_symbol_data(records))
+                # On write failure keep the short delta in memory as a best-effort fallback;
+                # scoring will degrade gracefully (stocks with < 250 rows return None).
+                with _cache_lock:
+                    _ohlcv_cache.update(_records_to_symbol_data(records))
 
         if target_date:
             with _cache_lock:
