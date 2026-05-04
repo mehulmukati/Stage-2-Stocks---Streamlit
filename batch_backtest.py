@@ -152,11 +152,9 @@ def load_data():
 
 
 def run_one(symbol_data, compositions_df, benchmarks, m, n, freq, band):
-    from backtest_engine import run_backtest
+    from backtest_engine import BacktestConfig, run_backtest
 
-    result = run_backtest(
-        all_ohlcv=symbol_data,
-        benchmarks=benchmarks,
+    cfg = BacktestConfig(
         m=m,
         n=n,
         rebalance_freq=freq,
@@ -178,6 +176,7 @@ def run_one(symbol_data, compositions_df, benchmarks, m, n, freq, band):
         stage2_entry_filter=False,
         max_position_pct=MAX_POSITION_PCT,
     )
+    result = run_backtest(symbol_data, benchmarks, cfg)
     if "error" in result:
         raise RuntimeError(result["error"])
     return result

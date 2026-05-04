@@ -3,6 +3,21 @@ import pandas as pd
 
 from config import CIRCUIT_LEVELS, CIRCUIT_TOLERANCE
 
+_VOL_WINDOW = 252
+_VOL_MIN_PERIODS = 63
+
+
+def _annualized_vol(returns: pd.Series) -> float | None:
+    """Annualized volatility using the trailing 252 trading days (min 63 non-NaN).
+
+    Scalar equivalent of the rolling(252, min_periods=63).std() used in precompute_metrics.
+    """
+    tail = returns.tail(_VOL_WINDOW).dropna()
+    if len(tail) < _VOL_MIN_PERIODS:
+        return None
+    s = tail.std()
+    return float(s * np.sqrt(252)) if s > 0 else None
+
 
 def _count_circuits(df: pd.DataFrame) -> int:
     """Count circuit-breaker closes (upper or lower) over the last 252 trading days (1 year)."""
@@ -67,7 +82,7 @@ def score_momentum(df: pd.DataFrame) -> dict | None:
     sharpe_1y = _calculate_sharpe(df, 252)
 
     daily_returns = c.pct_change().dropna()
-    volatility = daily_returns.std() * np.sqrt(252) if len(daily_returns) > 0 else None
+    volatility = _annualized_vol(daily_returns)
 
     pos_days_3m = _calculate_positive_days_pct(df, 3)
     pos_days_6m = _calculate_positive_days_pct(df, 6)

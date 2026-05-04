@@ -20,6 +20,7 @@ Survivorship-bias mitigations applied:
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
@@ -28,6 +29,45 @@ from dateutil.relativedelta import relativedelta
 from config import MIN_VOLUME
 from momentum_engine import _calculate_avg_sharpe, precompute_metrics, score_momentum
 from stage2_engine import compute_rolling_stage2
+
+# ──────────────────────────────────────────────────────────────
+# CONFIG
+# ──────────────────────────────────────────────────────────────
+
+
+@dataclass
+class BacktestConfig:
+    """All strategy and cost parameters for run_backtest (excludes raw data inputs)."""
+
+    # Required strategy params
+    m: int
+    n: int
+    rebalance_freq: str
+    sort_method: str
+    start_date: str
+    end_date: str
+    # Optional data / filtering
+    compositions_df: pd.DataFrame | None = field(default=None, compare=False, repr=False)
+    index_names: list[str] | None = None
+    # Universe filtering
+    min_history_days: int = 750
+    apply_volume_filter: bool = True
+    max_position_pct: float | None = None
+    # Portfolio mechanics
+    band_rule: str = "classic"
+    # Cost model
+    transaction_cost_pct: float = 0.001
+    brokerage_per_sale: float = 0.0
+    initial_capital: float = 1_000_000.0
+    # Tax
+    ltcg_rate: float = 0.0
+    stcg_rate: float = 0.0
+    # Stage 2 drop/entry filters
+    stage2_drop_exit: bool = False
+    stage2_drop_threshold: int = 2
+    stage2_entry_filter: bool = False
+    stage2_entry_threshold: int = 2
+
 
 # ──────────────────────────────────────────────────────────────
 # UTILITY
@@ -623,66 +663,31 @@ def _apply_weight_cap(weights: dict[str, float], cap: float) -> dict[str, float]
 def run_backtest(
     all_ohlcv: dict[str, pd.DataFrame],
     benchmarks: dict[str, pd.Series],
-    m: int,
-    n: int,
-    rebalance_freq: str,
-    sort_method: str,
-    start_date: str,
-    end_date: str,
-    compositions_df: pd.DataFrame | None = None,
-    index_names: list[str] | None = None,
-    transaction_cost_pct: float = 0.001,
-    min_history_days: int = 750,
-    apply_volume_filter: bool = True,
-    band_rule: str = "classic",
-    brokerage_per_sale: float = 0.0,
-    initial_capital: float = 1_000_000.0,
-    ltcg_rate: float = 0.0,
-    stcg_rate: float = 0.0,
-    stage2_drop_exit: bool = False,
-    stage2_drop_threshold: int = 2,
-    stage2_entry_filter: bool = False,
-    stage2_entry_threshold: int = 2,
-    max_position_pct: float | None = None,
+    config: BacktestConfig,
 ) -> dict:
-    """
-    Run both portfolio variants and return NAV series + summary stats.
+    """Run both portfolio variants and return NAV series + summary stats."""
+    m = config.m
+    n = config.n
+    rebalance_freq = config.rebalance_freq
+    sort_method = config.sort_method
+    start_date = config.start_date
+    end_date = config.end_date
+    compositions_df = config.compositions_df
+    index_names = config.index_names
+    transaction_cost_pct = config.transaction_cost_pct
+    min_history_days = config.min_history_days
+    apply_volume_filter = config.apply_volume_filter
+    band_rule = config.band_rule
+    brokerage_per_sale = config.brokerage_per_sale
+    initial_capital = config.initial_capital
+    ltcg_rate = config.ltcg_rate
+    stcg_rate = config.stcg_rate
+    stage2_drop_exit = config.stage2_drop_exit
+    stage2_drop_threshold = config.stage2_drop_threshold
+    stage2_entry_filter = config.stage2_entry_filter
+    stage2_entry_threshold = config.stage2_entry_threshold
+    max_position_pct = config.max_position_pct
 
-    Parameters
-    ----------
-    all_ohlcv            : symbol → OHLCV DataFrame (full history, index = DatetimeIndex)
-    benchmarks           : label  → close price Series (e.g. 'NIFTY50', 'NIFTY500')
-    m                    : enter portfolio if ranked ≤ m  (1-based)
-    n                    : exit  portfolio if ranked >  n  (n > m)
-    rebalance_freq       : 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'half-yearly'
-    sort_method          : passed to _calculate_avg_sharpe
-    start_date           : 'YYYY-MM-DD'
-    end_date             : 'YYYY-MM-DD'
-    compositions_df      : historical index compositions from load_compositions()
-                           used to restrict the universe to stocks that were actually
-                           in-index on each rebalance date (eliminates survivorship bias)
-    index_names          : list of index names to use for composition lookup
-                           (e.g. ['NIFTY 50', 'NIFTY NEXT 50'])
-    transaction_cost_pct : one-way cost per trade as a fraction of traded value
-                           (default 0.001 = 0.1%)
-    min_history_days     : minimum trading-day history required before a stock
-                           can be ranked (default 750 ≈ 3 years)
-    apply_volume_filter  : exclude stocks with median volume < MIN_VOLUME
-    band_rule            : 'classic'      — exit if rank > N, enter if rank ≤ M (may exceed M)
-                           'displacement' — N is WRH (Worst Rank Held): rank > N exits
-                                            unconditionally; rank M+1..N incumbents are a
-                                            buffer zone and stay until their rank exceeds N;
-                                            new entrants (top-M or Stage 2 jumpers) only fill
-                                            slots freed by WRH or Stage 2 drop exits — they
-                                            do not displace buffer incumbents; hard cap of M
-                                            is always preserved
-    brokerage_per_sale   : flat brokerage in INR charged per stock sold (exits only); 0 = disabled
-    initial_capital      : portfolio size in INR used to convert flat Rs brokerage → NAV drag
-    ltcg_rate            : long-term capital gains tax rate (fraction) applied to gains on
-                           holdings held > 12 calendar months (e.g. 0.125 for 12.5%)
-    stcg_rate            : short-term capital gains tax rate (fraction) applied to gains on
-                           holdings held ≤ 12 calendar months (e.g. 0.20 for 20%)
-    """
     # ── input validation ──
     if m < 1 or n < 1:
         return {"error": f"M ({m}) and N ({n}) must both be ≥ 1."}

@@ -3,11 +3,15 @@ import math
 import pandas as pd
 
 from backtest_engine import (
+    _apply_weight_cap,
     _compute_fy_tax,
     _compute_summary_stats,
+    _compute_weight_variants,
+    _drift_weights,
     _trading_days,
     _valid_symbols_at_date,
     get_rebalance_dates,
+    rank_universe_at_date,
 )
 
 from .conftest import make_ohlcv
@@ -304,3 +308,228 @@ def test_summary_multi_column():
     nav = pd.DataFrame({"A": [100.0] * 252, "B": [100.0] * 252, "C": [100.0] * 252}, index=idx)
     stats = _compute_summary_stats(nav)
     assert set(stats.index) == {"A", "B", "C"}
+
+
+# ──────────────────────────────────────────────
+# _drift_weights
+# ──────────────────────────────────────────────
+
+
+def test_drift_weights_empty():
+    assert _drift_weights({}, {}, pd.Timestamp("2022-01-03"), pd.Timestamp("2022-01-04")) == {}
+
+
+def test_drift_weights_equal_prices_unchanged():
+    df = make_ohlcv(5, close=[100.0] * 5)
+    dates = df.index
+    result = _drift_weights({"A": 0.5, "B": 0.5}, {"A": df, "B": df}, dates[0], dates[2])
+    assert math.isclose(result["A"], 0.5, rel_tol=1e-6)
+    assert math.isclose(result["B"], 0.5, rel_tol=1e-6)
+
+
+def test_drift_weights_price_rise_shifts_weight():
+    df_a = make_ohlcv(5, close=[100.0, 110.0, 120.0, 130.0, 140.0])
+    df_b = make_ohlcv(5, close=[100.0] * 5)
+    dates = df_a.index
+    result = _drift_weights({"A": 0.5, "B": 0.5}, {"A": df_a, "B": df_b}, dates[0], dates[1])
+    # A rose from 100→110, B flat → A weight > 0.5
+    assert result["A"] > 0.5
+    assert result["B"] < 0.5
+    assert math.isclose(result["A"] + result["B"], 1.0, rel_tol=1e-6)
+
+
+def test_drift_weights_missing_date_uses_original():
+    df = make_ohlcv(3, close=[100.0, 110.0, 120.0])
+    # Use a date not in the index — should fall back to original weight
+    missing = pd.Timestamp("2099-01-01")
+    result = _drift_weights({"A": 0.6, "B": 0.4}, {"A": df, "B": df}, df.index[0], missing)
+    assert math.isclose(result["A"], 0.6, rel_tol=1e-6)
+    assert math.isclose(result["B"], 0.4, rel_tol=1e-6)
+
+
+def test_drift_weights_normalises_to_one():
+    df_a = make_ohlcv(5, close=[100.0, 200.0, 200.0, 200.0, 200.0])
+    df_b = make_ohlcv(5, close=[100.0, 50.0, 50.0, 50.0, 50.0])
+    dates = df_a.index
+    result = _drift_weights({"A": 0.5, "B": 0.5}, {"A": df_a, "B": df_b}, dates[0], dates[1])
+    assert math.isclose(sum(result.values()), 1.0, rel_tol=1e-6)
+
+
+# ──────────────────────────────────────────────
+# _apply_weight_cap
+# ──────────────────────────────────────────────
+
+
+def test_apply_weight_cap_empty():
+    assert _apply_weight_cap({}, 0.3) == {}
+
+
+def test_apply_weight_cap_gte_one_unchanged():
+    w = {"A": 0.4, "B": 0.6}
+    assert _apply_weight_cap(w, 1.0) == w
+
+
+def test_apply_weight_cap_lte_zero_unchanged():
+    w = {"A": 0.4, "B": 0.6}
+    assert _apply_weight_cap(w, 0.0) == w
+
+
+def test_apply_weight_cap_no_violation():
+    # Uniform weights, cap = 0.5, no symbol exceeds cap
+    w = {"A": 0.25, "B": 0.25, "C": 0.25, "D": 0.25}
+    result = _apply_weight_cap(w, 0.5)
+    for v in result.values():
+        assert v <= 0.5 + 1e-9
+    assert math.isclose(sum(result.values()), 1.0, rel_tol=1e-6)
+
+
+def test_apply_weight_cap_trims_one_overweight():
+    # A is 80%, others share 20% — cap at 40%
+    w = {"A": 0.8, "B": 0.1, "C": 0.1}
+    result = _apply_weight_cap(w, 0.4)
+    assert result["A"] <= 0.4 + 1e-9
+    assert math.isclose(sum(result.values()), 1.0, rel_tol=1e-6)
+
+
+def test_apply_weight_cap_infeasible_returns_equal():
+    # cap = 0.1 with 5 symbols — exactly feasible (0.1 * 5 = 1.0), but with unequal weights
+    # cap = 0.05 with 5 symbols — infeasible (0.05 * 5 = 0.25 < 1.0)
+    w = {"A": 0.5, "B": 0.2, "C": 0.1, "D": 0.1, "E": 0.1}
+    result = _apply_weight_cap(w, 0.05)
+    for v in result.values():
+        assert math.isclose(v, 0.2, rel_tol=1e-6)
+
+
+def test_apply_weight_cap_result_sums_to_one():
+    w = {"A": 0.6, "B": 0.3, "C": 0.1}
+    result = _apply_weight_cap(w, 0.35)
+    assert math.isclose(sum(result.values()), 1.0, rel_tol=1e-6)
+    for v in result.values():
+        assert v <= 0.35 + 1e-9
+
+
+# ──────────────────────────────────────────────
+# _compute_weight_variants
+# ──────────────────────────────────────────────
+
+
+def test_compute_weight_variants_all_new():
+    # No prior holdings: all 3 symbols are entries
+    full, slot, prop = _compute_weight_variants(
+        new_holdings={"A", "B", "C"},
+        entries={"A", "B", "C"},
+        exits=set(),
+        marg_weights={},
+        prop_weights={},
+        size=3,
+    )
+    for v in full.values():
+        assert math.isclose(v, 1 / 3, rel_tol=1e-6)
+    assert math.isclose(sum(slot.values()), 1.0, rel_tol=1e-6)
+    assert math.isclose(sum(prop.values()), 1.0, rel_tol=1e-6)
+
+
+def test_compute_weight_variants_no_change():
+    # Same holdings, no entries or exits
+    w = {"A": 0.4, "B": 0.35, "C": 0.25}
+    full, slot, prop = _compute_weight_variants(
+        new_holdings={"A", "B", "C"},
+        entries=set(),
+        exits=set(),
+        marg_weights=w,
+        prop_weights=w,
+        size=3,
+    )
+    for v in full.values():
+        assert math.isclose(v, 1 / 3, rel_tol=1e-6)
+    # Slot and prop incumbents keep their normalised weights
+    assert math.isclose(sum(slot.values()), 1.0, rel_tol=1e-6)
+    assert math.isclose(sum(prop.values()), 1.0, rel_tol=1e-6)
+
+
+def test_compute_weight_variants_partial_rotation():
+    # D exits, E enters; A/B/C carry over
+    marg = {"A": 0.25, "B": 0.25, "C": 0.25, "D": 0.25}
+    full, slot, prop = _compute_weight_variants(
+        new_holdings={"A", "B", "C", "E"},
+        entries={"E"},
+        exits={"D"},
+        marg_weights=marg,
+        prop_weights=marg,
+        size=4,
+    )
+    for v in full.values():
+        assert math.isclose(v, 0.25, rel_tol=1e-6)
+    assert "E" in slot and "D" not in slot
+    assert math.isclose(sum(slot.values()), 1.0, rel_tol=1e-6)
+    assert math.isclose(sum(prop.values()), 1.0, rel_tol=1e-6)
+
+
+def test_compute_weight_variants_full_is_always_equal():
+    full, _, _ = _compute_weight_variants(
+        new_holdings={"X", "Y"},
+        entries={"X"},
+        exits={"Z"},
+        marg_weights={"Y": 0.7, "Z": 0.3},
+        prop_weights={"Y": 0.7, "Z": 0.3},
+        size=2,
+    )
+    for v in full.values():
+        assert math.isclose(v, 0.5, rel_tol=1e-6)
+
+
+# ──────────────────────────────────────────────
+# rank_universe_at_date
+# ──────────────────────────────────────────────
+
+
+def test_rank_universe_empty_ohlcv():
+    result = rank_universe_at_date({}, pd.Timestamp("2023-01-01"), "Average of 3/6/9/12 months")
+    assert result == []
+
+
+def test_rank_universe_insufficient_history_filtered():
+    # Only 100 rows — below min_history_days=750
+    df = make_ohlcv(100)
+    result = rank_universe_at_date(
+        {"A": df},
+        as_of=df.index[-1],
+        sort_method="Average of 3/6/9/12 months",
+        min_history_days=750,
+        apply_volume_filter=False,
+    )
+    assert result == []
+
+
+def test_rank_universe_valid_symbols_filter():
+    rising = [100.0 + i * 0.05 for i in range(800)]
+    df = make_ohlcv(800, close=rising)
+    all_ohlcv = {"A": df, "B": df, "C": df}
+    result = rank_universe_at_date(
+        all_ohlcv,
+        as_of=df.index[-1],
+        sort_method="Average of 3/6/9/12 months",
+        valid_symbols={"A", "C"},
+        min_history_days=750,
+        apply_volume_filter=False,
+    )
+    assert "B" not in result
+    assert set(result).issubset({"A", "C"})
+
+
+def test_rank_universe_volume_filter_excludes_low_vol():
+    from config import MIN_VOLUME
+
+    # Rising prices so Sharpe is non-zero and stocks aren't filtered by ranking
+    rising = [100.0 + i * 0.05 for i in range(800)]
+    df_low = make_ohlcv(800, close=rising, volume=MIN_VOLUME // 2)
+    df_ok = make_ohlcv(800, close=rising, volume=MIN_VOLUME * 10)
+    result = rank_universe_at_date(
+        {"LOW": df_low, "OK": df_ok},
+        as_of=df_ok.index[-1],
+        sort_method="Average of 3/6/9/12 months",
+        min_history_days=750,
+        apply_volume_filter=True,
+    )
+    assert "LOW" not in result
+    assert "OK" in result

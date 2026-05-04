@@ -3,12 +3,13 @@ Pure worker functions for background job execution — no Streamlit calls allowe
 Each function signature: (params: dict, emit: Callable, cancel_evt: Event) -> dict
 """
 
+import dataclasses
 import threading
 from typing import Callable
 
 import pandas as pd
 
-from backtest_engine import run_backtest
+from backtest_engine import BacktestConfig, run_backtest
 
 # Screener workers stay on the DB-backed pipeline.
 from data import resolve_screener_data
@@ -64,9 +65,7 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
 
     benchmarks = load_benchmark_series()
 
-    common_kwargs = dict(
-        all_ohlcv=symbol_data,
-        benchmarks=benchmarks,
+    base_config = BacktestConfig(
         m=params["m"],
         n=params["n"],
         rebalance_freq=params["rebalance_freq"],
@@ -83,17 +82,14 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         ltcg_rate=params.get("ltcg_rate", 0.0),
         stcg_rate=params.get("stcg_rate", 0.0),
         max_position_pct=params.get("max_position_pct") or None,
-    )
-
-    emit("info", f"Running Classic band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
-    result_classic = run_backtest(
-        **common_kwargs,
-        band_rule="classic",
         stage2_drop_exit=params.get("stage2_drop_exit", False),
         stage2_drop_threshold=params.get("stage2_drop_threshold", 2),
         stage2_entry_filter=params.get("stage2_entry_filter", False),
         stage2_entry_threshold=params.get("stage2_entry_threshold", 2),
     )
+
+    emit("info", f"Running Classic band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
+    result_classic = run_backtest(symbol_data, benchmarks, dataclasses.replace(base_config, band_rule="classic"))
     if "error" in result_classic:
         raise RuntimeError(result_classic["error"])
 
@@ -101,14 +97,7 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         raise RuntimeError("Cancelled")
 
     emit("info", f"Running Displacement band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
-    result_disp = run_backtest(
-        **common_kwargs,
-        band_rule="displacement",
-        stage2_drop_exit=params.get("stage2_drop_exit", False),
-        stage2_drop_threshold=params.get("stage2_drop_threshold", 2),
-        stage2_entry_filter=params.get("stage2_entry_filter", False),
-        stage2_entry_threshold=params.get("stage2_entry_threshold", 2),
-    )
+    result_disp = run_backtest(symbol_data, benchmarks, dataclasses.replace(base_config, band_rule="displacement"))
     if "error" in result_disp:
         raise RuntimeError(result_disp["error"])
 
