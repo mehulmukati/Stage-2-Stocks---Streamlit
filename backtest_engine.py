@@ -195,30 +195,46 @@ def _compute_fy_tax(
 # ──────────────────────────────────────────────────────────────
 
 
-def _valid_symbols_at_date(
+def _prepare_compositions(
     comp_df: pd.DataFrame,
+    index_names: list[str],
+) -> pd.DataFrame | None:
+    """
+    Precompute the filtered/keyed compositions DataFrame for the requested indices.
+    Returns None only when the universe filter should be fully disabled (no data or
+    no index names). Returns a (possibly empty) DataFrame otherwise so the per-rebalance
+    call can apply the filter and correctly return set() when no symbols match.
+    Call once before the rebalance loop; pass the result to _valid_symbols_at_date.
+    """
+    if comp_df is None or comp_df.empty or not index_names:
+        return None
+
+    requested_keys = {_canonical_index_name(name) for name in index_names}
+    comp = comp_df.copy()
+    comp["_INDEX_KEY"] = comp["INDEX_NAME"].map(_canonical_index_name)
+    filtered = comp[comp["_INDEX_KEY"].isin(requested_keys)]
+
+    if filtered.empty:
+        logging.warning("None of the requested indices %r were found in compositions_df", index_names)
+
+    return filtered
+
+
+def _valid_symbols_at_date(
+    comp_prepared: pd.DataFrame | None,
     index_names: list[str],
     as_of: pd.Timestamp,
 ) -> set[str] | None:
     """
     Return the set of symbols that were members of the given indices on or
     before `as_of`, based on the most recent composition snapshot per index.
-    Returns None when comp_df is empty (disables the filter so the backtest
-    still runs without compositions data).
+    Returns None when comp_prepared is None (filter disabled).
+    comp_prepared must be the result of _prepare_compositions (precomputed once).
     """
-    if comp_df is None or comp_df.empty or not index_names:
+    if comp_prepared is None:
         return None
 
-    comp = comp_df.copy()
-    comp["_INDEX_KEY"] = comp["INDEX_NAME"].map(_canonical_index_name)
-    requested_keys = {_canonical_index_name(name) for name in index_names}
-
-    eligible_for_indices = comp[comp["_INDEX_KEY"].isin(requested_keys)]
-    if eligible_for_indices.empty:
-        logging.warning("None of the requested indices %r were found in compositions_df", index_names)
-        return set()
-
-    eligible = eligible_for_indices[eligible_for_indices["TIME_STAMP"] <= as_of]
+    eligible = comp_prepared[comp_prepared["TIME_STAMP"] <= as_of]
     if eligible.empty:
         logging.warning(
             "No composition snapshot exists on or before %s for requested indices %r; using empty universe",
@@ -845,6 +861,9 @@ def run_backtest(
     # Exclude the first trading day: we need T-1 close to rank without look-ahead bias.
     rebalance_set = set(rebalance_dates) - {trading_days[0]}
 
+    # Pre-filter compositions once so the per-rebalance call is a cheap date slice
+    comp_prepared = _prepare_compositions(compositions_df, index_names or [])
+
     # Pre-compute rolling metrics once per symbol (O(symbols)) instead of per rebalance date
     precomputed = _precompute_all_metrics(all_ohlcv)
     stage2_precomputed = _precompute_stage2_scores(all_ohlcv) if (stage2_drop_exit or stage2_entry_filter) else {}
@@ -902,7 +921,7 @@ def run_backtest(
         # ── rebalance ──
         if day in rebalance_set:
             # Restrict universe to historically valid members on this date
-            valid_syms = _valid_symbols_at_date(compositions_df, index_names or [], day)
+            valid_syms = _valid_symbols_at_date(comp_prepared, index_names or [], day)
 
             # Rank using previous day's data to avoid look-ahead bias:
             # rankings are determined from T-1 close; trades execute at T close.

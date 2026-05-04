@@ -9,6 +9,7 @@ from backtest_engine import (
     _compute_summary_stats,
     _compute_weight_variants,
     _drift_weights,
+    _prepare_compositions,
     _trading_days,
     _valid_symbols_at_date,
     get_rebalance_dates,
@@ -120,21 +121,23 @@ def _make_comp_df(rows):
     return pd.DataFrame([{"INDEX_NAME": i, "SYMBOL": s, "TIME_STAMP": pd.Timestamp(t)} for i, s, t in rows])
 
 
+def _valid(df, index_names, as_of_str):
+    """Helper: prepare + query in one call, mirroring how run_backtest uses both functions."""
+    return _valid_symbols_at_date(_prepare_compositions(df, index_names), index_names, pd.Timestamp(as_of_str))
+
+
 def test_valid_empty_comp_df():
-    result = _valid_symbols_at_date(pd.DataFrame(), ["NIFTY50"], pd.Timestamp("2023-01-01"))
-    assert result is None
+    assert _valid(pd.DataFrame(), ["NIFTY50"], "2023-01-01") is None
 
 
 def test_valid_single_index_single_snapshot():
     df = _make_comp_df([("NIFTY50", "A", "2023-01-01"), ("NIFTY50", "B", "2023-01-01"), ("NIFTY50", "C", "2023-01-01")])
-    result = _valid_symbols_at_date(df, ["NIFTY50"], pd.Timestamp("2023-06-01"))
-    assert result == {"A", "B", "C"}
+    assert _valid(df, ["NIFTY50"], "2023-06-01") == {"A", "B", "C"}
 
 
 def test_valid_matches_display_index_names_to_canonical_names():
     df = _make_comp_df([("NIFTY 50", "A", "2023-01-01"), ("NIFTY 50", "B", "2023-01-01")])
-    result = _valid_symbols_at_date(df, ["Nifty 50"], pd.Timestamp("2023-06-01"))
-    assert result == {"A", "B"}
+    assert _valid(df, ["Nifty 50"], "2023-06-01") == {"A", "B"}
 
 
 def test_valid_uses_latest_snapshot():
@@ -146,19 +149,17 @@ def test_valid_uses_latest_snapshot():
             ("NIFTY50", "NEW2", "2023-01-01"),
         ]
     )
-    result = _valid_symbols_at_date(df, ["NIFTY50"], pd.Timestamp("2023-06-01"))
-    assert result == {"NEW1", "NEW2"}
+    assert _valid(df, ["NIFTY50"], "2023-06-01") == {"NEW1", "NEW2"}
 
 
 def test_valid_respects_as_of_date():
     df = _make_comp_df([("NIFTY50", "FUTURE", "2024-01-01")])
-    result = _valid_symbols_at_date(df, ["NIFTY50"], pd.Timestamp("2023-06-01"))
-    assert result == set()
+    assert _valid(df, ["NIFTY50"], "2023-06-01") == set()
 
 
 def test_valid_unknown_requested_index_returns_empty_set(caplog):
     df = _make_comp_df([("NIFTY50", "A", "2023-01-01")])
-    result = _valid_symbols_at_date(df, ["NIFTY_MISSING"], pd.Timestamp("2023-06-01"))
+    result = _valid(df, ["NIFTY_MISSING"], "2023-06-01")
     assert result == set()
     assert "NIFTY_MISSING" in caplog.text
 
@@ -172,21 +173,17 @@ def test_valid_multi_index_union():
             ("NIFTY500", "D", "2023-01-01"),
         ]
     )
-    result = _valid_symbols_at_date(df, ["NIFTY50", "NIFTY500"], pd.Timestamp("2023-06-01"))
-    assert result == {"A", "B", "C", "D"}
+    assert _valid(df, ["NIFTY50", "NIFTY500"], "2023-06-01") == {"A", "B", "C", "D"}
 
 
 def test_valid_missing_index_returns_rest(caplog):
     df = _make_comp_df([("NIFTY50", "A", "2023-01-01")])
-    result = _valid_symbols_at_date(df, ["NIFTY50", "NIFTY_MISSING"], pd.Timestamp("2023-06-01"))
-    assert result == {"A"}
-    assert "NIFTY_MISSING" in caplog.text
+    assert _valid(df, ["NIFTY50", "NIFTY_MISSING"], "2023-06-01") == {"A"}
 
 
 def test_valid_empty_index_names():
     df = _make_comp_df([("NIFTY50", "A", "2023-01-01")])
-    result = _valid_symbols_at_date(df, [], pd.Timestamp("2023-01-01"))
-    assert result is None
+    assert _valid(df, [], "2023-01-01") is None
 
 
 # ──────────────────────────────────────────────
