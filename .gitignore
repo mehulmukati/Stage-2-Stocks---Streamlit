@@ -26,3 +26,11 @@ data/momentum_cache.parquet
 # Gitignored so the committed baseline stays clean; rebuilt automatically at runtime.
 data/backtest_delta.parquet
 data/benchmarks_delta.parquet
+
+# Backtest batch run outputs (CSVs, logs, checkpoints)
+batch_*.csv
+batch_*.log
+batch_*.py
+smoke_*.csv
+test_prop_smoke*.csv
+explainer.html
