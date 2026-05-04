@@ -1042,6 +1042,7 @@ def run_backtest(
                     "holdings": sorted(current_holdings),
                     "entries": [f"{s} ({entry_reasons[s]})" if s in entry_reasons else s for s in sorted(entries)],
                     "exits": [f"{s} ({exit_reasons[s]})" if s in exit_reasons else s for s in sorted(exits)],
+                    "full_ranking": ranked,
                     "valid_universe_size": len(valid_syms) if valid_syms else len(all_ohlcv),
                     "full_turnover_pct": round(traded_w_full * 100, 2),
                     "marg_turnover_pct": round(traded_w_marg * 100, 2),

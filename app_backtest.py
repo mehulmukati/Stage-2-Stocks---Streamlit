@@ -20,7 +20,7 @@ from streamlit_autorefresh import st_autorefresh
 warnings.filterwarnings("ignore", category=FutureWarning)
 logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-from backtest_engine import rolling_returns
+from backtest_engine import _compute_summary_stats, rolling_returns
 from charts import nav_chart_figure, portfolio_churn_figure, portfolio_weights_figure, rolling_returns_figure
 from jobs import JobStatus, registry
 from ui_helpers import _get_user_token, _poll_job
@@ -613,6 +613,224 @@ def _render_weights_csv_uploader() -> None:
 
 
 # ──────────────────────────────────────────────
+# DEBUG TAB
+# ──────────────────────────────────────────────
+
+
+def _render_debug_tab(result: dict | None) -> None:
+    """Portfolio Debugger: explain why a stock was or wasn't held on a given rebalance date."""
+    st.markdown("### 🔍 Portfolio Debugger")
+    st.caption("Select a rebalance date and a stock ticker to understand the portfolio decision on that date.")
+
+    if not result:
+        st.info("Run a backtest first, then use this tab to inspect individual portfolio decisions.")
+        return
+
+    holdings_log = result.get("holdings_log", {})
+    if not isinstance(holdings_log, dict) or not holdings_log:
+        st.warning("No holdings log available.")
+        return
+
+    m = result.get("m", "?")
+
+    c1, c2, c3 = st.columns([1, 2, 2])
+    with c1:
+        rule = st.selectbox("Band rule", [r for r in ("Classic", "Displacement") if r in holdings_log], key="dbg_rule")
+    log = holdings_log.get(rule, [])
+    if not log:
+        st.warning(f"No rebalance log for {rule}.")
+        return
+
+    date_options = [str(e["date"].date()) for e in reversed(log)]
+    with c2:
+        chosen_date_str = st.selectbox("Rebalance date", date_options, key="dbg_date")
+    with c3:
+        ticker = st.text_input("Stock ticker (e.g. RELIANCE)", key="dbg_ticker").strip().upper()
+
+    entry = next((e for e in log if str(e["date"].date()) == chosen_date_str), None)
+    if entry is None:
+        st.error("Could not find the selected date in the log.")
+        return
+
+    holdings = entry["holdings"]
+    full_ranking: list[str] = entry.get("full_ranking", [])
+    universe_size = entry.get("valid_universe_size", "?")
+
+    st.divider()
+
+    # ── Top-10 ranked stocks table (always shown for context) ──
+    if full_ranking:
+        top10 = full_ranking[:10]
+        top10_df = __import__("pandas").DataFrame(
+            [
+                {
+                    "Rank": i + 1,
+                    "Symbol": sym,
+                    "Held": "✅" if sym in holdings else "",
+                }
+                for i, sym in enumerate(top10)
+            ]
+        )
+        st.markdown(f"**Top-10 ranked on {chosen_date_str}** (M={m}, universe={universe_size} symbols)")
+        st.dataframe(top10_df, hide_index=True, use_container_width=False, width=340)
+    else:
+        st.info("No ranking data available for this rebalance date (backtest run before this feature was added).")
+
+    if not ticker:
+        return
+
+    st.divider()
+    st.markdown(f"#### Decision for **{ticker}** on {chosen_date_str}")
+
+    if ticker in holdings:
+        rank_pos = (full_ranking.index(ticker) + 1) if ticker in full_ranking else None
+        st.success(f"✅ **Held** — {ticker} was in the portfolio.")
+        weights = {
+            "Full Rebalance": entry.get("full_weights", {}).get(ticker),
+            "Marginal Rebalance": entry.get("marg_weights", {}).get(ticker),
+            "Prop Rebalance": entry.get("prop_weights", {}).get(ticker),
+        }
+        if rank_pos:
+            st.markdown(f"Rank: **#{rank_pos}** out of {len(full_ranking)} scored symbols")
+        cols = st.columns(3)
+        for col, (variant, w) in zip(cols, weights.items()):
+            col.metric(variant, f"{w:.2f}%" if w is not None else "—")
+
+    elif ticker in full_ranking:
+        rank_pos = full_ranking.index(ticker) + 1
+        n_held = len(holdings)
+        st.warning(f"🟡 **Ranked but not held** — {ticker} passed all filters but its rank was too low.")
+        st.markdown(
+            f"- Rank: **#{rank_pos}** out of {len(full_ranking)} scored symbols\n"
+            f"- Enters portfolio only if rank ≤ M = **{m}**\n"
+            f"- Portfolio held **{n_held}** stocks on this date"
+        )
+
+    else:
+        st.error(f"🔴 **Excluded before ranking** — {ticker} did not pass the pre-ranking filters.")
+        st.markdown(
+            f"Possible reasons (any one or more):\n"
+            f"- **Insufficient history**: fewer than the configured minimum trading days of history before this date\n"
+            f"- **Low volume**: median daily volume below the minimum threshold\n"
+            f"- **Not in index**: not a constituent of the selected indices on this date "
+            f"(checked via compositions.parquet)\n"
+            f"- **Missing data**: >5% of close prices were missing\n\n"
+            f"Ranked universe had **{len(full_ranking)}** symbols; "
+            f"valid index universe was **{universe_size}** symbols."
+        )
+
+
+# ──────────────────────────────────────────────
+# WALK-FORWARD TAB
+# ──────────────────────────────────────────────
+
+
+def _render_walkforward_tab(result: dict | None, params: dict) -> None:
+    """Walk-Forward Validation: split NAV into in-sample and out-of-sample windows."""
+    import pandas as pd
+
+    st.markdown("### 📐 Walk-Forward Validation")
+    st.caption(
+        "Split the backtest period at a chosen date and compare performance in each window. "
+        "If out-of-sample numbers are materially worse, the strategy may be overfit to the calibration window."
+    )
+
+    if not result:
+        st.info("Run a backtest first, then use this tab to split the results into calibration and forward windows.")
+        return
+
+    nav_df: pd.DataFrame = result["nav"]
+    bt_start = pd.Timestamp(params["start_date"])
+    bt_end = pd.Timestamp(params["end_date"])
+    midpoint = bt_start + (bt_end - bt_start) / 2
+
+    split_date = st.date_input(
+        "Split date (in-sample ends here; out-of-sample begins the next day)",
+        value=midpoint.date(),
+        min_value=(bt_start + pd.Timedelta(days=30)).date(),
+        max_value=(bt_end - pd.Timedelta(days=30)).date(),
+        key="wf_split",
+    )
+    split_ts = pd.Timestamp(split_date)
+
+    nav_in = nav_df[nav_df.index <= split_ts]
+    nav_out = nav_df[nav_df.index > split_ts]
+
+    if nav_in.empty or nav_out.empty:
+        st.warning("Split date leaves one window empty — move the split date further inside the backtest range.")
+        return
+
+    # ── header metrics ──
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("In-sample start", str(nav_in.index[0].date()))
+    c2.metric("In-sample end", str(nav_in.index[-1].date()))
+    c3.metric("Out-of-sample start", str(nav_out.index[0].date()))
+    c4.metric("Out-of-sample end", str(nav_out.index[-1].date()))
+
+    # ── strategy columns only (exclude benchmarks for the comparison tables) ──
+    strategy_cols = [c for c in nav_df.columns if any(v in c for v in ("Full", "Marginal", "Prop"))]
+    bench_cols = [c for c in nav_df.columns if c not in strategy_cols]
+
+    # ── compute stats on raw (un-normalised) slices ──
+    stats_in = _compute_summary_stats(nav_in[strategy_cols]) if strategy_cols else pd.DataFrame()
+    stats_out = _compute_summary_stats(nav_out[strategy_cols]) if strategy_cols else pd.DataFrame()
+
+    st.divider()
+    left, right = st.columns(2)
+
+    def _fmt_stats(df: pd.DataFrame) -> pd.DataFrame:
+        """Format stats DataFrame for display."""
+        display = df.copy()
+        for col in display.columns:
+            if "%" in col or col in ("CAGR (%)", "Max DD (%)", "Volatility (%)"):
+                display[col] = display[col].map(lambda x: f"{x:.1f}%" if pd.notna(x) else "—")
+            elif col == "Sharpe":
+                display[col] = display[col].map(lambda x: f"{x:.2f}" if pd.notna(x) else "—")
+        return display
+
+    with left:
+        days_in = len(nav_in)
+        st.markdown(f"**📅 In-sample** · {nav_in.index[0].date()} → {nav_in.index[-1].date()} · {days_in} days")
+        if not stats_in.empty:
+            st.dataframe(stats_in, use_container_width=True)
+        else:
+            st.info("No strategy data.")
+
+    with right:
+        days_out = len(nav_out)
+        st.markdown(f"**🔮 Out-of-sample** · {nav_out.index[0].date()} → {nav_out.index[-1].date()} · {days_out} days")
+        if not stats_out.empty:
+            st.dataframe(stats_out, use_container_width=True)
+        else:
+            st.info("No strategy data.")
+
+    # ── NAV chart with split marker ──
+    st.divider()
+    st.markdown("**Normalised NAV — both windows rebased to 100**")
+
+    # Normalise each window independently to base 100
+    nav_in_norm = (nav_in[strategy_cols] / nav_in[strategy_cols].iloc[0]) * 100
+    nav_out_norm = (nav_out[strategy_cols] / nav_out[strategy_cols].iloc[0]) * 100
+
+    nav_combined = pd.concat([nav_in_norm, nav_out_norm])
+    fig = nav_chart_figure(nav_combined)
+    fig.add_vline(
+        x=split_ts.timestamp() * 1000,
+        line_dash="dot",
+        line_color="rgba(255,255,255,0.5)",
+        annotation_text="Split",
+        annotation_position="top",
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    # ── benchmark comparison (informational, not split) ──
+    if bench_cols:
+        with st.expander("Benchmark stats (full period, not split)"):
+            bench_stats = _compute_summary_stats(nav_df[bench_cols])
+            st.dataframe(bench_stats, use_container_width=True)
+
+
+# ──────────────────────────────────────────────
 # MAIN
 # ──────────────────────────────────────────────
 def main():
@@ -646,10 +864,15 @@ def main():
         unsafe_allow_html=True,
     )
 
-    tab_bt, tab_guide = st.tabs(["📊 Backtest", "📖 User Guide"])
+    tab_bt, tab_debug, tab_wf, tab_guide = st.tabs(["📊 Backtest", "🔍 Debug", "📐 Walk-Forward", "📖 User Guide"])
+    cached_result = st.session_state.get("backtest_cached_result")
     with tab_bt:
         backtest_results(bt_params)
         _render_weights_csv_uploader()
+    with tab_debug:
+        _render_debug_tab(cached_result)
+    with tab_wf:
+        _render_walkforward_tab(cached_result, bt_params)
     with tab_guide:
         _render_user_guide()
 
