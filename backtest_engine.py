@@ -20,6 +20,7 @@ Survivorship-bias mitigations applied:
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -102,6 +103,11 @@ def _validate_ohlcv_schema(all_ohlcv: dict[str, pd.DataFrame]) -> list[str]:
 def _financial_year(date: pd.Timestamp) -> int:
     """India FY Apr–Mar. Returns start year: Apr 2021–Mar 2022 → 2021."""
     return date.year if date.month >= 4 else date.year - 1
+
+
+def _canonical_index_name(name: str) -> str:
+    """Normalise display/canonical NSE index labels for composition matching."""
+    return re.sub(r"[^A-Z0-9]", "", str(name).upper())
 
 
 def _compute_fy_tax(
@@ -203,7 +209,11 @@ def _valid_symbols_at_date(
     if comp_df is None or comp_df.empty or not index_names:
         return None
 
-    eligible_for_indices = comp_df[comp_df["INDEX_NAME"].isin(index_names)]
+    comp = comp_df.copy()
+    comp["_INDEX_KEY"] = comp["INDEX_NAME"].map(_canonical_index_name)
+    requested_keys = {_canonical_index_name(name) for name in index_names}
+
+    eligible_for_indices = comp[comp["_INDEX_KEY"].isin(requested_keys)]
     if eligible_for_indices.empty:
         logging.warning("None of the requested indices %r were found in compositions_df", index_names)
         return set()
@@ -219,10 +229,11 @@ def _valid_symbols_at_date(
 
     valid: set[str] = set()
     for idx_name in index_names:
-        idx_rows = eligible[eligible["INDEX_NAME"] == idx_name]
+        idx_key = _canonical_index_name(idx_name)
+        idx_rows = eligible[eligible["_INDEX_KEY"] == idx_key]
         if idx_rows.empty:
-            logging.warning(
-                "Index %r not found in compositions_df as of %s — skipping filter for this index", idx_name, as_of
+            logging.debug(
+                "Index %r has no composition snapshot on or before %s — skipping for this rebalance", idx_name, as_of
             )
             continue
         latest_ts = idx_rows["TIME_STAMP"].max()
@@ -806,6 +817,25 @@ def run_backtest(
     schema_errors = _validate_ohlcv_schema(all_ohlcv)
     if schema_errors:
         return {"error": "Invalid OHLCV input: " + "; ".join(schema_errors[:5])}
+
+    # Warn once if any requested index has no composition data before the start date.
+    if compositions_df is not None and not compositions_df.empty and index_names:
+        comp_check = compositions_df.copy()
+        comp_check["_INDEX_KEY"] = comp_check["INDEX_NAME"].map(_canonical_index_name)
+        for idx_name in index_names:
+            idx_key = _canonical_index_name(idx_name)
+            idx_rows = comp_check[comp_check["_INDEX_KEY"] == idx_key]
+            if idx_rows.empty:
+                continue  # covered by the existing "None found" warning path
+            earliest = idx_rows["TIME_STAMP"].min()
+            if earliest > t0:
+                logging.warning(
+                    "Index %r composition data starts on %s, which is after the backtest start %s. "
+                    "This index will be excluded from the universe filter until its data begins.",
+                    idx_name,
+                    earliest.date(),
+                    t0.date(),
+                )
 
     trading_days = _trading_days(all_ohlcv, t0, t1)
     if len(trading_days) < 20:

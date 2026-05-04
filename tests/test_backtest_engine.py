@@ -131,6 +131,12 @@ def test_valid_single_index_single_snapshot():
     assert result == {"A", "B", "C"}
 
 
+def test_valid_matches_display_index_names_to_canonical_names():
+    df = _make_comp_df([("NIFTY 50", "A", "2023-01-01"), ("NIFTY 50", "B", "2023-01-01")])
+    result = _valid_symbols_at_date(df, ["Nifty 50"], pd.Timestamp("2023-06-01"))
+    assert result == {"A", "B"}
+
+
 def test_valid_uses_latest_snapshot():
     df = _make_comp_df(
         [
