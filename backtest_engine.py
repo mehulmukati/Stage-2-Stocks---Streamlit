@@ -82,6 +82,23 @@ def _close_price(all_ohlcv: dict, sym: str, date: pd.Timestamp) -> float | None:
         return None
 
 
+def _schema_error(symbol: str, missing: set[str]) -> str:
+    return f"{symbol}: missing required OHLCV columns {sorted(missing)}"
+
+
+def _validate_ohlcv_schema(all_ohlcv: dict[str, pd.DataFrame]) -> list[str]:
+    """Return schema validation errors for backtest OHLCV input."""
+    required = {"Close", "High", "Volume"}
+    errors: list[str] = []
+    for sym, df in all_ohlcv.items():
+        missing = required - set(df.columns)
+        if missing:
+            errors.append(_schema_error(sym, missing))
+        if not isinstance(df.index, pd.DatetimeIndex):
+            errors.append(f"{sym}: index must be a DatetimeIndex")
+    return errors
+
+
 def _financial_year(date: pd.Timestamp) -> int:
     """India FY Apr–Mar. Returns start year: Apr 2021–Mar 2022 → 2021."""
     return date.year if date.month >= 4 else date.year - 1
@@ -186,9 +203,19 @@ def _valid_symbols_at_date(
     if comp_df is None or comp_df.empty or not index_names:
         return None
 
-    eligible = comp_df[comp_df["INDEX_NAME"].isin(index_names) & (comp_df["TIME_STAMP"] <= as_of)]
+    eligible_for_indices = comp_df[comp_df["INDEX_NAME"].isin(index_names)]
+    if eligible_for_indices.empty:
+        logging.warning("None of the requested indices %r were found in compositions_df", index_names)
+        return set()
+
+    eligible = eligible_for_indices[eligible_for_indices["TIME_STAMP"] <= as_of]
     if eligible.empty:
-        return None
+        logging.warning(
+            "No composition snapshot exists on or before %s for requested indices %r; using empty universe",
+            as_of,
+            index_names,
+        )
+        return set()
 
     valid: set[str] = set()
     for idx_name in index_names:
@@ -201,7 +228,7 @@ def _valid_symbols_at_date(
         latest_ts = idx_rows["TIME_STAMP"].max()
         valid.update(idx_rows.loc[idx_rows["TIME_STAMP"] == latest_ts, "SYMBOL"])
 
-    return valid if valid else None
+    return valid
 
 
 # ──────────────────────────────────────────────────────────────
@@ -368,7 +395,7 @@ def _daily_returns(all_ohlcv: dict[str, pd.DataFrame], symbols: list[str], dates
     frames = {}
     for sym in symbols:
         if sym in all_ohlcv:
-            s = all_ohlcv[sym]["Close"].reindex(dates).ffill()
+            s = all_ohlcv[sym]["Close"].reindex(dates).ffill(limit=5)
             frames[sym] = s.pct_change()
     if not frames:
         return pd.DataFrame(index=dates)
@@ -400,6 +427,71 @@ def _drift_weights(
             drifted[s] = w
     total_d = sum(drifted.values())
     return {s: w / total_d for s, w in drifted.items()} if total_d > 0 else drifted
+
+
+def _realise_weight_reductions(
+    lots: dict[str, list[dict]],
+    old_weights: dict[str, float],
+    new_weights: dict[str, float],
+    all_ohlcv: dict[str, pd.DataFrame],
+    day: pd.Timestamp,
+    nav: float,
+) -> tuple[float, float, float, float]:
+    """FIFO-tax every weight reduction, including partial trims and full exits."""
+    st_g = st_l = lt_g = lt_l = 0.0
+    for sym in set(old_weights) | set(new_weights):
+        sold_w = old_weights.get(sym, 0.0) - new_weights.get(sym, 0.0)
+        if sold_w <= 1e-12:
+            continue
+        price = _close_price(all_ohlcv, sym, day)
+        if price is None or price <= 0:
+            continue
+        shares_to_sell = (nav * sold_w) / price
+        sym_lots = lots.get(sym, [])
+        while shares_to_sell > 1e-12 and sym_lots:
+            lot = sym_lots[0]
+            lot_shares = float(lot["shares"])
+            used = min(lot_shares, shares_to_sell)
+            gain = (price - float(lot["price"])) * used
+            is_long_term = day > lot["date"] + relativedelta(months=12)
+            if is_long_term:
+                if gain >= 0:
+                    lt_g += gain
+                else:
+                    lt_l += abs(gain)
+            else:
+                if gain >= 0:
+                    st_g += gain
+                else:
+                    st_l += abs(gain)
+            lot["shares"] = lot_shares - used
+            shares_to_sell -= used
+            if lot["shares"] <= 1e-12:
+                sym_lots.pop(0)
+        if sym_lots:
+            lots[sym] = sym_lots
+        else:
+            lots.pop(sym, None)
+    return st_g, st_l, lt_g, lt_l
+
+
+def _record_weight_increases(
+    lots: dict[str, list[dict]],
+    old_weights: dict[str, float],
+    new_weights: dict[str, float],
+    all_ohlcv: dict[str, pd.DataFrame],
+    day: pd.Timestamp,
+    nav: float,
+) -> None:
+    """Append FIFO lots for every weight increase at the rebalance close."""
+    for sym, new_w in new_weights.items():
+        bought_w = new_w - old_weights.get(sym, 0.0)
+        if bought_w <= 1e-12:
+            continue
+        price = _close_price(all_ohlcv, sym, day)
+        if price is None or price <= 0:
+            continue
+        lots.setdefault(sym, []).append({"date": day, "price": price, "shares": (nav * bought_w) / price})
 
 
 def _compute_holdings_classic(
@@ -567,6 +659,9 @@ def _compute_weight_variants(
       Prop-fill marginal: entrants seeded at 1/size; normalization redistributes surplus.
     Returns (new_full, new_slot, new_prop).
     """
+    if size <= 0 or not new_holdings:
+        return {}, {}, {}
+
     new_full = {s: 1.0 / size for s in new_holdings}
 
     freed_slot = sum(marg_weights.get(s, 0.0) for s in exits)
@@ -708,6 +803,9 @@ def run_backtest(
         return {"error": f"stcg_rate ({stcg_rate}) must be between 0 and 1."}
     if max_position_pct is not None and not (0.0 < max_position_pct <= 100.0):
         return {"error": f"max_position_pct ({max_position_pct}) must be between 0 (exclusive) and 100."}
+    schema_errors = _validate_ohlcv_schema(all_ohlcv)
+    if schema_errors:
+        return {"error": "Invalid OHLCV input: " + "; ".join(schema_errors[:5])}
 
     trading_days = _trading_days(all_ohlcv, t0, t1)
     if len(trading_days) < 20:
@@ -747,8 +845,9 @@ def run_backtest(
     cost_log_prop: list[float] = []
     holdings_sizes: list[int] = []
 
-    entry_prices: dict[str, float] = {}
-    entry_dates: dict[str, pd.Timestamp] = {}
+    lots_full: dict[str, list[dict]] = {}
+    lots_marg: dict[str, list[dict]] = {}
+    lots_prop: dict[str, list[dict]] = {}
     tax_log_full: list[float] = []
     tax_log_marg: list[float] = []
     tax_log_prop: list[float] = []
@@ -812,7 +911,7 @@ def run_backtest(
             new_holdings = (current_holdings - exits) | entries
 
             if not new_holdings:
-                new_holdings = top_m if top_m else current_holdings
+                new_holdings = top_m if top_m else (set() if not ranked else current_holdings)
 
             # Update Stage 2 score baseline for next rebalance.
             # Track full ranked universe (not just holdings) so entry-jump signal
@@ -837,6 +936,7 @@ def run_backtest(
                 prop_weights = _drift_weights(prop_weights, all_ohlcv, prev_rebalance_day, day)
 
             # ── save drift-adjusted weights before assignment (needed for turnover diff + CGT) ──
+            old_full_weights = dict(full_weights_prev)
             old_marg_weights = dict(marg_weights)
             old_prop_weights = dict(prop_weights)
 
@@ -959,74 +1059,36 @@ def run_backtest(
                 elif current_fy is None:
                     current_fy = day_fy
 
-                # ── Accumulate this rebalance's realised gains/losses into FY buckets ──
-                # Use drift-adjusted old weights (saved before assignment) for position sizing.
-                if i > 0 and exits:
-                    for sym in exits:
-                        ep = entry_prices.get(sym)
-                        ed = entry_dates.get(sym)
-                        if not ep or ep <= 0 or ed is None:
-                            continue
-                        xp = _close_price(all_ohlcv, sym, day)
-                        if xp is None:
-                            continue
-                        gain_pct = xp / ep - 1.0
-                        denom = 1.0 + gain_pct  # = xp / ep
-                        if abs(denom) < 1e-9:
-                            continue
-                        is_long_term = day > ed + relativedelta(months=12)
+                # Accumulate realised gains/losses from every weight reduction.
+                if i > 0:
+                    s_g, s_l, l_g, l_l = _realise_weight_reductions(
+                        lots_full, old_full_weights, new_full, all_ohlcv, day, nav_full
+                    )
+                    fy_st_g_full += s_g
+                    fy_st_l_full += s_l
+                    fy_lt_g_full += l_g
+                    fy_lt_l_full += l_l
 
-                        # Full variant
-                        pos_full = nav_full * full_weights_prev.get(sym, 0.0)
-                        gain_full = pos_full * gain_pct / denom
-                        if is_long_term:
-                            if gain_full >= 0:
-                                fy_lt_g_full += gain_full
-                            else:
-                                fy_lt_l_full += abs(gain_full)
-                        else:
-                            if gain_full >= 0:
-                                fy_st_g_full += gain_full
-                            else:
-                                fy_st_l_full += abs(gain_full)
+                    s_g, s_l, l_g, l_l = _realise_weight_reductions(
+                        lots_marg, old_marg_weights, new_slot, all_ohlcv, day, nav_marg
+                    )
+                    fy_st_g_marg += s_g
+                    fy_st_l_marg += s_l
+                    fy_lt_g_marg += l_g
+                    fy_lt_l_marg += l_l
 
-                        # Slot-fill marginal variant (use old drift-adjusted weights)
-                        pos_marg = nav_marg * old_marg_weights.get(sym, 0.0)
-                        gain_marg = pos_marg * gain_pct / denom
-                        if is_long_term:
-                            if gain_marg >= 0:
-                                fy_lt_g_marg += gain_marg
-                            else:
-                                fy_lt_l_marg += abs(gain_marg)
-                        else:
-                            if gain_marg >= 0:
-                                fy_st_g_marg += gain_marg
-                            else:
-                                fy_st_l_marg += abs(gain_marg)
+                    s_g, s_l, l_g, l_l = _realise_weight_reductions(
+                        lots_prop, old_prop_weights, new_prop, all_ohlcv, day, nav_prop
+                    )
+                    fy_st_g_prop += s_g
+                    fy_st_l_prop += s_l
+                    fy_lt_g_prop += l_g
+                    fy_lt_l_prop += l_l
 
-                        # Prop-fill marginal variant (use old drift-adjusted weights)
-                        pos_prop = nav_prop * old_prop_weights.get(sym, 0.0)
-                        gain_prop = pos_prop * gain_pct / denom
-                        if is_long_term:
-                            if gain_prop >= 0:
-                                fy_lt_g_prop += gain_prop
-                            else:
-                                fy_lt_l_prop += abs(gain_prop)
-                        else:
-                            if gain_prop >= 0:
-                                fy_st_g_prop += gain_prop
-                            else:
-                                fy_st_l_prop += abs(gain_prop)
-
-            # ── record entry prices/dates for new entrants; clear exits ──
-            for sym in entries:
-                p = _close_price(all_ohlcv, sym, day)
-                if p is not None:
-                    entry_prices[sym] = p
-                    entry_dates[sym] = day
-            for sym in exits:
-                entry_prices.pop(sym, None)
-                entry_dates.pop(sym, None)
+            # Record new FIFO lots for every weight increase.
+            _record_weight_increases(lots_full, old_full_weights, new_full, all_ohlcv, day, nav_full)
+            _record_weight_increases(lots_marg, old_marg_weights, new_slot, all_ohlcv, day, nav_marg)
+            _record_weight_increases(lots_prop, old_prop_weights, new_prop, all_ohlcv, day, nav_prop)
 
             # ── store pre-computed weights (calculated above before turnover/costs) ──
             full_weights = new_full
@@ -1043,7 +1105,7 @@ def run_backtest(
                     "entries": [f"{s} ({entry_reasons[s]})" if s in entry_reasons else s for s in sorted(entries)],
                     "exits": [f"{s} ({exit_reasons[s]})" if s in exit_reasons else s for s in sorted(exits)],
                     "full_ranking": ranked,
-                    "valid_universe_size": len(valid_syms) if valid_syms else len(all_ohlcv),
+                    "valid_universe_size": len(valid_syms) if valid_syms is not None else len(all_ohlcv),
                     "full_turnover_pct": round(traded_w_full * 100, 2),
                     "marg_turnover_pct": round(traded_w_marg * 100, 2),
                     "prop_turnover_pct": round(traded_w_prop * 100, 2),

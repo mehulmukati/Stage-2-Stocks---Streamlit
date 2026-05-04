@@ -3,6 +3,7 @@ import math
 import pandas as pd
 
 from backtest_engine import (
+    BacktestConfig,
     _apply_weight_cap,
     _compute_fy_tax,
     _compute_summary_stats,
@@ -12,6 +13,7 @@ from backtest_engine import (
     _valid_symbols_at_date,
     get_rebalance_dates,
     rank_universe_at_date,
+    run_backtest,
 )
 
 from .conftest import make_ohlcv
@@ -145,7 +147,14 @@ def test_valid_uses_latest_snapshot():
 def test_valid_respects_as_of_date():
     df = _make_comp_df([("NIFTY50", "FUTURE", "2024-01-01")])
     result = _valid_symbols_at_date(df, ["NIFTY50"], pd.Timestamp("2023-06-01"))
-    assert result is None
+    assert result == set()
+
+
+def test_valid_unknown_requested_index_returns_empty_set(caplog):
+    df = _make_comp_df([("NIFTY50", "A", "2023-01-01")])
+    result = _valid_symbols_at_date(df, ["NIFTY_MISSING"], pd.Timestamp("2023-06-01"))
+    assert result == set()
+    assert "NIFTY_MISSING" in caplog.text
 
 
 def test_valid_multi_index_union():
@@ -533,3 +542,74 @@ def test_rank_universe_volume_filter_excludes_low_vol():
     )
     assert "LOW" not in result
     assert "OK" in result
+
+
+# ──────────────────────────────────────────────
+# run_backtest critical regressions
+# ──────────────────────────────────────────────
+
+
+def test_run_backtest_rejects_invalid_ohlcv_schema():
+    bad = pd.DataFrame({"Close": [100.0, 101.0]}, index=pd.bdate_range("2023-01-01", periods=2))
+    cfg = BacktestConfig(
+        m=1,
+        n=2,
+        rebalance_freq="weekly",
+        sort_method="3 months",
+        start_date="2023-01-01",
+        end_date="2023-02-01",
+        min_history_days=1,
+        apply_volume_filter=False,
+    )
+    result = run_backtest({"BAD": bad}, {}, cfg)
+    assert "error" in result
+    assert "missing required OHLCV columns" in result["error"]
+
+
+def test_run_backtest_taxes_partial_full_rebalance_trims():
+    n = 330
+    dates = pd.bdate_range("2022-01-03", periods=n)
+    # A and B stay in the top-2, but A rises faster. Full rebalance trims A
+    # back to equal weight on later rebalances, creating taxable partial sells.
+    a = [100.0 * (1.0015**i) * (1 + (0.002 if i % 2 else -0.001)) for i in range(n)]
+    b = [100.0 * (1.0007**i) * (1 + (0.001 if i % 3 else -0.001)) for i in range(n)]
+    c = [100.0 * (0.9995**i) * (1 + (0.001 if i % 2 else -0.001)) for i in range(n)]
+    all_ohlcv = {
+        "A": make_ohlcv(n, close=a, start=str(dates[0].date())),
+        "B": make_ohlcv(n, close=b, start=str(dates[0].date())),
+        "C": make_ohlcv(n, close=c, start=str(dates[0].date())),
+    }
+    start = str(dates[260].date())
+    end = str(dates[-1].date())
+    cfg_no_tax = BacktestConfig(
+        m=2,
+        n=3,
+        rebalance_freq="weekly",
+        sort_method="3 months",
+        start_date=start,
+        end_date=end,
+        transaction_cost_pct=0.0,
+        min_history_days=252,
+        apply_volume_filter=False,
+    )
+    cfg_tax = BacktestConfig(
+        m=2,
+        n=3,
+        rebalance_freq="weekly",
+        sort_method="3 months",
+        start_date=start,
+        end_date=end,
+        transaction_cost_pct=0.0,
+        min_history_days=252,
+        apply_volume_filter=False,
+        stcg_rate=0.20,
+        ltcg_rate=0.125,
+    )
+
+    no_tax = run_backtest(all_ohlcv, {}, cfg_no_tax)
+    with_tax = run_backtest(all_ohlcv, {}, cfg_tax)
+
+    assert "error" not in no_tax
+    assert "error" not in with_tax
+    assert with_tax["stats"].loc["Full Rebalance", "Tax Drag (%)"] > 0
+    assert with_tax["stats"].loc["Full Rebalance", "Final NAV"] < no_tax["stats"].loc["Full Rebalance", "Final NAV"]
