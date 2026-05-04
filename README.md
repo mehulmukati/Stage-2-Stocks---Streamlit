@@ -8,7 +8,7 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 
 | [Screener](app.py) — `app.py` | [Backtester](app_backtest.py) — `app_backtest.py` |
 |---|---|
-| Stage 2 Breakout screener (Weinstein 8-point score) | 4 simultaneous portfolio strategies |
+| Stage 2 Breakout screener (Weinstein 8-point score) | 6 simultaneous portfolio strategies (Classic/Displacement × Full/Marginal/Prop) |
 | Momentum screener (Sharpe ratio ranking) | Entry/exit band parameters (M / N) |
 | Phase Chart — rolling Stage 2 score for any ticker | Weekly / biweekly / monthly / quarterly / half-yearly rebalance |
 | Fuzzy ticker search (typo-tolerant) | Anti-survivorship-bias via historical constituents |
@@ -16,6 +16,10 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 | Live auto-refresh during background data sync | NAV chart, rolling CAGR, and drawdown metrics |
 | | Portfolio churn chart — entries/exits and turnover % per rebalance |
 | | Full rebalance log CSV download — every rebalance event with tickers, weights, and turnover |
+| | **🔍 Debug tab** — explain why any stock was held / ranked-not-held / excluded on any rebalance date |
+| | **📐 Walk-Forward tab** — split NAV into in-sample and out-of-sample windows for overfit detection |
+| | Tax modelling — LTCG (12.5%) / STCG (20%) applied per FY on each exit |
+| | Flat brokerage per sale (Rs) and max position size cap (%) |
 
 ---
 

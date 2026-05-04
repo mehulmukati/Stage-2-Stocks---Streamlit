@@ -221,6 +221,19 @@ listings entirely; lower values (e.g., 126) let younger stocks in sooner.
   look significantly better, but the result is misleading — you would have been unable
   to know which stocks to buy at the time.
 
+#### Brokerage per sale (Rs)
+Flat charge deducted on each **exit** (sells only). Models fixed-cost brokerages such as Rs 15–20 per order. Needs the "Initial capital" field to convert the flat amount to a proportion of NAV. Default 0 = no flat charge.
+
+#### Tax — LTCG / STCG
+Available inside the "Realism" expander. Models Indian capital gains tax on each realised exit using FIFO lot accounting:
+
+| Setting | Default | Trigger |
+|---|---|---|
+| **STCG rate** | 20% | Holdings sold within 12 months of purchase |
+| **LTCG rate** | 12.5% | Holdings sold after 12 months of purchase |
+
+Tax is computed per financial year and deducted from NAV as each exit is processed. Set both to 0% to run pre-tax. The impact is most visible with monthly or weekly rebalancing (many short-term lots) — quarterly or half-yearly rebalancing shifts most exits into LTCG territory.
+
 #### Rebalance frequency
 
 | Frequency | Reaction speed | Annual trades | Cost sensitivity |
@@ -314,6 +327,55 @@ Each row covers one rebalance date for one band rule and includes:
 - Valid universe size at that date
 
 Useful for auditing specific rebalance decisions or analysing weight drift over time.
+
+## 🔍 Debug Tab — Portfolio Debugger
+
+After running a backtest, switch to the **Debug tab** to ask "Why wasn't stock X in the portfolio on date Y?"
+
+#### How to use it
+1. Select the band rule (Classic or Displacement).
+2. Pick a rebalance date from the dropdown (most-recent first).
+3. Type a stock ticker (e.g. `RELIANCE`).
+
+#### What you'll see
+
+| Outcome | Badge | Meaning |
+|---|---|---|
+| Stock was in the portfolio | ✅ Held | Shows rank, weight in all three variants (Full / Marginal / Prop) |
+| Stock passed filters but wasn't held | 🟡 Ranked but not held | Shows exact rank vs M/N band — buffer zone or above N |
+| Stock never reached the ranking step | 🔴 Excluded before ranking | Failed history, volume, or index-composition filter; shows universe size |
+
+A **top-10 ranked stocks** table is always shown for context — useful for seeing where the queried stock sits relative to the top of the universe.
+
+#### Common reasons a stock shows 🔴 Excluded
+- **Insufficient history**: fewer trading days than the Min History setting on that date
+- **Low volume**: median daily volume below 100,000 shares on that date
+- **Not an index constituent**: historical composition filter excluded it (if enabled)
+- **No price data**: stock had no OHLCV rows in the backtest parquet for that period
+
+---
+
+## 📐 Walk-Forward Tab — Overfit Detection
+
+The **Walk-Forward tab** splits the backtest into two windows — an in-sample (calibration) period and an out-of-sample (forward) period — so you can see whether a strategy's good numbers come from the tuning window or from genuinely unseen data.
+
+#### How to use it
+1. Use the **split date picker** (defaults to the midpoint of your backtest range).
+2. Read the two side-by-side stats tables — in-sample on the left, out-of-sample on the right.
+3. Look at the NAV chart with the vertical split line.
+
+#### Interpreting results
+
+| Signal | What it suggests |
+|---|---|
+| OOS CAGR close to IS CAGR | Parameters generalise well — no obvious overfit |
+| OOS CAGR materially lower than IS | Parameters may be overfit to the calibration window |
+| OOS Sharpe > IS Sharpe | Strategy may have gotten better (regime change working in its favour) |
+| OOS Max Drawdown >> IS | More tail risk in the forward period — consider wider M/N band |
+
+> **Tip:** Move the split date earlier (e.g., 30% in-sample, 70% out-of-sample) for a more conservative OOS test. A strategy that holds up over a 7-year OOS window with parameters tuned on only 3 years is much more credible than the reverse.
+
+---
 
 ## Data Files
 

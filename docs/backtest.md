@@ -1,6 +1,6 @@
 # Backtest
 
-The Backtest simulates a systematic momentum portfolio over a chosen historical period. It tracks two portfolio variants simultaneously and compares them against the Nifty 50 and Nifty 500 benchmarks.
+The Backtest simulates a systematic momentum portfolio over a chosen historical period. It runs **six portfolio variants** simultaneously — two band rules (Classic, Displacement) × three weight methods (Full, Marginal, Prop) — and compares them against the Nifty 50 and Nifty 500 benchmarks.
 
 ---
 
@@ -71,6 +71,19 @@ For **Full Rebalance**, equal weighting is enforced at every rebalance anyway, s
 
 ### Transaction cost per trade (%)
 One-way cost applied to each stock that enters or exits the portfolio at rebalance. Default is 0.1% (10 basis points). This covers brokerage and slippage. The cost drag accumulates over the full simulation and is reported in the summary.
+
+### Brokerage per sale (Rs)
+Flat charge deducted on each exit (sells only). Models fixed-cost brokerages (e.g. Rs 15–20 per order). Requires "Initial capital" to convert the flat amount to a percentage of NAV. Default 0.
+
+### Tax settings — LTCG / STCG
+Applied per financial year on realised gains at exit. The engine tracks each lot's purchase date and gain:
+
+| Setting | Rate | Applies to |
+|---|---|---|
+| **STCG rate** | Default 20% | Gains on holdings sold within 12 calendar months of purchase |
+| **LTCG rate** | Default 12.5% | Gains on holdings sold after 12 calendar months |
+
+Tax is computed using a first-in-first-out (FIFO) lot accounting method. Set both to 0% to disable tax modelling. Available under the "Realism" expander in the sidebar.
 
 ### Weekly Stage 2 signals
 
@@ -150,6 +163,43 @@ The average fraction of the portfolio traded at each rebalance (exits + entries 
 
 ### Total Cost Drag (%)
 Cumulative cost deducted from the NAV over the full simulation. This compounds — a 0.1% cost per trade over 10 years of monthly rebalancing can reduce terminal wealth meaningfully.
+
+---
+
+---
+
+## 🔍 Debug tab — Portfolio Debugger
+
+After running a backtest, the **Debug tab** lets you ask "Why wasn't RELIANCE in the portfolio on 2022-03-25?"
+
+**Controls:** Select band rule (Classic / Displacement), a rebalance date, and type a stock ticker.
+
+**Three possible outcomes:**
+
+| Result | Meaning |
+|---|---|
+| ✅ **Held** | Stock was in the portfolio. Shows rank, weight in all three variants (Full / Marginal / Prop), and whether a position cap was applied. |
+| 🟡 **Ranked but not held** | Stock passed all universe filters and was ranked, but its rank was between M+1 and N (buffer zone) or above N. Shows exact rank and the M/N context. |
+| 🔴 **Excluded before ranking** | Stock never entered the ranking step — filtered out due to insufficient history, low volume, or index-composition restriction on that date. Shows the universe size for context. |
+
+A table of the **top-10 ranked stocks** on the selected date is always shown below, so you can see where the queried stock sits relative to the rest of the universe.
+
+---
+
+## 📐 Walk-Forward tab — Overfit detection
+
+The Walk-Forward tab splits the backtest NAV into an **in-sample (calibration)** window and an **out-of-sample (forward)** window at a date you choose.
+
+**Why it matters:** A strategy optimised on 2015–2020 data can look impressive in that window even if the parameters were cherry-picked. The out-of-sample window (2020–2025) shows whether those numbers hold up on genuinely unseen data.
+
+**Controls:** A date picker defaults to the midpoint of the backtest period. Drag it earlier to give more weight to the forward window, or later to stress-test on a shorter OOS period.
+
+**Output:**
+- Side-by-side performance tables for each window (CAGR, Sharpe, Calmar, Max Drawdown) — strategy columns only, no benchmarks
+- Combined NAV chart with a vertical dotted line at the split date; each window is normalised to base-100 independently so both windows start at the same visual level
+- Benchmark stats in a separate expander for the full period
+
+> **Rule of thumb:** if out-of-sample CAGR is materially lower than in-sample (e.g., 18% IS vs 8% OOS), the parameters may be overfit. Try widening M/N or switching to a longer rebalance frequency and see if OOS improves.
 
 ---
 
