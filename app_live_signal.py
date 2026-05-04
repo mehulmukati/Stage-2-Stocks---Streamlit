@@ -126,7 +126,7 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
     )
     variant = st.selectbox(
         "Variant",
-        ["Marginal Rebalance", "Full Rebalance"],
+        ["Marginal Rebalance", "Prop Rebalance", "Full Rebalance"],
         key="ls_variant",
     )
 
@@ -189,7 +189,7 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
 
 
 def _run_signal(params: dict) -> dict:
-    from backtest_engine import run_backtest
+    from backtest_engine import BacktestConfig, run_backtest
     from data_backtest import (
         _load_constituents,
         load_benchmark_series,
@@ -217,9 +217,7 @@ def _run_signal(params: dict) -> dict:
     signal_date = params["signal_date"]
     start_date = signal_date - timedelta(weeks=params["warmup"])
 
-    result = run_backtest(
-        all_ohlcv=symbol_data,
-        benchmarks=benchmarks,
+    cfg = BacktestConfig(
         m=params["m"],
         n=params["n"],
         rebalance_freq="weekly",
@@ -241,6 +239,7 @@ def _run_signal(params: dict) -> dict:
         stage2_entry_filter=False,
         max_position_pct=float(params["max_pos"]) if params["max_pos"] > 0 else None,
     )
+    result = run_backtest(symbol_data, benchmarks, cfg)
 
     if "error" in result:
         return {"error": result["error"]}
@@ -305,7 +304,8 @@ def live_signal_results(params: dict) -> None:
     previous = holdings_log[-2] if len(holdings_log) >= 2 else None
 
     # Select weight snapshot for the chosen variant
-    weight_key = "marg_weights" if "Marginal" in params["variant"] else "full_weights"
+    _v = params["variant"]
+    weight_key = "prop_weights" if "Prop" in _v else "marg_weights" if "Marginal" in _v else "full_weights"
     weights: dict[str, float] = current[weight_key]
     prev_weights: dict[str, float] = previous[weight_key] if previous else {}
 
@@ -332,7 +332,7 @@ def live_signal_results(params: dict) -> None:
     if params["n"] <= params["m"]:
         st.warning(f"N ({params['n']}) must be greater than M ({params['m']}). Results may be unreliable.")
 
-    if params["warmup"] < 26 and "Marginal" in params["variant"]:
+    if params["warmup"] < 26 and params["variant"] != "Full Rebalance":
         st.warning(
             f"Portfolio start date is less than 26 weeks before signal date ({params['warmup']} weeks). "
             "Marginal weights may not reflect realistic drift — try an earlier start date."
@@ -340,7 +340,7 @@ def live_signal_results(params: dict) -> None:
 
     # ── header ───────────────────────────────────────────────────────────────
     band_lbl = params["band"].capitalize()
-    var_lbl = "Marginal" if "Marginal" in params["variant"] else "Full"
+    var_lbl = "Prop" if "Prop" in params["variant"] else "Marginal" if "Marginal" in params["variant"] else "Full"
     cap_lbl = f" · cap {params['max_pos']}%" if params["max_pos"] > 0 else ""
     s2_lbl = f" · S2 drop={params['s2_threshold']}" if params["s2_drop"] else ""
     st.markdown(
@@ -434,11 +434,17 @@ def live_signal_results(params: dict) -> None:
         return {t: f[t] + d[t] for t in exact}
 
     # ── pre-cap weights for trimming callout ─────────────────────────────────
-    pre_cap_key = "pre_cap_marg_weights" if "Marginal" in params["variant"] else "pre_cap_full_weights"
+    pre_cap_key = (
+        "pre_cap_prop_weights"
+        if "Prop" in _v
+        else "pre_cap_marg_weights" if "Marginal" in _v else "pre_cap_full_weights"
+    )
     pre_cap_weights: dict[str, float] = current.get(pre_cap_key, {})
 
     # ── metric cards ─────────────────────────────────────────────────────────
-    turnover_key = "marg_turnover_pct" if "Marginal" in params["variant"] else "full_turnover_pct"
+    turnover_key = (
+        "prop_turnover_pct" if "Prop" in _v else "marg_turnover_pct" if "Marginal" in _v else "full_turnover_pct"
+    )
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Holdings", len(holdings))
     if fresh_portfolio:
