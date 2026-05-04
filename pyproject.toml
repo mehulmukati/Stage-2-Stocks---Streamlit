@@ -1,0 +1,25 @@
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203", "W503"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_return_any = false
+no_implicit_optional = true
+# Streamlit and yfinance lack stubs; silence missing-import noise
+[[tool.mypy.overrides]]
+module = ["streamlit.*", "yfinance.*", "dateutil.*"]
+ignore_missing_imports = true

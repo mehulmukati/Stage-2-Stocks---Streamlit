@@ -7,6 +7,7 @@ Data pipeline: data_backtest.py (parquet + yfinance tail delta).
 """
 
 import json
+import logging
 import os
 import re
 import warnings
@@ -17,6 +18,7 @@ import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
 warnings.filterwarnings("ignore", category=FutureWarning)
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
 from backtest_engine import rolling_returns
 from charts import nav_chart_figure, portfolio_churn_figure, portfolio_weights_figure, rolling_returns_figure

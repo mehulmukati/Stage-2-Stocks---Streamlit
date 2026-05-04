@@ -7,6 +7,11 @@ __pycache__/
 *.egg-info/
 .DS_Store
 
+# Test / coverage artefacts
+.coverage
+htmlcov/
+.pytest_cache/
+
 # Claude local tooling
 .claude/
 

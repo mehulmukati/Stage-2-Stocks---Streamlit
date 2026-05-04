@@ -6,6 +6,7 @@ Backtest lives in app_backtest.py (separate parquet baseline).
 
 import difflib
 import json
+import logging
 import os
 import threading
 import warnings
@@ -16,6 +17,7 @@ import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
 warnings.filterwarnings("ignore", category=FutureWarning)
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
 from app_backtest import _render_user_guide as _render_backtest_user_guide
 from app_backtest import _sidebar_backtest, backtest_results

@@ -260,7 +260,7 @@ def _parse_yfinance_download(raw: pd.DataFrame, tickers: list[str]) -> list[dict
 
 def _sync_ohlcv_to_parquet(
     all_symbols: list[str],
-    target_date: str = None,
+    target_date: str | None = None,
     emit: Callable[[str, str], None] = _NOOP_EMIT,
     force_download: bool = False,
 ) -> bool:
@@ -333,6 +333,7 @@ def _sync_ohlcv_to_parquet(
                 with _cache_lock:
                     _ohlcv_sync_attempted.add(target_date)
                 return True
+            assert conservative_min is not None  # set alongside global_max; both None only when global_max is None
             fetch_from = (datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=10)).strftime("%Y-%m-%d")
             today = datetime.now(IST).strftime("%Y-%m-%d")
             spinner_msg = f"🔄 Incremental update: fetching data since {fetch_from}…"
@@ -411,7 +412,7 @@ def _sync_ohlcv_to_parquet(
         return True
 
     finally:
-        if latch_evt is not None:
+        if latch_evt is not None and target_date is not None:
             latch_evt.set()
             with _sync_latch_lock:
                 _sync_latches.pop(target_date, None)
