@@ -293,20 +293,26 @@ def rank_universe_at_date(
     min_history_days: int = 750,
     apply_volume_filter: bool = True,
     precomputed: dict[str, pd.DataFrame] | None = None,
-) -> list[str]:
+    return_excluded_reasons: bool = False,
+) -> "list[str] | tuple[list[str], dict[str, str]]":
     """
     Score every symbol using data up to `as_of` and return symbols ordered
     best→worst by the chosen sort_method.
 
-    valid_symbols      : if provided, only these symbols are considered
-                         (historical constituent filter — prevents survivorship bias)
-    min_history_days   : minimum trading days of history required before as_of
-                         (default 750 ≈ 3 years; prevents ranking on thin data)
-    apply_volume_filter: if True, exclude symbols whose median volume < MIN_VOLUME
-    precomputed        : pre-computed metric DataFrames from _precompute_all_metrics;
-                         when provided, uses O(log n) date lookup instead of slicing OHLCV
+    valid_symbols          : if provided, only these symbols are considered
+                             (historical constituent filter — prevents survivorship bias)
+    min_history_days       : minimum trading days of history required before as_of
+                             (default 750 ≈ 3 years; prevents ranking on thin data)
+    apply_volume_filter    : if True, exclude symbols whose median volume < MIN_VOLUME
+    precomputed            : pre-computed metric DataFrames from _precompute_all_metrics;
+                             when provided, uses O(log n) date lookup instead of slicing OHLCV
+    return_excluded_reasons: if True, return (ranked_list, excluded_reasons_dict) where
+                             excluded_reasons maps symbol → reason string for every symbol
+                             in valid_symbols that failed a pre-ranking filter
     """
     ranked: list[tuple[str, float]] = []
+    excluded_reasons: dict[str, str] = {} if return_excluded_reasons else None  # type: ignore[assignment]
+
     for sym, df in all_ohlcv.items():
         if valid_symbols is not None and sym not in valid_symbols:
             continue
@@ -315,44 +321,71 @@ def rank_universe_at_date(
             # Fast path: O(log n) binary-search lookup in pre-computed DataFrame
             mdf = precomputed.get(sym)
             if mdf is None or mdf.empty:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_data"
                 continue
             idx = mdf.index.searchsorted(as_of, side="right") - 1
             if idx < 0 or idx >= len(mdf):
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_data"
                 continue
             row = mdf.iloc[idx]
             if row["_count"] < min_history_days:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "insufficient_history"
                 continue
             if row["_missing_rate"] > 0.05:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "missing_data"
                 continue
             if apply_volume_filter:
                 vol = row.get("Vol_Median")
                 if pd.isna(vol) or vol < MIN_VOLUME:
+                    if excluded_reasons is not None:
+                        excluded_reasons[sym] = "low_volume"
                     continue
             score = _calculate_avg_sharpe(row, sort_method)
             if score is None or pd.isna(score):
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_valid_score"
                 continue
         else:
             # Original path: slice OHLCV and score on demand
             sub = df[df.index <= as_of]
             if len(sub) < min_history_days:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "insufficient_history"
                 continue
             # Reject stocks with > 5% missing close prices (suspended / delisted mid-period)
             if sub["Close"].isna().mean() > 0.05:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "missing_data"
                 continue
             metrics = score_momentum(sub)
             if metrics is None:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_valid_score"
                 continue
             if apply_volume_filter:
                 vol = metrics.get("Vol_Median")
                 if vol is None or vol < MIN_VOLUME:
+                    if excluded_reasons is not None:
+                        excluded_reasons[sym] = "low_volume"
                     continue
             score = _calculate_avg_sharpe(metrics, sort_method)
             if score is None:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_valid_score"
                 continue
 
         ranked.append((sym, score))
+
     ranked.sort(key=lambda x: x[1], reverse=True)
-    return [sym for sym, _ in ranked]
+    ranked_list = [sym for sym, _ in ranked]
+
+    if return_excluded_reasons:
+        return ranked_list, excluded_reasons
+    return ranked_list
 
 
 # ──────────────────────────────────────────────────────────────
@@ -926,7 +959,7 @@ def run_backtest(
             # Rank using previous day's data to avoid look-ahead bias:
             # rankings are determined from T-1 close; trades execute at T close.
             rank_as_of = trading_days[i - 1] if i > 0 else day
-            ranked = rank_universe_at_date(
+            ranked, _excluded_reasons = rank_universe_at_date(
                 all_ohlcv,
                 rank_as_of,
                 sort_method,
@@ -934,6 +967,7 @@ def run_backtest(
                 min_history_days=min_history_days,
                 apply_volume_filter=apply_volume_filter,
                 precomputed=precomputed,
+                return_excluded_reasons=True,
             )
             top_m = set(ranked[:m])
             top_n = set(ranked[:n])
@@ -1155,6 +1189,8 @@ def run_backtest(
                     "exits": [f"{s} ({exit_reasons[s]})" if s in exit_reasons else s for s in sorted(exits)],
                     "full_ranking": ranked,
                     "valid_universe_size": len(valid_syms) if valid_syms is not None else len(all_ohlcv),
+                    "index_universe": sorted(valid_syms) if valid_syms is not None else None,
+                    "excluded_reasons": _excluded_reasons,
                     "full_turnover_pct": round(traded_w_full * 100, 2),
                     "marg_turnover_pct": round(traded_w_marg * 100, 2),
                     "prop_turnover_pct": round(traded_w_prop * 100, 2),
