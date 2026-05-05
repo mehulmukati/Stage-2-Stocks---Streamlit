@@ -19,9 +19,7 @@ from streamlit_autorefresh import st_autorefresh
 warnings.filterwarnings("ignore", category=FutureWarning)
 logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-from app_backtest import _render_debug_tab
-from app_backtest import _render_user_guide as _render_backtest_user_guide
-from app_backtest import _render_walkforward_tab, _sidebar_backtest, backtest_results
+from app_backtest import _sidebar_backtest, render_backtest_tabs
 from app_live_signal import _sidebar_live_signal, live_signal_results
 from charts import phase_chart_figure
 from config import IST, SCREENER_OHLCV_PARQUET
@@ -698,22 +696,7 @@ def main():
     elif screener == "📊 Stage 2":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
     elif screener == "⏱ Backtest":
-        st.markdown('<p class="hero">⏱ Momentum Backtest</p>', unsafe_allow_html=True)
-        st.markdown(
-            '<p class="sub-hero">Classic vs Displacement Band Rule · '
-            "Full vs Marginal Rebalance · Benchmarked vs Nifty 50 & Nifty 500</p>",
-            unsafe_allow_html=True,
-        )
-        tab_bt, tab_debug, tab_wf, tab_guide = st.tabs(["📊 Backtest", "🔍 Debug", "📐 Walk-Forward", "📖 User Guide"])
-        cached_result = st.session_state.get("backtest_cached_result")
-        with tab_bt:
-            backtest_results(bt_params)
-        with tab_debug:
-            _render_debug_tab(cached_result)
-        with tab_wf:
-            _render_walkforward_tab(cached_result, bt_params)
-        with tab_guide:
-            _render_backtest_user_guide()
+        render_backtest_tabs(bt_params)
     elif screener == "📡 Live Signal":
         st.markdown('<p class="hero">📡 Live Signal</p>', unsafe_allow_html=True)
         st.markdown(

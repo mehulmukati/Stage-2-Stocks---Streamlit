@@ -707,16 +707,32 @@ def _render_debug_tab(result: dict | None) -> None:
         )
 
     else:
+        _EXCLUSION_REASON_LABELS = {
+            "insufficient_history": "Insufficient history — fewer than the configured minimum trading days"
+            " before this date",
+            "missing_data": "Missing data — >5% of close prices were missing",
+            "low_volume": "Low volume — median daily volume below the minimum threshold",
+            "no_valid_score": "No valid Sharpe score — could not compute a momentum score",
+            "no_data": "No OHLCV data — symbol not found in the backtest dataset",
+        }
+        index_universe: set[str] = set(entry.get("index_universe") or [])
+        excluded_reasons: dict[str, str] = entry.get("excluded_reasons") or {}
+
         st.error(f"🔴 **Excluded before ranking** — {ticker} did not pass the pre-ranking filters.")
-        st.markdown(
-            f"Possible reasons (any one or more):\n"
-            f"- **Insufficient history**: fewer than the configured minimum trading days of history before this date\n"
-            f"- **Low volume**: median daily volume below the minimum threshold\n"
-            f"- **Not in index**: not a constituent of the selected indices on this date "
-            f"(checked via compositions.parquet)\n"
-            f"- **Missing data**: >5% of close prices were missing\n\n"
-            f"Ranked universe had **{len(full_ranking)}** symbols; "
-            f"valid index universe was **{universe_size}** symbols."
+
+        if index_universe and ticker not in index_universe:
+            st.markdown(
+                "**Reason:** Not in index — not a constituent of the selected indices on this date "
+                "(checked via compositions.parquet)"
+            )
+        elif ticker in excluded_reasons:
+            label = _EXCLUSION_REASON_LABELS.get(excluded_reasons[ticker], excluded_reasons[ticker])
+            st.markdown(f"**Reason:** {label}")
+        else:
+            st.markdown("Specific reason unavailable — re-run the backtest to capture per-symbol diagnostics.")
+
+        st.caption(
+            f"Ranked universe: **{len(full_ranking)}** symbols · " f"Valid index universe: **{universe_size}** symbols"
         )
 
 
@@ -833,6 +849,28 @@ def _render_walkforward_tab(result: dict | None, params: dict) -> None:
 # ──────────────────────────────────────────────
 # MAIN
 # ──────────────────────────────────────────────
+
+
+def render_backtest_tabs(bt_params: dict) -> None:
+    """Render the hero heading and all four backtest tabs. Call from any entry point."""
+    st.markdown('<p class="hero">⏱ Momentum Backtest</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">Classic vs Displacement Band Rule · '
+        "Full vs Marginal Rebalance · Benchmarked vs Nifty 50 & Nifty 500</p>",
+        unsafe_allow_html=True,
+    )
+    tab_bt, tab_debug, tab_wf, tab_guide = st.tabs(["📊 Backtest", "🔍 Debug", "📐 Walk-Forward", "📖 User Guide"])
+    with tab_bt:
+        backtest_results(bt_params)
+        _render_weights_csv_uploader()
+    with tab_debug:
+        _render_debug_tab(st.session_state.get("backtest_cached_result"))
+    with tab_wf:
+        _render_walkforward_tab(st.session_state.get("backtest_cached_result"), bt_params)
+    with tab_guide:
+        _render_user_guide()
+
+
 def main():
     st.set_page_config(page_title="Momentum Backtest | Nifty 750", page_icon="⏱", layout="wide")
     st.markdown(
@@ -851,30 +889,12 @@ def main():
         st.markdown("### ⏱ Backtest")
         bt_params = _sidebar_backtest(idx_options)
 
-    # Autorefresh while a backtest job is running
     active_job = registry.latest(user_token, "backtest")
     run_triggered = st.session_state.get("backtest_run_triggered", False)
     if run_triggered or (active_job and active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
         st_autorefresh(interval=1500, key="job_autorefresh")
 
-    st.markdown('<p class="hero">⏱ Momentum Backtest</p>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="sub-hero">Classic vs Displacement Band Rule · '
-        "Full vs Marginal Rebalance · Benchmarked vs Nifty 50 & Nifty 500</p>",
-        unsafe_allow_html=True,
-    )
-
-    tab_bt, tab_debug, tab_wf, tab_guide = st.tabs(["📊 Backtest", "🔍 Debug", "📐 Walk-Forward", "📖 User Guide"])
-    cached_result = st.session_state.get("backtest_cached_result")
-    with tab_bt:
-        backtest_results(bt_params)
-        _render_weights_csv_uploader()
-    with tab_debug:
-        _render_debug_tab(cached_result)
-    with tab_wf:
-        _render_walkforward_tab(cached_result, bt_params)
-    with tab_guide:
-        _render_user_guide()
+    render_backtest_tabs(bt_params)
 
 
 if __name__ == "__main__":
