@@ -14,12 +14,14 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 | Fuzzy ticker search (typo-tolerant) | Anti-survivorship-bias via historical constituents |
 | CSV export | Transaction-cost drag modelling |
 | Live auto-refresh during background data sync | NAV chart, rolling CAGR, and drawdown metrics |
-| | Portfolio churn chart — entries/exits and turnover % per rebalance |
+| Quality filters — min return, 52w high proximity, circuit limits, DMA crossovers, positive-day ratios | Portfolio churn chart — entries/exits and turnover % per rebalance |
 | | Full rebalance log CSV download — every rebalance event with tickers, weights, and turnover |
+| | **Quality Filters expander** — same 8 filters as the Momentum Screener applied as eligibility gates at each rebalance |
 | | **🔍 Debug tab** — explain why any stock was held / ranked-not-held / excluded on any rebalance date |
 | | **📐 Walk-Forward tab** — split NAV into in-sample and out-of-sample windows for overfit detection |
 | | Tax modelling — LTCG (12.5%) / STCG (20%) applied per FY on each exit |
 | | Flat brokerage per sale (Rs) and max position size cap (%) |
+| | **📡 Live Signal tab** — weekly trade instructions (entries, exits, weights) from a warm-up backtest snapshot |
 
 ---
 

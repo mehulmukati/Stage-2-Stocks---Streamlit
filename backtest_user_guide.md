@@ -171,6 +171,9 @@ Higher Sharpe = more consistent upward momentum relative to its own volatility.
 > **Tip:** The default "Average of 3/6/9/12" smooths out single-lookback noise and
 > tends to be the most consistent performer across market regimes.
 
+#### Band rule selector (display only)
+The sidebar shows a **Band rule** dropdown that always reads "Classic / Displacement". It is **disabled** — both rules are always evaluated simultaneously in every backtest run and presented side-by-side. No selection is needed.
+
 #### Universe filters applied before ranking
 A stock is **excluded from ranking** (and therefore can't enter the portfolio) if any
 of these fail:
@@ -178,6 +181,7 @@ of these fail:
 - **Min history days** (default 252): too little price data → excluded.
 - **Volume filter**: median daily volume < 100,000 shares → excluded (illiquid stocks).
 - **Historical constituents** toggle: stock wasn't in the index on that date → excluded.
+- **Quality pre-filters** (see Quality Filters section below): any of the 8 optional eligibility gates → excluded.
 
 ## Realism Settings
 
@@ -203,6 +207,22 @@ The traded fraction of the portfolio (entries + exits ÷ portfolio size) is mult
 by this rate and deducted from NAV immediately. Default 0.1%.
 
 Higher frequencies + narrower bands → more trades → cost drag compounds quickly.
+
+#### Start date and the warmup window
+
+The **Start date** is when the data window opens, not when the first trade executes.
+Before any stock can be ranked it must accumulate at least **Min history** trading days
+of price data — 252 by default (≈ 1 year). This creates a **warmup period**:
+
+> **First portfolio formed ≈ Start date + Min history days**
+
+For example, with Start date = 1 Jan 2021 and Min history = 252, the first rebalance
+where stocks are ranked and a portfolio is built occurs around **Jan 2022**. NAV
+tracking begins from that first rebalance.
+
+**Practical rule:** set Start date *earlier* than the period you want to measure by at
+least the Min history window. To study performance from Jan 2022, set Start date to
+Jan 2021 with the default 252-day min history.
 
 #### Min history (trading days)
 A stock must have at least this many trading days of price data before it is eligible
@@ -248,6 +268,27 @@ Monthly rebalancing is usually the best trade-off between responsiveness and cos
 unless the strategy has very fast momentum signals. Quarterly and half-yearly are
 suited to low-turnover strategies or tax-conscious portfolios where fewer rebalances
 reduce realised gains.
+
+## Quality Filters
+
+Eight optional eligibility gates — identical to the Momentum Screener's quality pre-filters — applied **before ranking** at each rebalance. A stock that fails any enabled filter is excluded from the ranking step entirely and cannot enter the portfolio on that date.
+
+All filters default to **off** (or permissive thresholds) so existing backtests produce identical results unless the filters are explicitly tightened.
+
+| Filter | Default (backtest) | Screener default | Notes |
+|---|---|---|---|
+| **Min Annual Return (%)** | 0 (disabled) | 7% | Requires 1-year price change ≥ threshold |
+| **Within % of 52w High** | 100 (disabled) | 25% | Excludes stocks more than N% below their 52-week high |
+| **Max Circuits (1yr)** | 999 (disabled) | 18 | Excludes stocks with more than N upper/lower circuit-breaker hits |
+| **Close > 100 DMA** | Off | Off | Only stocks trading above their 100-day moving average |
+| **Close > 200 DMA** | Off | On | Only stocks trading above their 200-day moving average |
+| **Pos Days 3M (%)** | 0 (disabled) | 45% | Min fraction of positive-return days in the last 3 months |
+| **Pos Days 6M (%)** | 0 (disabled) | 45% | Min fraction of positive-return days in the last 6 months |
+| **Pos Days 12M (%)** | 0 (disabled) | 45% | Min fraction of positive-return days in the last 12 months |
+
+> **Tip:** To replicate the Momentum Screener's filter set in the backtest, set all values to their screener defaults (7%, 25, 18, unchecked/checked DMA, 45/45/45). Stocks that pass the screener on any given day will then be the same pool that the backtest considers eligible on that rebalance date.
+
+When a stock is excluded by a quality filter, the Debug tab shows the exclusion reason as **quality_filter**.
 
 ## Weekly Stage 2 Signals
 
@@ -352,6 +393,7 @@ A **top-10 ranked stocks** table is always shown for context — useful for seei
 - **Low volume**: median daily volume below 100,000 shares on that date
 - **Not an index constituent**: historical composition filter excluded it (if enabled)
 - **No price data**: stock had no OHLCV rows in the backtest parquet for that period
+- **quality_filter**: one or more Quality Filter gates were enabled and the stock failed at least one (min return, 52w high proximity, circuit count, DMA crossover, or positive-day ratio)
 
 ---
 

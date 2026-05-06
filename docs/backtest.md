@@ -55,6 +55,27 @@ Smaller M concentrates the portfolio in fewer, higher-conviction names (higher v
 ### Rank by Sharpe
 Same sort methods as the Momentum Screener. "Average of 3/6/9/12 months" is recommended for balanced ranking.
 
+> **Band rule selector:** The sidebar shows a **Band rule** dropdown that is always disabled. Both rules (Classic and Displacement) are evaluated simultaneously in every run and shown side-by-side — no selection is needed.
+
+### Quality Filters
+
+Eight optional eligibility gates applied **before ranking** at every rebalance. A stock that fails any enabled filter is excluded from the candidate pool and cannot enter the portfolio on that date.
+
+Defaults are permissive (all filters off) so existing backtests are unaffected unless the filters are explicitly tightened. Setting values to match the Momentum Screener defaults (7%, 25, 18, DMA 200 on, 45/45/45) makes the backtest's eligible universe mirror the screener's filtered output.
+
+| Filter | Default | Description |
+|---|---|---|
+| Min Annual Return (%) | 0 | Min 1-year price change |
+| Within % of 52w High | 100 | Max distance below the 52-week high |
+| Max Circuits (1yr) | 999 | Max circuit-breaker hits in the last year |
+| Close > 100 DMA | Off | Price must be above 100-day moving average |
+| Close > 200 DMA | Off | Price must be above 200-day moving average |
+| Pos Days 3M (%) | 0 | Min % of positive-return days in the last 3 months |
+| Pos Days 6M (%) | 0 | Min % of positive-return days in the last 6 months |
+| Pos Days 12M (%) | 0 | Min % of positive-return days in the last 12 months |
+
+Stocks excluded by a quality filter appear in the Debug tab as **quality_filter**.
+
 ### Universe
 Select which indices to draw from. Only stocks that were constituents of the selected indices **at the time of each rebalance** are eligible (see Survivorship Bias below).
 
@@ -180,7 +201,7 @@ After running a backtest, the **Debug tab** lets you ask "Why wasn't RELIANCE in
 |---|---|
 | ✅ **Held** | Stock was in the portfolio. Shows rank, weight in all three variants (Full / Marginal / Prop), and whether a position cap was applied. |
 | 🟡 **Ranked but not held** | Stock passed all universe filters and was ranked, but its rank was between M+1 and N (buffer zone) or above N. Shows exact rank and the M/N context. |
-| 🔴 **Excluded before ranking** | Stock never entered the ranking step — filtered out due to insufficient history, low volume, or index-composition restriction on that date. Shows the universe size for context. |
+| 🔴 **Excluded before ranking** | Stock never entered the ranking step — filtered out due to insufficient history, low volume, index-composition restriction, or a quality pre-filter on that date. Shows the universe size for context. |
 
 A table of the **top-10 ranked stocks** on the selected date is always shown below, so you can see where the queried stock sits relative to the rest of the universe.
 
