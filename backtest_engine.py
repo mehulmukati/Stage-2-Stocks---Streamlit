@@ -19,6 +19,7 @@ Survivorship-bias mitigations applied:
 
 from __future__ import annotations
 
+import datetime
 import logging
 import re
 from dataclasses import dataclass, field
@@ -68,6 +69,15 @@ class BacktestConfig:
     stage2_drop_threshold: int = 2
     stage2_entry_filter: bool = False
     stage2_entry_threshold: int = 2
+    # Quality pre-filters (shared with momentum screener; 0/100/999/False = no filter)
+    min_annual_return: float = 0.0
+    pct_from_52w_high: float = 100.0
+    max_circuits: int = 999
+    close_above_100dma: bool = False
+    close_above_200dma: bool = False
+    pos_days_3m_min: float = 0.0
+    pos_days_6m_min: float = 0.0
+    pos_days_12m_min: float = 0.0
 
 
 # ──────────────────────────────────────────────────────────────
@@ -285,6 +295,55 @@ def _precompute_stage2_scores(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, p
     return result
 
 
+def _fails_quality_filters(
+    row,
+    min_annual_return: float,
+    pct_from_52w_high: float,
+    max_circuits: int,
+    close_above_100dma: bool,
+    close_above_200dma: bool,
+    pos_days_3m_min: float,
+    pos_days_6m_min: float,
+    pos_days_12m_min: float,
+) -> bool:
+    """Return True if the row fails any active quality pre-filter (should be excluded)."""
+    if min_annual_return > 0:
+        v = row.get("1Y_Change") if hasattr(row, "get") else row["1Y_Change"]
+        if pd.isna(v) or v < min_annual_return:
+            return True
+    if pct_from_52w_high < 100:
+        v = row.get("Pct_From_52W_High") if hasattr(row, "get") else row["Pct_From_52W_High"]
+        if pd.isna(v) or v < -pct_from_52w_high:
+            return True
+    if max_circuits < 999:
+        v = row.get("Circuit_Count") if hasattr(row, "get") else row["Circuit_Count"]
+        if not pd.isna(v) and v > max_circuits:
+            return True
+    if close_above_100dma:
+        close = row.get("Close") if hasattr(row, "get") else row["Close"]
+        dma = row.get("DMA100") if hasattr(row, "get") else row["DMA100"]
+        if not pd.isna(close) and not pd.isna(dma) and close <= dma:
+            return True
+    if close_above_200dma:
+        close = row.get("Close") if hasattr(row, "get") else row["Close"]
+        dma = row.get("DMA200") if hasattr(row, "get") else row["DMA200"]
+        if not pd.isna(close) and not pd.isna(dma) and close <= dma:
+            return True
+    if pos_days_3m_min > 0:
+        v = row.get("Pos_Days_3M") if hasattr(row, "get") else row["Pos_Days_3M"]
+        if pd.isna(v) or v < pos_days_3m_min:
+            return True
+    if pos_days_6m_min > 0:
+        v = row.get("Pos_Days_6M") if hasattr(row, "get") else row["Pos_Days_6M"]
+        if pd.isna(v) or v < pos_days_6m_min:
+            return True
+    if pos_days_12m_min > 0:
+        v = row.get("Pos_Days_12M") if hasattr(row, "get") else row["Pos_Days_12M"]
+        if pd.isna(v) or v < pos_days_12m_min:
+            return True
+    return False
+
+
 def rank_universe_at_date(
     all_ohlcv: dict[str, pd.DataFrame],
     as_of: pd.Timestamp,
@@ -294,6 +353,14 @@ def rank_universe_at_date(
     apply_volume_filter: bool = True,
     precomputed: dict[str, pd.DataFrame] | None = None,
     return_excluded_reasons: bool = False,
+    min_annual_return: float = 0.0,
+    pct_from_52w_high: float = 100.0,
+    max_circuits: int = 999,
+    close_above_100dma: bool = False,
+    close_above_200dma: bool = False,
+    pos_days_3m_min: float = 0.0,
+    pos_days_6m_min: float = 0.0,
+    pos_days_12m_min: float = 0.0,
 ) -> "list[str] | tuple[list[str], dict[str, str]]":
     """
     Score every symbol using data up to `as_of` and return symbols ordered
@@ -344,6 +411,20 @@ def rank_universe_at_date(
                     if excluded_reasons is not None:
                         excluded_reasons[sym] = "low_volume"
                     continue
+            if _fails_quality_filters(
+                row,
+                min_annual_return,
+                pct_from_52w_high,
+                max_circuits,
+                close_above_100dma,
+                close_above_200dma,
+                pos_days_3m_min,
+                pos_days_6m_min,
+                pos_days_12m_min,
+            ):
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "quality_filter"
+                continue
             score = _calculate_avg_sharpe(row, sort_method)
             if score is None or pd.isna(score):
                 if excluded_reasons is not None:
@@ -372,6 +453,20 @@ def rank_universe_at_date(
                     if excluded_reasons is not None:
                         excluded_reasons[sym] = "low_volume"
                     continue
+            if _fails_quality_filters(
+                metrics,
+                min_annual_return,
+                pct_from_52w_high,
+                max_circuits,
+                close_above_100dma,
+                close_above_200dma,
+                pos_days_3m_min,
+                pos_days_6m_min,
+                pos_days_12m_min,
+            ):
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "quality_filter"
+                continue
             score = _calculate_avg_sharpe(metrics, sort_method)
             if score is None:
                 if excluded_reasons is not None:
@@ -406,43 +501,68 @@ def get_rebalance_dates(
     freq: str,
 ) -> list[pd.Timestamp]:
     """
-    Return rebalance dates from trading_days based on freq:
-      'weekly'     – last trading day of each calendar week
-      'biweekly'   – last trading day of every other calendar week
-      'monthly'    – last trading day of each calendar month
-      'quarterly'  – last trading day of each calendar quarter
-      'half-yearly'– last trading day of each half-year (Jan–Jun, Jul–Dec)
+    Return rebalance dates from trading_days based on freq.
+    The nominal period-end (Friday for weekly, last calendar day for others) is
+    rolled forward to the next available trading day when it falls on a holiday.
+
+      'weekly'     – Friday of each ISO calendar week, roll-forward on holiday
+      'biweekly'   – Friday of every other ISO calendar week, roll-forward on holiday
+      'monthly'    – last calendar day of each month, roll-forward on holiday
+      'quarterly'  – last calendar day of each quarter (Mar/Jun/Sep/Dec), roll-forward
+      'half-yearly'– last calendar day of Jun and Dec, roll-forward on holiday
     """
     if trading_days.empty:
         return []
 
-    series = pd.Series(trading_days, index=trading_days)
+    td_sorted = trading_days.sort_values()
+
+    def _next_td(nominal: pd.Timestamp) -> pd.Timestamp | None:
+        idx = td_sorted.searchsorted(nominal)
+        return td_sorted[idx] if idx < len(td_sorted) else None
+
+    def _dedup_sorted(dates: list[pd.Timestamp]) -> list[pd.Timestamp]:
+        seen: set = set()
+        out = []
+        for d in sorted(dates):
+            if d not in seen:
+                seen.add(d)
+                out.append(d)
+        return out
+
+    series = pd.Series(td_sorted, index=td_sorted)
 
     if freq == "monthly":
-        grouped = series.groupby([series.dt.year, series.dt.month])
-        return [grp.iloc[-1] for _, grp in grouped]
+        groups = series.groupby([series.dt.year, series.dt.month])
+        period_ends = [pd.Timestamp(year=y, month=m, day=1) + pd.offsets.MonthEnd(0) for (y, m), _ in groups]
+    elif freq == "quarterly":
+        groups = series.groupby([series.dt.year, series.dt.quarter])
+        period_ends = [pd.Timestamp(year=y, month=q * 3, day=1) + pd.offsets.MonthEnd(0) for (y, q), _ in groups]
+    elif freq == "half-yearly":
+        half_arr = (series.dt.month - 1) // 6
+        groups = series.groupby([series.dt.year, half_arr])
+        period_ends = [
+            pd.Timestamp(year=y, month=6 if h == 0 else 12, day=1) + pd.offsets.MonthEnd(0) for (y, h), _ in groups
+        ]
+    else:
+        # weekly / biweekly: nominal end = Friday of each ISO week
+        week_key = td_sorted.isocalendar().week.values
+        year_key = td_sorted.isocalendar().year.values
+        dates_df = pd.DataFrame({"year": year_key, "week": week_key})
+        unique_weeks = dates_df.drop_duplicates().sort_values(["year", "week"])
 
-    if freq == "quarterly":
-        grouped = series.groupby([series.dt.year, series.dt.quarter])
-        return [grp.iloc[-1] for _, grp in grouped]
+        dates = []
+        for _, row in unique_weeks.iterrows():
+            friday = pd.Timestamp(datetime.date.fromisocalendar(int(row["year"]), int(row["week"]), 5))
+            d = _next_td(friday)
+            if d is not None:
+                dates.append(d)
+        dates = _dedup_sorted(dates)
+        if freq == "biweekly":
+            dates = dates[::2]
+        return dates
 
-    if freq == "half-yearly":
-        half = (series.dt.month - 1) // 6
-        grouped = series.groupby([series.dt.year, half])
-        return [grp.iloc[-1] for _, grp in grouped]
-
-    # week number per year
-    week_key = trading_days.isocalendar().week.values
-    year_key = trading_days.isocalendar().year.values
-
-    dates_df = pd.DataFrame({"date": trading_days, "year": year_key, "week": week_key})
-    last_per_week = dates_df.groupby(["year", "week"])["date"].last().reset_index()
-    last_per_week = last_per_week.sort_values("date").reset_index(drop=True)
-
-    if freq == "weekly":
-        return last_per_week["date"].tolist()
-    else:  # biweekly – every other week
-        return last_per_week["date"].iloc[::2].tolist()
+    dates = [d for pe in period_ends if (d := _next_td(pe)) is not None]
+    return _dedup_sorted(dates)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -842,6 +962,14 @@ def run_backtest(
     stage2_entry_filter = config.stage2_entry_filter
     stage2_entry_threshold = config.stage2_entry_threshold
     max_position_pct = config.max_position_pct
+    min_annual_return = config.min_annual_return
+    pct_from_52w_high = config.pct_from_52w_high
+    max_circuits = config.max_circuits
+    close_above_100dma = config.close_above_100dma
+    close_above_200dma = config.close_above_200dma
+    pos_days_3m_min = config.pos_days_3m_min
+    pos_days_6m_min = config.pos_days_6m_min
+    pos_days_12m_min = config.pos_days_12m_min
 
     # ── input validation ──
     if m < 1 or n < 1:
@@ -968,6 +1096,14 @@ def run_backtest(
                 apply_volume_filter=apply_volume_filter,
                 precomputed=precomputed,
                 return_excluded_reasons=True,
+                min_annual_return=min_annual_return,
+                pct_from_52w_high=pct_from_52w_high,
+                max_circuits=max_circuits,
+                close_above_100dma=close_above_100dma,
+                close_above_200dma=close_above_200dma,
+                pos_days_3m_min=pos_days_3m_min,
+                pos_days_6m_min=pos_days_6m_min,
+                pos_days_12m_min=pos_days_12m_min,
             )
             top_m = set(ranked[:m])
             top_n = set(ranked[:n])

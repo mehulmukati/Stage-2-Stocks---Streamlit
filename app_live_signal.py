@@ -12,6 +12,8 @@ from datetime import date, timedelta
 import pandas as pd
 import streamlit as st
 
+from data import check_data_freshness
+
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 _ALL_5_INDICES = [
@@ -34,18 +36,16 @@ _SORT_OPTIONS = [
     "3 months",
 ]
 
-_EXEC_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 
-def _next_weekday(d: date, weekday: int) -> date:
-    """Return next occurrence of weekday (0=Mon…4=Fri) strictly after d."""
-    days = weekday - d.weekday()
-    if days <= 0:
-        days += 7
-    return d + timedelta(days=days)
+def _next_business_day(d: date) -> date:
+    """Return the next calendar day that is a weekday (Mon–Fri) after d."""
+    d = d + timedelta(days=1)
+    while d.weekday() >= 5:
+        d += timedelta(days=1)
+    return d
 
 
 def _parse_ticker_reason(s: str) -> tuple[str, str]:
@@ -73,7 +73,8 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         value=date.today(),
         max_value=date.today(),
         key="ls_signal_date",
-        help="Closing prices from this date are used for ranking. Defaults to today.",
+        help="Closing prices from this date are used for ranking. "
+        "Trades are assumed to execute on the next working day after this date.",
     )
 
     portfolio_value = st.number_input(
@@ -106,14 +107,6 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         "Independent of portfolio start date.",
     )
 
-    exec_day = st.selectbox(
-        "Execution day",
-        _EXEC_DAYS,
-        index=2,
-        key="ls_exec_day",
-        help="Which weekday to execute trades. Shown in the output header.",
-    )
-
     st.divider()
 
     st.markdown("**Strategy**")
@@ -135,13 +128,48 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
     n = col_n.number_input("N (exit)", min_value=6, max_value=200, value=30, step=1, key="ls_n")
 
     sort_method = st.selectbox("Rank by Sharpe", _SORT_OPTIONS, index=0, key="ls_sort_method")
+    freq = st.selectbox(
+        "Rebalance frequency",
+        ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"],
+        key="ls_freq",
+    )
 
-    st.divider()
-    st.markdown("**Stage 2 signals** (weekly)")
-    s2_drop = st.toggle("Stage 2 drop exit", value=False, key="ls_s2_drop")
-    s2_threshold = 2
-    if s2_drop:
-        s2_threshold = st.slider("Drop threshold", 1, 4, 2, key="ls_s2_threshold")
+    if freq == "weekly":
+        st.divider()
+        st.markdown("**Stage 2 signals** (weekly)")
+        s2_entry = st.toggle(
+            "Enter on Stage 2 score jump",
+            value=False,
+            key="ls_s2_entry",
+            help="Allow a stock to enter if its Weinstein Stage 2 score rises by the threshold or more since last week "
+            "— even if it isn't in the top-M momentum rank.",
+        )
+        s2_entry_threshold = st.number_input(
+            "Score jump threshold",
+            min_value=1,
+            max_value=4,
+            value=2,
+            step=1,
+            disabled=not s2_entry,
+            key="ls_s2_entry_threshold",
+            help="Stage 2 points that must rise in one week to trigger entry (e.g. 2 means score 4→6).",
+        )
+        s2_drop = st.toggle("Stage 2 drop exit", value=False, key="ls_s2_drop")
+        s2_threshold = st.number_input(
+            "Drop threshold",
+            min_value=1,
+            max_value=4,
+            value=2,
+            step=1,
+            disabled=not s2_drop,
+            key="ls_s2_threshold",
+            help="Stage 2 points that must fall in one week to trigger exit (e.g. 2 means score 6→4).",
+        )
+    else:
+        s2_entry = False
+        s2_entry_threshold = st.session_state.get("ls_s2_entry_threshold", 2)
+        s2_drop = False
+        s2_threshold = st.session_state.get("ls_s2_threshold", 2)
 
     st.divider()
     st.markdown("**Position cap & universe**")
@@ -163,6 +191,83 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
     )
     st.divider()
 
+    with st.expander("Quality Filters", expanded=False):
+        st.caption(
+            "Stocks that fail these filters are excluded from portfolio selection at each rebalance. "
+            "0 / 100 / 999 = no filter (default). Match these to the Momentum Screener for consistent results."
+        )
+        ls_min_annual_return = st.number_input(
+            "Min Annual Return (%)",
+            min_value=0.0,
+            max_value=1000.0,
+            step=0.1,
+            value=7.0,
+            key="ls_min_annual_return",
+            help="Exclude stocks whose 1-year price change is below this threshold.",
+        )
+        ls_pct_from_52w_high = st.number_input(
+            "Within % of 52w High",
+            min_value=0,
+            max_value=100,
+            step=1,
+            value=25,
+            key="ls_pct_from_52w_high",
+            help="Exclude stocks more than this % below their 52-week high. 100 = no filter.",
+        )
+        ls_max_circuits = st.number_input(
+            "Max Circuits (1yr)",
+            min_value=0,
+            max_value=999,
+            step=1,
+            value=18,
+            key="ls_max_circuits",
+            help="Exclude stocks with more than this many circuit-limit closes in the past year. 999 = no filter.",
+        )
+        ls_close_above_100dma = st.checkbox("Close > 100 DMA", value=False, key="ls_close_above_100dma")
+        ls_close_above_200dma = st.checkbox("Close > 200 DMA", value=True, key="ls_close_above_200dma")
+        _pd_cols = st.columns(3)
+        ls_pos_days_3m = _pd_cols[0].number_input(
+            "Pos Days 3M (%)",
+            min_value=0,
+            max_value=100,
+            step=1,
+            value=45,
+            key="ls_pos_days_3m",
+            help="Min % of up-close days over last 3 months.",
+        )
+        ls_pos_days_6m = _pd_cols[1].number_input(
+            "Pos Days 6M (%)",
+            min_value=0,
+            max_value=100,
+            step=1,
+            value=45,
+            key="ls_pos_days_6m",
+            help="Min % of up-close days over last 6 months.",
+        )
+        ls_pos_days_12m = _pd_cols[2].number_input(
+            "Pos Days 12M (%)",
+            min_value=0,
+            max_value=100,
+            step=1,
+            value=45,
+            key="ls_pos_days_12m",
+            help="Min % of up-close days over last 12 months.",
+        )
+
+    min_history = st.number_input(
+        "Min history (trading days)",
+        min_value=63,
+        max_value=1260,
+        value=252,
+        step=21,
+        key="ls_min_history",
+        help="Minimum trading days of data a stock must have before it can be ranked. 252 ≈ 1 year.",
+    )
+
+    for _lvl, _msg in check_data_freshness():
+        (st.error if _lvl == "error" else st.warning)(_msg)
+    st.divider()
+
     if st.button("📡 Generate Signal", type="primary", width="stretch", key="ls_run_btn"):
         st.session_state["ls_run_triggered"] = True
         st.session_state["ls_result"] = None  # invalidate cached result
@@ -174,14 +279,25 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         "m": int(m),
         "n": int(n),
         "sort_method": sort_method,
+        "freq": freq,
         "s2_drop": s2_drop,
         "s2_threshold": s2_threshold,
+        "s2_entry": s2_entry,
+        "s2_entry_threshold": int(s2_entry_threshold),
         "max_pos": max_pos,
         "indices": list(indices),
         "portfolio_start": portfolio_start,
         "warmup": int(warmup),
-        "exec_day": exec_day,
         "portfolio_value": int(portfolio_value),
+        "min_history": int(min_history),
+        "min_annual_return": float(ls_min_annual_return),
+        "pct_from_52w_high": float(ls_pct_from_52w_high),
+        "max_circuits": int(ls_max_circuits),
+        "close_above_100dma": bool(ls_close_above_100dma),
+        "close_above_200dma": bool(ls_close_above_200dma),
+        "pos_days_3m_min": float(ls_pos_days_3m),
+        "pos_days_6m_min": float(ls_pos_days_6m),
+        "pos_days_12m_min": float(ls_pos_days_12m),
     }
 
 
@@ -220,14 +336,14 @@ def _run_signal(params: dict) -> dict:
     cfg = BacktestConfig(
         m=params["m"],
         n=params["n"],
-        rebalance_freq="weekly",
+        rebalance_freq=params.get("freq", "weekly"),
         sort_method=params["sort_method"],
         start_date=str(start_date),
         end_date=str(signal_date),
         compositions_df=compositions_df,
         index_names=indices,
         transaction_cost_pct=0.001,
-        min_history_days=252,
+        min_history_days=params.get("min_history", 252),
         apply_volume_filter=True,
         brokerage_per_sale=0.0,
         initial_capital=1_000_000.0,
@@ -236,8 +352,17 @@ def _run_signal(params: dict) -> dict:
         band_rule=params["band"],
         stage2_drop_exit=params["s2_drop"],
         stage2_drop_threshold=params["s2_threshold"],
-        stage2_entry_filter=False,
+        stage2_entry_filter=params.get("s2_entry", False),
+        stage2_entry_threshold=params.get("s2_entry_threshold", 2),
         max_position_pct=float(params["max_pos"]) if params["max_pos"] > 0 else None,
+        min_annual_return=params.get("min_annual_return", 0.0),
+        pct_from_52w_high=params.get("pct_from_52w_high", 100.0),
+        max_circuits=params.get("max_circuits", 999),
+        close_above_100dma=params.get("close_above_100dma", False),
+        close_above_200dma=params.get("close_above_200dma", False),
+        pos_days_3m_min=params.get("pos_days_3m_min", 0.0),
+        pos_days_6m_min=params.get("pos_days_6m_min", 0.0),
+        pos_days_12m_min=params.get("pos_days_12m_min", 0.0),
     )
     result = run_backtest(symbol_data, benchmarks, cfg)
 
@@ -325,8 +450,7 @@ def live_signal_results(params: dict) -> None:
     incumbents: set[str] = holdings - set(entries)
 
     rebalance_date = _to_date(current["date"])
-    exec_weekday = _EXEC_DAYS.index(params["exec_day"])
-    exec_date = _next_weekday(rebalance_date, exec_weekday)
+    exec_date = _next_business_day(rebalance_date)
 
     # ── param validation warning ──────────────────────────────────────────────
     if params["n"] <= params["m"]:

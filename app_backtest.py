@@ -22,6 +22,7 @@ logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(n
 
 from backtest_engine import _compute_summary_stats, rolling_returns
 from charts import nav_chart_figure, portfolio_churn_figure, portfolio_weights_figure, rolling_returns_figure
+from data import check_data_freshness
 from jobs import JobStatus, registry
 from ui_helpers import _get_user_token, _poll_job
 from workers import backtest_worker
@@ -299,6 +300,14 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "bt_stage2_drop_threshold": ("stage2_drop_threshold", 2),
         "bt_stage2_entry_filter": ("stage2_entry_filter", False),
         "bt_stage2_entry_threshold": ("stage2_entry_threshold", 2),
+        "bt_min_annual_return": ("min_annual_return", 7.0),
+        "bt_pct_from_52w_high": ("pct_from_52w_high", 25),
+        "bt_max_circuits": ("max_circuits", 18),
+        "bt_close_above_100dma": ("close_above_100dma", False),
+        "bt_close_above_200dma": ("close_above_200dma", True),
+        "bt_pos_days_3m": ("pos_days_3m_min", 45),
+        "bt_pos_days_6m": ("pos_days_6m_min", 45),
+        "bt_pos_days_12m": ("pos_days_12m_min", 45),
     }
     for _wk, (_pk, _fallback) in _defaults.items():
         if _wk not in st.session_state:
@@ -322,6 +331,21 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "Rebalance frequency",
         ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"],
         key="bt_freq",
+        help=(
+            "When the portfolio is rebalanced. The nominal period-end date is used; "
+            "if it falls on a market holiday it rolls forward to the next trading day.\n\n"
+            "**Weekly** – Friday of each ISO calendar week "
+            "(e.g. if Friday is a holiday, rebalances Monday).\n\n"
+            "**Biweekly** – Friday of every other ISO calendar week. "
+            "Parity is anchored to the first week present in the backtest date range, "
+            "so which specific weeks are picked may differ across date ranges.\n\n"
+            "**Monthly** – last calendar day of each month, rolled forward on holidays "
+            "(e.g. if 31 Mar is a holiday, rebalances on 1 Apr).\n\n"
+            "**Quarterly** – last calendar day of each quarter "
+            "(Mar 31 / Jun 30 / Sep 30 / Dec 31), rolled forward on holidays.\n\n"
+            "**Half-yearly** – last calendar day of Jun and Dec "
+            "(Jun 30 / Dec 31), rolled forward on holidays."
+        ),
     )
     if bt_freq == "weekly":
         with st.expander("Weekly Stage 2 signals", expanded=False):
@@ -381,6 +405,73 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         key="bt_sort",
     )
 
+    st.selectbox(
+        "Band rule",
+        ["classic", "displacement"],
+        format_func=str.capitalize,
+        disabled=True,
+        key="bt_band_rule_display",
+        help="Both band rules (Classic and Displacement) are always evaluated in the backtest. "
+        "Results are shown side-by-side — no selection needed.",
+    )
+
+    with st.expander("Quality Filters", expanded=False):
+        st.caption(
+            "Stocks that fail these filters are excluded from portfolio selection at each rebalance. "
+            "0 / 100 / 999 = no filter (default). Match these to the Momentum Screener for consistent results."
+        )
+        bt_min_annual_return = st.number_input(
+            "Min Annual Return (%)",
+            min_value=0.0,
+            max_value=1000.0,
+            step=0.1,
+            key="bt_min_annual_return",
+            help="Exclude stocks whose 1-year price change is below this threshold.",
+        )
+        bt_pct_from_52w_high = st.number_input(
+            "Within % of 52w High",
+            min_value=0,
+            max_value=100,
+            step=1,
+            key="bt_pct_from_52w_high",
+            help="Exclude stocks more than this % below their 52-week high. 100 = no filter.",
+        )
+        bt_max_circuits = st.number_input(
+            "Max Circuits (1yr)",
+            min_value=0,
+            max_value=999,
+            step=1,
+            key="bt_max_circuits",
+            help="Exclude stocks with more than this many circuit-limit closes in the past year. 999 = no filter.",
+        )
+        bt_close_above_100dma = st.checkbox("Close > 100 DMA", key="bt_close_above_100dma")
+        bt_close_above_200dma = st.checkbox("Close > 200 DMA", key="bt_close_above_200dma")
+        _pd_cols = st.columns(3)
+        bt_pos_days_3m = _pd_cols[0].number_input(
+            "Pos Days 3M (%)",
+            min_value=0,
+            max_value=100,
+            step=1,
+            key="bt_pos_days_3m",
+            help="Min % of up-close days over last 3 months.",
+        )
+        bt_pos_days_6m = _pd_cols[1].number_input(
+            "Pos Days 6M (%)",
+            min_value=0,
+            max_value=100,
+            step=1,
+            key="bt_pos_days_6m",
+            help="Min % of up-close days over last 6 months.",
+        )
+        bt_pos_days_12m = _pd_cols[2].number_input(
+            "Pos Days 12M (%)",
+            min_value=0,
+            max_value=100,
+            step=1,
+            key="bt_pos_days_12m",
+            help="Min % of up-close days over last 12 months.",
+        )
+
     st.markdown("**Universe**")
     bt_universe = []
     bt_idx_cols = st.columns(2)
@@ -389,7 +480,15 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
             bt_universe.append(idx)
 
     st.markdown("**Date Range**")
-    bt_start = st.date_input("Start date", key="bt_start")
+    bt_start = st.date_input(
+        "Start date",
+        key="bt_start",
+        help=(
+            "Data window opens here, but the first portfolio is not formed until "
+            "≈ **Min history** trading days later (default ~1 year). "
+            "See **Start date and the warmup window** in the **Realism Settings** tab of **📖 User Guide**."
+        ),
+    )
     bt_end = st.date_input("End date", key="bt_end")
     bt_rolling = st.selectbox(
         "Rolling return window",
@@ -477,6 +576,8 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
             bt_brokerage_per_sale = 0.0
             bt_stcg_rate = 0.0
             bt_ltcg_rate = 0.0
+    for _lvl, _msg in check_data_freshness():
+        (st.error if _lvl == "error" else st.warning)(_msg)
     st.divider()
     if st.button("▶ Run Backtest", type="primary", width="stretch", key="bt_run_btn"):
         st.session_state["backtest_run_triggered"] = True
@@ -502,6 +603,14 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "stage2_entry_filter": bt_stage2_entry_filter,
         "stage2_entry_threshold": int(bt_stage2_entry_threshold),
         "max_position_pct": bt_max_position_pct if bt_max_position_pct > 0 else None,
+        "min_annual_return": float(bt_min_annual_return),
+        "pct_from_52w_high": float(bt_pct_from_52w_high),
+        "max_circuits": int(bt_max_circuits),
+        "close_above_100dma": bool(bt_close_above_100dma),
+        "close_above_200dma": bool(bt_close_above_200dma),
+        "pos_days_3m_min": float(bt_pos_days_3m),
+        "pos_days_6m_min": float(bt_pos_days_6m),
+        "pos_days_12m_min": float(bt_pos_days_12m),
     }
 
 

@@ -86,6 +86,14 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         stage2_drop_threshold=params.get("stage2_drop_threshold", 2),
         stage2_entry_filter=params.get("stage2_entry_filter", False),
         stage2_entry_threshold=params.get("stage2_entry_threshold", 2),
+        min_annual_return=params.get("min_annual_return", 0.0),
+        pct_from_52w_high=params.get("pct_from_52w_high", 100.0),
+        max_circuits=params.get("max_circuits", 999),
+        close_above_100dma=params.get("close_above_100dma", False),
+        close_above_200dma=params.get("close_above_200dma", False),
+        pos_days_3m_min=params.get("pos_days_3m_min", 0.0),
+        pos_days_6m_min=params.get("pos_days_6m_min", 0.0),
+        pos_days_12m_min=params.get("pos_days_12m_min", 0.0),
     )
 
     emit("info", f"Running Classic band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")

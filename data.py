@@ -64,6 +64,107 @@ def get_last_valid_trading_date(start_date_str: str, holidays: frozenset) -> str
 
 
 # ──────────────────────────────────────────────
+# DATA FRESHNESS CHECKS
+# ──────────────────────────────────────────────
+_STALENESS_DAYS_CONSTITUENTS = 30
+_STALENESS_DAYS_HOLIDAYS = 180  # NSE publishes holiday lists ~annually; refresh twice/year
+_STALENESS_DAYS_COMPOSITIONS = 30
+
+
+def check_data_freshness() -> list[tuple[str, str]]:
+    """
+    Inspect key reference data files and return (level, message) pairs for anything stale or missing.
+    level is 'warning' or 'error'.  Callers should render these as st.warning / st.error.
+    """
+    issues: list[tuple[str, str]] = []
+    today = datetime.now(IST).date()
+    repo = os.path.dirname(os.path.abspath(__file__))
+
+    # ── constituents.json ──────────────────────
+    const_path = os.path.join(repo, "constituents.json")
+    if not os.path.exists(const_path):
+        issues.append(
+            (
+                "error",
+                "**constituents.json** not found — index universe is unknown. "
+                "Download the latest file from NSE and place it in the repo root.",
+            )
+        )
+    else:
+        age = (today - datetime.fromtimestamp(os.path.getmtime(const_path)).date()).days
+        if age > _STALENESS_DAYS_CONSTITUENTS:
+            updated = datetime.fromtimestamp(os.path.getmtime(const_path)).strftime("%d %b %Y")
+            issues.append(
+                (
+                    "warning",
+                    f"**constituents.json** is {age} days old (last updated {updated}). "
+                    "Index membership may be stale — refresh from NSE.",
+                )
+            )
+
+    # ── nse_holidays.json ──────────────────────
+    hol_path = os.path.join(repo, "nse_holidays.json")
+    if not os.path.exists(hol_path):
+        issues.append(
+            (
+                "warning",
+                "**nse_holidays.json** not found — rebalance dates cannot be holiday-adjusted. "
+                "Download it from NSE.",
+            )
+        )
+    else:
+        hols = load_nse_holidays()
+        covered_years = {datetime.strptime(d, "%Y-%m-%d").year for d in hols}
+        if today.year not in covered_years:
+            issues.append(
+                (
+                    "error",
+                    f"**nse_holidays.json** does not include {today.year} holidays — "
+                    "rebalance dates may fall on market holidays. Update the file from NSE.",
+                )
+            )
+        else:
+            age = (today - datetime.fromtimestamp(os.path.getmtime(hol_path)).date()).days
+            if age > _STALENESS_DAYS_HOLIDAYS:
+                issues.append(
+                    (
+                        "warning",
+                        f"**nse_holidays.json** is {age} days old — it may be missing "
+                        "holidays added or revised later in the year. Refresh from NSE.",
+                    )
+                )
+
+    # ── compositions.parquet ──────────────────
+    comp_path = os.path.join(repo, "data", "compositions.parquet")
+    if not os.path.exists(comp_path):
+        issues.append(
+            (
+                "warning",
+                "**data/compositions.parquet** not found — survivorship-bias correction is disabled. "
+                "Run `scripts/refresh_backtest_parquet.py` to generate it.",
+            )
+        )
+    else:
+        try:
+            df = pd.read_parquet(comp_path, columns=["TIME_STAMP"])
+            max_ts = pd.to_datetime(df["TIME_STAMP"]).max().date()
+            lag = (today - max_ts).days
+            if lag > _STALENESS_DAYS_COMPOSITIONS:
+                issues.append(
+                    (
+                        "warning",
+                        f"**compositions.parquet** last covers {max_ts.strftime('%d %b %Y')} "
+                        f"({lag} days ago) — the constituent filter may be stale. "
+                        "Run `scripts/refresh_backtest_parquet.py` to update.",
+                    )
+                )
+        except Exception:
+            pass
+
+    return issues
+
+
+# ──────────────────────────────────────────────
 # CONSTITUENTS
 # ──────────────────────────────────────────────
 @functools.lru_cache(maxsize=None)
