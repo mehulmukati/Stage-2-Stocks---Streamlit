@@ -19,7 +19,6 @@ Survivorship-bias mitigations applied:
 
 from __future__ import annotations
 
-import datetime
 import logging
 import re
 from dataclasses import dataclass, field
@@ -501,68 +500,43 @@ def get_rebalance_dates(
     freq: str,
 ) -> list[pd.Timestamp]:
     """
-    Return rebalance dates from trading_days based on freq.
-    The nominal period-end (Friday for weekly, last calendar day for others) is
-    rolled forward to the next available trading day when it falls on a holiday.
-
-      'weekly'     – Friday of each ISO calendar week, roll-forward on holiday
-      'biweekly'   – Friday of every other ISO calendar week, roll-forward on holiday
-      'monthly'    – last calendar day of each month, roll-forward on holiday
-      'quarterly'  – last calendar day of each quarter (Mar/Jun/Sep/Dec), roll-forward
-      'half-yearly'– last calendar day of Jun and Dec, roll-forward on holiday
+    Return rebalance dates from trading_days based on freq:
+      'weekly'     – last trading day of each calendar week
+      'biweekly'   – last trading day of every other calendar week
+      'monthly'    – last trading day of each calendar month
+      'quarterly'  – last trading day of each calendar quarter
+      'half-yearly'– last trading day of each half-year (Jan–Jun, Jul–Dec)
     """
     if trading_days.empty:
         return []
 
-    td_sorted = trading_days.sort_values()
-
-    def _next_td(nominal: pd.Timestamp) -> pd.Timestamp | None:
-        idx = td_sorted.searchsorted(nominal)
-        return td_sorted[idx] if idx < len(td_sorted) else None
-
-    def _dedup_sorted(dates: list[pd.Timestamp]) -> list[pd.Timestamp]:
-        seen: set = set()
-        out = []
-        for d in sorted(dates):
-            if d not in seen:
-                seen.add(d)
-                out.append(d)
-        return out
-
-    series = pd.Series(td_sorted, index=td_sorted)
+    series = pd.Series(trading_days, index=trading_days)
 
     if freq == "monthly":
-        groups = series.groupby([series.dt.year, series.dt.month])
-        period_ends = [pd.Timestamp(year=y, month=m, day=1) + pd.offsets.MonthEnd(0) for (y, m), _ in groups]
-    elif freq == "quarterly":
-        groups = series.groupby([series.dt.year, series.dt.quarter])
-        period_ends = [pd.Timestamp(year=y, month=q * 3, day=1) + pd.offsets.MonthEnd(0) for (y, q), _ in groups]
-    elif freq == "half-yearly":
-        half_arr = (series.dt.month - 1) // 6
-        groups = series.groupby([series.dt.year, half_arr])
-        period_ends = [
-            pd.Timestamp(year=y, month=6 if h == 0 else 12, day=1) + pd.offsets.MonthEnd(0) for (y, h), _ in groups
-        ]
-    else:
-        # weekly / biweekly: nominal end = Friday of each ISO week
-        week_key = td_sorted.isocalendar().week.values
-        year_key = td_sorted.isocalendar().year.values
-        dates_df = pd.DataFrame({"year": year_key, "week": week_key})
-        unique_weeks = dates_df.drop_duplicates().sort_values(["year", "week"])
+        grouped = series.groupby([series.dt.year, series.dt.month])
+        return [grp.iloc[-1] for _, grp in grouped]
 
-        dates = []
-        for _, row in unique_weeks.iterrows():
-            friday = pd.Timestamp(datetime.date.fromisocalendar(int(row["year"]), int(row["week"]), 5))
-            d = _next_td(friday)
-            if d is not None:
-                dates.append(d)
-        dates = _dedup_sorted(dates)
-        if freq == "biweekly":
-            dates = dates[::2]
-        return dates
+    if freq == "quarterly":
+        grouped = series.groupby([series.dt.year, series.dt.quarter])
+        return [grp.iloc[-1] for _, grp in grouped]
 
-    dates = [d for pe in period_ends if (d := _next_td(pe)) is not None]
-    return _dedup_sorted(dates)
+    if freq == "half-yearly":
+        half = (series.dt.month - 1) // 6
+        grouped = series.groupby([series.dt.year, half])
+        return [grp.iloc[-1] for _, grp in grouped]
+
+    # weekly / biweekly
+    week_key = trading_days.isocalendar().week.values
+    year_key = trading_days.isocalendar().year.values
+
+    dates_df = pd.DataFrame({"date": trading_days, "year": year_key, "week": week_key})
+    last_per_week = dates_df.groupby(["year", "week"])["date"].last().reset_index()
+    last_per_week = last_per_week.sort_values("date").reset_index(drop=True)
+
+    if freq == "weekly":
+        return last_per_week["date"].tolist()
+    else:  # biweekly
+        return last_per_week["date"].iloc[::2].tolist()
 
 
 # ──────────────────────────────────────────────────────────────
