@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Strategy Explainer — Band Rules &amp; Rebalancing</title>
+  <style>
+    :root {
+      --blue:   #2563eb;
+      --purple: #7c3aed;
+      --green:  #059669;
+      --amber:  #d97706;
+      --red:    #dc2626;
+      --slate:  #1e3a5f;
+      --text:   #1e293b;
+      --muted:  #64748b;
+      --bg:     #f8fafc;
+      --card:   #ffffff;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--slate);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── PROGRESS BAR ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      transition: width 0.35s ease;
+      z-index: 100;
+    }
+
+    /* ── SLIDE WRAPPER ── */
+    #slides {
+      width: 100%; height: 100vh;
+      display: flex;
+      transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+    }
+    .slide {
+      min-width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    /* ── SLIDE HEADER ── */
+    .slide-header {
+      background: linear-gradient(135deg, var(--slate) 0%, var(--blue) 70%, var(--purple) 100%);
+      color: white;
+      padding: 1rem 2rem 0.9rem;
+      flex-shrink: 0;
+    }
+    .slide-header .eyebrow { font-size: 0.72rem; font-weight: 600; opacity: 0.65; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.2rem; }
+    .slide-header h2 { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.3px; line-height: 1.2; }
+    .slide-header p  { font-size: 0.88rem; opacity: 0.82; margin-top: 0.25rem; }
+
+    /* ── SLIDE BODY ── */
+    .slide-body {
+      flex: 1;
+      padding: 1.2rem 2rem 0.8rem;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* ── COLUMNS ── */
+    .cols { display: flex; gap: 1.2rem; flex: 1; }
+    .col  { flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
+    .col2 { flex: 2; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+    }
+    .card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .card p  { font-size: 0.83rem; color: var(--muted); }
+
+    /* ── RANKED LIST ── */
+    .rank-list { display: flex; flex-direction: column; gap: 3px; }
+    .rank-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 10px; border-radius: 7px;
+      font-size: 0.82rem; font-weight: 600;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .rank-row .rnum {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .rank-row .ticker { flex: 1; }
+    .rank-row .badge {
+      font-size: 0.68rem; padding: 2px 7px; border-radius: 8px; font-weight: 700;
+    }
+
+    /* zone colours */
+    .zone-top  { background: #dcfce7; border-color: #86efac; }
+    .zone-top  .rnum { background: #16a34a; }
+    .zone-top  .badge { background: #16a34a; color: white; }
+
+    .zone-buf  { background: #fef9c3; border-color: #fde047; }
+    .zone-buf  .rnum { background: #ca8a04; }
+    .zone-buf  .badge { background: #ca8a04; color: white; }
+
+    .zone-out  { background: #fee2e2; border-color: #fca5a5; }
+    .zone-out  .rnum { background: #dc2626; }
+    .zone-out  .badge { background: #dc2626; color: white; }
+
+    .zone-new  { background: #eff6ff; border-color: #93c5fd; }
+    .zone-new  .rnum { background: #2563eb; }
+    .zone-new  .badge { background: #2563eb; color: white; }
+
+    .zone-gray { background: #f1f5f9; border-color: #cbd5e1; }
+    .zone-gray .rnum { background: #94a3b8; }
+
+    /* zone labels */
+    .zone-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; padding: 2px 10px 4px; opacity: 0.6;
+    }
+    .zl-green { color: #166534; }
+    .zl-yellow { color: #92400e; }
+    .zl-red   { color: #991b1b; }
+
+    /* ── PORTFOLIO BOX ── */
+    .portfolio {
+      background: var(--card);
+      border: 2px solid var(--slate);
+      border-radius: 12px;
+      padding: 0.7rem 0.9rem;
+    }
+    .portfolio h4 {
+      font-size: 0.78rem; font-weight: 700; color: var(--slate);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .port-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 8px; border-radius: 6px; margin-bottom: 3px;
+      font-size: 0.82rem; font-weight: 600;
+    }
+    .port-row.holding  { background: #dcfce7; }
+    .port-row.entering { background: #dbeafe; }
+    .port-row.exiting  { background: #fee2e2; text-decoration: line-through; color: var(--muted); }
+    .port-row.staying  { background: #fef9c3; }
+    .port-row.empty    { background: #f1f5f9; color: var(--muted); font-style: italic; }
+    .port-row .pw { margin-left: auto; font-size: 0.78rem; color: var(--muted); }
+
+    /* ── WEIGHT BAR ── */
+    .weight-bars { display: flex; flex-direction: column; gap: 6px; }
+    .wb-row { display: flex; align-items: center; gap: 8px; }
+    .wb-name { width: 55px; font-size: 0.8rem; font-weight: 600; }
+    .wb-track { flex: 1; background: #e2e8f0; border-radius: 4px; height: 22px; position: relative; overflow: hidden; }
+    .wb-fill  { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px;
+                font-size: 0.72rem; font-weight: 700; color: white; transition: width 0.5s ease; }
+    .wb-pct { width: 40px; font-size: 0.8rem; font-weight: 700; text-align: right; }
+
+    /* ── ARROW ── */
+    .arrow-right { font-size: 1.3rem; color: var(--muted); align-self: center; flex-shrink: 0; }
+
+    /* ── HIGHLIGHT BOX ── */
+    .hl-box {
+      border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.85rem;
+    }
+    .hl-green  { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
+    .hl-blue   { background: #dbeafe; border: 1px solid #93c5fd; color: #1e40af; }
+    .hl-amber  { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+    .hl-red    { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+    .hl-purple { background: #ede9fe; border: 1px solid #c4b5fd; color: #5b21b6; }
+    .hl-box strong { display: block; margin-bottom: 0.2rem; }
+
+    /* ── 6-STRATEGY GRID ── */
+    .strategy-grid { display: grid; grid-template-columns: 110px 1fr 1fr 1fr; gap: 2px; }
+    .sg-head { background: var(--slate); color: white; padding: 0.5rem 0.7rem; font-size: 0.78rem; font-weight: 700; border-radius: 4px; text-align: center; }
+    .sg-label { background: #f1f5f9; padding: 0.5rem 0.7rem; font-size: 0.8rem; font-weight: 700; color: var(--slate); border-radius: 4px; display: flex; align-items: center; }
+    .sg-cell {
+      padding: 0.6rem 0.7rem; border-radius: 4px; font-size: 0.8rem;
+      border: 1px solid var(--border); background: white;
+    }
+    .sg-cell .sc-name { font-weight: 700; margin-bottom: 0.25rem; }
+    .sg-cell .sc-meta { font-size: 0.72rem; color: var(--muted); }
+    .sg-cell.classic-col { border-left: 3px solid var(--blue); }
+    .sg-cell.disp-col    { border-left: 3px solid var(--purple); }
+
+    /* ── LEGEND ── */
+    .legend { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .leg-item { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; font-weight: 600; }
+    .leg-dot  { width: 12px; height: 12px; border-radius: 3px; }
+
+    /* ── TITLE SLIDE ── */
+    .title-slide {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--slate) 0%, #1e4080 50%, #4c1d95 100%);
+      color: white; padding: 2.5rem;
+    }
+    .title-slide h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.5px; text-align: center; line-height: 1.15; }
+    .title-slide p  { font-size: 1rem; opacity: 0.8; margin-top: 0.8rem; text-align: center; max-width: 560px; }
+    .title-slide .matrix {
+      display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 6px;
+      margin-top: 2rem; width: 100%; max-width: 600px;
+    }
+    .tm-corner { }
+    .tm-head   { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 0.5rem; text-align: center; font-size: 0.82rem; font-weight: 700; }
+    .tm-label  { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 0.5rem; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; }
+    .tm-cell   { background: rgba(255,255,255,0.08); border-radius: 8px; padding: 0.5rem; text-align: center; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.15); }
+    .tm-cell.hi{ background: rgba(99,102,241,0.35); border-color: rgba(165,180,252,0.5); }
+
+    /* ── NAV ── */
+    #nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(30,58,95,0.95); backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.7rem 1.5rem;
+      z-index: 100;
+    }
+    #nav button {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white; padding: 0.4rem 1.2rem;
+      border-radius: 20px; font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    #nav button:hover { background: rgba(255,255,255,0.22); }
+    #nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+    #slide-counter { color: white; font-size: 0.88rem; font-weight: 600; opacity: 0.8; }
+    .dot-nav { display: flex; gap: 6px; align-items: center; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.2s; }
+    .dot.active { background: white; width: 20px; border-radius: 4px; }
+
+    /* ── UTIL ── */
+    .divider-line { border: none; border-top: 2px dashed var(--border); }
+    .tag {
+      display: inline-block; padding: 2px 8px; border-radius: 8px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .tag-b { background: #dbeafe; color: #1e40af; }
+    .tag-p { background: #ede9fe; color: #5b21b6; }
+    .tag-g { background: #dcfce7; color: #166534; }
+    .tag-y { background: #fef3c7; color: #92400e; }
+    .tag-r { background: #fee2e2; color: #991b1b; }
+
+    .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; }
+    .threecol { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; flex: 1; }
+
+    .label-band {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 4px 10px; border-radius: 6px; margin-bottom: 4px;
+    }
+
+    .fn { font-family: 'Menlo','Courier New',monospace; font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────
+     SLIDES
+───────────────────────────────────────── -->
+<div id="progress-bar"></div>
+<div id="slides">
+
+
+<!-- ════════════════════ SLIDE 1 ════════════════════ -->
+<div class="slide">
+  <div class="title-slide">
+    <div style="font-size:0.78rem;font-weight:700;opacity:0.55;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.6rem;">Stage 2 Backtester</div>
+    <h1>6 Ways to Run a<br>Momentum Portfolio</h1>
+    <p>Two independent decisions at every rebalance date:<br>
+       <strong>which stocks to trade</strong> (band rule) and <strong>how much of each to hold</strong> (rebalance method).</p>
+
+    <div class="matrix">
+      <div class="tm-corner"></div>
+      <div class="tm-head">Full</div>
+      <div class="tm-head">Marginal</div>
+      <div class="tm-head">Prop</div>
+
+      <div class="tm-label">Classic</div>
+      <div class="tm-cell hi">Classic<br>· Full</div>
+      <div class="tm-cell hi">Classic<br>· Marginal</div>
+      <div class="tm-cell hi">Classic<br>· Prop</div>
+
+      <div class="tm-label">Displacement</div>
+      <div class="tm-cell hi">Displ.<br>· Full</div>
+      <div class="tm-cell hi">Displ.<br>· Marginal</div>
+      <div class="tm-cell hi">Displ.<br>· Prop</div>
+    </div>
+
+    <div style="display:flex;gap:1.5rem;margin-top:2rem;font-size:0.82rem;opacity:0.7;">
+      <span>← → arrow keys to navigate</span>
+      <span>·</span>
+      <span>13 slides</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 2 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Setup</div>
+    <h2>The Universe, M and N</h2>
+    <p>Every strategy starts by ranking the entire eligible universe by momentum score at each rebalance date.</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+      <div class="col">
+        <div class="card">
+          <h3>📊 The Ranked Universe</h3>
+          <p>At every rebalance, all eligible stocks are sorted by their composite Sharpe score — best at the top, worst at the bottom.</p>
+        </div>
+        <div class="card">
+          <h3>M — Entry Threshold</h3>
+          <p>The portfolio targets the <strong>top M stocks</strong>. A stock ranked ≤ M is eligible to enter. Typical value: <strong>M = 15</strong>.</p>
+        </div>
+        <div class="card">
+          <h3>N — Exit Threshold (N &gt; M)</h3>
+          <p>A stock only <em>exits</em> when it drops <strong>below rank N</strong>. The gap (N − M) creates a buffer zone where stocks are safe from being sold. Typical value: <strong>N = 20</strong>.</p>
+        </div>
+        <div class="hl-amber">
+          <strong>Why a buffer?</strong>
+          Ranking fluctuates week-to-week due to noise. Without the gap, stocks near rank M would churn in and out constantly, generating unnecessary taxes and brokerage.
+        </div>
+      </div>
+      <div class="col col2">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.3rem;">Example: M = 3, N = 5</div>
+        <div class="rank-list">
+          <div class="label-band" style="background:#dcfce7;color:#166534;">🟢 TOP M ZONE (ranks 1–3) — eligible to ENTER or STAY</div>
+          <div class="rank-row zone-top"><div class="rnum">1</div><div class="ticker">APEX</div><div class="badge">Sharpe 2.4</div></div>
+          <div class="rank-row zone-top"><div class="rnum">2</div><div class="ticker">NOVA</div><div class="badge">Sharpe 2.1</div></div>
+          <div class="rank-row zone-top"><div class="rnum">3</div><div class="ticker">BOLT</div><div class="badge">Sharpe 1.9</div></div>
+          <div class="label-band" style="background:#fef9c3;color:#92400e;margin-top:4px;">🟡 BUFFER ZONE (ranks 4–5) — STAY if held, cannot enter</div>
+          <div class="rank-row zone-buf"><div class="rnum">4</div><div class="ticker">CORE</div><div class="badge">Sharpe 1.7</div></div>
+          <div class="rank-row zone-buf"><div class="rnum">5</div><div class="ticker">DUNE</div><div class="badge">Sharpe 1.5</div></div>
+          <div class="label-band" style="background:#fee2e2;color:#991b1b;margin-top:4px;">🔴 EXIT ZONE (ranks 6+) — must LEAVE if held</div>
+          <div class="rank-row zone-out"><div class="rnum">6</div><div class="ticker">ECHO</div><div class="badge">Sharpe 1.2</div></div>
+          <div class="rank-row zone-gray"><div class="rnum">7</div><div class="ticker">FORD</div></div>
+          <div class="rank-row zone-gray"><div class="rnum">8</div><div class="ticker">GRAY</div></div>
+          <div style="text-align:center;color:var(--muted);font-size:0.78rem;padding:4px;">… and so on</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 3 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Band Rule 1 of 2</div>
+    <h2>Classic Band Rule</h2>
+    <p>Aggressive entry — always tries to hold ALL top-M stocks regardless of what is already in the portfolio.</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+      <div class="col">
+        <div class="card">
+          <h3>📤 Exit Rule</h3>
+          <p>A stock exits if its rank drops <strong>below N</strong> (outside the top-N universe). Both top-M and buffer-zone stocks are protected from selling as long as they stay within top-N.</p>
+        </div>
+        <div class="card">
+          <h3>📥 Entry Rule</h3>
+          <p><strong>Every stock ranked ≤ M</strong> that isn't already in the portfolio enters — regardless of how many slots are free. The portfolio temporarily expands above M if buffer-zone stocks are still held.</p>
+        </div>
+        <div class="hl-blue">
+          <strong>Key behaviour</strong>
+          At each rebalance: exits happen first, then ALL top-M newcomers are added. If a buffer-zone stock didn't exit, the portfolio size briefly exceeds M. The equal-weight scheme (Full variant) then normalises this.
+        </div>
+        <div class="hl-amber" style="margin-top:0;">
+          <strong>Implication on turnover</strong>
+          Potentially high. Every time a new stock enters top-M, it automatically joins the portfolio even if there's no vacancy.
+        </div>
+      </div>
+      <div class="col col2">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.4rem;">Classic logic — step by step</div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;">
+
+          <div style="background:#f1f5f9;border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;">
+            <strong style="color:var(--slate);">Step 1 — Identify exits</strong><br>
+            <span style="color:var(--muted);">Remove every held stock that is <em>not</em> in <code class="fn">top_n</code> (rank &gt; N).</span>
+            <div style="margin-top:0.4rem;font-family:monospace;font-size:0.8rem;background:#e2e8f0;padding:4px 8px;border-radius:4px;">exits = current_holdings − top_n</div>
+          </div>
+
+          <div style="background:#f1f5f9;border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;">
+            <strong style="color:var(--slate);">Step 2 — Identify entries</strong><br>
+            <span style="color:var(--muted);">Add <em>every</em> stock from <code class="fn">top_m</code> not yet in the portfolio. No slot-count check.</span>
+            <div style="margin-top:0.4rem;font-family:monospace;font-size:0.8rem;background:#e2e8f0;padding:4px 8px;border-radius:4px;">entries = top_m − current_holdings</div>
+          </div>
+
+          <div style="background:#f1f5f9;border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;">
+            <strong style="color:var(--slate);">Step 3 — New holdings</strong><br>
+            <div style="margin-top:0.4rem;font-family:monospace;font-size:0.8rem;background:#e2e8f0;padding:4px 8px;border-radius:4px;">new = (current_holdings − exits) ∪ entries<br><span style="color:#dc2626;">⚠ size may exceed M temporarily</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 4 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Classic Band — Worked Example</div>
+    <h2>Classic: Buffer Stock Stays AND New Stock Joins</h2>
+    <p>M = 3, N = 5. Watch what happens when NOVA breaks into top-3 while CORE drifts to rank 5 (buffer).</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+
+      <!-- BEFORE -->
+      <div class="col">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.3rem;">📅 Before rebalance</div>
+        <div class="portfolio" style="margin-bottom:0.6rem;">
+          <h4>📁 Current portfolio (3 stocks)</h4>
+          <div class="port-row holding"><div class="rnum" style="width:20px;height:20px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">1</div>&nbsp;APEX &nbsp;<span class="tag tag-g">top-M</span></div>
+          <div class="port-row holding"><div class="rnum" style="width:20px;height:20px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">3</div>&nbsp;BOLT &nbsp;<span class="tag tag-g">top-M</span></div>
+          <div class="port-row staying"><div class="rnum" style="width:20px;height:20px;background:#ca8a04;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">4</div>&nbsp;CORE &nbsp;<span class="tag tag-y">buffer</span></div>
+        </div>
+        <div class="rank-list">
+          <div class="rank-row zone-top"><div class="rnum">1</div><div class="ticker">APEX</div><div class="badge">held ✓</div></div>
+          <div class="rank-row zone-top"><div class="rnum">2</div><div class="ticker">NOVA</div><div class="badge">NEW ⭐</div></div>
+          <div class="rank-row zone-top"><div class="rnum">3</div><div class="ticker">BOLT</div><div class="badge">held ✓</div></div>
+          <div class="rank-row zone-buf"><div class="rnum">4</div><div class="ticker">DUNE</div></div>
+          <div class="rank-row zone-buf"><div class="rnum">5</div><div class="ticker">CORE</div><div class="badge">held → buffer</div></div>
+          <div class="rank-row zone-out"><div class="rnum">6+</div><div class="ticker">…others…</div></div>
+        </div>
+      </div>
+
+      <div class="arrow-right">→</div>
+
+      <!-- CLASSIC RESULT -->
+      <div class="col col2">
+        <div style="font-size:0.72rem;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.3rem;">🔵 Classic result after rebalance</div>
+
+        <div class="hl-box hl-blue" style="margin-bottom:0.6rem;">
+          <strong>exits = {APEX,BOLT,CORE} − top-5 = {} (no exits — all 3 stocks are in top-5)</strong>
+          entries = top-3 − {APEX,BOLT,CORE} = {NOVA} (NOVA is new to top-3)
+        </div>
+
+        <div class="portfolio">
+          <h4>📁 New portfolio — <span style="color:#dc2626;">4 stocks (exceeds M=3!)</span></h4>
+          <div class="port-row holding"><div class="rnum" style="width:20px;height:20px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">1</div>&nbsp;APEX &nbsp;<span class="tag tag-g">stays</span></div>
+          <div class="port-row entering"><div class="rnum" style="width:20px;height:20px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">2</div>&nbsp;NOVA &nbsp;<span class="tag tag-b">enters ⬆</span></div>
+          <div class="port-row holding"><div class="rnum" style="width:20px;height:20px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">3</div>&nbsp;BOLT &nbsp;<span class="tag tag-g">stays</span></div>
+          <div class="port-row staying"><div class="rnum" style="width:20px;height:20px;background:#ca8a04;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">5</div>&nbsp;CORE &nbsp;<span class="tag tag-y">stays in buffer</span></div>
+        </div>
+
+        <div class="hl-box hl-amber" style="margin-top:0.5rem;">
+          CORE is still safe (rank 5 ≤ N=5), so it doesn't exit. NOVA joins because it's in top-M. Result: 4 positions held simultaneously. The weight scheme (Full/Marginal/Prop) assigns 25% each.
+        </div>
+
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;padding:0.5rem;background:#f1f5f9;border-radius:8px;">
+          💡 CORE will eventually exit once it falls below rank 5. Until then, Classic can hold M+buffer stocks.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 5 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Band Rule 2 of 2</div>
+    <h2>Displacement Band Rule</h2>
+    <p>Conservative entry — new stocks can only enter when a slot is freed. The portfolio never exceeds M.</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+      <div class="col">
+        <div class="card">
+          <h3>📤 Exit Rule (same as Classic)</h3>
+          <p>A stock exits if its rank drops <strong>below N</strong>. Identical to Classic — the buffer zone protects against whipsaw selling.</p>
+        </div>
+        <div class="card">
+          <h3>📥 Entry Rule — DIFFERENT</h3>
+          <p>New entrants can only fill <strong>freed slots</strong> (slots vacated by exits). If no stocks exited this period, no new stocks enter — even if top-M has better-ranked candidates outside the portfolio.</p>
+        </div>
+        <div class="hl-purple">
+          <strong>Key behaviour</strong>
+          The portfolio is treated like a fixed-capacity club. A new member can only join when someone leaves. Buffer-zone incumbents are never displaced by higher-ranked outsiders.
+        </div>
+        <div class="hl-green" style="margin-top:0;">
+          <strong>Implication on turnover</strong>
+          Lower turnover than Classic. Stocks held in the buffer zone are never sold just to make room for new top-M entrants. Each trade has a definitive reason: an exit opened a slot.
+        </div>
+      </div>
+      <div class="col col2">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.4rem;">Displacement logic — step by step</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:#f1f5f9;border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;">
+            <strong style="color:var(--slate);">Step 1 — Identify exits (same rule)</strong>
+            <div style="margin-top:0.4rem;font-family:monospace;font-size:0.8rem;background:#e2e8f0;padding:4px 8px;border-radius:4px;">exits = current_holdings − top_n</div>
+          </div>
+          <div style="background:#f1f5f9;border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;">
+            <strong style="color:var(--slate);">Step 2 — Count freed slots</strong>
+            <div style="margin-top:0.4rem;font-family:monospace;font-size:0.8rem;background:#e2e8f0;padding:4px 8px;border-radius:4px;">free_slots = M − (|current_holdings| − |exits|)</div>
+          </div>
+          <div style="background:#f1f5f9;border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;">
+            <strong style="color:var(--slate);">Step 3 — Fill freed slots only</strong><br>
+            <span style="color:var(--muted);">Candidates come from top-M stocks not already held. Sort by rank. Take the best up to <code class="fn">free_slots</code>.</span>
+            <div style="margin-top:0.4rem;font-family:monospace;font-size:0.8rem;background:#e2e8f0;padding:4px 8px;border-radius:4px;">entries = best(top_m − holdings_after_exits)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[:free_slots]  ← hard cap</div>
+          </div>
+          <div style="background:#f1f5f9;border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;">
+            <strong style="color:var(--slate);">Step 4 — New holdings</strong>
+            <div style="margin-top:0.4rem;font-family:monospace;font-size:0.8rem;background:#e2e8f0;padding:4px 8px;border-radius:4px;">new = (current_holdings − exits) ∪ entries<br><span style="color:#059669;">✓ size ≤ M always</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 6 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Displacement Band — Worked Example</div>
+    <h2>Displacement: NOVA Waits at the Door</h2>
+    <p>Same scenario as Classic (slide 4) — NOVA is ranked #2, CORE drifted to buffer (rank 5). Watch the difference.</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+
+      <!-- BEFORE -->
+      <div class="col">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.3rem;">📅 Same starting state as Slide 4</div>
+        <div class="portfolio" style="margin-bottom:0.6rem;">
+          <h4>📁 Current portfolio (3 stocks)</h4>
+          <div class="port-row holding"><div class="rnum" style="width:20px;height:20px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">1</div>&nbsp;APEX</div>
+          <div class="port-row holding"><div class="rnum" style="width:20px;height:20px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">3</div>&nbsp;BOLT</div>
+          <div class="port-row staying"><div class="rnum" style="width:20px;height:20px;background:#ca8a04;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">5</div>&nbsp;CORE &nbsp;<span class="tag tag-y">buffer</span></div>
+        </div>
+        <div class="rank-list">
+          <div class="rank-row zone-top"><div class="rnum">1</div><div class="ticker">APEX</div><div class="badge">held ✓</div></div>
+          <div class="rank-row zone-new"><div class="rnum">2</div><div class="ticker">NOVA</div><div class="badge">wants in ⭐</div></div>
+          <div class="rank-row zone-top"><div class="rnum">3</div><div class="ticker">BOLT</div><div class="badge">held ✓</div></div>
+          <div class="rank-row zone-buf"><div class="rnum">4</div><div class="ticker">DUNE</div></div>
+          <div class="rank-row zone-buf"><div class="rnum">5</div><div class="ticker">CORE</div><div class="badge">held → buffer</div></div>
+          <div class="rank-row zone-out"><div class="rnum">6+</div><div class="ticker">…others…</div></div>
+        </div>
+      </div>
+
+      <div class="arrow-right">→</div>
+
+      <!-- DISPLACEMENT RESULT -->
+      <div class="col col2">
+        <div style="font-size:0.72rem;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.3rem;">🟣 Displacement result after rebalance</div>
+
+        <div class="hl-box hl-purple" style="margin-bottom:0.6rem;">
+          <strong>exits = {APEX,BOLT,CORE} − top-5 = {} → free_slots = 3 − 3 = 0</strong>
+          No one exited. Zero free slots. NOVA cannot enter. Portfolio unchanged.
+        </div>
+
+        <div class="portfolio">
+          <h4>📁 New portfolio — <span style="color:#059669;">still 3 stocks (M respected)</span></h4>
+          <div class="port-row holding"><div class="rnum" style="width:20px;height:20px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">1</div>&nbsp;APEX &nbsp;<span class="tag tag-g">stays</span></div>
+          <div class="port-row holding"><div class="rnum" style="width:20px;height:20px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">3</div>&nbsp;BOLT &nbsp;<span class="tag tag-g">stays</span></div>
+          <div class="port-row staying"><div class="rnum" style="width:20px;height:20px;background:#ca8a04;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;flex-shrink:0;">5</div>&nbsp;CORE &nbsp;<span class="tag tag-y">stays in buffer</span></div>
+        </div>
+
+        <div style="margin-top:0.5rem;padding:0.6rem 0.8rem;background:#ede9fe;border:1px solid #c4b5fd;border-radius:8px;font-size:0.82rem;color:#4c1d95;">
+          🚪 NOVA is ranked #2 but cannot enter — all 3 slots are occupied by stocks that haven't fallen below N=5. NOVA will enter next period <em>if and only if</em> one of the three incumbents drops below rank 5.
+        </div>
+
+        <div style="margin-top:0.5rem;padding:0.6rem 0.8rem;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:0.82rem;color:#166534;">
+          ✅ Zero trades this period. Zero transaction costs. CORE's position is protected by the buffer zone.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 7 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Band Rules — Head to Head</div>
+    <h2>Classic vs Displacement: The Key Differences</h2>
+    <p>Same exit rule. Radically different entry behaviour. Everything downstream flows from this choice.</p>
+  </div>
+  <div class="slide-body">
+    <div class="twocol">
+      <div>
+        <div class="label-band" style="background:#dbeafe;color:#1e40af;">🔵 Classic Band</div>
+        <div class="card" style="border-left:4px solid var(--blue);margin-bottom:0.6rem;">
+          <h3>Entry: "All top-M, unconditionally"</h3>
+          <p>Every stock ranked ≤ M that isn't held joins the portfolio. No slot check. Portfolio can exceed M.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--blue);margin-bottom:0.6rem;">
+          <h3>Portfolio size</h3>
+          <p>Varies. Can be larger than M when buffer-zone stocks are still held alongside new top-M entrants. Normalises toward M as buffer stocks gradually exit.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--blue);margin-bottom:0.6rem;">
+          <h3>Best for…</h3>
+          <p>Environments where momentum is persistent and quick rotation into new leaders adds alpha. Accepts higher turnover for faster repositioning.</p>
+        </div>
+        <div class="hl-box hl-blue">
+          <strong>Turnover profile: Higher</strong>
+          New top-M entrants always join, even if no one exited. Incumbent positions reweight each rebalance.
+        </div>
+      </div>
+      <div>
+        <div class="label-band" style="background:#ede9fe;color:#5b21b6;">🟣 Displacement Band</div>
+        <div class="card" style="border-left:4px solid var(--purple);margin-bottom:0.6rem;">
+          <h3>Entry: "Fill freed slots only"</h3>
+          <p>New stocks enter <em>only</em> when a slot opens (someone fell below N). Entries are always bounded by exits. Portfolio never exceeds M.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--purple);margin-bottom:0.6rem;">
+          <h3>Portfolio size</h3>
+          <p>Strictly ≤ M at all times. Starts below M and fills as exits create vacancies. Hard cap enforced in code.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--purple);margin-bottom:0.6rem;">
+          <h3>Best for…</h3>
+          <p>Tax-sensitive portfolios and slower rebalance frequencies. Incumbents get a long runway; only genuine rank deterioration (below N) triggers a sale.</p>
+        </div>
+        <div class="hl-box hl-purple">
+          <strong>Turnover profile: Lower</strong>
+          Entries ≤ exits by construction. A period with zero exits = zero entries = zero trades = zero costs.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 8 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Rebalance Method 1 of 3</div>
+    <h2>Full Rebalance</h2>
+    <p>Every rebalance date: sell all, buy fresh. Each holding resets to an exactly equal slice of the portfolio.</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+      <div class="col">
+        <div class="card">
+          <h3>⚙️ Mechanism</h3>
+          <p>After the band rule decides <em>which</em> stocks to hold, every holding — new entrants <em>and</em> incumbents — receives equal weight <strong>1 / portfolio_size</strong>. This resets price drift every period.</p>
+        </div>
+        <div class="card">
+          <h3>📐 Formula</h3>
+          <p style="font-family:monospace;font-size:0.88rem;line-height:1.7;">
+            w(stock) = 1 / |new_holdings|<br>
+            <em>for every stock in portfolio</em>
+          </p>
+        </div>
+        <div class="hl-red">
+          <strong>Cost impact: Highest</strong>
+          Every rebalance touches every position. Winners that grew large are trimmed; laggards that shrank are topped up. This "sell-high, buy-low" behaviour inside the portfolio incurs maximum brokerage and capital-gains events.
+        </div>
+        <div class="hl-green" style="margin-top:0;">
+          <strong>Advantage</strong>
+          The portfolio always enters each period exactly as intended. No position drift, no hidden concentration risk. Clean and predictable.
+        </div>
+      </div>
+      <div class="col col2">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.6rem;">Portfolio: 3 stocks held, 1 exit (CORE), 1 new entry (NOVA)</div>
+
+        <div class="card" style="margin-bottom:0.8rem;">
+          <h3 style="margin-bottom:0.6rem;">Weights before rebalance (price-drifted)</h3>
+          <div class="weight-bars">
+            <div class="wb-row"><div class="wb-name">APEX</div><div class="wb-track"><div class="wb-fill" style="width:40%;background:#16a34a;">40%</div></div><div class="wb-pct" style="color:#16a34a;">40%</div></div>
+            <div class="wb-row"><div class="wb-name">BOLT</div><div class="wb-track"><div class="wb-fill" style="width:35%;background:#16a34a;">35%</div></div><div class="wb-pct" style="color:#16a34a;">35%</div></div>
+            <div class="wb-row"><div class="wb-name">CORE ✗</div><div class="wb-track"><div class="wb-fill" style="width:25%;background:#dc2626;">25%</div></div><div class="wb-pct" style="color:#dc2626;">25%</div></div>
+          </div>
+        </div>
+
+        <div style="text-align:center;font-size:1.2rem;color:var(--muted);margin:-0.3rem 0;">↓ Full Rebalance</div>
+
+        <div class="card">
+          <h3 style="margin-bottom:0.6rem;">Weights after rebalance — all equal at 1/3</h3>
+          <div class="weight-bars">
+            <div class="wb-row"><div class="wb-name">APEX</div><div class="wb-track"><div class="wb-fill" style="width:33.3%;background:#2563eb;">33%</div></div><div class="wb-pct" style="color:#2563eb;">33%</div></div>
+            <div class="wb-row"><div class="wb-name">BOLT</div><div class="wb-track"><div class="wb-fill" style="width:33.3%;background:#2563eb;">33%</div></div><div class="wb-pct" style="color:#2563eb;">33%</div></div>
+            <div class="wb-row"><div class="wb-name">NOVA ↑</div><div class="wb-track"><div class="wb-fill" style="width:33.3%;background:#7c3aed;">33%</div></div><div class="wb-pct" style="color:#7c3aed;">33%</div></div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;">APEX trimmed 40→33%, BOLT trimmed 35→33%, NOVA entered at 33%. CORE sold out entirely.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 9 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Rebalance Method 2 of 3</div>
+    <h2>Slot-Fill (Marginal) Rebalance</h2>
+    <p>Incumbents keep their drifted weights. The capital freed by exiting stocks is split equally among new entrants.</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+      <div class="col">
+        <div class="card">
+          <h3>⚙️ Mechanism</h3>
+          <p>Positions that <em>stay</em> in the portfolio are not touched — their weights drift with price. When stocks exit, their current weight is pooled and divided equally among the new entrants.</p>
+        </div>
+        <div class="card">
+          <h3>📐 Formula</h3>
+          <p style="font-family:monospace;font-size:0.82rem;line-height:1.8;">
+            incumbents: keep drifted weight<br>
+            freed_w = Σ drifted_w(exits)<br>
+            each new entrant gets: freed_w / |entries|<br>
+            then: normalise all to sum = 1
+          </p>
+        </div>
+        <div class="hl-green">
+          <strong>Cost impact: Lower</strong>
+          Only exiting stocks are fully sold. Incumbents are never touched. Fewer trades, lower brokerage, fewer CGT events on existing positions.
+        </div>
+        <div class="hl-amber" style="margin-top:0;">
+          <strong>Trade-off</strong>
+          Over time, winner positions accumulate concentration risk — a stock that has risen 3× since entry will have a much larger weight than intended. Periodically a Full Rebalance resets this.
+        </div>
+      </div>
+      <div class="col col2">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.6rem;">Same scenario: CORE exits (25%), NOVA enters</div>
+
+        <div class="card" style="margin-bottom:0.8rem;">
+          <h3 style="margin-bottom:0.6rem;">Weights before rebalance (price-drifted)</h3>
+          <div class="weight-bars">
+            <div class="wb-row"><div class="wb-name">APEX</div><div class="wb-track"><div class="wb-fill" style="width:40%;background:#16a34a;">40%</div></div><div class="wb-pct" style="color:#16a34a;">40%</div></div>
+            <div class="wb-row"><div class="wb-name">BOLT</div><div class="wb-track"><div class="wb-fill" style="width:35%;background:#16a34a;">35%</div></div><div class="wb-pct" style="color:#16a34a;">35%</div></div>
+            <div class="wb-row"><div class="wb-name">CORE ✗</div><div class="wb-track"><div class="wb-fill" style="width:25%;background:#dc2626;">25%</div></div><div class="wb-pct" style="color:#dc2626;">25%</div></div>
+          </div>
+        </div>
+
+        <div style="text-align:center;font-size:1.2rem;color:var(--muted);margin:-0.3rem 0;">↓ Slot-Fill (Marginal) Rebalance</div>
+
+        <div class="card">
+          <h3 style="margin-bottom:0.6rem;">After: incumbents unchanged, NOVA gets CORE's freed slot</h3>
+          <div class="weight-bars">
+            <div class="wb-row"><div class="wb-name">APEX</div><div class="wb-track"><div class="wb-fill" style="width:40%;background:#16a34a;">40%</div></div><div class="wb-pct" style="color:#16a34a;">40%</div></div>
+            <div class="wb-row"><div class="wb-name">BOLT</div><div class="wb-track"><div class="wb-fill" style="width:35%;background:#16a34a;">35%</div></div><div class="wb-pct" style="color:#16a34a;">35%</div></div>
+            <div class="wb-row"><div class="wb-name">NOVA ↑</div><div class="wb-track"><div class="wb-fill" style="width:25%;background:#7c3aed;">25%</div></div><div class="wb-pct" style="color:#7c3aed;">25%</div></div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;">APEX and BOLT untouched (no trades). CORE sold entirely. NOVA receives exactly CORE's freed 25%. Weights: 40 + 35 + 25 = 100%. ✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 10 ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Slot-Fill — Edge Case (Classic Band Only)</div>
+    <h2>Marginal: New Entry With No Exit</h2>
+    <p>What weight does a new entrant get when nobody exited? The freed capital is zero — so the fallback rule kicks in.</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+      <div class="col">
+        <div class="card">
+          <h3>🤔 When does this happen?</h3>
+          <p>Only with the <strong>Classic band rule</strong>. Classic adds every top-M stock that isn't held, even if no one exits. Displacement can never produce entries without exits (entries ≤ freed slots by construction).</p>
+        </div>
+        <div class="card">
+          <h3>⚙️ The fallback rule (line 824)</h3>
+          <p style="font-family:monospace;font-size:0.82rem;line-height:1.8;">
+            freed_slot = Σ drifted_w(exits) = <strong>0</strong><br>
+            per_entry = <s>freed / entries</s> → <strong>1 / size</strong><br>
+            (fallback because freed_slot = 0)<br>
+            then: normalise all to sum = 1
+          </p>
+        </div>
+        <div class="hl-red">
+          <strong>Effect on incumbents</strong>
+          No capital was freed, but a new position is added. The total weight before normalisation exceeds 1.0. Normalisation implicitly dilutes every incumbent proportionally — a hidden "soft trim" of all existing positions.
+        </div>
+        <div class="hl-purple" style="margin-top:0;">
+          <strong>Slot-Fill = Prop-Fill here</strong>
+          Both methods seed new entrants at <code>1/size</code> when there are no exits. The two strategies produce <em>identical</em> weights in this scenario. Their difference only shows up when exits have unequal drifted weights.
+        </div>
+      </div>
+      <div class="col col2">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.6rem;">Classic scenario from slide 4 — NOVA enters, nobody exits</div>
+
+        <div class="card" style="margin-bottom:0.8rem;">
+          <h3 style="margin-bottom:0.6rem;">Weights before rebalance (price-drifted, 3 stocks)</h3>
+          <div class="weight-bars">
+            <div class="wb-row"><div class="wb-name">APEX</div><div class="wb-track"><div class="wb-fill" style="width:40%;background:#16a34a;">40%</div></div><div class="wb-pct" style="color:#16a34a;">40%</div></div>
+            <div class="wb-row"><div class="wb-name">BOLT</div><div class="wb-track"><div class="wb-fill" style="width:35%;background:#16a34a;">35%</div></div><div class="wb-pct" style="color:#16a34a;">35%</div></div>
+            <div class="wb-row"><div class="wb-name">CORE</div><div class="wb-track"><div class="wb-fill" style="width:25%;background:#ca8a04;">25%</div></div><div class="wb-pct" style="color:#ca8a04;">25%</div></div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">exits = {} → freed_slot = 0. NOVA joins (rank #2, top-M). size = 4.</div>
+        </div>
+
+        <div style="text-align:center;font-size:1.2rem;color:var(--muted);margin:-0.3rem 0;">↓ Slot-Fill: seed NOVA at 1/4, normalise</div>
+
+        <div class="card" style="margin-bottom:0.6rem;">
+          <h3 style="margin-bottom:0.4rem;">Pre-normalisation (sum = 1.25 — exceeds 1.0)</h3>
+          <div class="weight-bars">
+            <div class="wb-row"><div class="wb-name">APEX</div><div class="wb-track"><div class="wb-fill" style="width:40%;background:#94a3b8;">40%</div></div><div class="wb-pct" style="color:#64748b;">raw</div></div>
+            <div class="wb-row"><div class="wb-name">BOLT</div><div class="wb-track"><div class="wb-fill" style="width:35%;background:#94a3b8;">35%</div></div><div class="wb-pct" style="color:#64748b;">raw</div></div>
+            <div class="wb-row"><div class="wb-name">CORE</div><div class="wb-track"><div class="wb-fill" style="width:25%;background:#94a3b8;">25%</div></div><div class="wb-pct" style="color:#64748b;">raw</div></div>
+            <div class="wb-row"><div class="wb-name">NOVA ↑</div><div class="wb-track"><div class="wb-fill" style="width:25%;background:#7c3aed;">25%</div></div><div class="wb-pct" style="color:#7c3aed;">+1/4</div></div>
+          </div>
+        </div>
+
+        <div style="text-align:center;font-size:1.2rem;color:var(--muted);margin:-0.2rem 0;">÷ 1.25 → normalise</div>
+
+        <div class="card">
+          <h3 style="margin-bottom:0.4rem;">After normalisation — all four diluted equally</h3>
+          <div class="weight-bars">
+            <div class="wb-row"><div class="wb-name">APEX</div><div class="wb-track"><div class="wb-fill" style="width:32%;background:#16a34a;"></div></div><div class="wb-pct" style="color:#16a34a;">32%</div></div>
+            <div class="wb-row"><div class="wb-name">BOLT</div><div class="wb-track"><div class="wb-fill" style="width:28%;background:#16a34a;"></div></div><div class="wb-pct" style="color:#16a34a;">28%</div></div>
+            <div class="wb-row"><div class="wb-name">CORE</div><div class="wb-track"><div class="wb-fill" style="width:20%;background:#ca8a04;"></div></div><div class="wb-pct" style="color:#ca8a04;">20%</div></div>
+            <div class="wb-row"><div class="wb-name">NOVA</div><div class="wb-track"><div class="wb-fill" style="width:20%;background:#7c3aed;"></div></div><div class="wb-pct" style="color:#7c3aed;">20%</div></div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;">
+            0.40 ÷ 1.25 = 32% &nbsp;|&nbsp; 0.35 ÷ 1.25 = 28% &nbsp;|&nbsp; 0.25 ÷ 1.25 = 20% &nbsp;|&nbsp; 0.25 ÷ 1.25 = 20%<br>
+            All incumbents are proportionally diluted. APEX and BOLT are <em>not</em> sold — their weight shrinks only on paper via normalisation. <strong>Prop-Fill gives the identical result here.</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 11 (was 10) ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Rebalance Method 3 of 3</div>
+    <h2>Prop-Fill Rebalance</h2>
+    <p>Incumbents keep their drifted weights. New entrants are seeded at a fixed 1/size fraction, then everything is normalised.</p>
+  </div>
+  <div class="slide-body">
+    <div class="cols">
+      <div class="col">
+        <div class="card">
+          <h3>⚙️ Mechanism</h3>
+          <p>Like Marginal, incumbents are not traded. But new entrants are seeded at a <strong>fixed 1/size</strong> weight regardless of the freed capital. The total is then normalised back to 1.0.</p>
+        </div>
+        <div class="card">
+          <h3>📐 Formula</h3>
+          <p style="font-family:monospace;font-size:0.82rem;line-height:1.8;">
+            incumbents: keep drifted weight<br>
+            each new entrant seeded at: 1 / |new_holdings|<br>
+            then: normalise all to sum = 1
+          </p>
+        </div>
+        <div class="hl-blue">
+          <strong>Key difference from Slot-Fill</strong>
+          In Slot-Fill, the new entrant's weight = freed capital (depends on what exited). In Prop-Fill, the seed is fixed at 1/size — independent of exit weights. Normalisation then redistributes the difference across everyone.
+        </div>
+        <div class="hl-green" style="margin-top:0;">
+          <strong>When it matters</strong>
+          If a large position (e.g. 45% drifted) exits and one stock enters: Slot-Fill gives it 45%. Prop-Fill seeds at 1/size (say 33%), then normalises — incumbents absorb the difference. New entrant gets a more moderate starting position.
+        </div>
+      </div>
+      <div class="col col2">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.6rem;">Same scenario — CORE exits (25%), NOVA enters</div>
+
+        <div class="card" style="margin-bottom:0.8rem;">
+          <h3 style="margin-bottom:0.6rem;">Weights before rebalance (price-drifted)</h3>
+          <div class="weight-bars">
+            <div class="wb-row"><div class="wb-name">APEX</div><div class="wb-track"><div class="wb-fill" style="width:40%;background:#16a34a;">40%</div></div><div class="wb-pct" style="color:#16a34a;">40%</div></div>
+            <div class="wb-row"><div class="wb-name">BOLT</div><div class="wb-track"><div class="wb-fill" style="width:35%;background:#16a34a;">35%</div></div><div class="wb-pct" style="color:#16a34a;">35%</div></div>
+            <div class="wb-row"><div class="wb-name">CORE ✗</div><div class="wb-track"><div class="wb-fill" style="width:25%;background:#dc2626;">25%</div></div><div class="wb-pct" style="color:#dc2626;">25%</div></div>
+          </div>
+        </div>
+
+        <div style="text-align:center;font-size:1.2rem;color:var(--muted);margin:-0.3rem 0;">↓ Prop-Fill Rebalance (size = 3)</div>
+
+        <div class="card">
+          <h3 style="margin-bottom:0.6rem;">After: NOVA seeded at 1/3, total normalised</h3>
+          <div class="weight-bars">
+            <div class="wb-row">
+              <div class="wb-name">APEX</div>
+              <div class="wb-track"><div class="wb-fill" style="width:36.9%;background:#16a34a;"></div></div>
+              <div class="wb-pct" style="color:#16a34a;">36.9%</div>
+            </div>
+            <div class="wb-row">
+              <div class="wb-name">BOLT</div>
+              <div class="wb-track"><div class="wb-fill" style="width:32.3%;background:#16a34a;"></div></div>
+              <div class="wb-pct" style="color:#16a34a;">32.3%</div>
+            </div>
+            <div class="wb-row">
+              <div class="wb-name">NOVA ↑</div>
+              <div class="wb-track"><div class="wb-fill" style="width:30.8%;background:#7c3aed;"></div></div>
+              <div class="wb-pct" style="color:#7c3aed;">30.8%</div>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:0.6rem;">
+            Raw: APEX 0.40 + BOLT 0.35 + NOVA 0.333 = 1.083<br>
+            Normalised: ÷ 1.083 → APEX 36.9%, BOLT 32.3%, NOVA 30.8%<br>
+            NOVA gets less than in Slot-Fill (25% ← freed) because incumbents retain relative precedence.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 12 (was 11) ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">Rebalance Methods — Head to Head</div>
+    <h2>Full vs Marginal vs Prop: What Changes</h2>
+    <p>The band rule decides <em>who</em> is in the portfolio. The rebalance method decides <em>how much</em> each stock gets.</p>
+  </div>
+  <div class="slide-body">
+    <div class="threecol">
+      <div>
+        <div class="label-band" style="background:#dbeafe;color:#1e40af;">🔵 Full Rebalance</div>
+        <div class="card" style="border-top:3px solid var(--blue);">
+          <h3>What changes each period</h3>
+          <p>Every position. Winners trimmed, laggards topped up, new entrants funded from all proceeds.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--blue);">
+          <h3>Incumbent weight</h3>
+          <p>Resets to <strong>1 / size</strong>. Drift is completely erased every rebalance.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--blue);">
+          <h3>New entrant weight</h3>
+          <p>Starts at <strong>1 / size</strong> — same as everyone else.</p>
+        </div>
+        <div class="hl-box hl-red" style="margin-top:auto;">
+          <strong>Turnover: Highest</strong>
+          Every rebalance touches all positions.
+        </div>
+      </div>
+      <div>
+        <div class="label-band" style="background:#dcfce7;color:#166534;">🟢 Slot-Fill (Marginal)</div>
+        <div class="card" style="border-top:3px solid var(--green);">
+          <h3>What changes each period</h3>
+          <p>Only exiting stocks are sold. Incumbents are <em>never</em> traded unless they exit.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--green);">
+          <h3>Incumbent weight</h3>
+          <p><strong>Drifts with price</strong>. A stock that rallied 50% since entry now has a proportionally larger weight — no trade to reset it.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--green);">
+          <h3>New entrant weight</h3>
+          <p>Receives exactly the <strong>freed weight</strong> of exits (split equally if multiple entrants).</p>
+        </div>
+        <div class="hl-box hl-green" style="margin-top:auto;">
+          <strong>Turnover: Lowest</strong>
+          Zero trades when there are no entries/exits.
+        </div>
+      </div>
+      <div>
+        <div class="label-band" style="background:#ede9fe;color:#5b21b6;">🟣 Prop-Fill</div>
+        <div class="card" style="border-top:3px solid var(--purple);">
+          <h3>What changes each period</h3>
+          <p>Only exiting stocks are sold. Incumbents drift. Normalisation causes a small implicit reweight on incumbents.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--purple);">
+          <h3>Incumbent weight</h3>
+          <p><strong>Drifts</strong>, then is gently nudged by normalisation when entrants are seeded.</p>
+        </div>
+        <div class="card" style="border-top:3px solid var(--purple);">
+          <h3>New entrant weight</h3>
+          <p>Seeded at <strong>1 / size</strong>, then normalised. Typically gives entrants a slightly smaller allocation than Slot-Fill.</p>
+        </div>
+        <div class="hl-box hl-purple" style="margin-top:auto;">
+          <strong>Turnover: Low</strong>
+          Similar to Marginal; slightly more implicit reweighting due to normalisation.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SLIDE 13 (was 12) ════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="eyebrow">All Together</div>
+    <h2>The 6 Strategies — When to Use Each</h2>
+    <p>Run all 6 simultaneously in the backtester to understand which combination suits your holding period and tax situation.</p>
+  </div>
+  <div class="slide-body">
+    <div class="strategy-grid" style="margin-bottom:0.8rem;">
+      <div class="sg-head" style="background:transparent;"></div>
+      <div class="sg-head">Full Rebalance</div>
+      <div class="sg-head">Slot-Fill (Marginal)</div>
+      <div class="sg-head">Prop-Fill</div>
+
+      <div class="sg-label" style="background:#dbeafe;color:#1e40af;">🔵 Classic</div>
+      <div class="sg-cell classic-col">
+        <div class="sc-name">Classic · Full</div>
+        <div class="sc-meta">All top-M always in. Equal weights. Max turnover, max precision. Best theoretical benchmark — shows "pure" strategy performance ignoring costs.</div>
+      </div>
+      <div class="sg-cell classic-col">
+        <div class="sc-name">Classic · Marginal</div>
+        <div class="sc-meta">All top-M enter; incumbents accumulate drift. Practical for holding periods where reweighting is expensive. Watch for concentration risk.</div>
+      </div>
+      <div class="sg-cell classic-col">
+        <div class="sc-name">Classic · Prop</div>
+        <div class="sc-meta">All top-M enter with normalised seeding. New entrants get a moderate position rather than inheriting a large exiting stock's full weight.</div>
+      </div>
+
+      <div class="sg-label" style="background:#ede9fe;color:#5b21b6;">🟣 Displacement</div>
+      <div class="sg-cell disp-col">
+        <div class="sc-name">Displacement · Full</div>
+        <div class="sc-meta">Only freed-slot entries; equal weights on every rebalance. Lower entry frequency than Classic · Full, but same full-portfolio reweight cost each period.</div>
+      </div>
+      <div class="sg-cell disp-col">
+        <div class="sc-name">Displacement · Marginal</div>
+        <div class="sc-meta">Fewest trades of all 6. Incumbents drift; new stocks only enter to fill exact vacancies. Best for minimising CGT events — ideal for long-hold tax-sensitive use.</div>
+      </div>
+      <div class="sg-cell disp-col">
+        <div class="sc-name">Displacement · Prop</div>
+        <div class="sc-meta">Conservative entry + proportional seeding. New entrant size anchored to 1/size rather than inherited from exit. Balanced between Marginal and Full entry sizing.</div>
+      </div>
+    </div>
+
+    <div class="cols" style="flex:0;">
+      <div class="hl-box hl-amber" style="flex:1;">
+        <strong>💡 Cost drag ranking (highest → lowest)</strong>
+        Classic·Full &gt; Displ·Full &gt; Classic·Prop ≈ Classic·Marginal &gt; Displ·Prop ≈ Displ·Marginal
+      </div>
+      <div class="hl-box hl-green" style="flex:1;">
+        <strong>✅ For tax-sensitive Indian portfolios</strong>
+        Displacement·Marginal minimises both brokerage and CGT-triggering sales. Displacement·Prop is a good middle ground.
+      </div>
+      <div class="hl-box hl-blue" style="flex:1;">
+        <strong>📊 How to use in the backtester</strong>
+        Run all 6 simultaneously. Compare post-cost, post-tax CAGR and Sharpe across strategies to find which combination gives you the best <em>net</em> return for your rebalance frequency.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div><!-- /slides -->
+
+
+<!-- ─────────────────────────────────────────
+     NAVIGATION
+───────────────────────────────────────── -->
+<div id="nav">
+  <button id="prev-btn" onclick="go(-1)" disabled>← Prev</button>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div class="dot-nav" id="dot-nav"></div>
+    <div id="slide-counter">1 / 12</div>
+  </div>
+  <button id="next-btn" onclick="go(1)">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 13;
+  let cur = 0;
+
+  const slidesEl  = document.getElementById('slides');
+  const prevBtn   = document.getElementById('prev-btn');
+  const nextBtn   = document.getElementById('next-btn');
+  const counter   = document.getElementById('slide-counter');
+  const progress  = document.getElementById('progress-bar');
+  const dotNav    = document.getElementById('dot-nav');
+
+  // Build dots
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotNav.appendChild(d);
+  }
+
+  function goTo(n) {
+    cur = Math.max(0, Math.min(TOTAL - 1, n));
+    slidesEl.style.transform = `translateX(-${cur * 100}vw)`;
+    counter.textContent = `${cur + 1} / ${TOTAL}`;
+    prevBtn.disabled = cur === 0;
+    nextBtn.disabled = cur === TOTAL - 1;
+    progress.style.width = `${((cur + 1) / TOTAL) * 100}%`;
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+  }
+
+  function go(dir) { goTo(cur + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+  });
+
+  // Touch swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend',   e => {
+    const dx = tx - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 50) go(dx > 0 ? 1 : -1);
+  });
+
+  goTo(0);
+</script>
+</body>
+</html>

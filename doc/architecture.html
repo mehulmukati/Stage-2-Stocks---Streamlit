@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Architecture — Stage 2 Stock Screener</title>
+  <title>Architecture — Stage 2 Stock Screener &amp; Backtester</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -113,6 +113,7 @@
     .tag-yellow{ background: var(--yellow-bg); color: #92400e; }
     .tag-purple{ background: var(--purple-bg); color: #5b21b6; }
     .tag-gray  { background: #f1f5f9; color: #475569; }
+    .tag-red   { background: #fef2f2; color: #991b1b; }
 
     /* ── FLOW DIAGRAM ── */
     .flow {
@@ -223,15 +224,17 @@
 <body>
 
 <header>
-  <h1>📈 Stage 2 Stock Screener</h1>
-  <p>Nifty Total Market · Weinstein Breakout Methodology · Sharpe Momentum Analysis</p>
+  <h1>📈 Stage 2 Screener &amp; Backtester</h1>
+  <p>Nifty Total Market · Weinstein Breakout Methodology · Sharpe Momentum · Portfolio Simulation</p>
   <div class="badges">
     <span class="badge">🇮🇳 Indian Equities</span>
-    <span class="badge">750 Stocks</span>
-    <span class="badge">Streamlit App</span>
+    <span class="badge">~750 Stocks</span>
+    <span class="badge">Streamlit Apps</span>
     <span class="badge">Python 3</span>
     <span class="badge">yfinance Data</span>
-    <span class="badge">Neon PostgreSQL</span>
+    <span class="badge">Parquet Files</span>
+    <span class="badge">6 Strategies</span>
+    <span class="badge">India CGT Tax Model</span>
   </div>
 </header>
 
@@ -249,42 +252,54 @@
   ══════════════════════════════════════════ -->
   <div id="persona-business" class="persona-section visible">
 
-    <div class="section-title">🎯 What does this app do?</div>
+    <div class="section-title">🎯 What does this system do?</div>
     <div class="card-grid">
       <div class="card" style="border-left: 4px solid #2563eb;">
         <div class="icon">📊</div>
         <h3>Stage 2 Screener</h3>
-        <p>Identifies stocks from the Nifty 750 universe that are breaking out of consolidation into an uptrend — the "Stage 2" phase described by Stan Weinstein. Scores each stock out of 7 based on price, volume, and moving average conditions.</p>
+        <p>Identifies stocks from the Nifty Total Market universe that are breaking out of consolidation into an uptrend — the "Stage 2" phase described by Stan Weinstein. Scores each stock out of 8 based on price, volume, moving average conditions, and base formation. Also detects Weinstein Retest patterns (breakout → pullback → bounce with volume dryup).</p>
       </div>
       <div class="card" style="border-left: 4px solid #7c3aed;">
         <div class="icon">🚀</div>
         <h3>Momentum Screener</h3>
-        <p>Ranks stocks by risk-adjusted return (Sharpe ratio) across multiple timeframes — 3, 6, 9, and 12 months. Helps identify stocks with consistent, smooth upward momentum rather than volatile spikes.</p>
+        <p>Ranks stocks by risk-adjusted return (Sharpe ratio) across multiple timeframes — 3, 6, 9, and 12 months. Identifies stocks with consistent, smooth upward momentum. Includes a Phase Chart showing each stock's current Weinstein stage over time for the full universe.</p>
       </div>
       <div class="card" style="border-left: 4px solid #059669;">
         <div class="icon">🗄️</div>
-        <h3>3-Tier Smart Cache</h3>
-        <p>Results are cached in three layers: in-memory (instant), PostgreSQL on Neon (persists across restarts), and live Yahoo Finance fetch (only when DB is stale). Stage 2 refreshes once per trading day; Momentum re-scores hourly.</p>
+        <h3>Parquet-Backed Cache</h3>
+        <p>All OHLCV data is stored locally in Parquet files — no external database required. Three tiers: in-memory dict (instant), Parquet on disk (persists across restarts), and live yfinance fetch (only for missing dates). Atomic writes ensure crash safety.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid #d97706;">
+        <div class="icon">📈</div>
+        <h3>Portfolio Backtester</h3>
+        <p>Simulates 6 simultaneous portfolio strategies over up to 10 years of NSE data. Models India's Capital Gains Tax (LTCG / STCG with 8-year carry-forward loss set-off), transaction costs, brokerage, and position sizing. Includes walk-forward validation and a rebalance-level debug log.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid #dc2626;">
+        <div class="icon">📡</div>
+        <h3>Live Signal</h3>
+        <p>Generates the current rebalance signal — which stocks to buy, hold, and sell — based on the screener's live scores and a selected strategy configuration. Outputs exact share quantities and estimated trade values ready for execution.</p>
       </div>
     </div>
 
-    <div class="section-title">📋 The 7-Point Stage 2 Scoring System</div>
+    <div class="section-title">📋 The 8-Point Stage 2 Scoring System</div>
     <div class="stage-legend">
-      <span class="stage-pill" style="background:#ecfdf5; color:#166534;">🟢 6–7 Strong Stage 2</span>
+      <span class="stage-pill" style="background:#ecfdf5; color:#166534;">🟢 6–8 Strong Stage 2</span>
       <span class="stage-pill" style="background:#fefce8; color:#92400e;">🟡 4–5 Likely Stage 2</span>
-      <span class="stage-pill" style="background:#fef2f2; color:#991b1b;">🟠 2–3 Early / Weak</span>
+      <span class="stage-pill" style="background:#fff7ed; color:#9a3412;">🟠 2–3 Early / Weak</span>
       <span class="stage-pill" style="background:#f9fafb; color:#374151;">⚪ 0–1 Not Stage 2</span>
     </div>
     <table class="score-table">
       <thead><tr><th>#</th><th>Condition</th><th>What it checks</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td><span class="tag tag-blue">Volume Surge</span></td><td>Today's volume is 2× or more of the recent average — institutional buying signal</td></tr>
-        <tr><td>2</td><td><span class="tag tag-green">Higher High</span></td><td>Today's high exceeds the highest high of the past 50 days — price expanding upward</td></tr>
-        <tr><td>3</td><td><span class="tag tag-green">Higher Low</span></td><td>Today's low is above the lowest low of the past 50 days — floor rising</td></tr>
-        <tr><td>4</td><td><span class="tag tag-yellow">MA50 Rising</span></td><td>Price is above 50-day average and that average itself is trending up</td></tr>
+        <tr><td>1</td><td><span class="tag tag-blue">Volume Surge</span></td><td>Today's volume is 2× or more of the recent 10-day average — institutional buying signal</td></tr>
+        <tr><td>2</td><td><span class="tag tag-green">Higher High</span></td><td>Close broke above the highest high of the past 50 days — price expanding upward</td></tr>
+        <tr><td>3</td><td><span class="tag tag-green">Higher Low</span></td><td>Recent 20-day floor is above the 50-day floor from 50 bars ago — rising support</td></tr>
+        <tr><td>4</td><td><span class="tag tag-yellow">MA50 Rising</span></td><td>Price is above 50-day average and that average itself is trending up over 50 days</td></tr>
         <tr><td>5</td><td><span class="tag tag-yellow">MA200 Rising</span></td><td>Price is above 200-day average and that average is trending up — long-term health</td></tr>
         <tr><td>6</td><td><span class="tag tag-purple">Above MA150</span></td><td>Price above the 150-day average — medium-term trend confirmation</td></tr>
-        <tr><td>7</td><td><span class="tag tag-purple">MA Stack</span></td><td>MA50 > MA150 > MA200 — the "golden alignment" of moving averages</td></tr>
+        <tr><td>7</td><td><span class="tag tag-purple">MA Stack</span></td><td>MA50 &gt; MA150 &gt; MA200 — the "golden alignment" of moving averages</td></tr>
+        <tr><td>8</td><td><span class="tag tag-blue">Consolidation</span></td><td>Close-to-close range over last 20 days is &lt;15% of the period low — base formation in progress</td></tr>
+        <tr><td>+</td><td><span class="tag tag-red">Retest ★</span></td><td><em>Bonus flag (not counted in score):</em> Stock broke out on volume within last 20 days, pulled back to breakout level with volume contraction, and has bounced ≥2% above it</td></tr>
       </tbody>
     </table>
 
@@ -292,22 +307,27 @@
     <div class="card-grid">
       <div class="card">
         <div class="icon">🌐</div>
-        <h3>Yahoo Finance</h3>
-        <p>Daily end-of-day (EOD) price and volume data for all stocks — free, no API key needed. Incremental syncs fetch only missing dates; first run downloads 2 years of history.</p>
+        <h3>Yahoo Finance (yfinance)</h3>
+        <p>Daily end-of-day OHLCV data for all NSE stocks. Incremental syncs fetch only missing dates; first run downloads ~2 years of history. Data stored in Parquet and refreshed automatically when stale.</p>
       </div>
       <div class="card">
         <div class="icon">📁</div>
         <h3>constituents.json</h3>
-        <p>List of stock symbols for each Nifty index — Nifty 50, Next 50, Midcap 150, Smallcap 250, and Microcap 250. Updated manually as index rebalances occur.</p>
+        <p>Symbol lists for Nifty 50, Next 50, Midcap 150, Smallcap 250, and Microcap 250. Updated manually on index rebalances. Used to tag each stock with its index membership.</p>
       </div>
       <div class="card">
         <div class="icon">📅</div>
         <h3>nse_holidays.json</h3>
-        <p>NSE trading holiday calendar. Used to make sure the app always shows data for the last valid trading day, not a weekend or holiday.</p>
+        <p>NSE trading holiday calendar. Used to resolve the last valid trading day and skip weekends and holidays when generating rebalance dates.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🛡️</div>
+        <h3>compositions.parquet</h3>
+        <p>Historical index compositions by date — records which stocks were actually in the Nifty universe on each past date. Used by the backtester to prevent look-ahead bias (survivorship-bias mitigation).</p>
       </div>
     </div>
 
-    <div class="section-title">🔍 Available Filters</div>
+    <div class="section-title">🔍 Available Filters &amp; Settings</div>
     <div class="card-grid">
       <div class="card">
         <h3>Stage 2 Filters</h3>
@@ -315,9 +335,26 @@
       </div>
       <div class="card">
         <h3>Momentum Filters</h3>
-        <p>• Select universe (Nifty 50 → Total Market)<br>• Minimum 1-year return %<br>• Close above 100-day / 200-day moving average<br>• Within % of 52-week high<br>• Max circuit breaker days<br>• Positive day % thresholds (3M / 6M / 12M)<br>• Sort by Sharpe (3M / 6M / 9M / 1Y / Average)</p>
+        <p>• Select universe (Nifty 50 → Total Market)<br>• Minimum 1-year return %<br>• Close above 100-day / 200-day MA<br>• Within % of 52-week high<br>• Max circuit breaker days<br>• Positive day % (3M / 6M / 12M)<br>• Sort by Sharpe (3M / 6M / 9M / 1Y / Average)</p>
+      </div>
+      <div class="card">
+        <h3>Backtester Settings</h3>
+        <p>• Universe selection (Nifty index or full market)<br>• Hold top M of N ranked stocks<br>• Rebalance frequency (weekly / monthly / quarterly / half-yearly)<br>• Transaction cost %, brokerage per sale<br>• LTCG / STCG tax rates<br>• Position cap (max % per stock)<br>• Stage 2 entry / exit filters<br>• Quality filters (DMA, circuits, positive days)</p>
       </div>
     </div>
+
+    <div class="section-title">⚖️ The 6 Simultaneous Backtest Strategies</div>
+    <table class="score-table">
+      <thead><tr><th>Strategy</th><th>Band Rule</th><th>Rebalance Method</th><th>What it models</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Classic · Full</strong></td><td>Classic</td><td>Full Rebalance</td><td>Every rebalance date: sell all, buy top M. Maximum turnover.</td></tr>
+        <tr><td><strong>Classic · Marginal</strong></td><td>Classic</td><td>Marginal Rebalance</td><td>Only exit stocks that dropped out of top N; replace with new entrants. Lower turnover.</td></tr>
+        <tr><td><strong>Classic · Prop</strong></td><td>Classic</td><td>Proportional Fill</td><td>New entrants get weight proportional to their rank score. Lowest turnover.</td></tr>
+        <tr><td><strong>Displacement · Full</strong></td><td>Displacement</td><td>Full Rebalance</td><td>Exit only if displaced from top N by a better-ranked stock. Full weight reset on entry.</td></tr>
+        <tr><td><strong>Displacement · Marginal</strong></td><td>Displacement</td><td>Marginal Rebalance</td><td>Displacement exit rule + marginal weight adjustments.</td></tr>
+        <tr><td><strong>Displacement · Prop</strong></td><td>Displacement</td><td>Proportional Fill</td><td>Displacement exit rule + proportional fill for new entrants.</td></tr>
+      </tbody>
+    </table>
 
   </div><!-- /business -->
 
@@ -327,32 +364,61 @@
   ══════════════════════════════════════════ -->
   <div id="persona-tech" class="persona-section">
 
-    <div class="section-title">🏗️ System Architecture</div>
+    <div class="section-title">🏗️ Screener Data Flow</div>
     <div class="flow">
       <div class="flow-step">
         <div class="num">1</div>
-        <h4>User Opens App</h4>
-        <p>Streamlit serves the UI from <code>app.py</code>; DB schema is initialised via <code>db.init_db()</code> once at startup</p>
+        <h4>User Clicks Run</h4>
+        <p>Job submitted to <code>JobRegistry</code> via <code>workers.py</code>; previous same-kind job for this user is cancelled</p>
       </div>
       <div class="flow-step highlight">
         <div class="num">2</div>
-        <h4>Resolve Cache Date</h4>
-        <p>Check IST time → find last valid NSE trading day (skip weekends &amp; holidays); cutoff at 19:00 IST</p>
+        <h4>Resolve Trading Date</h4>
+        <p>IST time → last valid NSE date (skip weekends &amp; holidays using <code>nse_holidays.json</code>; cutoff 19:00 IST)</p>
       </div>
       <div class="flow-step">
         <div class="num">3</div>
         <h4>Memory Cache?</h4>
-        <p>In-process dict keyed by trading date. Stage 2 never expires; Momentum has 1-hour TTL</p>
+        <p>In-process dict keyed by trading date. Stage 2 never expires intra-day; Momentum has 1-hour TTL</p>
       </div>
       <div class="flow-step highlight">
         <div class="num">4</div>
-        <h4>DB Cache?</h4>
-        <p>Stage 2: check <code>stage2_cache</code> table in Neon PostgreSQL. Momentum: check OHLCV freshness in <code>ohlcv</code> table</p>
+        <h4>Parquet Cache?</h4>
+        <p>Read <code>screener_ohlcv.parquet</code>; check if max date == target date. If fresh, score from Parquet directly</p>
       </div>
       <div class="flow-step">
         <div class="num">5</div>
         <h4>Fetch &amp; Score</h4>
-        <p>Incremental yfinance sync → upsert to <code>ohlcv</code> → run scorer → save to <code>stage2_cache</code></p>
+        <p>Incremental yfinance delta → append to Parquet (atomic write) → run scorer → cache result in memory</p>
+      </div>
+    </div>
+
+    <div class="section-title">🏗️ Backtester Data Flow</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="num">1</div>
+        <h4>User Runs Backtest</h4>
+        <p><code>backtest_worker</code> submitted to thread pool; progress events streamed to UI via event queue</p>
+      </div>
+      <div class="flow-step highlight">
+        <div class="num">2</div>
+        <h4>Sync Benchmarks</h4>
+        <p>yfinance delta sync for Nifty 50, Nifty 500, etc. into <code>benchmarks.parquet</code> + delta cache</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">3</div>
+        <h4>Load OHLCV</h4>
+        <p>Read <code>backtest_history.parquet</code> (10-year baseline) + <code>backtest_delta.parquet</code> (recent delta). Returns <code>symbol → DataFrame</code></p>
+      </div>
+      <div class="flow-step highlight">
+        <div class="num">4</div>
+        <h4>Apply Filters</h4>
+        <p>Restrict to requested universe; load <code>compositions.parquet</code> for survivorship-bias filter if enabled</p>
+      </div>
+      <div class="flow-step">
+        <div class="num">5</div>
+        <h4>Run × 2 Engines</h4>
+        <p>Classic band rule + Displacement band rule each produce 3 NAV series. Merge into 6-column result.</p>
       </div>
     </div>
 
@@ -361,9 +427,9 @@
       <div class="card" style="border-top: 3px solid #2563eb;">
         <h3>Stage 2 Screener</h3>
         <p style="font-size:0.84rem; margin-top:0.5rem;">
-          <strong>Universe:</strong> Full Nifty 750 (all indices combined)<br>
-          <strong>OHLCV history:</strong> 750 days loaded from DB for scoring<br>
-          <strong>Cache:</strong> <code>stage2_cache</code> PostgreSQL table, keyed by trading date<br>
+          <strong>Universe:</strong> Full Nifty Total Market (~750 symbols)<br>
+          <strong>OHLCV history:</strong> Last 550 days from <code>screener_ohlcv.parquet</code><br>
+          <strong>Cache:</strong> In-memory dict + <code>stage2_cache.parquet</code>, keyed by trading date<br>
           <strong>Filter timing:</strong> Applied in-memory after load (instant)<br>
           <strong>Re-fetch:</strong> Once per trading day; falls back to most recent cached entry on failure
         </p>
@@ -371,10 +437,10 @@
       <div class="card" style="border-top: 3px solid #7c3aed;">
         <h3>Momentum Screener</h3>
         <p style="font-size:0.84rem; margin-top:0.5rem;">
-          <strong>Universe:</strong> Full Nifty 750 (filtered in UI after scoring)<br>
-          <strong>OHLCV history:</strong> 550 days loaded from DB for scoring<br>
-          <strong>Cache:</strong> In-memory only, 1-hour TTL (<code>_MOMENTUM_TTL = 3600s</code>)<br>
-          <strong>Filter timing:</strong> All filters applied to cached DataFrame in real time<br>
+          <strong>Universe:</strong> Full Nifty Total Market (filtered in UI after scoring)<br>
+          <strong>OHLCV history:</strong> Last 550 days from <code>screener_ohlcv.parquet</code><br>
+          <strong>Cache:</strong> In-memory dict, 1-hour TTL + <code>momentum_cache.parquet</code><br>
+          <strong>Filter timing:</strong> All momentum filters applied to cached DataFrame in real time<br>
           <strong>Re-fetch:</strong> After TTL expiry on next Run click
         </p>
       </div>
@@ -386,7 +452,7 @@
       <tbody>
         <tr><td><strong>Sharpe (3M/6M/9M/1Y)</strong></td><td>Annualized Return ÷ Annualized Std Dev over 63/126/189/252 trading days</td><td>Risk-adjusted return — higher is better</td></tr>
         <tr><td><strong>Volatility</strong></td><td>Daily return std dev × √252 × 100</td><td>Annualized volatility %, lower = smoother ride</td></tr>
-        <tr><td><strong>Positive Days %</strong></td><td>Days where Close > prev Close ÷ total days (3M/6M/12M windows)</td><td>Consistency of upward movement</td></tr>
+        <tr><td><strong>Positive Days %</strong></td><td>Days where Close &gt; prev Close ÷ total days (3M/6M/12M windows)</td><td>Consistency of upward movement</td></tr>
         <tr><td><strong>1Y Change %</strong></td><td>(Close[−1] / Close[−252] − 1) × 100</td><td>Raw 1-year return</td></tr>
         <tr><td><strong>% from 52W High</strong></td><td>(Close − 52W Max) / 52W Max × 100</td><td>How far off peak — lower magnitude = near highs</td></tr>
         <tr><td><strong>Circuit Count</strong></td><td>Days where daily % change ≈ ±5%, ±10%, or ±20% (±0.1% tolerance)</td><td>Filters out illiquid / manipulated stocks</td></tr>
@@ -399,65 +465,131 @@
       <tbody>
         <tr>
           <td><span class="file-name">app.py</span></td>
-          <td>Streamlit UI — sidebar controls, <code>stage2_results()</code>, <code>momentum_results()</code>, <code>main()</code></td>
-          <td>No business logic; delegates everything to the engine and data modules</td>
+          <td>Streamlit UI — Stage 2 tab, Momentum tab, Phase Chart tab</td>
+          <td>Delegates all computation to workers; no business logic inline</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">app_backtest.py</span></td>
+          <td>Streamlit UI — full backtester with 6 strategy tabs, stats, holdings log, walk-forward, debug</td>
+          <td>Renders results produced by <code>backtest_worker</code>; calls <code>render_backtest_tabs()</code></td>
+        </tr>
+        <tr>
+          <td><span class="file-name">app_live_signal.py</span></td>
+          <td>Streamlit UI — current rebalance signal (buy / hold / sell quantities)</td>
+          <td>Uses live screener scores + selected strategy config to produce trade list</td>
         </tr>
         <tr>
           <td><span class="file-name">data.py</span></td>
-          <td>Data orchestration — holiday resolution, OHLCV sync, scoring dispatch, 3-tier cache</td>
-          <td>Entry point is <code>resolve_screener_data()</code></td>
+          <td>Screener data pipeline — holiday resolution, Parquet OHLCV sync, scoring dispatch, 3-tier cache</td>
+          <td>Entry point is <code>resolve_screener_data()</code>; single-flight latch prevents concurrent yfinance calls</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">data_backtest.py</span></td>
+          <td>Backtest data pipeline — loads 10-year OHLCV baseline + delta, benchmarks, compositions</td>
+          <td>Atomic Parquet writes; returns <code>symbol → DataFrame</code> dict</td>
         </tr>
         <tr>
           <td><span class="file-name">stage2_engine.py</span></td>
-          <td>Weinstein Stage 2 scorer — <code>score_stage2(df)</code> and Wilder RSI helper</td>
-          <td>Pure function; takes an OHLCV DataFrame, returns a metric dict or None</td>
+          <td>Weinstein Stage 2 scorer — <code>score_stage2(df)</code>, <code>compute_rolling_stage2(df)</code>, <code>check_weinstein_retest(df)</code></td>
+          <td>Pure functions; zero Streamlit dependency; 8-point scoring + retest detection</td>
         </tr>
         <tr>
           <td><span class="file-name">momentum_engine.py</span></td>
-          <td>Momentum scorer — Sharpe, volatility, circuit count, positive days</td>
-          <td>Pure functions; <code>score_momentum(df)</code> is the main entry point</td>
+          <td>Momentum scorer — Sharpe (4 windows), volatility, circuit count, positive days, precompute</td>
+          <td>Pure functions; <code>score_momentum(df)</code> is the single-symbol entry point; <code>precompute_metrics()</code> for batch</td>
         </tr>
         <tr>
-          <td><span class="file-name">db.py</span></td>
-          <td>PostgreSQL layer via psycopg v3 — schema init, OHLCV upsert/read, stage2_cache read/write</td>
-          <td>Requires <code>DATABASE_URL</code> env var pointing to Neon; retries up to 3× on connect</td>
+          <td><span class="file-name">backtest_engine.py</span></td>
+          <td>Portfolio simulator — 6 NAV series, FIFO lot tracking, India CGT tax, weight capping, walk-forward</td>
+          <td>Entry point is <code>run_backtest(symbol_data, benchmarks, config)</code>; ~1,466 lines</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">workers.py</span></td>
+          <td>Background worker functions — <code>stage2_worker</code>, <code>momentum_worker</code>, <code>backtest_worker</code></td>
+          <td>No Streamlit calls allowed; each signature: <code>(params, emit, cancel_evt) → dict</code></td>
+        </tr>
+        <tr>
+          <td><span class="file-name">jobs.py</span></td>
+          <td>Background job registry — <code>JobRegistry</code> backed by <code>ThreadPoolExecutor(max_workers=4)</code></td>
+          <td>Per-user-per-kind job isolation via UUID; 1-hour TTL eviction; cancellation via <code>threading.Event</code></td>
+        </tr>
+        <tr>
+          <td><span class="file-name">charts.py</span></td>
+          <td>Plotly figure builders — NAV chart, holdings bar, phase distribution, retest chart</td>
+          <td>Pure rendering functions; called from app UI layers</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">ui_helpers.py</span></td>
+          <td>Shared UI utilities — user token generation, job polling, result caching in session state</td>
+          <td>Provides <code>get_or_create_user_token()</code> (UUID per session)</td>
         </tr>
         <tr>
           <td><span class="file-name">config.py</span></td>
-          <td>All tunable constants — MA windows, circuit levels, TTL, timezone</td>
-          <td>Single source of truth; imported by all other modules</td>
+          <td>All tunable constants — MA windows, circuit levels, Parquet paths, consolidation params, retest params</td>
+          <td>Single source of truth; imported by all engine and data modules</td>
         </tr>
         <tr>
           <td><span class="file-name">constituents.json</span></td>
-          <td>Index → [Symbol, ...] mapping for all 5 Nifty indices</td>
+          <td>Index → [Symbol, …] mapping for all Nifty indices</td>
           <td>Updated manually on index rebalances</td>
         </tr>
         <tr>
           <td><span class="file-name">nse_holidays.json</span></td>
-          <td>NSE holiday calendar by segment (Equity, Debt, etc.)</td>
-          <td>Used to resolve last valid trading date</td>
+          <td>NSE trading holiday calendar by segment</td>
+          <td>Used to resolve last valid trading date and generate rebalance dates</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">data/compositions.parquet</span></td>
+          <td>Historical index compositions — which stocks were in the universe on each past date</td>
+          <td>Enables survivorship-bias mitigation in backtester; generated by <code>data/reconstruct_indices.py</code></td>
+        </tr>
+        <tr>
+          <td><span class="file-name">data/backtest_history.parquet</span></td>
+          <td>10-year OHLCV baseline for the backtester — committed to the repository</td>
+          <td>Refreshed via <code>scripts/refresh_backtest_parquet.py</code></td>
+        </tr>
+        <tr>
+          <td><span class="file-name">data/screener_ohlcv.parquet</span></td>
+          <td>2-year OHLCV for the screener — committed to the repository</td>
+          <td>Refreshed via <code>scripts/refresh_screener_parquet.py</code></td>
         </tr>
       </tbody>
     </table>
 
-    <div class="section-title">🗄️ Database Schema (Neon PostgreSQL)</div>
+    <div class="section-title">📦 Parquet Data Files</div>
     <div class="card-grid">
       <div class="card" style="border-left: 4px solid #2563eb;">
-        <h3>ohlcv</h3>
+        <h3>screener_ohlcv.parquet</h3>
         <p style="font-family:monospace; font-size:0.8rem; margin-top:0.4rem; line-height:1.8;">
-          symbol TEXT NOT NULL<br>
-          date TEXT NOT NULL<br>
-          open / high / low / close FLOAT<br>
-          volume BIGINT<br>
-          PRIMARY KEY (symbol, date)
+          MultiIndex: (symbol, date)<br>
+          Columns: Open, High, Low, Close, Volume<br>
+          ~2 years history, ~750 symbols<br>
+          Used by: screener pipeline
         </p>
       </div>
       <div class="card" style="border-left: 4px solid #7c3aed;">
-        <h3>stage2_cache</h3>
+        <h3>backtest_history.parquet</h3>
         <p style="font-family:monospace; font-size:0.8rem; margin-top:0.4rem; line-height:1.8;">
-          cache_date DATE PRIMARY KEY<br>
-          results JSONB NOT NULL<br>
-          created_at TIMESTAMP DEFAULT NOW()
+          MultiIndex: (symbol, date)<br>
+          Columns: Open, High, Low, Close, Volume<br>
+          ~10 years history, ~750 symbols<br>
+          Used by: backtest pipeline
+        </p>
+      </div>
+      <div class="card" style="border-left: 4px solid #059669;">
+        <h3>compositions.parquet</h3>
+        <p style="font-family:monospace; font-size:0.8rem; margin-top:0.4rem; line-height:1.8;">
+          Columns: date, index_name, symbol<br>
+          Covers all rebalance events<br>
+          Used by: backtester for anti-survivorship-bias filter
+        </p>
+      </div>
+      <div class="card" style="border-left: 4px solid #d97706;">
+        <h3>stage2_cache.parquet / momentum_cache.parquet</h3>
+        <p style="font-family:monospace; font-size:0.8rem; margin-top:0.4rem; line-height:1.8;">
+          Scored results keyed by trading date<br>
+          Persists across Streamlit restarts<br>
+          Written atomically (tempfile + os.replace)
         </p>
       </div>
     </div>
@@ -466,14 +598,20 @@
     <table class="cfg-table">
       <thead><tr><th>Constant</th><th>Default</th><th>Effect</th></tr></thead>
       <tbody>
-        <tr><td><span class="cfg-name">HISTORY_PERIOD</span></td><td><span class="cfg-val">"2y"</span></td><td>yfinance period string for initial full download</td></tr>
+        <tr><td><span class="cfg-name">HISTORY_PERIOD</span></td><td><span class="cfg-val">"2y"</span></td><td>yfinance period string for initial full screener download</td></tr>
+        <tr><td><span class="cfg-name">HISTORY_DAYS</span></td><td><span class="cfg-val">750</span></td><td>Calendar days kept in screener Parquet (~2 years)</td></tr>
         <tr><td><span class="cfg-name">MIN_VOLUME</span></td><td><span class="cfg-val">100,000</span></td><td>Below this → stock flagged as Illiquid in Stage 2</td></tr>
         <tr><td><span class="cfg-name">VOL_AVG_PERIOD</span></td><td><span class="cfg-val">10</span></td><td>Days for average volume calculation (Vol Ratio denominator)</td></tr>
         <tr><td><span class="cfg-name">HH_HL_LOOKBACK</span></td><td><span class="cfg-val">50</span></td><td>Window for Higher High / Higher Low detection</td></tr>
         <tr><td><span class="cfg-name">MA_RISING_LOOKBACK</span></td><td><span class="cfg-val">50</span></td><td>How far back to check if a moving average is trending up</td></tr>
-        <tr><td><span class="cfg-name">CIRCUIT_LEVELS</span></td><td><span class="cfg-val">[5, 10, 20]</span></td><td>Circuit breaker % levels to detect</td></tr>
+        <tr><td><span class="cfg-name">CONSOLIDATION_LOOKBACK</span></td><td><span class="cfg-val">20</span></td><td>Days over which to measure base flatness for scoring criterion #8</td></tr>
+        <tr><td><span class="cfg-name">CONSOLIDATION_RANGE_PCT</span></td><td><span class="cfg-val">0.15</span></td><td>Max close-to-close range (as % of period low) to qualify as a base (15%)</td></tr>
+        <tr><td><span class="cfg-name">CIRCUIT_LEVELS</span></td><td><span class="cfg-val">[5, 10, 20]</span></td><td>Circuit breaker % levels to detect in momentum scoring</td></tr>
         <tr><td><span class="cfg-name">CIRCUIT_TOLERANCE</span></td><td><span class="cfg-val">±0.1%</span></td><td>Fuzzy match tolerance for circuit detection</td></tr>
-        <tr><td><span class="cfg-name">_MOMENTUM_TTL</span></td><td><span class="cfg-val">3600</span></td><td>Seconds before in-memory momentum cache is considered stale</td></tr>
+        <tr><td><span class="cfg-name">RETEST_LOOKBACK_DAYS</span></td><td><span class="cfg-val">20</span></td><td>Window to search for a prior breakout in retest detection</td></tr>
+        <tr><td><span class="cfg-name">RETEST_TOLERANCE</span></td><td><span class="cfg-val">0.02</span></td><td>±2% proximity band around breakout level for pullback qualification</td></tr>
+        <tr><td><span class="cfg-name">BOUNCE_CONFIRMATION</span></td><td><span class="cfg-val">0.02</span></td><td>Current close must be ≥2% above breakout level to confirm bounce</td></tr>
+        <tr><td><span class="cfg-name">VOL_DRYUP_RATIO</span></td><td><span class="cfg-val">0.75</span></td><td>Pullback avg volume must be &lt;75% of breakout-day volume</td></tr>
       </tbody>
     </table>
 
@@ -485,18 +623,18 @@
   ══════════════════════════════════════════ -->
   <div id="persona-dev" class="persona-section">
 
-    <div class="section-title">🧩 Function Reference</div>
+    <div class="section-title">🧩 Function Reference — data.py</div>
     <div class="fn-grid">
 
-      <!-- data.py -->
       <div class="fn-row">
         <div>
           <div class="fn-name">load_nse_holidays()</div>
           <div class="fn-file">data.py</div>
           <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
         </div>
-        <div class="fn-desc">Loads <code>nse_holidays.json</code> and returns a <code>set</code> of date strings (<code>YYYY-MM-DD</code>). Handles both <code>"tradingDate"</code> and <code>"tradingDate "</code> (trailing space) key variants.</div>
+        <div class="fn-desc">Loads <code>nse_holidays.json</code> and returns a <code>set</code> of date strings (<code>YYYY-MM-DD</code>). Handles both <code>"tradingDate"</code> and <code>"tradingDate "</code> (trailing-space) key variants found in NSE data.</div>
       </div>
+
       <div class="fn-row">
         <div>
           <div class="fn-name">get_last_valid_trading_date(start, holidays)</div>
@@ -505,6 +643,7 @@
         </div>
         <div class="fn-desc">Walks backward from <code>start</code> (max 10 days) skipping weekends and holidays. Returns the nearest valid NSE trading date as a string.</div>
       </div>
+
       <div class="fn-row">
         <div>
           <div class="fn-name">_get_target_key()</div>
@@ -513,203 +652,233 @@
         </div>
         <div class="fn-desc">Returns the active cache date string. Uses current IST time — if before 19:00 uses yesterday's date, then resolves to last valid trading day.</div>
       </div>
+
       <div class="fn-row">
         <div>
-          <div class="fn-name">_load_constituents()</div>
+          <div class="fn-name">_write_parquet_atomic(df, path)</div>
           <div class="fn-file">data.py</div>
-          <div class="tag tag-blue" style="margin-top:0.3rem;">util</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">io</div>
         </div>
-        <div class="fn-desc">Loads <code>constituents.json</code> and returns a dict of index→symbols. Shows a Streamlit error and returns <code>{}</code> if the file is missing.</div>
+        <div class="fn-desc">Writes <code>df</code> to a temp file in the same directory, then calls <code>os.replace(tmp, path)</code> for an atomic swap. Prevents Parquet corruption on crash or power loss.</div>
       </div>
+
       <div class="fn-row">
         <div>
-          <div class="fn-name">_sync_ohlcv_to_db(symbols, target_date)</div>
-          <div class="fn-file">data.py</div>
-          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
-        </div>
-        <div class="fn-desc">Incremental yfinance sync. If DB is empty, downloads the full <code>HISTORY_PERIOD</code>; otherwise fetches only missing dates. Upserts all rows via <code>db.upsert_ohlcv()</code>. Returns <code>True</code> if data is now available.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">_score_from_db(constituents, for_momentum, rsi_filter)</div>
-          <div class="fn-file">data.py</div>
-          <div class="tag tag-green" style="margin-top:0.3rem;">data</div>
-        </div>
-        <div class="fn-desc">Loads OHLCV from DB (550 days for momentum, 750 for Stage 2), runs the appropriate scorer on each symbol, attaches Index from constituents, and returns a sorted DataFrame.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">resolve_screener_data(rsi_filter, for_momentum)</div>
+          <div class="fn-name">resolve_screener_data(for_momentum, emit)</div>
           <div class="fn-file">data.py</div>
           <div class="tag tag-green" style="margin-top:0.3rem;">orchestrator</div>
         </div>
-        <div class="fn-desc">3-tier cache resolution. Tier 1: in-memory dict keyed by date (Momentum also checks TTL). Tier 2: DB stage2_cache table (Stage 2 only) / OHLCV freshness check. Tier 3: live yfinance sync + score. Returns <code>(df, date_str, source)</code> where source is <code>'memory' | 'db' | 'internet' | 'error'</code>.</div>
+        <div class="fn-desc">3-tier cache resolution. Tier 1: in-memory dict keyed by date (Momentum checks 1-hour TTL). Tier 2: <code>stage2_cache.parquet</code> / <code>momentum_cache.parquet</code>. Tier 3: incremental yfinance sync → score → write Parquet. Returns <code>(df, date_str, source)</code> where source ∈ <code>'memory' | 'parquet' | 'internet' | 'error'</code>.</div>
       </div>
 
-      <!-- stage2_engine.py -->
+    </div>
+
+    <div class="section-title">🧩 Function Reference — stage2_engine.py</div>
+    <div class="fn-grid">
+
       <div class="fn-row">
         <div>
           <div class="fn-name">_rsi_wilder(series, period=14)</div>
           <div class="fn-file">stage2_engine.py</div>
           <div class="tag tag-purple" style="margin-top:0.3rem;">indicator</div>
         </div>
-        <div class="fn-desc">Wilder's RSI using EWM with <code>alpha=1/period</code>. Returns a pd.Series of RSI values.</div>
+        <div class="fn-desc">Wilder's RSI using EWM with <code>alpha=1/period</code>. Correctly handles zero avg_loss case (returns 100.0 rather than NaN).</div>
       </div>
+
       <div class="fn-row">
         <div>
           <div class="fn-name">score_stage2(df)</div>
           <div class="fn-file">stage2_engine.py</div>
           <div class="tag tag-purple" style="margin-top:0.3rem;">scoring</div>
         </div>
-        <div class="fn-desc">Takes an OHLCV DataFrame (min 250 rows). Computes MA50/150/200, RSI, volume ratio. Returns a dict with Score (0–7), Stage label, Close, Vol_Ratio, RSI, MA values, Illiquid flag, and Avg_Vol — or <code>None</code> if data is insufficient or contains NaNs.</div>
+        <div class="fn-desc">Takes an OHLCV DataFrame (min 250 rows). Scores 8 Weinstein criteria. Returns a dict with Score (0–8), Stage label, Close, Vol_Ratio, RSI, MA50/150/200, Illiquid, Consolidating, Avg_Vol — or <code>None</code> if data is insufficient or contains NaNs.</div>
       </div>
 
-      <!-- momentum_engine.py -->
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">compute_rolling_stage2(df)</div>
+          <div class="fn-file">stage2_engine.py</div>
+          <div class="tag tag-purple" style="margin-top:0.3rem;">scoring</div>
+        </div>
+        <div class="fn-desc">Vectorised daily Stage 2 score for the entire OHLCV history. Used by the Phase Chart tab. Returns a DataFrame with Close, MA50/150/200, Score (0–8), and Phase label per row.</div>
+      </div>
+
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">check_weinstein_retest(df)</div>
+          <div class="fn-file">stage2_engine.py</div>
+          <div class="tag tag-red" style="margin-top:0.3rem;">pattern</div>
+        </div>
+        <div class="fn-desc">Returns <code>True</code> if the stock shows a Weinstein Retest pattern: (1) closed above 50-day high on 2×+ volume within last 20 days, (2) pulled back to within ±2% of that breakout level, (3) current close is ≥2% above it, (4) pullback avg volume &lt; 75% of breakout-day volume.</div>
+      </div>
+
+    </div>
+
+    <div class="section-title">🧩 Function Reference — momentum_engine.py</div>
+    <div class="fn-grid">
+
       <div class="fn-row">
         <div>
           <div class="fn-name">_count_circuits(df)</div>
           <div class="fn-file">momentum_engine.py</div>
-          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">indicator</div>
         </div>
         <div class="fn-desc">Counts days where <code>pct_change</code> ≈ ±5%, ±10%, or ±20% within ±0.1% tolerance over full history. Returns an integer.</div>
       </div>
+
       <div class="fn-row">
         <div>
           <div class="fn-name">_calculate_sharpe(df, period_days)</div>
           <div class="fn-file">momentum_engine.py</div>
-          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">indicator</div>
         </div>
         <div class="fn-desc">Annualized Sharpe = Annualized RoC ÷ Annualized Std Dev over the last <code>period_days</code> trading days. Returns <code>None</code> if insufficient data or zero std dev.</div>
       </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">_calculate_positive_days_pct(df, months)</div>
-          <div class="fn-file">momentum_engine.py</div>
-          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
-        </div>
-        <div class="fn-desc">Calculates % of days where Close > prev Close over approx <code>months × 21</code> trading days. Returns a float or <code>None</code>.</div>
-      </div>
+
       <div class="fn-row">
         <div>
           <div class="fn-name">score_momentum(df)</div>
           <div class="fn-file">momentum_engine.py</div>
-          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">scoring</div>
         </div>
-        <div class="fn-desc">Calls all momentum sub-functions and returns a dict with: Close, 52w_High, DMA100, DMA200, Vol_Median, 1Y_Change, Pct_From_52W_High, Circuit_Count, Sharpe_3M/6M/9M/1Y, Volatility, Pos_Days_3M/6M/12M.</div>
+        <div class="fn-desc">Single-symbol entry point. Returns a dict with: Close, 52w_High, DMA100, DMA200, Vol_Median, 1Y_Change, Pct_From_52W_High, Circuit_Count, Sharpe_3M/6M/9M/1Y, Volatility, Pos_Days_3M/6M/12M.</div>
       </div>
+
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">precompute_metrics(symbol_data, …)</div>
+          <div class="fn-file">momentum_engine.py</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">batch</div>
+        </div>
+        <div class="fn-desc">Batch precomputes all momentum metrics for all symbols at once. Called once before the rebalance loop, converting O(n²) per-date per-symbol scoring into O(n) batch + O(log n) lookup. Returns a wide DataFrame indexed by (symbol, date).</div>
+      </div>
+
       <div class="fn-row">
         <div>
           <div class="fn-name">_calculate_avg_sharpe(row, method)</div>
           <div class="fn-file">momentum_engine.py</div>
-          <div class="tag tag-yellow" style="margin-top:0.3rem;">momentum</div>
+          <div class="tag tag-yellow" style="margin-top:0.3rem;">util</div>
         </div>
-        <div class="fn-desc">Row-wise helper for sorting. Reads Sharpe_3M/6M/9M/1Y from a DataFrame row and returns the single or averaged value based on the selected <code>sort_method</code> string.</div>
+        <div class="fn-desc">Row-wise helper for sorting. Reads Sharpe_3M/6M/9M/1Y and returns single or averaged value based on the selected <code>sort_method</code> string (e.g. <code>"avg_3_6_12"</code>).</div>
       </div>
 
-      <!-- db.py -->
+    </div>
+
+    <div class="section-title">🧩 Function Reference — backtest_engine.py</div>
+    <div class="fn-grid">
+
       <div class="fn-row">
         <div>
-          <div class="fn-name">init_db()</div>
-          <div class="fn-file">db.py</div>
-          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
+          <div class="fn-name">run_backtest(symbol_data, benchmarks, config)</div>
+          <div class="fn-file">backtest_engine.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">entrypoint</div>
         </div>
-        <div class="fn-desc">Creates <code>ohlcv</code> and <code>stage2_cache</code> tables and the <code>ohlcv_date_idx</code> index if they don't already exist. Called once at startup via <code>@st.cache_resource</code>.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">upsert_ohlcv(records)</div>
-          <div class="fn-file">db.py</div>
-          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
-        </div>
-        <div class="fn-desc">Bulk-upserts a list of OHLCV dicts. Uses <code>cursor.executemany()</code> with <code>ON CONFLICT DO UPDATE</code> to handle re-fetched data gracefully.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">get_latest_ohlcv_date()</div>
-          <div class="fn-file">db.py</div>
-          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
-        </div>
-        <div class="fn-desc">Returns <code>(global_max, conservative_min)</code>: the overall MAX date across all rows, and the MIN of per-symbol MAX dates. The conservative_min is used as the incremental sync start point.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">load_ohlcv_all(period_days=550)</div>
-          <div class="fn-file">db.py</div>
-          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
-        </div>
-        <div class="fn-desc">Loads recent OHLCV rows from the DB filtered by <code>date::date >= NOW() - INTERVAL '…'</code>. Returns a <code>symbol → DataFrame</code> dict with columns <code>Open/High/Low/Close/Volume</code> and a DatetimeIndex.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">save_stage2_cache(cache_date, df)</div>
-          <div class="fn-file">db.py</div>
-          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
-        </div>
-        <div class="fn-desc">Serialises <code>df</code> as JSON and upserts it into <code>stage2_cache</code> for the given trading date. Overwrites any existing entry for that date.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">load_stage2_cache(cache_date)</div>
-          <div class="fn-file">db.py</div>
-          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
-        </div>
-        <div class="fn-desc">Returns a DataFrame for the exact <code>cache_date</code>, or <code>None</code> if not found.</div>
-      </div>
-      <div class="fn-row">
-        <div>
-          <div class="fn-name">load_latest_stage2_cache()</div>
-          <div class="fn-file">db.py</div>
-          <div class="tag tag-gray" style="margin-top:0.3rem;">db</div>
-        </div>
-        <div class="fn-desc">Fallback: returns <code>(df, date_str)</code> for the most recent entry in <code>stage2_cache</code>. Used when today's data is unavailable.</div>
+        <div class="fn-desc">Main entry point. Accepts <code>symbol → DataFrame</code> dict, benchmark series dict, and a <code>BacktestConfig</code>. Returns a dict with keys: <code>nav</code> (3-column DataFrame), <code>stats</code>, <code>holdings_log</code>, <code>avg_turnover_pct</code>, <code>total_cost_drag_pct</code>, <code>rebalance_dates</code>, <code>trading_days</code>.</div>
       </div>
 
-      <!-- app.py -->
       <div class="fn-row">
         <div>
-          <div class="fn-name">stage2_results(selected_indices, rsi_toggle, show_illiquid)</div>
-          <div class="fn-file">app.py</div>
-          <div class="tag tag-blue" style="margin-top:0.3rem;">ui</div>
+          <div class="fn-name">rank_universe_at_date(df_all, date, …)</div>
+          <div class="fn-file">backtest_engine.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">ranking</div>
         </div>
-        <div class="fn-desc">Renders the Stage 2 results table. Calls <code>resolve_screener_data()</code>, applies index/RSI/liquidity filters in-memory, displays the styled dataframe with metrics, and offers a CSV download.</div>
+        <div class="fn-desc">For a given rebalance date: apply quality filters (volume, DMA, circuits, positive days, Stage 2 entry/exit), rank remaining symbols by Sharpe composite, return top-N. Optional <code>return_exclusions=True</code> also returns per-symbol exclusion reasons for the debug tab.</div>
       </div>
+
       <div class="fn-row">
         <div>
-          <div class="fn-name">momentum_results(selected_indices, idx_options, filters)</div>
-          <div class="fn-file">app.py</div>
-          <div class="tag tag-blue" style="margin-top:0.3rem;">ui</div>
+          <div class="fn-name">_compute_fy_tax(fy, st_gains, lt_gains, …)</div>
+          <div class="fn-file">backtest_engine.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">tax</div>
         </div>
-        <div class="fn-desc">Renders the Momentum results table. Calls <code>resolve_screener_data(for_momentum=True)</code>, applies all momentum filters, sorts by composite Sharpe via <code>_calculate_avg_sharpe()</code>, and offers a CSV download.</div>
+        <div class="fn-desc">India CGT computation for one financial year. Applies: current-year ST/LT netting, ST losses offset LT gains (allowed), LT losses offset only LT gains (not ST). Consumes carry-forward losses in FIFO order (8-year expiry). Returns <code>(tax_amount, updated_cf_st_losses, updated_cf_lt_losses)</code>.</div>
       </div>
+
       <div class="fn-row">
         <div>
-          <div class="fn-name">main()</div>
-          <div class="fn-file">app.py</div>
-          <div class="tag tag-blue" style="margin-top:0.3rem;">entrypoint</div>
+          <div class="fn-name">_water_fill_weights(ranked, cap, …)</div>
+          <div class="fn-file">backtest_engine.py</div>
+          <div class="tag tag-gray" style="margin-top:0.3rem;">allocation</div>
         </div>
-        <div class="fn-desc">Builds the shared sidebar (screener selector, index checkboxes, context-specific filters, Run button) and dispatches to <code>stage2_results()</code> or <code>momentum_results()</code>. Streamlit re-runs this on every interaction.</div>
+        <div class="fn-desc">Water-filling weight allocation. Distributes portfolio weight equally across ranked stocks, then iteratively caps any stock exceeding <code>max_position_pct</code> and redistributes the excess to uncapped stocks. Falls back to equal-weight if no feasible solution found.</div>
+      </div>
+
+    </div>
+
+    <div class="section-title">🧩 Function Reference — jobs.py &amp; workers.py</div>
+    <div class="fn-grid">
+
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">JobRegistry.submit(user_token, kind, params, worker_fn)</div>
+          <div class="fn-file">jobs.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">jobs</div>
+        </div>
+        <div class="fn-desc">Cancels any running same-kind job for this user_token, then submits a new <code>Job</code> to the <code>ThreadPoolExecutor</code>. Jobs are isolated per <code>(user_token, kind)</code> — no cross-user data leakage. Stale completed jobs are evicted after 1 hour.</div>
+      </div>
+
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">JobRegistry.latest(user_token, kind)</div>
+          <div class="fn-file">jobs.py</div>
+          <div class="tag tag-blue" style="margin-top:0.3rem;">jobs</div>
+        </div>
+        <div class="fn-desc">Returns the most recent <code>Job</code> object for this <code>(user_token, kind)</code> pair, or <code>None</code>. UI polls this to read status, progress events, and the final result dict.</div>
+      </div>
+
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">stage2_worker(params, emit, cancel_evt)</div>
+          <div class="fn-file">workers.py</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">worker</div>
+        </div>
+        <div class="fn-desc">Calls <code>resolve_screener_data(for_momentum=False)</code>. Returns <code>{"df", "cache_date", "source"}</code>. Raises <code>RuntimeError</code> on empty data.</div>
+      </div>
+
+      <div class="fn-row">
+        <div>
+          <div class="fn-name">backtest_worker(params, emit, cancel_evt)</div>
+          <div class="fn-file">workers.py</div>
+          <div class="tag tag-green" style="margin-top:0.3rem;">worker</div>
+        </div>
+        <div class="fn-desc">Orchestrates the full backtest: syncs benchmarks, loads OHLCV, applies universe/composition filters, runs <code>run_backtest()</code> twice (Classic + Displacement), merges the 6 NAV series and stats DataFrames. Checks <code>cancel_evt</code> between each major phase. Returns merged result dict.</div>
       </div>
 
     </div>
 
     <div class="section-title">🔑 Key Implementation Notes</div>
+
     <div class="info-box">
-      <strong>3-Tier Cache Architecture</strong>
-      <code>_mem_cache</code> is a module-level dict with <code>"stage2"</code> and <code>"momentum"</code> slots. Stage 2 is keyed only by trading date (no TTL — once computed for a given day it never expires in-process). Momentum adds a <code>"ts"</code> timestamp and expires after <code>_MOMENTUM_TTL</code> seconds (1 hour). The DB tier stores Stage 2 scored results as JSONB in <code>stage2_cache</code>; Momentum always re-scores from OHLCV since its filters change dynamically.
+      <strong>3-Tier Cache Architecture (Screener)</strong>
+      <code>_mem_cache</code> is a module-level dict with <code>"stage2"</code> and <code>"momentum"</code> slots. Stage 2 is keyed only by trading date (no TTL — once computed for a given day it never expires in-process). Momentum adds a <code>"ts"</code> timestamp and expires after 1 hour. The Parquet tier stores scored results in <code>stage2_cache.parquet</code> and <code>momentum_cache.parquet</code> keyed by date; these persist across Streamlit process restarts. No external database is used.
     </div>
+
     <div class="info-box" style="background: var(--purple-bg); border-color: #ddd6fe; color: #3b0764;">
-      <strong>Session State Keys</strong>
-      All Streamlit widget keys are namespaced: <code>stage2_*</code> for Stage 2 (e.g. <code>stage2_run_triggered</code>, <code>stage2_rsi_toggle</code>), <code>mom_*</code> for Momentum (e.g. <code>mom_run_triggered</code>, <code>mom_sort_method</code>). The run trigger pattern (<code>session_state["…_run_triggered"] = True</code>) gates result rendering so the main area stays blank until the user clicks Run.
+      <strong>Session Isolation via user_token</strong>
+      Each Streamlit session gets a UUID <code>user_token</code> on first render (stored in <code>st.session_state</code>). All jobs are keyed by <code>(user_token, kind)</code> in the <code>JobRegistry</code>. This prevents one user's backtest result being returned to another user's session. The UI polls <code>registry.latest(token, kind)</code> on every rerender to pick up progress events and the final result.
     </div>
+
     <div class="info-box" style="background:#fef3c7; border-color:#fcd34d; color:#78350f;">
-      <strong>yfinance MultiIndex Handling</strong>
-      When downloading multiple tickers, yfinance returns a MultiIndex DataFrame with columns <code>(ticker, field)</code>. For a single ticker it still returns MultiIndex. <code>_sync_ohlcv_to_db</code> normalises this by slicing <code>raw[ticker]</code> for multi-ticker downloads and <code>raw</code> directly for single-ticker, then flattening tuple column names with <code>c[0] if isinstance(c, tuple) else c</code>.
+      <strong>Atomic Parquet Writes</strong>
+      All Parquet files are written via <code>_write_parquet_atomic(df, path)</code>: write to a temp file in the same directory, then <code>os.replace(tmp, path)</code>. On POSIX this is an atomic rename; on Windows it is close-to-atomic. This prevents reading a half-written file after a crash or Streamlit Cloud worker restart. Float32 is used for price columns; a ×0.9999 tolerance is applied in <code>check_weinstein_retest()</code> to avoid float32→float64 equality failures on Parquet round-trip.
     </div>
+
+    <div class="info-box" style="background: var(--tag-bg); border-color: #bfdbfe; color: #1e3a8a;">
+      <strong>Survivorship-Bias Mitigation</strong>
+      <code>compositions.parquet</code> records which symbols were in each Nifty index on each historical rebalance date. Before ranking at each backtest date, <code>rank_universe_at_date()</code> filters <code>symbol_data</code> to only include symbols that were actually in the index at that point in time. This prevents the backtest from benefiting from hindsight knowledge of which stocks survived to be included in today's universe.
+    </div>
+
+    <div class="info-box" style="background:#fff1f2; border-color:#fecdd3; color:#881337;">
+      <strong>India CGT Tax Model</strong>
+      Financial year runs April–March. Each disposal is classified as Short-Term (&lt;12 months held) or Long-Term (≥12 months). Within each FY: ST losses first offset ST gains, then LT gains; LT losses only offset LT gains. Remaining losses carry forward up to 8 FYs (oldest consumed first). Tax is applied at STCG rate (default 20%) and LTCG rate (default 12.5%) configured by the user. Tax is deducted from NAV at FY end, reducing the compounding base for subsequent years.
+    </div>
+
     <div class="warn-box">
-      <strong>⚠️ Known Quirks</strong>
-      • The <code>source</code> flag returned by <code>resolve_screener_data</code> for Momentum is always <code>"db"</code> on first load (even if data came from internet) — it only returns <code>"memory"</code> on subsequent calls within the TTL window.<br>
-      • Stage 2 RSI filter is applied before saving to <code>stage2_cache</code> — changing the RSI toggle after a cache hit for today won't re-fetch; the in-UI filter re-applies it on the cached data instead.<br>
-      • <code>db._get_conn()</code> injects the Neon endpoint hint (<code>options=endpoint%3D…</code>) only if the URL contains <code>ep-</code> and doesn't already have <code>options=</code>, which is the standard Neon connection string format.
+      <strong>⚠️ Known Quirks &amp; Limitations</strong>
+      • <code>backtest_delta.parquet</code> accumulates indefinitely — there is no automatic rotation. Monitor disk usage over time.<br>
+      • <code>compositions.parquet</code> staleness is reported as a warning, not a hard block — a stale file silently degrades anti-survivorship-bias protection.<br>
+      • The <code>ThreadPoolExecutor</code> has a fixed cap of 4 workers. Long backtests will queue; there is no backpressure signal to the UI beyond "Loading…".<br>
+      • Float32 precision loss from Parquet round-trips is handled by the <code>×0.9999</code> tolerance in retest detection, but may affect other strict equality comparisons if added later.
     </div>
 
     <div class="section-title">🚀 Running the App</div>
@@ -721,17 +890,27 @@
         </p>
       </div>
       <div class="card">
-        <h3>Configure .env</h3>
+        <h3>Seed backtest data (first time)</h3>
         <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
-          DATABASE_URL=postgresql://…<br>(Neon connection string)
+          python scripts/refresh_backtest_parquet.py<br>
+          python scripts/refresh_screener_parquet.py
         </p>
       </div>
       <div class="card">
-        <h3>Run</h3>
+        <h3>Run screener</h3>
         <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
           streamlit run app.py
         </p>
       </div>
+      <div class="card">
+        <h3>Run backtester</h3>
+        <p style="font-family: monospace; font-size:0.82rem; background:#f1f5f9; padding:0.6rem; border-radius:6px; margin-top:0.5rem;">
+          streamlit run app_backtest.py
+        </p>
+      </div>
+    </div>
+    <div class="warn-box" style="margin-top:1rem;">
+      <strong>No DATABASE_URL required.</strong> The current architecture uses only local Parquet files and yfinance. There is no PostgreSQL dependency. The <code>.env.example</code> file's <code>DATABASE_URL</code> reference is a historical artefact from a prior architecture and can be ignored.
     </div>
 
   </div><!-- /dev -->
