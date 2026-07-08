@@ -1,0 +1,49 @@
+name: Refresh Screener Parquet
+
+on:
+  schedule:
+    - cron: "15 14 * * *" # 7:45 PM IST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-screener-parquet
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Refresh screener OHLCV parquet
+        run: |
+          python scripts/refresh_screener_parquet.py
+
+      - name: Commit refreshed parquet
+        run: |
+          if git diff --quiet -- data/screener_ohlcv.parquet; then
+            echo "No screener parquet changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/screener_ohlcv.parquet
+          git commit -m "data: refresh screener OHLCV parquet" \
+            -m "Automated daily refresh of data/screener_ohlcv.parquet after market close."
+          git push
