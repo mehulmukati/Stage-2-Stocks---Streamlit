@@ -101,7 +101,7 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         26,
         156,
         52,
-        step=4,
+        step=1,
         key="ls_warmup",
         help="How far back to run the backtest engine to compute Marginal weight drift. "
         "Independent of portfolio start date.",
