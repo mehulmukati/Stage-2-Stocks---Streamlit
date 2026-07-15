@@ -6,6 +6,8 @@ Runs run_backtest over a short warm-up window (default 52 weeks) ending on the
 chosen signal date, then snapshots the last rebalance event for trade execution.
 """
 
+import hashlib
+import json
 import warnings
 from datetime import date, timedelta
 
@@ -46,6 +48,69 @@ def _next_business_day(d: date) -> date:
     while d.weekday() >= 5:
         d += timedelta(days=1)
     return d
+
+
+def _previous_business_day(d: date) -> date:
+    """Return the prior weekday before *d* (Mon–Fri calendar only)."""
+    d = d - timedelta(days=1)
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d
+
+
+def _simulation_start_date(params: dict) -> date:
+    """Anchor live-signal history to the portfolio's initial execution date.
+
+    The strategy is ranked at the close before a portfolio start date and is
+    executed on that start date.  Keeping this anchor fixed means subsequent
+    weekly signals replay the same history and therefore the same prior
+    holdings; users do not have to increase the lookback every week.
+    """
+    portfolio_start = params.get("portfolio_start")
+    anchor = _previous_business_day(portfolio_start) if portfolio_start else params["signal_date"]
+    return anchor - timedelta(weeks=params["warmup"])
+
+
+def _strategy_fingerprint(params: dict, ohlcv_date: object, ohlcv_source: object) -> str:
+    """Stable identity for one reproducible live-portfolio replay.
+
+    Signal date and portfolio value are deliberately excluded: they do not
+    define the strategy path.  Every selection, risk and quality setting that
+    can alter holdings is included, as is the data version reported by the
+    loader.
+    """
+    fields = (
+        "portfolio_start",
+        "warmup",
+        "band",
+        "variant",
+        "m",
+        "n",
+        "sort_method",
+        "freq",
+        "s2_drop",
+        "s2_threshold",
+        "s2_entry",
+        "s2_entry_threshold",
+        "max_pos",
+        "min_history",
+        "min_annual_return",
+        "pct_from_52w_high",
+        "max_circuits",
+        "close_above_100dma",
+        "close_above_200dma",
+        "pos_days_3m_min",
+        "pos_days_6m_min",
+        "pos_days_12m_min",
+    )
+    payload = {field: str(params.get(field)) for field in fields}
+    payload["indices"] = sorted(params.get("indices", []))
+    if params.get("freq") in {"weekly", "biweekly"}:
+        payload["rebalance_weekday"] = params["signal_date"].strftime("%A")
+    payload["ohlcv_date"] = str(ohlcv_date)
+    payload["ohlcv_source"] = str(ohlcv_source)
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()[:12]
 
 
 def _parse_ticker_reason(s: str) -> tuple[str, str]:
@@ -92,8 +157,8 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         "Portfolio start date",
         value=date.today() + timedelta(days=1),
         key="ls_portfolio_start",
-        help="When you started (or plan to start) your portfolio. "
-        "Shown on the signal for reference — does not affect the simulation.",
+        help="When you started (or plan to start) your portfolio. This anchors the simulation "
+        "history, so each later rebalance replays the same portfolio path.",
     )
 
     warmup = st.slider(
@@ -103,8 +168,8 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         52,
         step=1,
         key="ls_warmup",
-        help="How far back to run the backtest engine to compute Marginal weight drift. "
-        "Independent of portfolio start date.",
+        help="How far back from the portfolio's initial rebalance to run the backtest engine "
+        "to compute Marginal weight drift. Keep this fixed for subsequent signals.",
     )
 
     st.divider()
@@ -331,7 +396,7 @@ def _run_signal(params: dict) -> dict:
     benchmarks = load_benchmark_series()
 
     signal_date = params["signal_date"]
-    start_date = signal_date - timedelta(weeks=params["warmup"])
+    start_date = _simulation_start_date(params)
 
     cfg = BacktestConfig(
         m=params["m"],
@@ -350,6 +415,11 @@ def _run_signal(params: dict) -> dict:
         ltcg_rate=0.125,
         stcg_rate=0.20,
         band_rule=params["band"],
+        # Keep live rebalances on the selected weekday.  A later signal one
+        # week on must replay the same schedule, not insert Friday simply
+        # because a previous run ended on Tuesday.
+        rebalance_anchor_date=str(signal_date),
+        portfolio_start_date=str(params["portfolio_start"]) if params.get("portfolio_start") else None,
         stage2_drop_exit=params["s2_drop"],
         stage2_drop_threshold=params["s2_threshold"],
         stage2_entry_filter=params.get("s2_entry", False),
@@ -388,10 +458,13 @@ def _run_signal(params: dict) -> dict:
         if not avail.empty:
             close_prices[ticker] = float(avail.iloc[-1])
 
+    strategy_fingerprint = _strategy_fingerprint(params, ohlcv_date, src)
     return {
         "holdings_log": holdings_log,
         "ohlcv_date": ohlcv_date,
         "ohlcv_source": src,
+        "portfolio_reset_date": result.get("portfolio_reset_date"),
+        "strategy_fingerprint": strategy_fingerprint,
         "close_prices": close_prices,
     }
 
@@ -439,18 +512,14 @@ def live_signal_results(params: dict) -> None:
     exits: dict[str, str] = {t: r for t, r in (_parse_ticker_reason(s) for s in current.get("exits", []))}
     holdings: set[str] = set(current.get("holdings", []))
 
-    # Fresh portfolio: start date is on or after signal date — no existing positions
-    portfolio_start = params.get("portfolio_start")
-    fresh_portfolio = portfolio_start is not None and portfolio_start >= params["signal_date"]
-
-    # When fresh, everything is a buy — ignore engine's entry/incumbent split
-    if fresh_portfolio:
-        entries = {t: "" for t in holdings}
-        exits = {}
-    incumbents: set[str] = holdings - set(entries)
-
     rebalance_date = _to_date(current["date"])
     exec_date = _next_business_day(rebalance_date)
+    reset_date = result.get("portfolio_reset_date")
+    reset_date = _to_date(reset_date) if reset_date is not None else None
+    # A fresh portfolio is an engine event, not a display override.  This is
+    # essential: the all-BUY view must be the same state used by the next run.
+    fresh_portfolio = reset_date == rebalance_date
+    incumbents: set[str] = holdings - set(entries)
 
     # ── param validation warning ──────────────────────────────────────────────
     if params["n"] <= params["m"]:
@@ -470,7 +539,7 @@ def live_signal_results(params: dict) -> None:
     st.markdown(
         f"**{band_lbl} · {var_lbl} · M={params['m']} · N={params['n']}" f" · {params['sort_method']}{s2_lbl}{cap_lbl}**"
     )
-    sim_start = params["signal_date"] - timedelta(weeks=params["warmup"])
+    sim_start = _simulation_start_date(params)
     portfolio_start = params.get("portfolio_start")
     port_lbl = portfolio_start.strftime("%b %d, %Y") if portfolio_start else "—"
     fresh_lbl = " 🆕 **Fresh portfolio — all positions are BUY**" if fresh_portfolio else ""
@@ -478,6 +547,8 @@ def live_signal_results(params: dict) -> None:
         f"Portfolio start: **{port_lbl}**{fresh_lbl} "
         f"· Simulation from: **{sim_start.strftime('%b %d, %Y')}** ({params['warmup']} weeks back) "
         f"· Data as-of: **{ohlcv_date}** "
+        f"· Replay ID: **{result.get('strategy_fingerprint', '—')}** "
+        f"· {params['freq'].capitalize()} schedule: **{params['signal_date'].strftime('%A')}** "
         f"· Last rebalance: **{rebalance_date.strftime('%a %b %d, %Y')}** "
         f"· Execute on: **{exec_date.strftime('%a %b %d, %Y')}** at or after 09:15 IST"
     )
@@ -830,6 +901,8 @@ def live_signal_results(params: dict) -> None:
         "Signal Date": str(params["signal_date"]),
         "Rebalance Date": str(rebalance_date),
         "Execute Date": str(exec_date),
+        "Portfolio Reset Date": str(reset_date or ""),
+        "Replay ID": result.get("strategy_fingerprint", ""),
         "Portfolio Value (₹)": portfolio_value,
     }
     for t, r in exits.items():

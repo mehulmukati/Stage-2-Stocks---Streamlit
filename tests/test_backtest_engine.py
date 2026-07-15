@@ -2,6 +2,7 @@ import math
 
 import pandas as pd
 
+import backtest_engine as engine
 from backtest_engine import (
     BacktestConfig,
     _apply_weight_cap,
@@ -616,3 +617,50 @@ def test_run_backtest_taxes_partial_full_rebalance_trims():
     assert "error" not in with_tax
     assert with_tax["stats"].loc["Full Rebalance", "Tax Drag (%)"] > 0
     assert with_tax["stats"].loc["Full Rebalance", "Final NAV"] < no_tax["stats"].loc["Full Rebalance", "Final NAV"]
+
+
+def test_live_portfolio_replay_uses_prior_snapshot_without_warmup_holdings(monkeypatch):
+    """A later live signal must use the exact prior rebalance snapshot.
+
+    This protects the Live Signal contract: a ticker absent from the first
+    live portfolio cannot be displayed as a HOLD at the next rebalance merely
+    because it appeared during warm-up simulation.
+    """
+    all_ohlcv = {sym: make_ohlcv(40, start="2025-05-01") for sym in ("A", "B", "C")}
+
+    def fixed_ranking(*_args, **_kwargs):
+        return ["A", "B", "C"], {}
+
+    monkeypatch.setattr(engine, "rank_universe_at_date", fixed_ranking)
+    common = dict(
+        m=2,
+        n=3,
+        rebalance_freq="weekly",
+        sort_method="3 months",
+        start_date="2025-05-01",
+        transaction_cost_pct=0.0,
+        min_history_days=1,
+        apply_volume_filter=False,
+        portfolio_start_date="2025-06-01",
+    )
+    # Tuesday signals.  The first run ends on Tuesday 17th; extending it to
+    # the next Tuesday must retain 17th as the immediately prior event rather
+    # than inserting Friday 20th.
+    through_first = run_backtest(
+        all_ohlcv, {}, BacktestConfig(end_date="2025-06-17", rebalance_anchor_date="2025-06-17", **common)
+    )
+    through_next = run_backtest(
+        all_ohlcv, {}, BacktestConfig(end_date="2025-06-24", rebalance_anchor_date="2025-06-24", **common)
+    )
+
+    assert "error" not in through_first
+    assert "error" not in through_next
+    assert through_first["portfolio_reset_date"].date() == pd.Timestamp("2025-05-27").date()
+
+    june_17 = through_first["holdings_log"][-1]
+    june_17_replayed = through_next["holdings_log"][-2]
+    assert june_17["date"] == june_17_replayed["date"]
+    assert june_17["date"].date() == pd.Timestamp("2025-06-17").date()
+    assert june_17["holdings"] == june_17_replayed["holdings"] == ["A", "B"]
+    assert june_17["marg_weights"] == june_17_replayed["marg_weights"]
+    assert june_17["prop_weights"] == june_17_replayed["prop_weights"]

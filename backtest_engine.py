@@ -56,6 +56,13 @@ class BacktestConfig:
     max_position_pct: float | None = None
     # Portfolio mechanics
     band_rule: str = "classic"
+    # Optional schedule anchor used by Live Signal.  It prevents a partial
+    # backtest end-date from changing historical weekly rebalance dates.
+    rebalance_anchor_date: str | None = None
+    # Optional live-signal boundary.  When set, the portfolio is started from
+    # scratch at the last rebalance before this execution/start date; data
+    # before it is retained only to calculate ranks and indicators.
+    portfolio_start_date: str | None = None
     # Cost model
     transaction_cost_pct: float = 0.001
     brokerage_per_sale: float = 0.0
@@ -539,6 +546,40 @@ def get_rebalance_dates(
         return last_per_week["date"].iloc[::2].tolist()
 
 
+def get_anchored_rebalance_dates(
+    trading_days: pd.DatetimeIndex,
+    freq: str,
+    anchor_date: pd.Timestamp,
+) -> list[pd.Timestamp]:
+    """Return live-signal rebalance dates on a fixed weekly/biweekly cadence.
+
+    ``get_rebalance_dates`` is intentionally calendar-period based for a
+    backtest.  That makes the last available date look like a rebalance when a
+    run ends mid-week, which is unsuitable for a live replay: a later run can
+    then replace Tuesday's event with Friday's.  For weekly live signals, keep
+    the selected weekday fixed and use the last available trading date on or
+    before each scheduled day (for example, Monday when Tuesday is a holiday).
+    """
+    if trading_days.empty or freq not in {"weekly", "biweekly"}:
+        return get_rebalance_dates(trading_days, freq)
+
+    anchor = pd.Timestamp(anchor_date).normalize()
+    period_days = 7 if freq == "weekly" else 14
+    start = trading_days.min().normalize()
+    end = trading_days.max().normalize()
+    first_k = int(np.ceil((start - anchor).days / period_days))
+    last_k = int(np.floor((end - anchor).days / period_days))
+    dates: list[pd.Timestamp] = []
+    for k in range(first_k, last_k + 1):
+        scheduled = anchor + pd.Timedelta(days=k * period_days)
+        eligible = trading_days[(trading_days <= scheduled) & (trading_days >= start)]
+        if not eligible.empty:
+            candidate = eligible[-1]
+            if not dates or candidate != dates[-1]:
+                dates.append(candidate)
+    return dates
+
+
 # ──────────────────────────────────────────────────────────────
 # DAILY NAV HELPERS
 # ──────────────────────────────────────────────────────────────
@@ -927,6 +968,8 @@ def run_backtest(
     min_history_days = config.min_history_days
     apply_volume_filter = config.apply_volume_filter
     band_rule = config.band_rule
+    rebalance_anchor_date = config.rebalance_anchor_date
+    portfolio_start_date = config.portfolio_start_date
     brokerage_per_sale = config.brokerage_per_sale
     initial_capital = config.initial_capital
     ltcg_rate = config.ltcg_rate
@@ -992,9 +1035,36 @@ def run_backtest(
     if len(trading_days) < 20:
         return {"error": "Insufficient trading days in selected range (need at least one month of data)."}
 
-    rebalance_dates = get_rebalance_dates(trading_days, rebalance_freq)
+    if rebalance_anchor_date:
+        try:
+            rebalance_dates = get_anchored_rebalance_dates(
+                trading_days, rebalance_freq, pd.Timestamp(rebalance_anchor_date)
+            )
+        except Exception:
+            return {"error": f"Invalid rebalance_anchor_date={rebalance_anchor_date!r}. Use 'YYYY-MM-DD'."}
+    else:
+        rebalance_dates = get_rebalance_dates(trading_days, rebalance_freq)
     # Exclude the first trading day: we need T-1 close to rank without look-ahead bias.
     rebalance_set = set(rebalance_dates) - {trading_days[0]}
+
+    # Live Signal needs indicator/ranking history before a real portfolio is
+    # opened, but must not inherit simulated holdings from that warm-up.  Pick
+    # the final signal/rebalance close strictly before the execution date.
+    portfolio_reset_day = None
+    if portfolio_start_date:
+        try:
+            portfolio_start_ts = pd.Timestamp(portfolio_start_date)
+        except Exception:
+            return {"error": f"Invalid portfolio_start_date={portfolio_start_date!r}. Use 'YYYY-MM-DD'."}
+        prior_rebalances = [d for d in rebalance_dates if d < portfolio_start_ts and d in rebalance_set]
+        if not prior_rebalances:
+            return {
+                "error": (
+                    "Could not find a rebalance before portfolio_start_date "
+                    f"({portfolio_start_ts.date()}) within the simulation window."
+                )
+            }
+        portfolio_reset_day = prior_rebalances[-1]
 
     # Pre-filter compositions once so the per-rebalance call is a cheap date slice
     comp_prepared = _prepare_compositions(compositions_df, index_names or [])
@@ -1055,6 +1125,21 @@ def run_backtest(
     for i, day in enumerate(trading_days):
         # ── rebalance ──
         if day in rebalance_set:
+            if portfolio_reset_day is not None and day == portfolio_reset_day:
+                # Begin the real portfolio here.  Earlier events are only
+                # warm-up calculations and must not become live incumbents.
+                full_weights = {}
+                full_weights_prev = {}
+                marg_weights = {}
+                prop_weights = {}
+                current_holdings = set()
+                prev_rebalance_day = None
+                prev_stage2_scores.clear()
+                lots_full = {}
+                lots_marg = {}
+                lots_prop = {}
+                nav_full = nav_marg = nav_prop = 100.0
+
             # Restrict universe to historically valid members on this date
             valid_syms = _valid_symbols_at_date(comp_prepared, index_names or [], day)
 
@@ -1437,6 +1522,9 @@ def run_backtest(
         "nav": nav_df,
         "stats": stats_df,
         "holdings_log": holdings_log,
+        # The live-signal renderer uses this to identify the one event at
+        # which warm-up state was discarded and the real replay began.
+        "portfolio_reset_date": portfolio_reset_day,
         "avg_turnover_pct": avg_turnover_full,
         "avg_turnover_pct_marg": avg_turnover_marg,
         "avg_turnover_pct_prop": avg_turnover_prop,
