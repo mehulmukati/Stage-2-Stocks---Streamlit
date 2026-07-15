@@ -726,7 +726,7 @@ def live_signal_results(params: dict) -> None:
         st.dataframe(
             pd.DataFrame(exit_rows),
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "Ticker": st.column_config.TextColumn("Ticker", width="small"),
                 "Weight held (%)": st.column_config.NumberColumn("Weight held (%)", format="%.2f%%", width="small"),
@@ -807,7 +807,7 @@ def live_signal_results(params: dict) -> None:
         st.dataframe(
             pd.DataFrame(entry_rows),
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "Ticker": st.column_config.TextColumn("Ticker", width="small"),
                 "Target weight (%)": st.column_config.NumberColumn("Target weight (%)", format="%.2f%%", width="small"),
@@ -892,7 +892,7 @@ def live_signal_results(params: dict) -> None:
             col_cfg["Qty delta"] = st.column_config.NumberColumn("Qty delta", format="%d", width="small")
             col_cfg["Action"] = st.column_config.TextColumn("Action", width="small")
 
-        st.dataframe(inc_df, hide_index=True, use_container_width=True, column_config=col_cfg)
+        st.dataframe(inc_df, hide_index=True, width="stretch", column_config=col_cfg)
 
     # ── download ─────────────────────────────────────────────────────────────
     st.markdown("---")

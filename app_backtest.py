@@ -781,7 +781,7 @@ def _render_debug_tab(result: dict | None) -> None:
             ]
         )
         st.markdown(f"**Top-10 ranked on {chosen_date_str}** (M={m}, universe={universe_size} symbols)")
-        st.dataframe(top10_df, hide_index=True, use_container_width=False, width=340)
+        st.dataframe(top10_df, hide_index=True, width=340)
     else:
         st.info("No ranking data available for this rebalance date (backtest run before this feature was added).")
 
@@ -917,7 +917,7 @@ def _render_walkforward_tab(result: dict | None, params: dict) -> None:
         days_in = len(nav_in)
         st.markdown(f"**📅 In-sample** · {nav_in.index[0].date()} → {nav_in.index[-1].date()} · {days_in} days")
         if not stats_in.empty:
-            st.dataframe(stats_in, use_container_width=True)
+            st.dataframe(stats_in, width="stretch")
         else:
             st.info("No strategy data.")
 
@@ -925,7 +925,7 @@ def _render_walkforward_tab(result: dict | None, params: dict) -> None:
         days_out = len(nav_out)
         st.markdown(f"**🔮 Out-of-sample** · {nav_out.index[0].date()} → {nav_out.index[-1].date()} · {days_out} days")
         if not stats_out.empty:
-            st.dataframe(stats_out, use_container_width=True)
+            st.dataframe(stats_out, width="stretch")
         else:
             st.info("No strategy data.")
 
@@ -946,13 +946,13 @@ def _render_walkforward_tab(result: dict | None, params: dict) -> None:
         annotation_text="Split",
         annotation_position="top",
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # ── benchmark comparison (informational, not split) ──
     if bench_cols:
         with st.expander("Benchmark stats (full period, not split)"):
             bench_stats = _compute_summary_stats(nav_df[bench_cols])
-            st.dataframe(bench_stats, use_container_width=True)
+            st.dataframe(bench_stats, width="stretch")
 
 
 # ──────────────────────────────────────────────

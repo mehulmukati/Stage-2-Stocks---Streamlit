@@ -169,7 +169,7 @@ from the universe count. They will appear automatically once they accumulate eno
                 "Coverage %": pct,
             }
         )
-    st.dataframe(pd.DataFrame(index_rows), hide_index=True, use_container_width=True)
+    st.dataframe(pd.DataFrame(index_rows), hide_index=True, width="stretch")
 
     st.divider()
 
@@ -185,7 +185,7 @@ from the universe count. They will appear automatically once they accumulate eno
         st.dataframe(
             missing_df,
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "Symbol": st.column_config.TextColumn("Symbol", width="small"),
                 "Index": st.column_config.TextColumn("Index", width="medium"),
