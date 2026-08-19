@@ -103,6 +103,40 @@ def _load_symbols() -> tuple[list[str], int, int]:
     return sorted(universe), len(current), len(ex_members)
 
 
+def _load_current_symbols() -> set[str]:
+    with open(os.path.join(REPO_ROOT, "constituents.json"), encoding="utf-8") as fh:
+        constituents = json.load(fh)
+    return {symbol for members in constituents.values() for symbol in members}
+
+
+def _validate_current_tradability(
+    df: pd.DataFrame,
+    max_stale_sessions: int = 3,
+    current_symbols: set[str] | None = None,
+) -> None:
+    """Fail closed when a current constituent lacks a recent positive-volume bar."""
+    dates = pd.DatetimeIndex(pd.to_datetime(df["date"]).dropna().unique()).sort_values()
+    if dates.empty:
+        raise RuntimeError("OHLCV refresh produced no trading dates")
+    cutoff_position = max(0, len(dates) - max_stale_sessions - 1)
+    cutoff = dates[cutoff_position]
+    valid = df[(pd.to_numeric(df["Close"], errors="coerce") > 0) & (pd.to_numeric(df["Volume"], errors="coerce") > 0)]
+    last_by_symbol = pd.to_datetime(valid["date"]).groupby(valid["symbol"]).max()
+    symbols_to_check = current_symbols if current_symbols is not None else _load_current_symbols()
+    stale = sorted(
+        symbol
+        for symbol in symbols_to_check
+        if symbol not in last_by_symbol.index or pd.Timestamp(last_by_symbol[symbol]) < cutoff
+    )
+    if stale:
+        sample = ", ".join(stale[:20])
+        suffix = f" (+{len(stale) - 20} more)" if len(stale) > 20 else ""
+        raise RuntimeError(
+            f"Current-constituent tradability validation failed at cutoff {cutoff.date()}: {sample}{suffix}. "
+            "Refresh constituents or register the relevant corporate action before publishing data."
+        )
+
+
 # ──────────────────────────────────────────────
 # Download helpers
 # ──────────────────────────────────────────────
@@ -369,6 +403,7 @@ def main(force_full: bool = False) -> None:
     else:
         ohlcv_df = _fetch_ohlcv_incremental(symbols, existing)
 
+    _validate_current_tradability(ohlcv_df)
     _write_atomic(ohlcv_df, OUT_OHLCV)
     _report("backtest_history.parquet", OUT_OHLCV, ohlcv_df)
 

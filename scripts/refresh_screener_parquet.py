@@ -59,6 +59,28 @@ def _load_symbols() -> list[str]:
     return sorted(symbols)
 
 
+def _validate_current_tradability(df: pd.DataFrame, symbols: list[str], max_stale_sessions: int = 3) -> None:
+    """Fail closed when a current constituent lacks a recent positive-volume bar."""
+    dates = pd.DatetimeIndex(pd.to_datetime(df["date"]).dropna().unique()).sort_values()
+    if dates.empty:
+        raise RuntimeError("Screener refresh produced no trading dates")
+    cutoff = dates[max(0, len(dates) - max_stale_sessions - 1)]
+    valid = df[(pd.to_numeric(df["Close"], errors="coerce") > 0) & (pd.to_numeric(df["Volume"], errors="coerce") > 0)]
+    last_by_symbol = pd.to_datetime(valid["date"]).groupby(valid["symbol"]).max()
+    stale = sorted(
+        symbol
+        for symbol in symbols
+        if symbol not in last_by_symbol.index or pd.Timestamp(last_by_symbol[symbol]) < cutoff
+    )
+    if stale:
+        sample = ", ".join(stale[:20])
+        suffix = f" (+{len(stale) - 20} more)" if len(stale) > 20 else ""
+        raise RuntimeError(
+            f"Current-constituent tradability validation failed at cutoff {cutoff.date()}: {sample}{suffix}. "
+            "Refresh constituents or register the relevant corporate action before publishing data."
+        )
+
+
 # ──────────────────────────────────────────────
 # Download helpers
 # ──────────────────────────────────────────────
@@ -198,12 +220,14 @@ def main(force_full: bool = False) -> None:
         fetch_from = (datetime.strptime(global_max, "%Y-%m-%d") - timedelta(days=5)).strftime("%Y-%m-%d")
         delta = _fetch_delta(symbols, from_date=fetch_from)
         if delta.empty:
-            print("▸ Nothing to update.")
-            return
-        merged = pd.concat([existing, delta], ignore_index=True)
-        merged = merged.drop_duplicates(subset=["symbol", "date"], keep="last")
-        merged = merged.sort_values(["symbol", "date"]).reset_index(drop=True)
+            print("▸ Nothing new to merge; validating existing data.")
+            merged = existing
+        else:
+            merged = pd.concat([existing, delta], ignore_index=True)
+            merged = merged.drop_duplicates(subset=["symbol", "date"], keep="last")
+            merged = merged.sort_values(["symbol", "date"]).reset_index(drop=True)
 
+    _validate_current_tradability(merged, symbols)
     print(f"▸ Writing {len(merged):,} rows to {SCREENER_OHLCV_PARQUET}…")
     _write_atomic(merged, SCREENER_OHLCV_PARQUET)
 
