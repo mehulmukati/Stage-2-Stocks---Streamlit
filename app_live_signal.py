@@ -127,6 +127,60 @@ def _to_date(val) -> date:
     return val.date() if hasattr(val, "date") else val
 
 
+def _classify_weight_changes(
+    prev_weights: dict[str, float],
+    new_weights: dict[str, float],
+    tolerance: float = 0.001,
+) -> list[dict]:
+    """Classify the complete portfolio from signed target-weight changes.
+
+    Weights are expressed in percentage points.  Changes within *tolerance*
+    are non-actionable and therefore HOLDs; positive and negative changes are
+    BUYs and SELLs respectively.  Taking the union also retains complete exits
+    (new weight zero) and new entries (previous weight zero).
+    """
+    changes = []
+    for ticker in sorted(set(prev_weights) | set(new_weights)):
+        previous = float(prev_weights.get(ticker, 0.0))
+        new = float(new_weights.get(ticker, 0.0))
+        change = new - previous
+        action = "BUY" if change > tolerance else "SELL" if change < -tolerance else "HOLD"
+        changes.append(
+            {
+                "Ticker": ticker,
+                "Previous weight (%)": previous,
+                "New weight (%)": new,
+                "Weight change (%)": change,
+                "Action": action,
+            }
+        )
+    return changes
+
+
+def _symbols_needed_for_replay(
+    indices: list[str],
+    constituents: dict[str, list[str]],
+    compositions: pd.DataFrame,
+    corporate_actions: list[dict],
+) -> set[str]:
+    """Return current members, historical members, and event successors needed for replay."""
+
+    def canonical(value) -> str:
+        return "".join(ch for ch in str(value).upper() if ch.isalnum())
+
+    index_keys = {canonical(index) for index in indices}
+    symbols = {
+        symbol for index, members in constituents.items() if canonical(index) in index_keys for symbol in members
+    }
+    if not compositions.empty:
+        historical = compositions[compositions["INDEX_NAME"].map(canonical).isin(index_keys)]
+        symbols.update(historical["SYMBOL"].dropna().astype(str))
+    for action in corporate_actions:
+        symbols.add(action["old_symbol"])
+        symbols.add(action["successor_symbol"])
+    return symbols
+
+
 # ── sidebar ──────────────────────────────────────────────────────────────────
 
 
@@ -329,11 +383,25 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         help="Minimum trading days of data a stock must have before it can be ranked. 252 ≈ 1 year.",
     )
 
-    for _lvl, _msg in check_data_freshness():
+    freshness_issues = check_data_freshness()
+    live_data_blocked = False
+    for _lvl, _msg in freshness_issues:
         (st.error if _lvl == "error" else st.warning)(_msg)
+        if _lvl == "error" or "constituents.json" in _msg or "compositions.parquet" in _msg:
+            live_data_blocked = True
+    if live_data_blocked:
+        st.error("LiveSignal is disabled until constituent and composition data are current.")
+        st.session_state["ls_run_triggered"] = False
+        st.session_state["ls_result"] = None
     st.divider()
 
-    if st.button("📡 Generate Signal", type="primary", width="stretch", key="ls_run_btn"):
+    if st.button(
+        "📡 Generate Signal",
+        type="primary",
+        width="stretch",
+        key="ls_run_btn",
+        disabled=live_data_blocked,
+    ):
         st.session_state["ls_run_triggered"] = True
         st.session_state["ls_result"] = None  # invalidate cached result
 
@@ -370,7 +438,8 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
 
 
 def _run_signal(params: dict) -> dict:
-    from backtest_engine import BacktestConfig, run_backtest
+    from backtest_engine import BacktestConfig, latest_tradable_date, run_backtest, trading_session_age
+    from corporate_actions import load_corporate_actions
     from data_backtest import (
         _load_constituents,
         load_benchmark_series,
@@ -385,14 +454,14 @@ def _run_signal(params: dict) -> dict:
         return {"error": "OHLCV data missing. Run: python scripts/refresh_backtest_parquet.py"}
 
     indices = params["indices"]
+    compositions_df = load_compositions()
     if indices:
         constituents = _load_constituents()
-        allowed = {s for idx, syms in constituents.items() if idx in indices for s in syms}
+        allowed = _symbols_needed_for_replay(indices, constituents, compositions_df, load_corporate_actions())
         symbol_data = {s: df for s, df in symbol_data_all.items() if s in allowed}
     else:
         symbol_data = symbol_data_all
 
-    compositions_df = load_compositions()
     benchmarks = load_benchmark_series()
 
     signal_date = params["signal_date"]
@@ -445,18 +514,44 @@ def _run_signal(params: dict) -> dict:
     if holdings_log:
         tickers_needed.update(holdings_log[-1].get("holdings", []))
         tickers_needed.update(t for s in holdings_log[-1].get("exits", []) for t, _ in [_parse_ticker_reason(s)])
+        for action in holdings_log[-1].get("corporate_actions", []):
+            tickers_needed.add(action["old_symbol"])
+            tickers_needed.add(action["successor_symbol"])
     if len(holdings_log) >= 2:
         tickers_needed.update(holdings_log[-2].get("holdings", []))
 
     target_date = pd.Timestamp(params["signal_date"])
     close_prices: dict[str, float] = {}
+    latest_price_dates: dict[str, str] = {}
+    tradability_status: dict[str, str] = {}
+    trading_calendar = pd.DatetimeIndex(
+        sorted({date for frame in symbol_data.values() for date in frame.index if date <= target_date})
+    )
     for ticker in tickers_needed:
         if ticker not in symbol_data:
+            tradability_status[ticker] = "NO DATA"
             continue
-        closes = symbol_data[ticker]["Close"]
+        frame = symbol_data[ticker]
+        closes = frame["Close"]
         avail = closes[closes.index <= target_date].dropna()
         if not avail.empty:
             close_prices[ticker] = float(avail.iloc[-1])
+        last_tradable = latest_tradable_date(frame, target_date)
+        if last_tradable is None:
+            tradability_status[ticker] = "NO TRADABLE PRICE"
+            continue
+        latest_price_dates[ticker] = str(last_tradable.date())
+        age = trading_session_age(last_tradable, target_date, trading_calendar)
+        tradability_status[ticker] = "TRADABLE" if age <= 3 else f"STALE ({age} sessions)"
+
+    current_event = holdings_log[-1] if holdings_log else {}
+    prior_holdings = set(holdings_log[-2].get("holdings", [])) if len(holdings_log) >= 2 else set()
+    handled_old_symbols = {action["old_symbol"] for action in current_event.get("corporate_actions", [])}
+    blocking_stale_incumbents = sorted(
+        ticker
+        for ticker in prior_holdings
+        if tradability_status.get(ticker, "NO DATA") != "TRADABLE" and ticker not in handled_old_symbols
+    )
 
     strategy_fingerprint = _strategy_fingerprint(params, ohlcv_date, src)
     return {
@@ -466,6 +561,9 @@ def _run_signal(params: dict) -> dict:
         "portfolio_reset_date": result.get("portfolio_reset_date"),
         "strategy_fingerprint": strategy_fingerprint,
         "close_prices": close_prices,
+        "latest_price_dates": latest_price_dates,
+        "tradability_status": tradability_status,
+        "blocking_stale_incumbents": blocking_stale_incumbents,
     }
 
 
@@ -504,8 +602,18 @@ def live_signal_results(params: dict) -> None:
     # Select weight snapshot for the chosen variant
     _v = params["variant"]
     weight_key = "prop_weights" if "Prop" in _v else "marg_weights" if "Marginal" in _v else "full_weights"
-    weights: dict[str, float] = current[weight_key]
-    prev_weights: dict[str, float] = previous[weight_key] if previous else {}
+    weights: dict[str, float] = dict(current[weight_key])
+    prev_weights: dict[str, float] = dict(previous[weight_key]) if previous else {}
+
+    # A merger changes the security's identity without being a market trade.
+    # Move the prior snapshot to the successor so the four tables show the
+    # executable successor sale instead of an impossible sale of the old scrip.
+    corporate_action_events = current.get("corporate_actions", [])
+    for action in corporate_action_events:
+        old_symbol = action["old_symbol"]
+        successor_symbol = action["successor_symbol"]
+        if old_symbol in prev_weights:
+            prev_weights[successor_symbol] = prev_weights.get(successor_symbol, 0.0) + prev_weights.pop(old_symbol)
 
     # Parse entries / exits (stored as "TICKER (reason)" strings)
     entries: dict[str, str] = {t: r for t, r in (_parse_ticker_reason(s) for s in current.get("entries", []))}
@@ -519,7 +627,6 @@ def live_signal_results(params: dict) -> None:
     # A fresh portfolio is an engine event, not a display override.  This is
     # essential: the all-BUY view must be the same state used by the next run.
     fresh_portfolio = reset_date == rebalance_date
-    incumbents: set[str] = holdings - set(entries)
 
     # ── param validation warning ──────────────────────────────────────────────
     if params["n"] <= params["m"]:
@@ -554,17 +661,29 @@ def live_signal_results(params: dict) -> None:
     )
     st.divider()
 
+    for action in corporate_action_events:
+        st.info(
+            f"**Corporate action applied:** {action['old_symbol']} → {action['successor_symbol']} "
+            f"effective {action['effective_date']} at {action['share_ratio']:.4g} successor shares per old share. "
+            "The identity conversion is not treated as a taxable market sale."
+        )
+
+    blocking_stale_incumbents: list[str] = result.get("blocking_stale_incumbents", [])
+    if blocking_stale_incumbents:
+        st.error(
+            "**Trade list blocked:** stale incumbent price with no registered corporate action: "
+            + ", ".join(blocking_stale_incumbents)
+            + ". Update the corporate-action registry or restore current tradable data before execution."
+        )
+
     # ── portfolio sizing helpers ──────────────────────────────────────────────
     portfolio_value: int = params.get("portfolio_value", 1_000_000)
     close_prices: dict[str, float] = result.get("close_prices", {})
+    latest_price_dates: dict[str, str] = result.get("latest_price_dates", {})
+    tradability_status: dict[str, str] = result.get("tradability_status", {})
 
     def _val(weight_pct: float) -> int:
         return round(portfolio_value * weight_pct / 100)
-
-    def _qty(ticker: str, weight_pct: float) -> int | None:
-        price = close_prices.get(ticker)
-        v = portfolio_value * weight_pct / 100
-        return int(v / price) if price and price > 0 else None
 
     def _allocate_qtys(
         buy_targets: dict[str, float],
@@ -636,18 +755,27 @@ def live_signal_results(params: dict) -> None:
     )
     pre_cap_weights: dict[str, float] = current.get(pre_cap_key, {})
 
+    # One comparison drives every table, the metrics and the CSV.  A reset
+    # deliberately has no previous portfolio, so every opening position is BUY.
+    comparison_prev_weights = {} if fresh_portfolio else prev_weights
+    portfolio_changes = _classify_weight_changes(comparison_prev_weights, weights)
+    buy_changes = [row for row in portfolio_changes if row["Action"] == "BUY"]
+    sell_changes = [row for row in portfolio_changes if row["Action"] == "SELL"]
+    hold_changes = [row for row in portfolio_changes if row["Action"] == "HOLD"]
+
     # ── metric cards ─────────────────────────────────────────────────────────
     turnover_key = (
         "prop_turnover_pct" if "Prop" in _v else "marg_turnover_pct" if "Marginal" in _v else "full_turnover_pct"
     )
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Holdings", len(holdings))
-    if fresh_portfolio:
-        c2.metric("Buy all", len(holdings), delta="fresh start")
-        c3.metric("Exits", 0)
-    else:
-        c2.metric("New entries", len(entries), delta=f"+{len(entries)}" if entries else None)
-        c3.metric("Exits", len(exits), delta=f"-{len(exits)}" if exits else None, delta_color="inverse")
+    c2.metric("Buys", len(buy_changes), delta="fresh start" if fresh_portfolio else None)
+    c3.metric(
+        "Sells",
+        len(sell_changes),
+        delta=f"-{len(sell_changes)}" if sell_changes else None,
+        delta_color="inverse",
+    )
     c4.metric("Turnover", f"{current.get(turnover_key, 0):.1f}%")
 
     # ── position cap trimming callout ─────────────────────────────────────────
@@ -670,229 +798,171 @@ def live_signal_results(params: dict) -> None:
             st.warning("\n".join(lines))
 
     # ── joint quantity allocation (pre-compute before rendering any table) ────
-    # Exits are independent of entries; allocate separately.
-    _exit_sell_targets = {t: prev_weights.get(t, weights.get(t, 0.0)) * portfolio_value / 100 for t in exits}
-    exit_qtys: dict[str, int] = _allocate_qtys({}, _exit_sell_targets, close_prices)
+    # Complete exits are sized independently so rounding can never leave an
+    # intended exit open.  All other changes share the cash-balancing allocator.
+    complete_exits = [row for row in sell_changes if row["New weight (%)"] <= 0.001]
+    partial_sells = [row for row in sell_changes if row["New weight (%)"] > 0.001]
+    exit_targets = {row["Ticker"]: abs(row["Weight change (%)"]) * portfolio_value / 100 for row in complete_exits}
+    exit_qtys: dict[str, int] = _allocate_qtys({}, exit_targets, close_prices)
+    buy_targets = {row["Ticker"]: row["Weight change (%)"] * portfolio_value / 100 for row in buy_changes}
+    partial_sell_targets = {
+        row["Ticker"]: abs(row["Weight change (%)"]) * portfolio_value / 100 for row in partial_sells
+    }
+    joint_qtys: dict[str, int] = _allocate_qtys(buy_targets, partial_sell_targets, close_prices)
 
-    # Entries and hold-trims are two sides of the same cash flow; allocate jointly.
-    _is_marginal_alloc = params["variant"] != "Full Rebalance"
-    _target_eq_alloc = round(100.0 / len(holdings), 4) if holdings else 0.0
-    _buy_targets: dict[str, float] = {t: weights.get(t, 0.0) * portfolio_value / 100 for t in entries}
-    _sell_targets: dict[str, float] = {}
-    if _is_marginal_alloc:
-        for t in incumbents:
-            _cur_w = weights.get(t, 0.0)
-            _prev_w = prev_weights.get(t, 0.0) if previous else _cur_w
-            _delta_w = _cur_w - _prev_w
-            if _delta_w < -0.001:
-                _sell_targets[t] = abs(_delta_w) * portfolio_value / 100
-    else:
-        for t in incumbents:
-            _delta_w = _target_eq_alloc - weights.get(t, 0.0)
-            if _delta_w > 0.001:
-                _buy_targets[t] = _delta_w * portfolio_value / 100
-            elif _delta_w < -0.001:
-                _sell_targets[t] = abs(_delta_w) * portfolio_value / 100
-    joint_qtys: dict[str, int] = _allocate_qtys(_buy_targets, _sell_targets, close_prices)
-
-    # ── EXITS ────────────────────────────────────────────────────────────────
+    # ── BUY ──────────────────────────────────────────────────────────────────
     st.markdown("---")
-    if exits:
-        st.markdown(f"#### Sell — exit entirely &nbsp;({len(exits)})")
-        exit_rows = []
-        for t, r in exits.items():
-            w = prev_weights.get(t, weights.get(t, 0.0))
-            exit_rows.append(
-                {
-                    "Ticker": t,
-                    "Weight held (%)": w,
-                    "Value (₹)": _val(w),
-                    "Qty to sell": exit_qtys.get(t),
-                    "Exit reason": r or "WRH",
-                }
-            )
-        exit_rows.sort(key=lambda x: -x["Weight held (%)"])
-        total_exit_w = sum(r["Weight held (%)"] for r in exit_rows)
-        total_exit_v = sum(r["Value (₹)"] for r in exit_rows)
-        exit_rows.append(
+    buy_rows = []
+    for change in buy_changes:
+        ticker = change["Ticker"]
+        buy_rows.append(
             {
-                "Ticker": "TOTAL",
-                "Weight held (%)": round(total_exit_w, 4),
-                "Value (₹)": total_exit_v,
-                "Qty to sell": None,
-                "Exit reason": "",
+                **change,
+                "Buy weight (%)": change["Weight change (%)"],
+                "Buy value (₹)": _val(change["Weight change (%)"]),
+                "Qty to buy": joint_qtys.get(ticker),
+                "Buy type": "New position" if change["Previous weight (%)"] <= 0.001 else "Incremental buy",
+                "Reason": entries.get(ticker, "") or ("Top-M" if ticker in entries else "Weight increase"),
             }
         )
-        st.dataframe(
-            pd.DataFrame(exit_rows),
-            hide_index=True,
-            width="stretch",
-            column_config={
-                "Ticker": st.column_config.TextColumn("Ticker", width="small"),
-                "Weight held (%)": st.column_config.NumberColumn("Weight held (%)", format="%.2f%%", width="small"),
-                "Value (₹)": st.column_config.NumberColumn("Value (₹)", format="₹%d", width="small"),
-                "Qty to sell": st.column_config.NumberColumn("Qty to sell", format="%d", width="small"),
-                "Exit reason": st.column_config.TextColumn("Exit reason"),
-            },
-        )
-    else:
-        st.info("No exits this week.")
-
-    # ── ENTRIES ──────────────────────────────────────────────────────────────
-    st.markdown("---")
-    if entries:
-        st.markdown(f"#### Buy — new positions &nbsp;({len(entries)})")
-        # Capital source summary
-        freed_value = portfolio_value * sum(prev_weights.get(t, 0.0) for t in exits) / 100
-        total_entry_cost = portfolio_value * sum(weights.get(t, 0.0) for t in entries) / 100
-        per_entry = total_entry_cost / len(entries)
-        if fresh_portfolio:
-            st.info(
-                f"**Fresh portfolio:** Deploying **₹{portfolio_value:,.0f}** across "
-                f"{len(holdings)} positions (**₹{per_entry:,.0f}** avg per position)"
-            )
-        elif exits and not incumbents:
-            # exits fully fund the entries, no dilution needed
-            st.info(
-                f"**Capital source:** {len(exits)} exit(s) free "
-                f"**₹{freed_value:,.0f}** → allocated across {len(entries)} "
-                f"new entr{'y' if len(entries) == 1 else 'ies'} "
-                f"(**₹{per_entry:,.0f}** each)"
-            )
-        elif exits and incumbents:
-            # partial exits + dilution of incumbents
-            dilution_value = total_entry_cost - freed_value
-            avg_dilution_pct = (dilution_value / portfolio_value * 100) / len(incumbents) if incumbents else 0
-            st.info(
-                f"**Capital source:** {len(exits)} exit(s) free **₹{freed_value:,.0f}**"
-                f" + proportional dilution of {len(incumbents)} existing holdings"
-                f" (~**₹{dilution_value:,.0f}** / avg **{avg_dilution_pct:.2f}%** each)"
-                f" → total **₹{total_entry_cost:,.0f}** for {len(entries)} new "
-                f"entr{'y' if len(entries) == 1 else 'ies'} (**₹{per_entry:,.0f}** each)"
-            )
-        else:
-            # no exits at all — purely funded by diluting incumbents
-            avg_dilution_pct = (total_entry_cost / portfolio_value * 100) / len(incumbents) if incumbents else 0
-            st.info(
-                f"**Capital source:** No exits this week. "
-                f"**₹{total_entry_cost:,.0f}** funded by proportional dilution of "
-                f"{len(incumbents)} existing holdings "
-                f"(avg **{avg_dilution_pct:.2f}%** trimmed from each → "
-                f"**₹{per_entry:,.0f}** per new entr{'y' if len(entries) == 1 else 'y'})"
-            )
-        entry_rows = []
-        for t, r in entries.items():
-            w = weights.get(t, 0.0)
-            entry_rows.append(
-                {
-                    "Ticker": t,
-                    "Target weight (%)": w,
-                    "Value (₹)": _val(w),
-                    "Qty to buy": joint_qtys.get(t),
-                    "Entry reason": r or "Top-M",
-                }
-            )
-        entry_rows.sort(key=lambda x: -x["Target weight (%)"])
-        total_entry_w = sum(r["Target weight (%)"] for r in entry_rows)
-        total_entry_v = sum(r["Value (₹)"] for r in entry_rows)
-        entry_rows.append(
-            {
-                "Ticker": "TOTAL",
-                "Target weight (%)": round(total_entry_w, 4),
-                "Value (₹)": total_entry_v,
-                "Qty to buy": None,
-                "Entry reason": "",
-            }
-        )
-        st.dataframe(
-            pd.DataFrame(entry_rows),
-            hide_index=True,
-            width="stretch",
-            column_config={
-                "Ticker": st.column_config.TextColumn("Ticker", width="small"),
-                "Target weight (%)": st.column_config.NumberColumn("Target weight (%)", format="%.2f%%", width="small"),
-                "Value (₹)": st.column_config.NumberColumn("Value (₹)", format="₹%d", width="small"),
-                "Qty to buy": st.column_config.NumberColumn("Qty to buy", format="%d", width="small"),
-                "Entry reason": st.column_config.TextColumn("Entry reason"),
-            },
-        )
-    else:
-        st.info("No new entries this week.")
-
-    # ── INCUMBENTS ───────────────────────────────────────────────────────────
-    st.markdown("---")
-    if incumbents:
-        is_full = params["variant"] == "Full Rebalance"
-        is_marginal = not is_full
-        section_title = "Rebalance to equal weight — all touched" if is_full else "Hold / partial sell"
-        st.markdown(f"#### {section_title} &nbsp;({len(incumbents)})")
-
-        target_eq = round(100.0 / len(holdings), 4) if len(holdings) > 0 else 0.0
-        inc_rows = []
-        for t in sorted(incumbents):
-            cur_w = weights.get(t, 0.0)
-            prev_w = prev_weights.get(t, 0.0) if previous else cur_w
-            row: dict = {
-                "Ticker": t,
-                "Prev weight (%)": prev_w,
-                "Current weight (%)": cur_w,
-            }
-            if is_marginal:
-                delta_w = cur_w - prev_w  # negative = need to sell
-                row["Change (%)"] = round(delta_w, 4)
-                row["Trade value (₹)"] = _val(abs(delta_w))
-                qty = joint_qtys.get(t, 0)
-                row["Qty"] = qty
-                row["Action"] = "SELL" if (delta_w < -0.001 and qty > 0) else "HOLD"
-            else:
-                row["Target weight (%)"] = target_eq
-                row["Target value (₹)"] = _val(target_eq)
-                delta_w = target_eq - cur_w
-                row["Qty delta"] = joint_qtys.get(t, 0)
-                row["Action"] = "BUY" if delta_w > 0 else "SELL"
-            inc_rows.append(row)
-
-        inc_rows.sort(key=lambda x: x.get("Change (%)", 0.0))  # SELLs (most negative) first for marginal
-        if is_full:
-            inc_rows.sort(key=lambda x: -x["Current weight (%)"])
-
-        # total row
-        total_prev_w = round(sum(r.get("Prev weight (%)", 0.0) for r in inc_rows), 4)
-        total_cur_w = round(sum(r["Current weight (%)"] for r in inc_rows), 4)
-        total_row: dict = {"Ticker": "TOTAL", "Prev weight (%)": total_prev_w, "Current weight (%)": total_cur_w}
-        if is_marginal:
-            sell_rows = [r for r in inc_rows if r.get("Action") == "SELL"]
-            total_row["Change (%)"] = round(sum(r["Change (%)"] for r in inc_rows), 4)
-            total_row["Trade value (₹)"] = sum(r["Trade value (₹)"] for r in sell_rows)
-            total_row["Qty"] = None
-            total_row["Action"] = f"{len(sell_rows)} sell(s)"
-        else:
-            total_row["Target weight (%)"] = round(sum(r.get("Target weight (%)", 0.0) for r in inc_rows), 4)
-            total_row["Target value (₹)"] = sum(r.get("Target value (₹)", 0) for r in inc_rows)
-            total_row["Qty delta"] = None
-            total_row["Action"] = ""
-        inc_rows.append(total_row)
-
-        inc_df = pd.DataFrame(inc_rows)
-        col_cfg: dict = {
+    buy_rows.sort(key=lambda row: -row["Buy weight (%)"])
+    buy_columns = [
+        "Ticker",
+        "Previous weight (%)",
+        "New weight (%)",
+        "Buy weight (%)",
+        "Buy value (₹)",
+        "Qty to buy",
+        "Buy type",
+        "Reason",
+    ]
+    st.markdown(f"#### Buy &nbsp;({len(buy_rows)})")
+    st.dataframe(
+        pd.DataFrame(buy_rows, columns=buy_columns),
+        hide_index=True,
+        width="stretch",
+        column_config={
             "Ticker": st.column_config.TextColumn("Ticker", width="small"),
-            "Prev weight (%)": st.column_config.NumberColumn("Prev weight (%)", format="%.2f%%", width="small"),
-            "Current weight (%)": st.column_config.NumberColumn("Current weight (%)", format="%.2f%%", width="small"),
-        }
-        if is_marginal:
-            col_cfg["Change (%)"] = st.column_config.NumberColumn("Change (%)", format="%.2f%%", width="small")
-            col_cfg["Trade value (₹)"] = st.column_config.NumberColumn("Trade value (₹)", format="₹%d", width="small")
-            col_cfg["Qty"] = st.column_config.NumberColumn("Qty", format="%d", width="small")
-            col_cfg["Action"] = st.column_config.TextColumn("Action", width="small")
-        else:
-            col_cfg["Target weight (%)"] = st.column_config.NumberColumn(
-                "Target weight (%)", format="%.2f%%", width="small"
-            )
-            col_cfg["Target value (₹)"] = st.column_config.NumberColumn("Target value (₹)", format="₹%d", width="small")
-            col_cfg["Qty delta"] = st.column_config.NumberColumn("Qty delta", format="%d", width="small")
-            col_cfg["Action"] = st.column_config.TextColumn("Action", width="small")
+            "Previous weight (%)": st.column_config.NumberColumn("Previous weight (%)", format="%.2f%%", width="small"),
+            "New weight (%)": st.column_config.NumberColumn("New weight (%)", format="%.2f%%", width="small"),
+            "Buy weight (%)": st.column_config.NumberColumn("Buy weight (%)", format="%.2f%%", width="small"),
+            "Buy value (₹)": st.column_config.NumberColumn("Buy value (₹)", format="₹%d", width="small"),
+            "Qty to buy": st.column_config.NumberColumn("Qty to buy", format="%d", width="small"),
+            "Buy type": st.column_config.TextColumn("Buy type", width="small"),
+            "Reason": st.column_config.TextColumn("Reason"),
+        },
+    )
 
-        st.dataframe(inc_df, hide_index=True, width="stretch", column_config=col_cfg)
+    # ── SELL ─────────────────────────────────────────────────────────────────
+    st.markdown("---")
+    sell_rows = []
+    complete_exit_tickers = {row["Ticker"] for row in complete_exits}
+    for change in sell_changes:
+        ticker = change["Ticker"]
+        is_exit = ticker in complete_exit_tickers
+        sell_weight = abs(change["Weight change (%)"])
+        sell_rows.append(
+            {
+                **change,
+                "Sell weight (%)": sell_weight,
+                "Sell value (₹)": _val(sell_weight),
+                "Qty to sell": exit_qtys.get(ticker) if is_exit else joint_qtys.get(ticker),
+                "Sell type": "Complete exit" if is_exit else "Partial sell",
+                "Reason": exits.get(ticker, "") or ("WRH" if ticker in exits else "Weight reduction"),
+            }
+        )
+    sell_rows.sort(key=lambda row: -row["Sell weight (%)"])
+    sell_columns = [
+        "Ticker",
+        "Previous weight (%)",
+        "New weight (%)",
+        "Sell weight (%)",
+        "Sell value (₹)",
+        "Qty to sell",
+        "Sell type",
+        "Reason",
+    ]
+    st.markdown(f"#### Sell &nbsp;({len(sell_rows)})")
+    st.dataframe(
+        pd.DataFrame(sell_rows, columns=sell_columns),
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "Ticker": st.column_config.TextColumn("Ticker", width="small"),
+            "Previous weight (%)": st.column_config.NumberColumn("Previous weight (%)", format="%.2f%%", width="small"),
+            "New weight (%)": st.column_config.NumberColumn("New weight (%)", format="%.2f%%", width="small"),
+            "Sell weight (%)": st.column_config.NumberColumn("Sell weight (%)", format="%.2f%%", width="small"),
+            "Sell value (₹)": st.column_config.NumberColumn("Sell value (₹)", format="₹%d", width="small"),
+            "Qty to sell": st.column_config.NumberColumn("Qty to sell", format="%d", width="small"),
+            "Sell type": st.column_config.TextColumn("Sell type", width="small"),
+            "Reason": st.column_config.TextColumn("Reason"),
+        },
+    )
+
+    # ── HOLD ─────────────────────────────────────────────────────────────────
+    st.markdown("---")
+    hold_columns = ["Ticker", "Previous weight (%)", "New weight (%)", "Weight change (%)", "Position value (₹)"]
+    hold_rows = [{**row, "Position value (₹)": _val(row["New weight (%)"])} for row in hold_changes]
+    st.markdown(f"#### Hold — no position changes &nbsp;({len(hold_rows)})")
+    st.dataframe(
+        pd.DataFrame(hold_rows, columns=hold_columns),
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "Ticker": st.column_config.TextColumn("Ticker", width="small"),
+            "Previous weight (%)": st.column_config.NumberColumn("Previous weight (%)", format="%.2f%%", width="small"),
+            "New weight (%)": st.column_config.NumberColumn("New weight (%)", format="%.2f%%", width="small"),
+            "Weight change (%)": st.column_config.NumberColumn("Weight change (%)", format="%.3f%%", width="small"),
+            "Position value (₹)": st.column_config.NumberColumn("Position value (₹)", format="₹%d", width="small"),
+        },
+    )
+
+    # ── COMPLETE PORTFOLIO ───────────────────────────────────────────────────
+    st.markdown("---")
+    complete_columns = [
+        "Ticker",
+        "Previous weight (%)",
+        "New weight (%)",
+        "Weight change (%)",
+        "Action",
+        "Latest price date",
+        "Tradability",
+    ]
+    complete_rows = [
+        {
+            **row,
+            "Latest price date": latest_price_dates.get(row["Ticker"], ""),
+            "Tradability": tradability_status.get(row["Ticker"], "NO DATA"),
+        }
+        for row in portfolio_changes
+    ]
+    if complete_rows:
+        complete_rows.append(
+            {
+                "Ticker": "TOTAL",
+                "Previous weight (%)": round(sum(row["Previous weight (%)"] for row in portfolio_changes), 4),
+                "New weight (%)": round(sum(row["New weight (%)"] for row in portfolio_changes), 4),
+                "Weight change (%)": round(sum(row["Weight change (%)"] for row in portfolio_changes), 4),
+                "Action": "",
+                "Latest price date": "",
+                "Tradability": "",
+            }
+        )
+    st.markdown(f"#### Complete portfolio &nbsp;({len(portfolio_changes)})")
+    st.dataframe(
+        pd.DataFrame(complete_rows, columns=complete_columns),
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "Ticker": st.column_config.TextColumn("Ticker", width="small"),
+            "Previous weight (%)": st.column_config.NumberColumn("Previous weight (%)", format="%.2f%%", width="small"),
+            "New weight (%)": st.column_config.NumberColumn("New weight (%)", format="%.2f%%", width="small"),
+            "Weight change (%)": st.column_config.NumberColumn("Weight change (%)", format="%.2f%%", width="small"),
+            "Action": st.column_config.TextColumn("Action", width="small"),
+            "Latest price date": st.column_config.TextColumn("Latest price date", width="small"),
+            "Tradability": st.column_config.TextColumn("Tradability", width="small"),
+        },
+    )
 
     # ── download ─────────────────────────────────────────────────────────────
     st.markdown("---")
@@ -905,52 +975,43 @@ def live_signal_results(params: dict) -> None:
         "Replay ID": result.get("strategy_fingerprint", ""),
         "Portfolio Value (₹)": portfolio_value,
     }
-    for t, r in exits.items():
-        w = prev_weights.get(t, weights.get(t, 0.0))
+    for change in portfolio_changes:
+        ticker = change["Ticker"]
+        action = change["Action"]
+        if action == "BUY":
+            qty = joint_qtys.get(ticker, "") or ""
+            reason = entries.get(ticker, "") or ("Top-M" if ticker in entries else "Weight increase")
+        elif action == "SELL":
+            qty_source = exit_qtys if ticker in complete_exit_tickers else joint_qtys
+            qty = qty_source.get(ticker, "") or ""
+            reason = exits.get(ticker, "") or ("WRH" if ticker in exits else "Weight reduction")
+        else:
+            qty = ""
+            reason = "No change"
         trade_rows.append(
             {
-                "Ticker": t,
-                "Action": "SELL",
-                "Target Weight (%)": 0.0,
-                "Value (₹)": _val(w),
-                "Qty": exit_qtys.get(t, "") or "",
-                "Reason": r or "WRH",
-                **_base,
-            }
-        )
-    for t, r in entries.items():
-        w = round(weights.get(t, 0.0), 4)
-        trade_rows.append(
-            {
-                "Ticker": t,
-                "Action": "BUY",
-                "Target Weight (%)": w,
-                "Value (₹)": _val(w),
-                "Qty": joint_qtys.get(t, "") or "",
-                "Reason": r or "Top-M",
-                **_base,
-            }
-        )
-    for t in sorted(incumbents):
-        action = "REBALANCE" if params["variant"] == "Full Rebalance" else "HOLD"
-        w = round(weights.get(t, 0.0), 4)
-        trade_rows.append(
-            {
-                "Ticker": t,
+                "Ticker": ticker,
                 "Action": action,
-                "Target Weight (%)": w,
-                "Value (₹)": _val(w),
-                "Qty": _qty(t, w) or "",
-                "Reason": "Incumbent",
+                "Previous Weight (%)": round(change["Previous weight (%)"], 4),
+                "New Weight (%)": round(change["New weight (%)"], 4),
+                "Weight Change (%)": round(change["Weight change (%)"], 4),
+                "Trade Value (₹)": _val(abs(change["Weight change (%)"])) if action != "HOLD" else 0,
+                "Qty": qty,
+                "Reason": reason,
+                "Latest Price Date": latest_price_dates.get(ticker, ""),
+                "Tradability": tradability_status.get(ticker, "NO DATA"),
                 **_base,
             }
         )
 
     trade_df = pd.DataFrame(trade_rows)
-    st.download_button(
-        "📥 Download Trade List (CSV)",
-        trade_df.to_csv(index=False).encode("utf-8"),
-        file_name=f"live_signal_{params['signal_date']}.csv",
-        mime="text/csv",
-        width="stretch",
-    )
+    if blocking_stale_incumbents:
+        st.warning("CSV download is unavailable until the stale-incumbent error is resolved.")
+    else:
+        st.download_button(
+            "📥 Download Trade List (CSV)",
+            trade_df.to_csv(index=False).encode("utf-8"),
+            file_name=f"live_signal_{params['signal_date']}.csv",
+            mime="text/csv",
+            width="stretch",
+        )
