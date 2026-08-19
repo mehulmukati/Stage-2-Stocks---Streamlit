@@ -271,7 +271,6 @@
     "AEGISVOPAK",
     "AFCONS",
     "AFFLE",
-    "AKZOINDIA",
     "ABDL",
     "ARE&M",
     "AMBER",
@@ -360,7 +359,6 @@
     "GRAVITA",
     "GESHIP",
     "GMDCLTD",
-    "GSPL",
     "HEG",
     "HBLENGINE",
     "HFCL",
@@ -384,7 +382,7 @@
     "INTELLECT",
     "IGIL",
     "IKS",
-    "JBCHEPHARM",
+    "PFOCUS",
     "JBMA",
     "JKTYRE",
     "JMFINANCIL",
@@ -505,7 +503,9 @@
     "ZENTEC",
     "ZENSARTECH",
     "ZYDUSWELL",
-    "ECLERX"
+    "ECLERX",
+    "CIEINDIA",
+    "JSWDULUX"
   ],
   "Nifty Microcap 250": [
     "ASKAUTOLTD",
@@ -545,7 +545,6 @@
     "BLACKBUCK",
     "BLUESTONE",
     "BORORENEW",
-    "CIEINDIA",
     "CMSINFO",
     "CORONA",
     "CSBBANK",
@@ -555,7 +554,6 @@
     "CELLO",
     "CENTURYPLY",
     "CERA",
-    "CIGNITITEC",
     "CRIZAC",
     "CUPID",
     "DCBBANK",
@@ -665,7 +663,7 @@
     "POWERMECH",
     "PRAJIND",
     "PRICOLLTD",
-    "PFOCUS",
+    "GRINDWELL",
     "PRSMJOHNSN",
     "PRIVISCL",
     "PRUDENT",
@@ -757,6 +755,8 @@
     "WELENT",
     "WESTLIFE",
     "YATHARTH",
-    "ZAGGLE"
+    "ZAGGLE",
+    "RATNAMANI",
+    "SANOFICONR"
   ]
 }
