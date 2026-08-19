@@ -5,6 +5,7 @@ import pandas as pd
 import backtest_engine as engine
 from backtest_engine import (
     BacktestConfig,
+    _apply_due_corporate_actions,
     _apply_weight_cap,
     _compute_fy_tax,
     _compute_summary_stats,
@@ -14,11 +15,75 @@ from backtest_engine import (
     _trading_days,
     _valid_symbols_at_date,
     get_rebalance_dates,
+    latest_tradable_date,
     rank_universe_at_date,
     run_backtest,
+    trading_session_age,
 )
 
 from .conftest import make_ohlcv
+
+
+def test_latest_tradable_date_ignores_zero_volume_placeholders():
+    df = make_ohlcv(6, start="2026-07-13")
+    df.loc[df.index[-2] :, "Volume"] = 0
+    df.loc[df.index[-2] :, "Close"] = df.loc[df.index[-3], "Close"]
+
+    assert latest_tradable_date(df, df.index[-1]) == df.index[-3]
+    assert trading_session_age(df.index[-3], df.index[-1], df.index) == 2
+
+
+def test_rank_universe_excludes_price_stale_beyond_session_limit():
+    df = make_ohlcv(10, start="2026-07-06")
+    df.loc[df.index[-4] :, "Volume"] = 0
+
+    ranked, excluded = rank_universe_at_date(
+        {"STALE": df},
+        df.index[-1],
+        "1 year",
+        valid_symbols={"STALE"},
+        min_history_days=5,
+        apply_volume_filter=False,
+        return_excluded_reasons=True,
+        max_stale_sessions=3,
+        trading_calendar=df.index,
+    )
+
+    assert ranked == []
+    assert excluded["STALE"].startswith("stale_price:")
+
+
+def test_apply_due_corporate_action_transfers_weights_and_tax_lots():
+    holdings = {"OLD", "KEEP"}
+    full = {"OLD": 0.4, "KEEP": 0.6}
+    marginal = {"OLD": 0.3, "KEEP": 0.7}
+    lots = {"OLD": [{"date": pd.Timestamp("2025-01-02"), "price": 100.0, "shares": 10.0}]}
+    actions = [
+        {
+            "event_type": "merger",
+            "old_symbol": "OLD",
+            "successor_symbol": "NEW",
+            "effective_date": "2026-07-17",
+            "last_trading_date": "2026-07-16",
+            "share_ratio": 0.5,
+        }
+    ]
+
+    applied = _apply_due_corporate_actions(
+        pd.Timestamp("2026-07-20"),
+        holdings,
+        [full, marginal],
+        [lots],
+        actions,
+    )
+
+    assert holdings == {"NEW", "KEEP"}
+    assert full == {"NEW": 0.4, "KEEP": 0.6}
+    assert marginal == {"NEW": 0.3, "KEEP": 0.7}
+    assert lots["NEW"] == [{"date": pd.Timestamp("2025-01-02"), "price": 200.0, "shares": 5.0}]
+    assert "OLD" not in lots
+    assert applied[0]["old_symbol"] == "OLD"
+
 
 # ──────────────────────────────────────────────
 # _compute_fy_tax

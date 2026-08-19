@@ -28,6 +28,7 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from config import MIN_VOLUME
+from corporate_actions import load_corporate_actions
 from momentum_engine import _calculate_avg_sharpe, precompute_metrics, score_momentum
 from stage2_engine import compute_rolling_stage2
 
@@ -53,7 +54,13 @@ class BacktestConfig:
     # Universe filtering
     min_history_days: int = 750
     apply_volume_filter: bool = True
+    max_stale_sessions: int = 3
     max_position_pct: float | None = None
+    corporate_actions: list[dict] = field(
+        default_factory=lambda: [dict(action) for action in load_corporate_actions()],
+        compare=False,
+        repr=False,
+    )
     # Portfolio mechanics
     band_rule: str = "classic"
     # Optional schedule anchor used by Live Signal.  It prevents a partial
@@ -97,6 +104,98 @@ def _close_price(all_ohlcv: dict, sym: str, date: pd.Timestamp) -> float | None:
         return float(c.at[date]) if date in c.index else None
     except (KeyError, TypeError):
         return None
+
+
+def latest_tradable_date(df: pd.DataFrame, as_of: pd.Timestamp) -> pd.Timestamp | None:
+    """Return the latest positive-volume, positive-close bar on or before *as_of*."""
+    if df.empty or "Close" not in df or "Volume" not in df:
+        return None
+    eligible = df.loc[df.index <= as_of]
+    if eligible.empty:
+        return None
+    close = pd.to_numeric(eligible["Close"], errors="coerce")
+    volume = pd.to_numeric(eligible["Volume"], errors="coerce")
+    valid = eligible.index[close.notna() & close.gt(0) & volume.notna() & volume.gt(0)]
+    return pd.Timestamp(valid[-1]).normalize() if len(valid) else None
+
+
+def trading_session_age(
+    last_tradable: pd.Timestamp,
+    as_of: pd.Timestamp,
+    trading_calendar: pd.DatetimeIndex | None = None,
+) -> int:
+    """Count expected exchange sessions after *last_tradable* through *as_of*."""
+    last_tradable = pd.Timestamp(last_tradable).normalize()
+    as_of = pd.Timestamp(as_of).normalize()
+    if as_of <= last_tradable:
+        return 0
+    if trading_calendar is not None and len(trading_calendar):
+        calendar = pd.DatetimeIndex(trading_calendar).normalize().unique()
+        return int(((calendar > last_tradable) & (calendar <= as_of)).sum())
+    return int(np.busday_count(last_tradable.date(), as_of.date()))
+
+
+def _transfer_weight_symbol(weights: dict[str, float], old_symbol: str, successor_symbol: str) -> None:
+    """Move a portfolio weight to its successor without changing total value."""
+    if old_symbol not in weights:
+        return
+    weights[successor_symbol] = weights.get(successor_symbol, 0.0) + weights.pop(old_symbol)
+
+
+def _transfer_tax_lots(
+    lots: dict[str, list[dict]],
+    old_symbol: str,
+    successor_symbol: str,
+    share_ratio: float,
+) -> None:
+    """Move FIFO lots while preserving total cost and original acquisition dates."""
+    old_lots = lots.pop(old_symbol, [])
+    if not old_lots:
+        return
+    converted = [
+        {
+            **lot,
+            "shares": float(lot["shares"]) * share_ratio,
+            "price": float(lot["price"]) / share_ratio,
+        }
+        for lot in old_lots
+    ]
+    lots.setdefault(successor_symbol, []).extend(converted)
+    lots[successor_symbol].sort(key=lambda lot: lot["date"])
+
+
+def _apply_due_corporate_actions(
+    day: pd.Timestamp,
+    current_holdings: set[str],
+    weight_trackers: list[dict[str, float]],
+    lot_trackers: list[dict[str, list[dict]]],
+    actions: list[dict],
+) -> list[dict]:
+    """Apply identity-changing events to incumbents before portfolio selection."""
+    applied: list[dict] = []
+    for action in actions:
+        old_symbol = action["old_symbol"]
+        if pd.Timestamp(action["effective_date"]) > day or old_symbol not in current_holdings:
+            continue
+        successor_symbol = action["successor_symbol"]
+        share_ratio = float(action.get("share_ratio", 1.0))
+        current_holdings.remove(old_symbol)
+        current_holdings.add(successor_symbol)
+        for tracker in weight_trackers:
+            _transfer_weight_symbol(tracker, old_symbol, successor_symbol)
+        for tracker in lot_trackers:
+            _transfer_tax_lots(tracker, old_symbol, successor_symbol, share_ratio)
+        applied.append(
+            {
+                "event_type": action["event_type"],
+                "old_symbol": old_symbol,
+                "successor_symbol": successor_symbol,
+                "effective_date": str(pd.Timestamp(action["effective_date"]).date()),
+                "last_trading_date": str(pd.Timestamp(action["last_trading_date"]).date()),
+                "share_ratio": share_ratio,
+            }
+        )
+    return applied
 
 
 def _schema_error(symbol: str, missing: set[str]) -> str:
@@ -367,6 +466,8 @@ def rank_universe_at_date(
     pos_days_3m_min: float = 0.0,
     pos_days_6m_min: float = 0.0,
     pos_days_12m_min: float = 0.0,
+    max_stale_sessions: int = 3,
+    trading_calendar: pd.DatetimeIndex | None = None,
 ) -> "list[str] | tuple[list[str], dict[str, str]]":
     """
     Score every symbol using data up to `as_of` and return symbols ordered
@@ -388,6 +489,17 @@ def rank_universe_at_date(
 
     for sym, df in all_ohlcv.items():
         if valid_symbols is not None and sym not in valid_symbols:
+            continue
+
+        last_tradable = latest_tradable_date(df, as_of)
+        if last_tradable is None:
+            if excluded_reasons is not None:
+                excluded_reasons[sym] = "no_tradable_data"
+            continue
+        stale_sessions = trading_session_age(last_tradable, as_of, trading_calendar)
+        if max_stale_sessions >= 0 and stale_sessions > max_stale_sessions:
+            if excluded_reasons is not None:
+                excluded_reasons[sym] = f"stale_price:{last_tradable.date()}:{stale_sessions}_sessions"
             continue
 
         if precomputed is not None:
@@ -967,6 +1079,8 @@ def run_backtest(
     transaction_cost_pct = config.transaction_cost_pct
     min_history_days = config.min_history_days
     apply_volume_filter = config.apply_volume_filter
+    max_stale_sessions = config.max_stale_sessions
+    corporate_actions = config.corporate_actions
     band_rule = config.band_rule
     rebalance_anchor_date = config.rebalance_anchor_date
     portfolio_start_date = config.portfolio_start_date
@@ -1091,6 +1205,7 @@ def run_backtest(
 
     nav_records: list[dict] = []
     holdings_log: list[dict] = []
+    pending_corporate_actions: list[dict] = []
     turnover_log_full: list[float] = []
     turnover_log_marg: list[float] = []
     turnover_log_prop: list[float] = []
@@ -1139,6 +1254,25 @@ def run_backtest(
                 lots_marg = {}
                 lots_prop = {}
                 nav_full = nav_marg = nav_prop = 100.0
+                pending_corporate_actions = []
+
+            # Drift the old holdings first, then change their identity.  This
+            # prevents a merger from accidentally using the successor's price
+            # history before the effective date.
+            if prev_rebalance_day is not None:
+                full_weights_prev = _drift_weights(full_weights_prev, all_ohlcv, prev_rebalance_day, day)
+                marg_weights = _drift_weights(marg_weights, all_ohlcv, prev_rebalance_day, day)
+                prop_weights = _drift_weights(prop_weights, all_ohlcv, prev_rebalance_day, day)
+
+            pending_corporate_actions.extend(
+                _apply_due_corporate_actions(
+                    day,
+                    current_holdings,
+                    [full_weights, full_weights_prev, marg_weights, prop_weights],
+                    [lots_full, lots_marg, lots_prop],
+                    corporate_actions,
+                )
+            )
 
             # Restrict universe to historically valid members on this date
             valid_syms = _valid_symbols_at_date(comp_prepared, index_names or [], day)
@@ -1163,6 +1297,8 @@ def run_backtest(
                 pos_days_3m_min=pos_days_3m_min,
                 pos_days_6m_min=pos_days_6m_min,
                 pos_days_12m_min=pos_days_12m_min,
+                max_stale_sessions=max_stale_sessions,
+                trading_calendar=trading_days,
             )
             top_m = set(ranked[:m])
             top_n = set(ranked[:n])
@@ -1205,13 +1341,6 @@ def run_backtest(
 
             size = len(new_holdings)
             holdings_sizes.append(size)
-
-            # ── drift-adjust all weight trackers to reflect price movement since last rebalance ──
-            # This must happen before weight assignment so exit weights use current market values.
-            if prev_rebalance_day is not None:
-                full_weights_prev = _drift_weights(full_weights_prev, all_ohlcv, prev_rebalance_day, day)
-                marg_weights = _drift_weights(marg_weights, all_ohlcv, prev_rebalance_day, day)
-                prop_weights = _drift_weights(prop_weights, all_ohlcv, prev_rebalance_day, day)
 
             # ── save drift-adjusted weights before assignment (needed for turnover diff + CGT) ──
             old_full_weights = dict(full_weights_prev)
@@ -1386,6 +1515,7 @@ def run_backtest(
                     "valid_universe_size": len(valid_syms) if valid_syms is not None else len(all_ohlcv),
                     "index_universe": sorted(valid_syms) if valid_syms is not None else None,
                     "excluded_reasons": _excluded_reasons,
+                    "corporate_actions": list(pending_corporate_actions),
                     "full_turnover_pct": round(traded_w_full * 100, 2),
                     "marg_turnover_pct": round(traded_w_marg * 100, 2),
                     "prop_turnover_pct": round(traded_w_prop * 100, 2),
@@ -1399,6 +1529,7 @@ def run_backtest(
                     "pre_cap_prop_weights": pre_cap_prop,
                 }
             )
+            pending_corporate_actions = []
 
         # ── daily NAV update ──
         if i > 0 and current_holdings:

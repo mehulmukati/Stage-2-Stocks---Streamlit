@@ -66,6 +66,10 @@ from rapidfuzz import fuzz, process
 # =============================================================================
 DATA_DIR = Path(__file__).parent
 PROJECT_ROOT = DATA_DIR.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from corporate_actions import load_index_replacements
 
 CSV_PATH = DATA_DIR / "index_const.csv"
 XLS_PATH = DATA_DIR / "IndexInclExcl - Upto 2020.xls"
@@ -777,7 +781,53 @@ def reconstruct(df_f1, df_f3, df_events):
 
 
 # =============================================================================
-# 8. STAGE S5 — Validate (final summary; discrepancies already collected in S4)
+# 8. CORPORATE-ACTION INDEX REPLACEMENTS
+# =============================================================================
+def apply_index_replacements(df_comp, replacements=None):
+    """Append reviewed effective-date snapshots so rebuilds retain ad-hoc index changes."""
+    if df_comp.empty:
+        return df_comp
+
+    result = df_comp.copy()
+
+    def canonical(value):
+        return "".join(ch for ch in str(value).upper() if ch.isalnum())
+
+    for replacement in replacements if replacements is not None else load_index_replacements():
+        target_key = canonical(replacement["index_name"])
+        effective_date = pd.Timestamp(replacement["effective_date"])
+        keys = result["INDEX_NAME"].map(canonical)
+        timestamps = pd.to_datetime(result["TIME_STAMP"])
+        prior = result[(keys == target_key) & (timestamps < effective_date)]
+        if prior.empty:
+            raise RuntimeError(f"No prior composition for index replacement {replacement}")
+        latest_date = pd.to_datetime(prior["TIME_STAMP"]).max()
+        snapshot = prior[pd.to_datetime(prior["TIME_STAMP"]) == latest_date].copy()
+        removed = replacement["removed_symbol"]
+        added = replacement["added_symbol"]
+        symbols = set(snapshot["SYMBOL"])
+        if removed not in symbols or added in symbols:
+            raise RuntimeError(f"Index replacement does not match prior {replacement['index_name']} snapshot")
+
+        snapshot.loc[snapshot["SYMBOL"] == removed, "SYMBOL"] = added
+        snapshot["TIME_STAMP"] = effective_date
+        if "SOURCE" in snapshot:
+            snapshot["SOURCE"] = "CORPORATE_ACTION"
+        if "ANCHOR_DATE" in snapshot:
+            snapshot["ANCHOR_DATE"] = str(effective_date.date())
+        if "CONFIDENCE" in snapshot:
+            snapshot["CONFIDENCE"] = "ground_truth"
+
+        keys = result["INDEX_NAME"].map(canonical)
+        timestamps = pd.to_datetime(result["TIME_STAMP"])
+        existing_effective = (keys == target_key) & (timestamps == effective_date)
+        result = pd.concat([result.loc[~existing_effective], snapshot], ignore_index=True)
+
+    return result.sort_values(["INDEX_NAME", "TIME_STAMP", "SYMBOL"]).reset_index(drop=True)
+
+
+# =============================================================================
+# 9. STAGE S5 — Validate (final summary; discrepancies already collected in S4)
 # =============================================================================
 def validate_and_report(df_comp, df_f1, df_f3, df_val):
     """Write validation_report.csv and print summary."""
@@ -807,7 +857,7 @@ def validate_and_report(df_comp, df_f1, df_f3, df_val):
 
 
 # =============================================================================
-# 9. STAGE S6 — Refresh constituents.json (latest composition)
+# 10. STAGE S6 — Refresh constituents.json (latest composition)
 # =============================================================================
 def refresh_constituents(df_comp):
     """Overwrite constituents.json with latest-date composition per index."""
@@ -841,7 +891,7 @@ def refresh_constituents(df_comp):
 
 
 # =============================================================================
-# 10. MAIN
+# 11. MAIN
 # =============================================================================
 def main():
     print("=" * 72)
@@ -863,6 +913,7 @@ def main():
 
     # S4: Reconstruct
     df_comp, df_evt_unified, df_val = reconstruct(df_f1, df_f3, df_events)
+    df_comp = apply_index_replacements(df_comp)
 
     # Write outputs
     df_comp = df_comp.sort_values(["INDEX_NAME", "TIME_STAMP", "SYMBOL"]).reset_index(drop=True)
