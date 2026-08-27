@@ -862,7 +862,6 @@ def _sidebar_navigation() -> str:
         active_page = "📊 Stage 2 Screener"
     st.session_state["active_screener"] = active_page
 
-    st.markdown("### 🧭 Navigation")
     for group_name, pages in _NAV_GROUPS.items():
         is_active_group = active_page in pages
         active_marker = "• " if is_active_group else ""
