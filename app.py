@@ -537,6 +537,7 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
             "Circuit_Count": "Circuit Close",
         }
     )
+    display_df.insert(0, "Rank", range(1, len(display_df) + 1))
 
     c1, c2, c3 = st.columns(3)
     universe_label = (
@@ -557,6 +558,7 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
         width="stretch",
         hide_index=True,
         column_config={
+            "Rank": st.column_config.NumberColumn("Rank", format="%d", width="small"),
             "Symbol": st.column_config.TextColumn("Symbol", width="medium"),
             "Index": st.column_config.TextColumn("Index", width="medium"),
             "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
@@ -766,6 +768,64 @@ def _sidebar_momentum() -> dict:
 # ──────────────────────────────────────────────
 
 
+_NAV_GROUPS = {
+    "Technical Analysis": (
+        "📊 Stage 2 Screener",
+        "📈 Phase Chart",
+        "☁️ Ichimoku Chart",
+    ),
+    "Momentum Factor": (
+        "🚀 Momentum Screener",
+        "⏱ Momentum Backtest",
+        "📡 Live Signal",
+    ),
+    "Info Hub": (
+        "📋 Coverage",
+        "📚 User Guide",
+    ),
+}
+
+_NAV_GROUP_ICONS = {
+    "Technical Analysis": "📊",
+    "Momentum Factor": "🚀",
+    "Info Hub": "ℹ️",
+}
+
+_NAV_LABEL_ALIASES = {
+    "📊 Stage 2": "📊 Stage 2 Screener",
+    "🚀 Momentum": "🚀 Momentum Screener",
+    "⏱ Backtest": "⏱ Momentum Backtest",
+}
+
+
+def _sidebar_navigation() -> str:
+    """Render compact grouped popover menus and return the active page label."""
+    valid_pages = {page for pages in _NAV_GROUPS.values() for page in pages}
+    saved_page = st.session_state.get("active_screener", "📊 Stage 2 Screener")
+    active_page = _NAV_LABEL_ALIASES.get(saved_page, saved_page)
+    if active_page not in valid_pages:
+        active_page = "📊 Stage 2 Screener"
+    st.session_state["active_screener"] = active_page
+
+    st.markdown("### 🧭 Navigation")
+    for group_name, pages in _NAV_GROUPS.items():
+        is_active_group = active_page in pages
+        active_marker = "• " if is_active_group else ""
+        menu_label = f"{active_marker}{_NAV_GROUP_ICONS[group_name]} {group_name}"
+        with st.popover(menu_label, width="stretch"):
+            for page in pages:
+                if st.button(
+                    page,
+                    key=f"nav_{page}",
+                    type="primary" if page == active_page else "secondary",
+                    width="stretch",
+                ):
+                    st.session_state["active_screener"] = page
+                    st.rerun()
+
+    return active_page
+
+
 def main():
     user_token = _get_user_token()
     idx_options = _load_index_options()
@@ -784,23 +844,7 @@ def main():
         )
 
     with st.sidebar:
-        st.markdown("### 🖥 Screener")
-        screener = st.radio(
-            "Screener",
-            options=[
-                "📊 Stage 2",
-                "🚀 Momentum",
-                "📋 Coverage",
-                "📈 Phase Chart",
-                "☁️ Ichimoku Chart",
-                "⏱ Backtest",
-                "📡 Live Signal",
-                "📚 User Guide",
-            ],
-            key="active_screener",
-            horizontal=True,
-            label_visibility="collapsed",
-        )
+        screener = _sidebar_navigation()
         st.divider()
 
         selected_indices = []
@@ -808,7 +852,7 @@ def main():
             "📈 Phase Chart",
             "☁️ Ichimoku Chart",
             "📚 User Guide",
-            "⏱ Backtest",
+            "⏱ Momentum Backtest",
             "📋 Coverage",
             "📡 Live Signal",
         ):
@@ -821,20 +865,24 @@ def main():
 
         if screener in ("📈 Phase Chart", "☁️ Ichimoku Chart"):
             _sidebar_phase_chart()
-        elif screener == "📊 Stage 2":
+        elif screener == "📊 Stage 2 Screener":
             rsi_toggle, show_illiquid = _sidebar_stage2()
-        elif screener == "🚀 Momentum":
+        elif screener == "🚀 Momentum Screener":
             mom_filters = _sidebar_momentum()
         elif screener == "📋 Coverage":
             pass
-        elif screener == "⏱ Backtest":
-            st.markdown("### ⏱ Backtest")
+        elif screener == "⏱ Momentum Backtest":
+            st.markdown("### ⏱ Momentum Backtest")
             bt_params = _sidebar_backtest(idx_options)
         elif screener == "📡 Live Signal":
             ls_params = _sidebar_live_signal(idx_options)
 
     # ── AUTOREFRESH — only while the active screener's job runs ──
-    _kind_for_screener = {"📊 Stage 2": "stage2", "🚀 Momentum": "momentum", "⏱ Backtest": "backtest"}
+    _kind_for_screener = {
+        "📊 Stage 2 Screener": "stage2",
+        "🚀 Momentum Screener": "momentum",
+        "⏱ Momentum Backtest": "backtest",
+    }
     _active_kind = _kind_for_screener.get(screener)
     if _active_kind:
         _active_job = registry.latest(user_token, _active_kind)
@@ -882,9 +930,9 @@ def main():
             render_ichimoku_chart(ticker, timeframe, use_log_scale, show_chikou, show_crossovers)
     elif screener == "📋 Coverage":
         coverage_results()
-    elif screener == "📊 Stage 2":
+    elif screener == "📊 Stage 2 Screener":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
-    elif screener == "⏱ Backtest":
+    elif screener == "⏱ Momentum Backtest":
         render_backtest_tabs(bt_params)
     elif screener == "📡 Live Signal":
         st.markdown('<p class="hero">📡 Live Signal</p>', unsafe_allow_html=True)
@@ -895,7 +943,7 @@ def main():
         live_signal_results(ls_params)
     elif screener == "📚 User Guide":
         render_docs()
-    else:  # 🚀 Momentum
+    else:  # 🚀 Momentum Screener
         momentum_results(selected_indices, idx_options, mom_filters)
 
 
