@@ -25,6 +25,7 @@ import charts as chart_builders
 import data as data_access
 import ichimoku_engine as ichimoku_calculations
 import ichimoku_summary as ichimoku_descriptions
+import workers as worker_functions
 from app_backtest import _sidebar_backtest, render_backtest_tabs
 from app_live_signal import _sidebar_live_signal, live_signal_results
 from config import IST, SCREENER_OHLCV_PARQUET
@@ -32,7 +33,6 @@ from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
 from ui_helpers import _get_user_token, _poll_job
-from workers import momentum_worker, stage2_worker
 
 # Streamlit reruns app.py in the same process and can retain pre-change modules.
 # Reload only when a cached module predates the current Ichimoku interfaces.
@@ -49,8 +49,12 @@ if (
     ichimoku_calculations = importlib.reload(ichimoku_calculations)
 if getattr(ichimoku_descriptions, "ICHIMOKU_SUMMARY_VERSION", 0) < 2 or not hasattr(ichimoku_descriptions, "_periods"):
     ichimoku_descriptions = importlib.reload(ichimoku_descriptions)
-if getattr(data_access, "CHART_DATA_VERSION", 0) < 2:
+_data_access_reloaded = False
+if getattr(data_access, "CHART_DATA_VERSION", 0) < 2 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 2:
     data_access = importlib.reload(data_access)
+    _data_access_reloaded = True
+if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 2:
+    worker_functions = importlib.reload(worker_functions)
 
 ichimoku_chart_figure = chart_builders.ichimoku_chart_figure
 phase_chart_figure = chart_builders.phase_chart_figure
@@ -61,6 +65,8 @@ _load_constituents = data_access._load_constituents
 _score_cache = data_access._score_cache
 fetch_chart_data = data_access.fetch_chart_data
 get_universe_coverage = data_access.get_universe_coverage
+momentum_worker = worker_functions.momentum_worker
+stage2_worker = worker_functions.stage2_worker
 
 
 @st.cache_data(ttl=3600)
@@ -237,6 +243,27 @@ def _render_source_banner(source: str, cache_date: str, count: int = None) -> No
         st.info(f"💾 Loaded from local database for **{cache_date}**{suffix}.")
     elif source == "internet":
         st.success(f"🌐 Fetched fresh EOD data and saved to database for **{cache_date}**{suffix}.")
+    elif source == "partial":
+        st.warning(
+            f"⚠️ Calculated for target **{cache_date}** using the latest price available per stock{suffix}. "
+            "Check **Price Date** before acting; this partial result was not saved as a fresh cache."
+        )
+    elif source == "fallback":
+        st.warning(f"⚠️ Fresh refresh unavailable. Showing the last verified cache from **{cache_date}**{suffix}.")
+
+
+def _invalidate_legacy_score_result(kind: str, cached: dict) -> bool:
+    """Discard pre-price-date results retained in Streamlit/process memory."""
+    frame = cached.get("df")
+    if isinstance(frame, pd.DataFrame) and "Price Date" in frame.columns:
+        return False
+    st.session_state.pop(f"{kind}_cached_result", None)
+    _score_cache[kind] = {"date": None, "data": None}
+    st.warning(
+        "⚠️ An older unverifiable screener result was cleared. "
+        "The background worker binding has been refreshed; click **Run** once more to calculate a date-safe result."
+    )
+    return True
 
 
 # ──────────────────────────────────────────────
@@ -345,6 +372,9 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
         st.info("Set filters in the sidebar and click **Run**.")
         return
 
+    if _invalidate_legacy_score_result("stage2", cached):
+        return
+
     df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
     _render_source_banner(source, cache_date)
 
@@ -369,7 +399,9 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
         return sym
 
     display_df["Symbol"] = display_df.apply(_decorate_symbol, axis=1)
-    display_df = display_df[["Symbol", "Index", "Stage", "Score", "Close", "Volume", "Avg_Vol", "Vol_Ratio", "RSI"]]
+    display_df = display_df[
+        ["Symbol", "Index", "Stage", "Score", "Close", "Price Date", "Volume", "Avg_Vol", "Vol_Ratio", "RSI"]
+    ]
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Cache Date", cache_date)
@@ -400,6 +432,7 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
             "Stage": st.column_config.TextColumn("Classification", width="medium"),
             "Score": st.column_config.NumberColumn("Score", format="%d/8", width="small"),
             "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
+            "Price Date": st.column_config.TextColumn("Price Date", width="small"),
             "Volume": st.column_config.NumberColumn("Volume", format="%,d", width="small"),
             "Avg_Vol": st.column_config.NumberColumn("Avg Vol (10d)", format="%,d", width="small"),
             "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio", format="%.2f x", width="small"),
@@ -443,6 +476,9 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
         st.info("Set filters in the sidebar and click **Run**.")
         return
 
+    if _invalidate_legacy_score_result("momentum", cached):
+        return
+
     full_df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
     _render_source_banner(source, cache_date, count=len(full_df))
 
@@ -482,6 +518,7 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
             "Symbol",
             "Index",
             "Close",
+            "Price Date",
             "Avg_Sharpe",
             "Volatility",
             "52w_High",
@@ -523,6 +560,7 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
             "Symbol": st.column_config.TextColumn("Symbol", width="medium"),
             "Index": st.column_config.TextColumn("Index", width="medium"),
             "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
+            "Price Date": st.column_config.TextColumn("Price Date", width="small"),
             "Sharpe": st.column_config.NumberColumn("Sharpe", format="%.3f", width="small"),
             "Volatility": st.column_config.NumberColumn("Volatility (%)", format="%.1f%%", width="small"),
             "52w_High": st.column_config.NumberColumn("52w High", format="%.2f", width="small"),

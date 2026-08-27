@@ -23,6 +23,8 @@ from data_backtest import (
     sync_benchmark_data,
 )
 
+SCREENER_WORKER_VERSION = 2
+
 
 def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
     df, cache_date, source = resolve_screener_data(for_momentum=False, emit=emit)

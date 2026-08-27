@@ -14,6 +14,7 @@ import streamlit as st
 import yfinance as yf
 
 CHART_DATA_VERSION = 2
+SCREENER_DATA_VERSION = 2
 
 # Default no-op emit used when callers don't need progress reporting.
 # Signature: (level: str, message: str) -> None
@@ -44,7 +45,11 @@ def load_nse_holidays() -> frozenset:
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     holidays = set()
-    for segment in data.values():
+    # Screeners and Live Signal use NSE cash equities. Do not union holidays
+    # from clearing, debt, currency, or settlement segments: those calendars
+    # can close on days when the Capital Market segment still trades.
+    segments = [data["CM"]] if isinstance(data, dict) and "CM" in data else data.values()
+    for segment in segments:
         for entry in segment:
             date_str = entry.get("tradingDate ", entry.get("tradingDate", "")).strip()
             try:
@@ -243,9 +248,12 @@ def _load_score_cache(path: str, target_date: str) -> pd.DataFrame | None:
     if not os.path.exists(path):
         return None
     df = pd.read_parquet(path)
-    if "cache_date" not in df.columns or df.empty:
+    if "cache_date" not in df.columns or "cache_schema_version" not in df.columns or df.empty:
         return None
-    match = df[df["cache_date"].astype(str) == target_date].drop(columns="cache_date")
+    valid_schema = pd.to_numeric(df["cache_schema_version"], errors="coerce") == _SCORE_CACHE_SCHEMA_VERSION
+    match = df[valid_schema & (df["cache_date"].astype(str) == target_date)].drop(
+        columns=["cache_date", "cache_schema_version"]
+    )
     return match.reset_index(drop=True) if not match.empty else None
 
 
@@ -254,14 +262,19 @@ def _load_latest_score_cache(path: str) -> tuple[pd.DataFrame | None, str | None
     if not os.path.exists(path):
         return None, None
     df = pd.read_parquet(path)
-    if "cache_date" not in df.columns or df.empty:
+    if "cache_date" not in df.columns or "cache_schema_version" not in df.columns or df.empty:
+        return None, None
+    valid_schema = pd.to_numeric(df["cache_schema_version"], errors="coerce") == _SCORE_CACHE_SCHEMA_VERSION
+    df = df[valid_schema]
+    if df.empty:
         return None, None
     latest = str(df["cache_date"].max())
-    match = df[df["cache_date"].astype(str) == latest].drop(columns="cache_date")
+    match = df[df["cache_date"].astype(str) == latest].drop(columns=["cache_date", "cache_schema_version"])
     return (match.reset_index(drop=True) if not match.empty else None), latest
 
 
 _SCORE_CACHE_MAX_DATES = 5  # rolling window kept in each score-cache parquet
+_SCORE_CACHE_SCHEMA_VERSION = 2
 
 
 def _save_score_cache(path: str, target_date: str, df: pd.DataFrame) -> None:
@@ -273,6 +286,7 @@ def _save_score_cache(path: str, target_date: str, df: pd.DataFrame) -> None:
     """
     out = df.copy()
     out["cache_date"] = target_date
+    out["cache_schema_version"] = _SCORE_CACHE_SCHEMA_VERSION
     with _parquet_write_lock:
         if os.path.exists(path):
             try:
@@ -361,6 +375,35 @@ def _parse_yfinance_download(raw: pd.DataFrame, tickers: list[str]) -> list[dict
     return records
 
 
+def _screener_refresh_health(
+    data: pd.DataFrame,
+    symbols: list[str],
+    target_date: str,
+    min_target_coverage: float = 0.95,
+) -> tuple[bool, list[str], list[str], float]:
+    """Validate freshness using only the requested current universe."""
+    requested = sorted(set(symbols))
+    if data.empty or not requested or "date" not in data or "symbol" not in data:
+        return False, requested, requested, 0.0
+
+    subset = data[data["symbol"].isin(requested)].copy()
+    if subset.empty:
+        return False, requested, requested, 0.0
+    subset["date"] = pd.to_datetime(subset["date"])
+    maxima = subset.groupby("symbol")["date"].max()
+    target = pd.Timestamp(target_date)
+    missing_target = sorted(sym for sym in requested if sym not in maxima.index or maxima[sym] < target)
+    coverage = (len(requested) - len(missing_target)) / len(requested)
+
+    holidays = load_nse_holidays()
+    cutoff = target
+    for _ in range(3):
+        previous_day = (cutoff - timedelta(days=1)).strftime("%Y-%m-%d")
+        cutoff = pd.Timestamp(get_last_valid_trading_date(previous_day, holidays))
+    stale = sorted(sym for sym in requested if sym not in maxima.index or maxima[sym] < cutoff)
+    return coverage >= min_target_coverage and not stale, missing_target, stale, coverage
+
+
 def _sync_ohlcv_to_parquet(
     all_symbols: list[str],
     target_date: str | None = None,
@@ -400,31 +443,38 @@ def _sync_ohlcv_to_parquet(
         if not is_leader:
             emit("info", "⏳ OHLCV sync already in progress — waiting…")
             latch_evt.wait(timeout=300)
-            return True
+            with _cache_lock:
+                return bool(target_date and target_date in _ohlcv_sync_attempted)
 
     try:
-        tickers = [f"{s}.NS" for s in all_symbols]
+        requested_symbols = list(dict.fromkeys(all_symbols))
+        tickers = [f"{s}.NS" for s in requested_symbols]
 
         if force_download:
             global_max = None
             conservative_min = None
             global_min = None
+            missing_history = requested_symbols
         else:
             baseline = _load_screener_baseline()
             if not baseline.empty and "date" in baseline.columns:
                 dates = pd.to_datetime(baseline["date"])
-                global_max = dates.max().strftime("%Y-%m-%d")
                 global_min = dates.min().strftime("%Y-%m-%d")
                 sym_maxes = baseline.groupby("symbol")["date"].max()
-                conservative_min = pd.to_datetime(sym_maxes).min().strftime("%Y-%m-%d")
+                requested_maxes = pd.to_datetime(sym_maxes.reindex(requested_symbols))
+                missing_history = sorted(requested_maxes[requested_maxes.isna()].index.astype(str).tolist())
+                known_maxes = requested_maxes.dropna()
+                global_max = known_maxes.max().strftime("%Y-%m-%d") if not known_maxes.empty else None
+                conservative_min = known_maxes.min().strftime("%Y-%m-%d") if not known_maxes.empty else None
             else:
                 global_max = None
                 conservative_min = None
                 global_min = None
+                missing_history = requested_symbols
 
         earliest_needed = (datetime.now(IST) - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
 
-        needs_backfill = global_min is None or global_min > earliest_needed
+        needs_backfill = global_min is None or global_min > earliest_needed or bool(missing_history)
 
         if global_max is None or needs_backfill:
             spinner_msg = f"🌐 Downloading {HISTORY_PERIOD} history for {len(tickers)} stocks" + (
@@ -432,15 +482,22 @@ def _sync_ohlcv_to_parquet(
             )
             fetch_kwargs = {"period": HISTORY_PERIOD}
         else:
-            if target_date and global_max >= target_date:
+            if target_date:
+                healthy, _missing_target, _stale, _coverage = _screener_refresh_health(
+                    baseline, requested_symbols, target_date
+                )
+            else:
+                healthy = False
+            if healthy:
                 with _cache_lock:
                     _ohlcv_sync_attempted.add(target_date)
                 return True
             assert conservative_min is not None  # set alongside global_max; both None only when global_max is None
             fetch_from = (datetime.strptime(conservative_min, "%Y-%m-%d") - timedelta(days=10)).strftime("%Y-%m-%d")
-            today = datetime.now(IST).strftime("%Y-%m-%d")
+            fetch_end_date = target_date or datetime.now(IST).strftime("%Y-%m-%d")
+            fetch_end = (datetime.strptime(fetch_end_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
             spinner_msg = f"🔄 Incremental update: fetching data since {fetch_from}…"
-            fetch_kwargs = {"start": fetch_from, "end": today}
+            fetch_kwargs = {"start": fetch_from, "end": fetch_end}
 
         try:
             emit("info", spinner_msg)
@@ -457,10 +514,16 @@ def _sync_ohlcv_to_parquet(
             return False
 
         if raw is None or raw.empty:
+            emit("error", "Yahoo Finance returned an empty response — refresh will be retried next run")
             return False
 
         records = _parse_yfinance_download(raw, tickers)
 
+        if not records:
+            emit("error", "Yahoo Finance returned no usable OHLCV rows — refresh will be retried next run")
+            return False
+
+        persisted = False
         if records:
             # Build a DataFrame from new records (uppercase column names to match baseline)
             new_df = pd.DataFrame(records)
@@ -502,6 +565,7 @@ def _sync_ohlcv_to_parquet(
                     # leaving those short per-symbol DataFrames in _ohlcv_cache would
                     # cause every stock to fail the ≥250-row scoring guard.
                     _ohlcv_cache.clear()
+                persisted = True
             except Exception as _exc:
                 emit("warning", f"⚠️ Parquet write failed — data cached in memory only: {_exc}")
                 # On write failure keep the short delta in memory as a best-effort fallback;
@@ -509,7 +573,22 @@ def _sync_ohlcv_to_parquet(
                 with _cache_lock:
                     _ohlcv_cache.update(_records_to_symbol_data(records))
 
+        if not persisted:
+            return False
+
         if target_date:
+            healthy, missing_target, stale, coverage = _screener_refresh_health(merged, requested_symbols, target_date)
+            if not healthy:
+                affected = stale or missing_target
+                sample = ", ".join(affected[:20])
+                suffix_count = len(affected) - 20
+                suffix = f" (+{suffix_count} more)" if suffix_count > 0 else ""
+                emit(
+                    "warning",
+                    f"⚠️ Yahoo refresh incomplete ({coverage:.1%} target-session coverage). "
+                    f"Missing/stale: {sample}{suffix}. It will retry on the next run.",
+                )
+                return False
             with _cache_lock:
                 _ohlcv_sync_attempted.add(target_date)
         return True
@@ -525,8 +604,9 @@ def _load_and_score(
     constituents: dict,
     for_momentum: bool,
     emit: Callable[[str, str], None] = _NOOP_EMIT,
+    as_of_date: str | None = None,
 ) -> pd.DataFrame:
-    """Load recent OHLCV from memory (preferred) or parquet, run the scorer, return sorted DataFrame."""
+    """Load OHLCV, truncate to *as_of_date*, and return scored rows."""
     # 550 calendar days ≈ 392 trading days — enough for MA200 + MA_RISING_LOOKBACK + 52w-high.
     period_days = 550
     symbol_data: dict[str, pd.DataFrame] | None = None
@@ -572,9 +652,14 @@ def _load_and_score(
     results = []
     for sym, sub in symbol_data.items():
         try:
+            if as_of_date is not None:
+                sub = sub.loc[sub.index <= pd.Timestamp(as_of_date)]
+            if sub.empty:
+                continue
             res = score_momentum(sub) if for_momentum else score_stage2(sub)
             if res:
                 res["Symbol"] = sym
+                res["Price Date"] = str(pd.Timestamp(sub.index.max()).date())
                 res["Index"] = next(
                     (idx for idx, syms in constituents.items() if sym in syms),
                     "Unknown",
@@ -768,7 +853,7 @@ def resolve_screener_data(
       Tier 1 — in-memory (same process, keyed by trading date)
       Tier 2 — local parquet file (persists across restarts; consulted on cold start only)
       Tier 3 — yfinance internet fetch (only when parquet is stale or absent)
-    Returns (df, date_str, source) where source is 'memory' | 'db' | 'internet' | 'error'.
+    Returns (df, date_str, source); partial/fallback sources are explicitly labeled.
     """
     target_key = _get_target_key()
     constituents = _load_constituents()
@@ -796,16 +881,30 @@ def resolve_screener_data(
             return cached_df, target_key, "db"
 
         # Tier 3: score fresh from OHLCV
-        _sync_ohlcv_to_parquet(all_symbols, target_date=target_key, emit=emit)
-        df = _load_and_score(constituents, for_momentum=True, emit=emit)
-        if not df.empty:
-            try:
-                _save_score_cache(MOMENTUM_CACHE_PARQUET, target_key, df)
-            except Exception as _exc:
-                emit("warning", f"⚠️ Failed to save momentum cache: {_exc}")
-            with _cache_lock:
-                _score_cache["momentum"] = {"date": target_key, "data": df}
-        return df, target_key, "internet" if not df.empty else "error"
+        synced = _sync_ohlcv_to_parquet(all_symbols, target_date=target_key, emit=emit)
+        if synced:
+            df = _load_and_score(constituents, for_momentum=True, emit=emit, as_of_date=target_key)
+            if not df.empty:
+                try:
+                    _save_score_cache(MOMENTUM_CACHE_PARQUET, target_key, df)
+                except Exception as _exc:
+                    emit("warning", f"⚠️ Failed to save momentum cache: {_exc}")
+                with _cache_lock:
+                    _score_cache["momentum"] = {"date": target_key, "data": df}
+                return df, target_key, "internet"
+
+        emit("warning", "⚠️ Showing best available prices; individual Price Date values may be earlier than target")
+        partial_df = _load_and_score(constituents, for_momentum=True, emit=emit, as_of_date=target_key)
+        if not partial_df.empty:
+            return partial_df, target_key, "partial"
+
+        try:
+            fallback_df, fallback_date = _load_latest_score_cache(MOMENTUM_CACHE_PARQUET)
+        except Exception:
+            fallback_df, fallback_date = None, None
+        if fallback_df is not None:
+            return fallback_df, fallback_date, "fallback"
+        return pd.DataFrame(), target_key, "error"
 
     else:
         with _cache_lock:
@@ -828,7 +927,7 @@ def resolve_screener_data(
         # Tier 3: sync OHLCV, score, persist
         synced = _sync_ohlcv_to_parquet(all_symbols, target_date=target_key, emit=emit)
         if synced:
-            df = _load_and_score(constituents, for_momentum=False, emit=emit)
+            df = _load_and_score(constituents, for_momentum=False, emit=emit, as_of_date=target_key)
             if not df.empty:
                 try:
                     _save_score_cache(STAGE2_CACHE_PARQUET, target_key, df)
@@ -838,12 +937,17 @@ def resolve_screener_data(
                     _score_cache["stage2"] = {"date": target_key, "data": df}
                 return df, target_key, "internet"
 
+        emit("warning", "⚠️ Showing best available prices; individual Price Date values may be earlier than target")
+        partial_df = _load_and_score(constituents, for_momentum=False, emit=emit, as_of_date=target_key)
+        if not partial_df.empty:
+            return partial_df, target_key, "partial"
+
         # Last resort: serve the most recent available score cache from parquet
         try:
             fallback_df, fallback_date = _load_latest_score_cache(STAGE2_CACHE_PARQUET)
         except Exception:
             fallback_df, fallback_date = None, None
         if fallback_df is not None:
-            return fallback_df, fallback_date, "db"
+            return fallback_df, fallback_date, "fallback"
 
         return pd.DataFrame(), target_key, "error"
