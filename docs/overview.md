@@ -6,13 +6,14 @@ It implements Stan Weinstein's stage analysis methodology from *Secrets for Prof
 
 ---
 
-## Four tools in one
+## Five tools in one
 
 | Tool | What it does |
 |---|---|
 | **Stage 2 Screener** | Scores each stock 0–8 on Weinstein criteria and surfaces those in a Stage 2 uptrend |
 | **Momentum Screener** | Ranks the universe by risk-adjusted return (Sharpe ratio) across multiple time periods |
 | **Phase Chart** | Plots rolling Stage 2 score and MA bands for any single stock over its full history |
+| **Ichimoku Chart** | Plots candlesticks, colored forward clouds, and classified Tenkan–Kijun crossovers with a deterministic summary |
 | **Backtest** | Simulates a momentum portfolio (top-M entry, top-N exit band) across 6 simultaneous strategies (Classic/Displacement × Full/Marginal/Prop) with realistic costs and survivorship-bias mitigations |
 
 ---

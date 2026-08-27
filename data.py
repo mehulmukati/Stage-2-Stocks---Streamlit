@@ -13,6 +13,8 @@ import pandas as pd
 import streamlit as st
 import yfinance as yf
 
+CHART_DATA_VERSION = 2
+
 # Default no-op emit used when callers don't need progress reporting.
 # Signature: (level: str, message: str) -> None
 # Levels: "info" | "warning" | "error" | "success"
@@ -654,33 +656,70 @@ def get_universe_coverage() -> dict:
 _VALID_TICKER_RE = re.compile(r"^[A-Z0-9&\-]{1,20}$")
 
 
-@st.cache_data(ttl=3600)
-def fetch_chart_data(symbol: str) -> pd.DataFrame:
-    """Return OHLCV DataFrame for one symbol (up to 2y); tries parquet baseline, falls back to yfinance."""
+def _normalise_chart_download(raw: pd.DataFrame) -> pd.DataFrame:
+    """Normalize a single-symbol yfinance response to the chart OHLCV shape."""
+    if raw is None or raw.empty:
+        return pd.DataFrame()
+    clean = raw.copy()
+    clean.columns = [column[0] if isinstance(column, tuple) else column for column in clean.columns]
+    available = [column for column in ("Open", "High", "Low", "Close", "Volume") if column in clean.columns]
+    if not {"High", "Low", "Close"}.issubset(available):
+        return pd.DataFrame()
+    clean = clean[available]
+    clean.index = pd.DatetimeIndex(pd.to_datetime(clean.index, errors="coerce"))
+    clean = clean[~clean.index.isna()]
+    if clean.index.tz is not None:
+        clean.index = clean.index.tz_localize(None)
+    return clean.sort_index()
+
+
+def _fetch_chart_data_for_target(symbol: str, target_date: str) -> pd.DataFrame:
+    """Return one symbol through target_date, fetching only its missing tail."""
     clean = symbol.strip().upper()
     if not _VALID_TICKER_RE.match(clean):
         logging.warning("fetch_chart_data: invalid ticker format %r — returning empty", symbol)
         return pd.DataFrame()
+
+    stored = pd.DataFrame()
     baseline = _load_screener_baseline()
     if not baseline.empty:
         sym_data = baseline[baseline["symbol"] == clean]
         if not sym_data.empty:
             sub = sym_data.drop(columns="symbol").copy()
             sub["date"] = pd.to_datetime(sub["date"])
-            return sub.set_index("date").sort_index()
+            stored = sub.set_index("date").sort_index()
+            if stored.index[-1].strftime("%Y-%m-%d") >= target_date:
+                return stored
+
     try:
-        raw = yf.download(
-            f"{clean}.NS",
-            period="2y",
-            auto_adjust=True,
-            progress=False,
-        )
-        if not raw.empty:
-            raw.columns = [c[0] if isinstance(c, tuple) else c for c in raw.columns]
-            return raw[["Open", "High", "Low", "Close", "Volume"]]
-    except Exception:
-        pass
-    return pd.DataFrame()
+        if stored.empty:
+            fetch_kwargs = {"period": "2y"}
+        else:
+            fetch_start = (stored.index[-1] - timedelta(days=5)).strftime("%Y-%m-%d")
+            # yfinance treats end as exclusive, so include the target session explicitly.
+            fetch_end = (datetime.strptime(target_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+            fetch_kwargs = {"start": fetch_start, "end": fetch_end}
+        raw = yf.download(f"{clean}.NS", auto_adjust=True, progress=False, **fetch_kwargs)
+        downloaded = _normalise_chart_download(raw)
+        if downloaded.empty:
+            return stored
+        if stored.empty:
+            return downloaded
+        merged = pd.concat([stored, downloaded]).sort_index()
+        return merged[~merged.index.duplicated(keep="last")]
+    except Exception as exc:
+        logging.warning("Chart delta fetch failed for %s: %s", clean, exc)
+        return stored
+
+
+@st.cache_data(ttl=3600)
+def _fetch_chart_data_cached(symbol: str, target_date: str) -> pd.DataFrame:
+    return _fetch_chart_data_for_target(symbol, target_date)
+
+
+def fetch_chart_data(symbol: str) -> pd.DataFrame:
+    """Return chart OHLCV through the latest completed NSE session."""
+    return _fetch_chart_data_cached(symbol, _get_target_key())
 
 
 # ──────────────────────────────────────────────

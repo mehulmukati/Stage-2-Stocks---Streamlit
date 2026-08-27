@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-Screener app — Stage 2, Momentum, Phase Chart. Parquet-backed, no external DB.
+Screener app — Stage 2, Momentum, Phase Chart, Ichimoku. Parquet-backed, no external DB.
 Backtest lives in app_backtest.py (separate parquet baseline).
 """
 
 import difflib
+import importlib
+import inspect
 import json
 import logging
 import os
@@ -19,21 +21,56 @@ from streamlit_autorefresh import st_autorefresh
 warnings.filterwarnings("ignore", category=FutureWarning)
 logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
+import charts as chart_builders
+import data as data_access
+import ichimoku_engine as ichimoku_calculations
+import ichimoku_summary as ichimoku_descriptions
 from app_backtest import _sidebar_backtest, render_backtest_tabs
 from app_live_signal import _sidebar_live_signal, live_signal_results
-from charts import phase_chart_figure
 from config import IST, SCREENER_OHLCV_PARQUET
-from data import _load_constituents, _score_cache, fetch_chart_data, get_universe_coverage
 from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
 from ui_helpers import _get_user_token, _poll_job
 from workers import momentum_worker, stage2_worker
 
+# Streamlit reruns app.py in the same process and can retain pre-change modules.
+# Reload only when a cached module predates the current Ichimoku interfaces.
+if (
+    getattr(chart_builders, "ICHIMOKU_CHART_VERSION", 0) < 7
+    or not hasattr(chart_builders, "ichimoku_chart_figure")
+    or "timeframe" not in inspect.signature(chart_builders.ichimoku_chart_figure).parameters
+):
+    chart_builders = importlib.reload(chart_builders)
+if (
+    getattr(ichimoku_calculations, "ICHIMOKU_ENGINE_VERSION", 0) < 2
+    or "timeframe" not in inspect.signature(ichimoku_calculations.compute_ichimoku).parameters
+):
+    ichimoku_calculations = importlib.reload(ichimoku_calculations)
+if getattr(ichimoku_descriptions, "ICHIMOKU_SUMMARY_VERSION", 0) < 2 or not hasattr(ichimoku_descriptions, "_periods"):
+    ichimoku_descriptions = importlib.reload(ichimoku_descriptions)
+if getattr(data_access, "CHART_DATA_VERSION", 0) < 2:
+    data_access = importlib.reload(data_access)
+
+ichimoku_chart_figure = chart_builders.ichimoku_chart_figure
+phase_chart_figure = chart_builders.phase_chart_figure
+_compute_ichimoku = ichimoku_calculations.compute_ichimoku
+latest_ichimoku_state = ichimoku_calculations.latest_ichimoku_state
+build_ichimoku_summary = ichimoku_descriptions.build_ichimoku_summary
+_load_constituents = data_access._load_constituents
+_score_cache = data_access._score_cache
+fetch_chart_data = data_access.fetch_chart_data
+get_universe_coverage = data_access.get_universe_coverage
+
 
 @st.cache_data(ttl=3600)
 def compute_rolling_stage2(df):
     return _compute_rolling_stage2(df)
+
+
+@st.cache_data(ttl=3600)
+def compute_ichimoku(df, timeframe: str = "Daily"):
+    return _compute_ichimoku(df, timeframe=timeframe)
 
 
 _state_lock = threading.RLock()
@@ -103,6 +140,88 @@ def render_phase_chart(ticker: str, use_log_scale: bool = True):
         "🟠 Early/Weak Stage 2 (2–3) · "
         "White = Not Stage 2 (<2)"
     )
+
+
+def render_ichimoku_chart(
+    ticker: str,
+    timeframe: str = "Daily",
+    use_log_scale: bool = True,
+    show_chikou: bool = True,
+    show_crossovers: bool = True,
+):
+    with st.spinner(f"Loading data for {ticker}…"):
+        df = fetch_chart_data(ticker)
+
+    if df.empty:
+        closest_match = get_closest_symbol_match(ticker)
+        if closest_match:
+            st.info(f"ℹ️ Symbol **{ticker}** not found. Did you mean **{closest_match}**? Loading that instead...")
+            with st.spinner(f"Loading data for {closest_match}…"):
+                df = fetch_chart_data(closest_match)
+            if df.empty:
+                st.error(f"❌ No data available for **{closest_match}**. Please try another symbol.")
+                return
+            ticker = closest_match
+        else:
+            st.error(f"❌ Symbol **{ticker}** not found in available stocks. Please check the symbol and try again.")
+            return
+
+    try:
+        calculated = compute_ichimoku(df, timeframe)
+    except ValueError as exc:
+        st.error(f"❌ Ichimoku chart cannot be calculated: {exc}")
+        return
+    if calculated.empty:
+        st.warning(f"No valid OHLC history is available for **{ticker}**.")
+        return
+
+    state = latest_ichimoku_state(calculated, ticker, timeframe)
+    metric_cols = [*st.columns(2), *st.columns(2)]
+    price_position = str(state.get("price_position", "unavailable")).title()
+    distance = state.get("distance_pct")
+    distance_text = f"{float(distance):.1f}% from cloud" if distance is not None else None
+    price_help_parts = [f"Cloud visible at the latest price date: {state.get('displayed_cloud', 'unavailable')}."]
+    if distance_text:
+        price_help_parts.append(distance_text + ".")
+    metric_cols[0].metric(
+        "Price vs Cloud",
+        price_position,
+        help=" ".join(price_help_parts),
+    )
+    metric_cols[1].metric("TK Alignment", str(state.get("tk_relation", "unavailable")).title())
+    latest_cross = state.get("last_cross")
+    if latest_cross:
+        cross_value = str(latest_cross["strength"]).title()
+        age = int(latest_cross["age_sessions"])
+        if timeframe == "Weekly":
+            age_unit = "week" if age == 1 else "weeks"
+        else:
+            age_unit = "trading session" if age == 1 else "trading sessions"
+        cross_help = f"{str(latest_cross['direction']).title()} crossover · {age} {age_unit} ago."
+    else:
+        cross_value, cross_help = "None", "No valid cross in loaded history."
+    metric_cols[2].metric("Latest TK Cross", cross_value, help=cross_help)
+    metric_cols[3].metric("Projected Cloud", str(state.get("projected_cloud", "unavailable")).title())
+
+    st.plotly_chart(
+        ichimoku_chart_figure(
+            calculated,
+            ticker,
+            use_log_scale,
+            show_chikou,
+            show_crossovers,
+            timeframe,
+        ),
+        width="stretch",
+    )
+    st.caption(
+        "🟢 Bullish cloud (Senkou A ≥ B) · 🔴 Bearish cloud (Senkou A < B) · "
+        "▲ Bullish Tenkan–Kijun cross · ▼ Bearish Tenkan–Kijun cross"
+    )
+    with st.container(border=True):
+        st.markdown("#### Ichimoku Summary")
+        st.write(build_ichimoku_summary(state))
+        st.caption("Rule-based technical description; not investment advice.")
 
 
 # ──────────────────────────────────────────────
@@ -444,6 +563,7 @@ _DOCS_SECTIONS = {
     "Stage 2 Screener": "stage2_screener.md",
     "Momentum Screener": "momentum_screener.md",
     "Phase Chart": "phase_chart.md",
+    "Ichimoku Chart": "ichimoku_chart.md",
     "Data & Methodology": "data_methodology.md",
     "Momentum Backtest": "../backtest_user_guide.md",
 }
@@ -634,6 +754,7 @@ def main():
                 "🚀 Momentum",
                 "📋 Coverage",
                 "📈 Phase Chart",
+                "☁️ Ichimoku Chart",
                 "⏱ Backtest",
                 "📡 Live Signal",
                 "📚 User Guide",
@@ -645,7 +766,14 @@ def main():
         st.divider()
 
         selected_indices = []
-        if screener not in ("📈 Phase Chart", "📚 User Guide", "⏱ Backtest", "📋 Coverage", "📡 Live Signal"):
+        if screener not in (
+            "📈 Phase Chart",
+            "☁️ Ichimoku Chart",
+            "📚 User Guide",
+            "⏱ Backtest",
+            "📋 Coverage",
+            "📡 Live Signal",
+        ):
             st.markdown("### 📦 Indices")
             cols = st.columns(2)
             for i, idx in enumerate(idx_options):
@@ -653,7 +781,7 @@ def main():
                     selected_indices.append(idx)
             st.caption("💡 N50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market")
 
-        if screener == "📈 Phase Chart":
+        if screener in ("📈 Phase Chart", "☁️ Ichimoku Chart"):
             _sidebar_phase_chart()
         elif screener == "📊 Stage 2":
             rsi_toggle, show_illiquid = _sidebar_stage2()
@@ -691,6 +819,29 @@ def main():
             with col2:
                 use_log_scale = st.toggle("Log Y-Axis", value=True, key="chart_log_scale_toggle")
             render_phase_chart(ticker, use_log_scale=use_log_scale)
+    elif screener == "☁️ Ichimoku Chart":
+        ticker = st.session_state.get("chart_ticker", "")
+        if not ticker:
+            st.markdown('<p class="hero">☁️ Ichimoku Cloud Chart</p>', unsafe_allow_html=True)
+            st.markdown(
+                '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>', unsafe_allow_html=True
+            )
+        else:
+            control_cols = [*st.columns(2), *st.columns(2)]
+            with control_cols[0]:
+                timeframe = st.selectbox(
+                    "Timeframe",
+                    options=["Daily", "Weekly"],
+                    index=0,
+                    key="ichimoku_timeframe_select",
+                )
+            with control_cols[1]:
+                use_log_scale = st.toggle("Log Y-Axis", value=True, key="ichimoku_log_scale_toggle")
+            with control_cols[2]:
+                show_chikou = st.toggle("Show Chikou", value=True, key="ichimoku_chikou_toggle")
+            with control_cols[3]:
+                show_crossovers = st.toggle("Show Crosses", value=True, key="ichimoku_crosses_toggle")
+            render_ichimoku_chart(ticker, timeframe, use_log_scale, show_chikou, show_crossovers)
     elif screener == "📋 Coverage":
         coverage_results()
     elif screener == "📊 Stage 2":

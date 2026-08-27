@@ -11,6 +11,7 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 | Stage 2 Breakout screener (Weinstein 8-point score) | 6 simultaneous portfolio strategies (Classic/Displacement × Full/Marginal/Prop) |
 | Momentum screener (Sharpe ratio ranking) | Entry/exit band parameters (M / N) |
 | Phase Chart — rolling Stage 2 score for any ticker | Weekly / biweekly / monthly / quarterly / half-yearly rebalance |
+| Ichimoku Chart — colored clouds, TK crossovers, and deterministic stock summary | |
 | Fuzzy ticker search (typo-tolerant) | Anti-survivorship-bias via historical constituents |
 | CSV export | Transaction-cost drag modelling |
 | Live auto-refresh during background data sync | NAV chart, rolling CAGR, and drawdown metrics |
@@ -33,6 +34,8 @@ app_backtest.py         ← Backtester (Parquet-backed, no external DB required)
 
 Shared modules:
   stage2_engine.py      Weinstein 8-point scoring, RSI, consolidation detection
+  ichimoku_engine.py    Ichimoku lines, projected cloud, and TK crossover classification
+  ichimoku_summary.py   Deterministic rule-based single-stock descriptions
   momentum_engine.py    Sharpe ratio computation across multiple lookback periods
   backtest_engine.py    Portfolio rebalancing logic, NAV tracking
   charts.py             Plotly chart builders
@@ -92,7 +95,7 @@ The backtester baseline (`data/backtest_history.parquet`) is committed to the re
 streamlit run app.py
 ```
 
-Opens at `http://localhost:8501`. Use the sidebar to select the universe (Nifty 50 / 100 / 250 / 500 / Smallcap 250) and switch between the Stage 2 Screener, Momentum Screener, and Phase Chart views.
+Opens at `http://localhost:8501`. Use the sidebar to select the universe and switch between the Stage 2 Screener, Momentum Screener, Phase Chart, and Ichimoku Chart views.
 
 ### Backtester
 
@@ -113,6 +116,8 @@ Opens at `http://localhost:8501` (or `8502` if the screener is already running).
 **Momentum Screener** ranks the universe by annualised Sharpe ratio averaged across 3 / 6 / 9 / 12-month lookback periods. Filters include minimum return, proximity to 52-week high, circuit-breaker frequency, and DMA crossover status.
 
 **Phase Chart** plots a stock's daily rolling Stage 2 score as a colour-coded background band over its full price history. Supports log / linear Y-axis and fuzzy ticker lookup.
+
+**Ichimoku Chart** plots adjusted daily or weekly candlesticks with the standard 9/26/52 Ichimoku system, green/red clouds projected 26 bars forward, classified Tenkan–Kijun crossovers, and a concise deterministic technical summary.
 
 Data flows: `data/screener_ohlcv.parquet` → score cache (`data/stage2_cache.parquet` / `data/momentum_cache.parquet`) → in-memory cache → yfinance delta fetch.
 
