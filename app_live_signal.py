@@ -448,21 +448,68 @@ def _run_signal(params: dict) -> dict:
         sync_benchmark_data,
     )
 
-    sync_benchmark_data()
-    symbol_data_all, ohlcv_date, src = load_ohlcv_for_backtest(emit=lambda _l, _m: None)
-    if not symbol_data_all:
-        return {"error": "OHLCV data missing. Run: python scripts/refresh_backtest_parquet.py"}
-
     indices = params["indices"]
     compositions_df = load_compositions()
+    constituents = _load_constituents()
+    selected_indices = indices or list(constituents)
+    required_current_symbols = sorted(
+        {symbol for index_name, symbols in constituents.items() if index_name in selected_indices for symbol in symbols}
+    )
+
+    refresh_messages: list[dict[str, str]] = []
+
+    def _capture_refresh(level: str, message: str) -> None:
+        refresh_messages.append({"level": level, "message": message})
+
+    sync_benchmark_data()
+    ohlcv = load_ohlcv_for_backtest(emit=_capture_refresh, required_symbols=required_current_symbols)
+    freshness = {
+        "target_date": ohlcv.target_date,
+        "actual_latest_date": ohlcv.actual_latest_date,
+        "max_price_date": ohlcv.max_price_date,
+        "status": ohlcv.refresh_status,
+        "source": ohlcv.source,
+        "attempts": ohlcv.attempts,
+        "updated_count": len(ohlcv.updated_symbols),
+        "required_count": len(ohlcv.requested_symbols),
+        "missing_target_symbols": ohlcv.missing_target_symbols,
+        "stale_symbols": ohlcv.stale_symbols,
+        "error": ohlcv.refresh_error,
+        "messages": refresh_messages,
+    }
+    benchmark_load = load_benchmark_series(with_status=True)
+    freshness["benchmark"] = {
+        "target_date": benchmark_load.target_date,
+        "actual_latest_date": benchmark_load.actual_latest_date,
+        "status": benchmark_load.status,
+        "missing": benchmark_load.missing,
+    }
+    symbol_data_all = ohlcv.symbol_data
+    if not symbol_data_all:
+        return {
+            "error": "OHLCV data is missing. Run: python scripts/refresh_backtest_parquet.py",
+            "data_freshness": freshness,
+        }
+    if not ohlcv.is_fresh:
+        available = ohlcv.actual_latest_date or ohlcv.max_price_date or "unknown"
+        reason = ohlcv.refresh_error or "one or more required target-session prices are unavailable"
+        return {
+            "error": (
+                f"Signal not generated. Required data targets {ohlcv.target_date}, but verified coverage is "
+                f"through {available}. {reason}. Click Generate Signal to retry."
+            ),
+            "data_freshness": freshness,
+        }
+
+    ohlcv_date = ohlcv.actual_latest_date
+    src = ohlcv.source
     if indices:
-        constituents = _load_constituents()
         allowed = _symbols_needed_for_replay(indices, constituents, compositions_df, load_corporate_actions())
         symbol_data = {s: df for s, df in symbol_data_all.items() if s in allowed}
     else:
         symbol_data = symbol_data_all
 
-    benchmarks = load_benchmark_series()
+    benchmarks = benchmark_load.series
 
     signal_date = params["signal_date"]
     start_date = _simulation_start_date(params)
@@ -564,6 +611,7 @@ def _run_signal(params: dict) -> dict:
         "latest_price_dates": latest_price_dates,
         "tradability_status": tradability_status,
         "blocking_stale_incumbents": blocking_stale_incumbents,
+        "data_freshness": freshness,
     }
 
 
@@ -581,6 +629,48 @@ def live_signal_results(params: dict) -> None:
         with st.spinner("Loading data and computing signal… (~15 seconds)"):
             result = _run_signal(params)
         st.session_state["ls_result"] = result
+
+    freshness = result.get("data_freshness", {})
+    if freshness:
+        target = freshness.get("target_date", "—")
+        verified = freshness.get("actual_latest_date") or "not fully covered"
+        max_available = freshness.get("max_price_date") or "—"
+        status = str(freshness.get("status", "unknown")).replace("_", " ").title()
+        attempts = int(freshness.get("attempts", 0) or 0)
+        required_count = int(freshness.get("required_count", 0) or 0)
+        updated_count = int(freshness.get("updated_count", 0) or 0)
+        summary = (
+            f"**Price data:** target NSE session **{target}** · verified universe through **{verified}** "
+            f"· newest individual price **{max_available}** · status **{status}** "
+            f"· source **{freshness.get('source', '—')}**"
+        )
+        if attempts:
+            summary += f" · Yahoo attempts **{attempts}** · symbols updated **{updated_count}/{required_count}**"
+        (st.success if freshness.get("status") in {"fresh", "not_needed", "memory"} else st.warning)(summary)
+
+        missing = freshness.get("missing_target_symbols", [])
+        stale = freshness.get("stale_symbols", [])
+        if missing:
+            sample = ", ".join(missing[:20])
+            suffix = f" (+{len(missing) - 20} more)" if len(missing) > 20 else ""
+            st.warning(f"Required symbols without a target-session price: {sample}{suffix}")
+        if stale:
+            sample = ", ".join(stale[:20])
+            suffix = f" (+{len(stale) - 20} more)" if len(stale) > 20 else ""
+            st.error(f"Required symbols more than three NSE sessions stale: {sample}{suffix}")
+        if freshness.get("error"):
+            st.caption(f"Refresh detail: {freshness['error']}")
+        benchmark = freshness.get("benchmark", {})
+        if benchmark:
+            benchmark_as_of = benchmark.get("actual_latest_date") or "not fully covered"
+            benchmark_missing = benchmark.get("missing", [])
+            benchmark_text = (
+                f"Benchmark data through **{benchmark_as_of}** · status "
+                f"**{str(benchmark.get('status', 'unknown')).replace('_', ' ').title()}**"
+            )
+            if benchmark_missing:
+                benchmark_text += " · missing: " + ", ".join(benchmark_missing)
+            st.caption(benchmark_text)
 
     if "error" in result:
         st.error(f"Signal failed: {result['error']}")
