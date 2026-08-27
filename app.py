@@ -37,9 +37,10 @@ from ui_helpers import _get_user_token, _poll_job
 # Streamlit reruns app.py in the same process and can retain pre-change modules.
 # Reload only when a cached module predates the current Ichimoku interfaces.
 if (
-    getattr(chart_builders, "ICHIMOKU_CHART_VERSION", 0) < 7
+    getattr(chart_builders, "ICHIMOKU_CHART_VERSION", 0) < 8
     or not hasattr(chart_builders, "ichimoku_chart_figure")
     or "timeframe" not in inspect.signature(chart_builders.ichimoku_chart_figure).parameters
+    or "theme" not in inspect.signature(chart_builders.ichimoku_chart_figure).parameters
 ):
     chart_builders = importlib.reload(chart_builders)
 if (
@@ -182,6 +183,9 @@ def render_ichimoku_chart(
         return
 
     state = latest_ichimoku_state(calculated, ticker, timeframe)
+    streamlit_context = getattr(st, "context", None)
+    streamlit_theme = getattr(streamlit_context, "theme", None)
+    theme_type = getattr(streamlit_theme, "type", "dark")
     metric_cols = [*st.columns(2), *st.columns(2)]
     price_position = str(state.get("price_position", "unavailable")).title()
     distance = state.get("distance_pct")
@@ -217,6 +221,7 @@ def render_ichimoku_chart(
             show_chikou,
             show_crossovers,
             timeframe,
+            theme=theme_type,
         ),
         width="stretch",
     )

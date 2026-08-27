@@ -4,7 +4,7 @@ import plotly.colors
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-ICHIMOKU_CHART_VERSION = 7
+ICHIMOKU_CHART_VERSION = 8
 
 PHASE_COLORS = {
     "Strong Stage 2": "rgba(34, 197, 94, 0.25)",
@@ -61,6 +61,41 @@ _ICHI_BG = "#0f1420"
 _ICHI_GRID = "rgba(148, 163, 184, 0.10)"
 _ICHI_TEXT = "#8b93a7"
 
+_ICHIMOKU_THEMES = {
+    "dark": {
+        "background": _ICHI_BG,
+        "grid": _ICHI_GRID,
+        "text": _ICHI_TEXT,
+        "title": "#d7dce5",
+        "spike": "#667085",
+        "hover_background": "#1a2030",
+        "hover_border": "#3b4355",
+        "hover_text": "#e5e7eb",
+        "increasing_line": "#f8fafc",
+        "increasing_fill": "#f8fafc",
+        "marker_outline": _ICHI_BG,
+        "chikou": ICHIMOKU_COLORS["chikou"],
+        "bullish_cross": ICHIMOKU_COLORS["bullish_cross"],
+        "bearish_cross": ICHIMOKU_COLORS["bearish_cross"],
+    },
+    "light": {
+        "background": "#ffffff",
+        "grid": "rgba(15, 23, 42, 0.10)",
+        "text": "#475569",
+        "title": "#0f172a",
+        "spike": "#94a3b8",
+        "hover_background": "#ffffff",
+        "hover_border": "#cbd5e1",
+        "hover_text": "#0f172a",
+        "increasing_line": "#0f766e",
+        "increasing_fill": "#ccfbf1",
+        "marker_outline": "#ffffff",
+        "chikou": "#a16207",
+        "bullish_cross": "#16a34a",
+        "bearish_cross": "#c026d3",
+    },
+}
+
 
 def _cloud_fill_segments(data) -> list[tuple[str, list, list[float], list[float]]]:
     """Split a cloud at interpolated Span A/B twists so fill colors meet cleanly."""
@@ -114,11 +149,14 @@ def ichimoku_chart_figure(
     show_chikou: bool = True,
     show_crossovers: bool = True,
     timeframe: str = "Daily",
+    theme: str = "dark",
 ) -> go.Figure:
     """Build a candlestick Ichimoku chart with regime-colored cloud segments."""
     fig = go.Figure()
     if data.empty:
         return fig
+
+    chart_theme = _ICHIMOKU_THEMES["light" if theme.strip().lower() == "light" else "dark"]
 
     observed = data[(~data["IsFuture"].astype(bool)) & data["Close"].notna()]
     latest = observed.iloc[-1]
@@ -164,8 +202,8 @@ def ichimoku_chart_figure(
             low=observed["Low"],
             close=observed["Close"],
             name=ticker,
-            increasing_line_color="#f8fafc",
-            increasing_fillcolor="#f8fafc",
+            increasing_line_color=chart_theme["increasing_line"],
+            increasing_fillcolor=chart_theme["increasing_fill"],
             decreasing_line_color="#c026d3",
             decreasing_fillcolor="#a21caf",
             whiskerwidth=0.35,
@@ -209,15 +247,15 @@ def ichimoku_chart_figure(
                 x=observed.index,
                 y=observed["Chikou"],
                 name="Chikou (−26)",
-                line=dict(color=ICHIMOKU_COLORS["chikou"], width=1.2),
+                line=dict(color=chart_theme["chikou"], width=1.2),
                 opacity=0.9,
             )
         )
 
     if show_crossovers:
         for direction, symbol, color, multiplier in (
-            ("bullish", "triangle-up", ICHIMOKU_COLORS["bullish_cross"], 0.985),
-            ("bearish", "triangle-down", ICHIMOKU_COLORS["bearish_cross"], 1.015),
+            ("bullish", "triangle-up", chart_theme["bullish_cross"], 0.985),
+            ("bearish", "triangle-down", chart_theme["bearish_cross"], 1.015),
         ):
             crosses = observed[observed["TK_Cross"] == direction]
             anchor = crosses["Low"] if direction == "bullish" else crosses["High"]
@@ -227,7 +265,12 @@ def ichimoku_chart_figure(
                     y=anchor * multiplier,
                     name=f"{direction.title()} TK cross",
                     mode="markers",
-                    marker=dict(symbol=symbol, size=9, color=color, line=dict(color=_ICHI_BG, width=1.0)),
+                    marker=dict(
+                        symbol=symbol,
+                        size=9,
+                        color=color,
+                        line=dict(color=chart_theme["marker_outline"], width=1.0),
+                    ),
                     customdata=list(zip(crosses["Cross_Strength"], crosses["Close"])),
                     hovertemplate=(
                         f"<b>{direction.title()} TK cross</b><br>"
@@ -307,18 +350,18 @@ def ichimoku_chart_figure(
             xanchor="left",
             y=0.98,
             yanchor="top",
-            font=dict(size=14, color="#d7dce5"),
+            font=dict(size=14, color=chart_theme["title"]),
         ),
         yaxis=dict(
             type="log" if use_log_scale else "linear",
             showgrid=True,
-            gridcolor=_ICHI_GRID,
+            gridcolor=chart_theme["grid"],
             zeroline=False,
             side="right",
-            tickfont=dict(color=_ICHI_TEXT, size=11),
+            tickfont=dict(color=chart_theme["text"], size=11),
             title=None,
             showspikes=True,
-            spikecolor="#667085",
+            spikecolor=chart_theme["spike"],
             spikedash="dot",
             spikethickness=1,
         ),
@@ -327,9 +370,9 @@ def ichimoku_chart_figure(
             range=[default_start, data.index[-1]],
             rangeslider=dict(visible=False),
             rangebreaks=[dict(bounds=["sat", "mon"])],
-            tickfont=dict(color=_ICHI_TEXT, size=11),
+            tickfont=dict(color=chart_theme["text"], size=11),
             showspikes=True,
-            spikecolor="#667085",
+            spikecolor=chart_theme["spike"],
             spikedash="dot",
             spikethickness=1,
             spikesnap="cursor",
@@ -342,16 +385,20 @@ def ichimoku_chart_figure(
             xanchor="left",
             y=-0.12,
             yanchor="top",
-            font=dict(color=_ICHI_TEXT, size=10),
+            font=dict(color=chart_theme["text"], size=10),
             bgcolor="rgba(0,0,0,0)",
             itemclick="toggle",
             itemdoubleclick="toggleothers",
         ),
         hovermode="x",
-        hoverlabel=dict(bgcolor="#1a2030", bordercolor="#3b4355", font=dict(color="#e5e7eb")),
-        plot_bgcolor=_ICHI_BG,
-        paper_bgcolor=_ICHI_BG,
-        font=dict(color=_ICHI_TEXT),
+        hoverlabel=dict(
+            bgcolor=chart_theme["hover_background"],
+            bordercolor=chart_theme["hover_border"],
+            font=dict(color=chart_theme["hover_text"]),
+        ),
+        plot_bgcolor=chart_theme["background"],
+        paper_bgcolor=chart_theme["background"],
+        font=dict(color=chart_theme["text"]),
     )
     return fig
 

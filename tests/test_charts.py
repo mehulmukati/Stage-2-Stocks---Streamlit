@@ -33,6 +33,22 @@ def test_chart_controls_hide_optional_traces_and_set_linear_axis():
     assert figure.layout.yaxis.type == "linear"
 
 
+def test_ichimoku_chart_colors_follow_light_and_dark_themes():
+    data = compute_ichimoku(make_ohlcv(100, close=[100.0 + i * 0.2 for i in range(100)]))
+    dark_figure = ichimoku_chart_figure(data, "TEST", theme="dark")
+    light_figure = ichimoku_chart_figure(data, "TEST", theme="light")
+
+    assert dark_figure.layout.plot_bgcolor == "#0f1420"
+    assert dark_figure.layout.font.color == "#8b93a7"
+    assert light_figure.layout.plot_bgcolor == "#ffffff"
+    assert light_figure.layout.font.color == "#475569"
+
+    dark_candles = next(trace for trace in dark_figure.data if trace.type == "candlestick")
+    light_candles = next(trace for trace in light_figure.data if trace.type == "candlestick")
+    assert dark_candles.increasing.line.color == "#f8fafc"
+    assert light_candles.increasing.line.color == "#0f766e"
+
+
 def test_daily_chart_defaults_to_roughly_one_year_of_price_history():
     data = compute_ichimoku(make_ohlcv(400, close=[100.0 + i * 0.2 for i in range(400)]))
     figure = ichimoku_chart_figure(data, "TEST")
