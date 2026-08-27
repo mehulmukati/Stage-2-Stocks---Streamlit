@@ -235,6 +235,61 @@ def render_ichimoku_chart(
 # ──────────────────────────────────────────────
 
 
+def render_ichimoku_basics() -> None:
+    """Explain the standard Ichimoku components and a simple reading order."""
+    st.markdown("## Ichimoku basics")
+    st.write(
+        "Ichimoku Kinko Hyo combines trend, momentum, and support/resistance in one view. "
+        "This chart uses the standard **9 / 26 / 52** settings."
+    )
+
+    st.markdown("### The five lines")
+    st.markdown(
+        """
+| Component | What it measures | A simple way to read it |
+|---|---|---|
+| **Tenkan-sen (Conversion Line)** | Midpoint of the 9-period high and low | Fast measure of price balance |
+| **Kijun-sen (Base Line)** | Midpoint of the 26-period high and low | Slower trend reference |
+| **Senkou Span A** | Midpoint of Tenkan and Kijun, plotted 26 periods ahead | Faster edge of the cloud |
+| **Senkou Span B** | Midpoint of the 52-period high and low, plotted 26 periods ahead | Slower edge of the cloud |
+| **Chikou Span (Lagging Span)** | Current close plotted 26 periods back | Compares current and earlier price action |
+"""
+    )
+
+    st.markdown("### Read the chart in three steps")
+    step_cols = st.columns(3)
+    with step_cols[0]:
+        with st.container(border=True):
+            st.markdown("#### 1. Price vs cloud")
+            st.write(
+                "Price above the cloud suggests a bullish trend, below it suggests a bearish trend, "
+                "and inside it suggests transition or uncertainty."
+            )
+    with step_cols[1]:
+        with st.container(border=True):
+            st.markdown("#### 2. Tenkan vs Kijun")
+            st.write(
+                "Tenkan above Kijun is bullish alignment; Tenkan below Kijun is bearish alignment. "
+                "A cross marks a change in that alignment."
+            )
+    with step_cols[2]:
+        with st.container(border=True):
+            st.markdown("#### 3. Forward cloud")
+            st.write(
+                "A green cloud has Span A above Span B; a red cloud has Span A below Span B. "
+                "A thicker cloud can act as a broader support or resistance zone."
+            )
+
+    st.info(
+        "The cloud is shifted forward to show potential support and resistance structure. "
+        "It is an indicator projection—not a prediction of future price."
+    )
+    st.caption(
+        "Signals are generally more meaningful when price, Tenkan/Kijun alignment, and the cloud agree. "
+        "Use Ichimoku with risk management and other analysis; it is not investment advice."
+    )
+
+
 def _render_source_banner(source: str, cache_date: str, count: int = None) -> None:
     suffix = f" · {count} stocks" if count is not None else ""
     if source == "memory":
@@ -907,27 +962,32 @@ def main():
             render_phase_chart(ticker, use_log_scale=use_log_scale)
     elif screener == "☁️ Ichimoku Chart":
         ticker = st.session_state.get("chart_ticker", "")
-        if not ticker:
-            st.markdown('<p class="hero">☁️ Ichimoku Cloud Chart</p>', unsafe_allow_html=True)
-            st.markdown(
-                '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>', unsafe_allow_html=True
-            )
-        else:
-            control_cols = [*st.columns(2), *st.columns(2)]
-            with control_cols[0]:
-                timeframe = st.selectbox(
-                    "Timeframe",
-                    options=["Daily", "Weekly"],
-                    index=0,
-                    key="ichimoku_timeframe_select",
+        chart_tab, basics_tab = st.tabs(["☁️ Chart", "📖 Basics"])
+        with chart_tab:
+            if not ticker:
+                st.markdown('<p class="hero">☁️ Ichimoku Cloud Chart</p>', unsafe_allow_html=True)
+                st.markdown(
+                    '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>',
+                    unsafe_allow_html=True,
                 )
-            with control_cols[1]:
-                use_log_scale = st.toggle("Log Y-Axis", value=True, key="ichimoku_log_scale_toggle")
-            with control_cols[2]:
-                show_chikou = st.toggle("Show Chikou", value=True, key="ichimoku_chikou_toggle")
-            with control_cols[3]:
-                show_crossovers = st.toggle("Show Crosses", value=True, key="ichimoku_crosses_toggle")
-            render_ichimoku_chart(ticker, timeframe, use_log_scale, show_chikou, show_crossovers)
+            else:
+                control_cols = [*st.columns(2), *st.columns(2)]
+                with control_cols[0]:
+                    timeframe = st.selectbox(
+                        "Timeframe",
+                        options=["Daily", "Weekly"],
+                        index=0,
+                        key="ichimoku_timeframe_select",
+                    )
+                with control_cols[1]:
+                    use_log_scale = st.toggle("Log Y-Axis", value=True, key="ichimoku_log_scale_toggle")
+                with control_cols[2]:
+                    show_chikou = st.toggle("Show Chikou", value=True, key="ichimoku_chikou_toggle")
+                with control_cols[3]:
+                    show_crossovers = st.toggle("Show Crosses", value=True, key="ichimoku_crosses_toggle")
+                render_ichimoku_chart(ticker, timeframe, use_log_scale, show_chikou, show_crossovers)
+        with basics_tab:
+            render_ichimoku_basics()
     elif screener == "📋 Coverage":
         coverage_results()
     elif screener == "📊 Stage 2 Screener":
