@@ -29,6 +29,14 @@ import workers as worker_functions
 from app_backtest import _sidebar_backtest, render_backtest_tabs
 from app_live_signal import _sidebar_live_signal, live_signal_results
 from config import IST, SCREENER_OHLCV_PARQUET
+from ichimoku_tutorial import (
+    diagram_svg,
+    extract_cheat_sheet,
+    load_tutorial,
+    strip_cheat_sheet,
+    strip_title,
+    tutorial_parts,
+)
 from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
@@ -240,59 +248,55 @@ def render_ichimoku_chart(
 # ──────────────────────────────────────────────
 
 
-def render_ichimoku_basics() -> None:
-    """Explain the standard Ichimoku components and a simple reading order."""
-    st.markdown("## Ichimoku basics")
-    st.write(
-        "Ichimoku Kinko Hyo combines trend, momentum, and support/resistance in one view. "
-        "This chart uses the standard **9 / 26 / 52** settings."
-    )
+def _streamlit_theme_type() -> str:
+    streamlit_context = getattr(st, "context", None)
+    streamlit_theme = getattr(streamlit_context, "theme", None)
+    return str(getattr(streamlit_theme, "type", "dark"))
 
-    st.markdown("### The five lines")
+
+def render_ichimoku_tutorial() -> None:
+    """Render the comprehensive Markdown tutorial with themed SVG diagrams."""
+    try:
+        tutorial = strip_cheat_sheet(strip_title(load_tutorial()))
+    except OSError:
+        st.error("The Ichimoku tutorial file could not be loaded.")
+        return
+
+    st.markdown('<p class="hero">📖 Ichimoku Tutorial</p>', unsafe_allow_html=True)
     st.markdown(
-        """
-| Component | What it measures | A simple way to read it |
-|---|---|---|
-| **Tenkan-sen (Conversion Line)** | Midpoint of the 9-period high and low | Fast measure of price balance |
-| **Kijun-sen (Base Line)** | Midpoint of the 26-period high and low | Slower trend reference |
-| **Senkou Span A** | Midpoint of Tenkan and Kijun, plotted 26 periods ahead | Faster edge of the cloud |
-| **Senkou Span B** | Midpoint of the 52-period high and low, plotted 26 periods ahead | Slower edge of the cloud |
-| **Chikou Span (Lagging Span)** | Current close plotted 26 periods back | Compares current and earlier price action |
-"""
+        '<p class="sub-hero">A practical guide to equilibrium, trend structure, entries, and risk</p>',
+        unsafe_allow_html=True,
     )
+    theme = _streamlit_theme_type()
+    for kind, content in tutorial_parts(tutorial):
+        if kind == "diagram":
+            st.markdown(diagram_svg(content, theme), unsafe_allow_html=True)
+        else:
+            st.markdown(content)
 
-    st.markdown("### Read the chart in three steps")
-    step_cols = st.columns(3)
-    with step_cols[0]:
-        with st.container(border=True):
-            st.markdown("#### 1. Price vs cloud")
-            st.write(
-                "Price above the cloud suggests a bullish trend, below it suggests a bearish trend, "
-                "and inside it suggests transition or uncertainty."
-            )
-    with step_cols[1]:
-        with st.container(border=True):
-            st.markdown("#### 2. Tenkan vs Kijun")
-            st.write(
-                "Tenkan above Kijun is bullish alignment; Tenkan below Kijun is bearish alignment. "
-                "A cross marks a change in that alignment."
-            )
-    with step_cols[2]:
-        with st.container(border=True):
-            st.markdown("#### 3. Forward cloud")
-            st.write(
-                "A green cloud has Span A above Span B; a red cloud has Span A below Span B. "
-                "A thicker cloud can act as a broader support or resistance zone."
-            )
 
-    st.info(
-        "The cloud is shifted forward to show potential support and resistance structure. "
-        "It is an indicator projection—not a prediction of future price."
+def render_ichimoku_cheat_sheet() -> None:
+    """Render section 69 of the tutorial as a compact, scannable reference."""
+    try:
+        groups = extract_cheat_sheet(load_tutorial())
+    except OSError:
+        groups = []
+    if not groups:
+        st.error("The Ichimoku cheat sheet could not be loaded.")
+        return
+
+    st.markdown('<p class="hero">⚡ Ichimoku Cheat Sheet</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">The 9 / 26 / 52 system at a glance</p>',
+        unsafe_allow_html=True,
     )
-    st.caption(
-        "Signals are generally more meaningful when price, Tenkan/Kijun alignment, and the cloud agree. "
-        "Use Ichimoku with risk management and other analysis; it is not investment advice."
-    )
+    columns = st.columns(2)
+    for index, (heading, entries) in enumerate(groups):
+        with columns[index % 2]:
+            with st.container(border=True):
+                st.markdown(f"#### {heading}")
+                st.markdown("\n".join(f"- {entry}" for entry in entries))
+    st.caption("Condensed from the comprehensive tutorial · Educational material, not investment advice.")
 
 
 def _render_source_banner(source: str, cache_date: str, count: int = None) -> None:
@@ -966,7 +970,7 @@ def main():
             render_phase_chart(ticker, use_log_scale=use_log_scale)
     elif screener == "☁️ Ichimoku Chart":
         ticker = st.session_state.get("chart_ticker", "")
-        chart_tab, basics_tab = st.tabs(["☁️ Chart", "📖 Basics"])
+        chart_tab, tutorial_tab, cheat_sheet_tab = st.tabs(["☁️ Chart", "📖 Tutorial", "⚡ Cheat Sheet"])
         with chart_tab:
             if not ticker:
                 st.markdown('<p class="hero">☁️ Ichimoku Cloud Chart</p>', unsafe_allow_html=True)
@@ -990,8 +994,10 @@ def main():
                 with control_cols[3]:
                     show_crossovers = st.toggle("Show Crosses", value=True, key="ichimoku_crosses_toggle")
                 render_ichimoku_chart(ticker, timeframe, use_log_scale, show_chikou, show_crossovers)
-        with basics_tab:
-            render_ichimoku_basics()
+        with tutorial_tab:
+            render_ichimoku_tutorial()
+        with cheat_sheet_tab:
+            render_ichimoku_cheat_sheet()
     elif screener == "📋 Coverage":
         coverage_results()
     elif screener == "📊 Stage 2 Screener":
