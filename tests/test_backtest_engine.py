@@ -729,3 +729,98 @@ def test_live_portfolio_replay_uses_prior_snapshot_without_warmup_holdings(monke
     assert june_17["holdings"] == june_17_replayed["holdings"] == ["A", "B"]
     assert june_17["marg_weights"] == june_17_replayed["marg_weights"]
     assert june_17["prop_weights"] == june_17_replayed["prop_weights"]
+
+
+def test_live_event_exposes_drifted_pretrade_weights_and_zero_incumbent_turnover(monkeypatch):
+    dates = pd.bdate_range("2025-05-01", periods=40)
+    all_ohlcv = {
+        "A": make_ohlcv(40, close=[100.0 + i for i in range(40)], start=str(dates[0].date())),
+        "B": make_ohlcv(40, close=[100.0] * 40, start=str(dates[0].date())),
+    }
+    monkeypatch.setattr(engine, "rank_universe_at_date", lambda *_args, **_kwargs: (["A", "B"], {}))
+    cfg = BacktestConfig(
+        m=2,
+        n=3,
+        rebalance_freq="weekly",
+        sort_method="3 months",
+        start_date=str(dates[0].date()),
+        end_date=str(dates[-1].date()),
+        rebalance_anchor_date=str(dates[-1].date()),
+        portfolio_start_date=str(dates[15].date()),
+        transaction_cost_pct=0.0,
+        min_history_days=1,
+        apply_volume_filter=False,
+    )
+
+    result = run_backtest(all_ohlcv, {}, cfg)
+    live_events = [event for event in result["holdings_log"] if event["date"] >= result["portfolio_reset_date"]]
+    later = live_events[-1]
+
+    assert later["pre_rebalance_marg_weights"] == later["marg_weights"]
+    assert later["marg_turnover_pct"] == 0.0
+
+
+def test_live_ranking_can_use_signal_date_close(monkeypatch):
+    dates = pd.bdate_range("2025-05-01", periods=30)
+    all_ohlcv = {"A": make_ohlcv(30, start=str(dates[0].date()))}
+    ranked_as_of = []
+
+    def capture_rank(_ohlcv, as_of, *_args, **_kwargs):
+        ranked_as_of.append(pd.Timestamp(as_of))
+        return ["A"], {}
+
+    monkeypatch.setattr(engine, "rank_universe_at_date", capture_rank)
+    cfg = BacktestConfig(
+        m=1,
+        n=2,
+        rebalance_freq="weekly",
+        sort_method="3 months",
+        start_date=str(dates[0].date()),
+        end_date=str(dates[-1].date()),
+        rebalance_anchor_date=str(dates[-1].date()),
+        rank_on_rebalance_date=True,
+        transaction_cost_pct=0.0,
+        min_history_days=1,
+        apply_volume_filter=False,
+    )
+
+    result = run_backtest(all_ohlcv, {}, cfg)
+
+    assert ranked_as_of[-1] == result["holdings_log"][-1]["date"]
+    assert result["holdings_log"][-1]["rank_as_of"] == result["holdings_log"][-1]["date"]
+
+
+def test_rebalance_day_return_uses_pretrade_holdings(monkeypatch):
+    dates = pd.bdate_range("2025-01-01", periods=30)
+    event_days = get_rebalance_dates(dates, "weekly")
+    switch_day = event_days[2]
+    a_close = [100.0] * 30
+    a_close[dates.get_loc(switch_day)] = 110.0
+    for i in range(dates.get_loc(switch_day) + 1, 30):
+        a_close[i] = 110.0
+    all_ohlcv = {
+        "A": make_ohlcv(30, close=a_close, start=str(dates[0].date())),
+        "B": make_ohlcv(30, close=[100.0] * 30, start=str(dates[0].date())),
+    }
+
+    def changing_rank(_ohlcv, as_of, *_args, **_kwargs):
+        return (["B"] if pd.Timestamp(as_of) >= dates[dates.get_loc(switch_day) - 1] else ["A"]), {}
+
+    monkeypatch.setattr(engine, "rank_universe_at_date", changing_rank)
+    cfg = BacktestConfig(
+        m=1,
+        n=2,
+        rebalance_freq="weekly",
+        sort_method="3 months",
+        start_date=str(dates[0].date()),
+        end_date=str(dates[-1].date()),
+        transaction_cost_pct=0.0,
+        min_history_days=1,
+        apply_volume_filter=False,
+    )
+
+    result = run_backtest(all_ohlcv, {}, cfg)
+    nav = result["nav"]["Marginal Rebalance"]
+
+    assert math.isclose(nav.loc[switch_day] / nav.loc[dates[dates.get_loc(switch_day) - 1]], 1.10)
+    assert result["holdings_log"][2]["holdings"] == ["B"]

@@ -70,6 +70,10 @@ class BacktestConfig:
     # scratch at the last rebalance before this execution/start date; data
     # before it is retained only to calculate ranks and indicators.
     portfolio_start_date: str | None = None
+    # Live Signal is generated after the selected session closes and executes
+    # on the following NSE session, so using that session's close for ranking
+    # is not look-ahead. Ordinary backtests keep the T-1 ranking convention.
+    rank_on_rebalance_date: bool = False
     # Cost model
     transaction_cost_pct: float = 0.001
     brokerage_per_sale: float = 0.0
@@ -1196,7 +1200,6 @@ def run_backtest(
     marg_weights: dict[str, float] = {}  # slot-fill marginal weights
     prop_weights: dict[str, float] = {}  # prop-fill marginal weights
     current_holdings: set[str] = set()
-    prev_rebalance_day = None  # needed to drift-adjust weights at each rebalance
     prev_stage2_scores: dict[str, float] = {}  # Stage 2 score at previous rebalance per holding
 
     nav_full = 100.0
@@ -1238,6 +1241,34 @@ def run_backtest(
     cf_lt_prop: list[tuple[int, float]] = []
 
     for i, day in enumerate(trading_days):
+        # Earn the current session's close-to-close return with the portfolio
+        # that was actually held at the previous close. Then drift weights to
+        # the current close. A rebalance at this close therefore affects only
+        # subsequent sessions, avoiding use of post-trade holdings for a return
+        # that occurred before the trade.
+        if i > 0 and current_holdings:
+            port_ret_full = 0.0
+            port_ret_marg = 0.0
+            port_ret_prop = 0.0
+            if day in returns_matrix.index:
+                row = returns_matrix.loc[day]
+                for sym in current_holdings:
+                    r = row.get(sym, np.nan)
+                    if pd.isna(r):
+                        continue
+                    port_ret_full += full_weights.get(sym, 0.0) * r
+                    port_ret_marg += marg_weights.get(sym, 0.0) * r
+                    port_ret_prop += prop_weights.get(sym, 0.0) * r
+            nav_full *= 1 + port_ret_full
+            nav_marg *= 1 + port_ret_marg
+            nav_prop *= 1 + port_ret_prop
+
+            previous_day = trading_days[i - 1]
+            full_weights = _drift_weights(full_weights, all_ohlcv, previous_day, day)
+            full_weights_prev = dict(full_weights)
+            marg_weights = _drift_weights(marg_weights, all_ohlcv, previous_day, day)
+            prop_weights = _drift_weights(prop_weights, all_ohlcv, previous_day, day)
+
         # ── rebalance ──
         if day in rebalance_set:
             if portfolio_reset_day is not None and day == portfolio_reset_day:
@@ -1248,21 +1279,12 @@ def run_backtest(
                 marg_weights = {}
                 prop_weights = {}
                 current_holdings = set()
-                prev_rebalance_day = None
                 prev_stage2_scores.clear()
                 lots_full = {}
                 lots_marg = {}
                 lots_prop = {}
                 nav_full = nav_marg = nav_prop = 100.0
                 pending_corporate_actions = []
-
-            # Drift the old holdings first, then change their identity.  This
-            # prevents a merger from accidentally using the successor's price
-            # history before the effective date.
-            if prev_rebalance_day is not None:
-                full_weights_prev = _drift_weights(full_weights_prev, all_ohlcv, prev_rebalance_day, day)
-                marg_weights = _drift_weights(marg_weights, all_ohlcv, prev_rebalance_day, day)
-                prop_weights = _drift_weights(prop_weights, all_ohlcv, prev_rebalance_day, day)
 
             pending_corporate_actions.extend(
                 _apply_due_corporate_actions(
@@ -1277,9 +1299,10 @@ def run_backtest(
             # Restrict universe to historically valid members on this date
             valid_syms = _valid_symbols_at_date(comp_prepared, index_names or [], day)
 
-            # Rank using previous day's data to avoid look-ahead bias:
-            # rankings are determined from T-1 close; trades execute at T close.
-            rank_as_of = trading_days[i - 1] if i > 0 else day
+            # Ordinary backtests rank on T-1 for a T-close rebalance. Live
+            # Signal ranks after the signal session closes and executes on the
+            # following NSE session, so it may use T without look-ahead.
+            rank_as_of = day if config.rank_on_rebalance_date else (trading_days[i - 1] if i > 0 else day)
             ranked, _excluded_reasons = rank_universe_at_date(
                 all_ohlcv,
                 rank_as_of,
@@ -1503,7 +1526,6 @@ def run_backtest(
             marg_weights = new_slot
             prop_weights = new_prop
 
-            prev_rebalance_day = day
             current_holdings = new_holdings
             holdings_log.append(
                 {
@@ -1519,6 +1541,14 @@ def run_backtest(
                     "full_turnover_pct": round(traded_w_full * 100, 2),
                     "marg_turnover_pct": round(traded_w_marg * 100, 2),
                     "prop_turnover_pct": round(traded_w_prop * 100, 2),
+                    # Actual portfolio state immediately before this event,
+                    # after price drift and corporate-action identity changes.
+                    # Live Signal must compare against these weights rather
+                    # than the prior event's target snapshot.
+                    "pre_rebalance_full_weights": {s: round(w * 100, 4) for s, w in old_full_weights.items()},
+                    "pre_rebalance_marg_weights": {s: round(w * 100, 4) for s, w in old_marg_weights.items()},
+                    "pre_rebalance_prop_weights": {s: round(w * 100, 4) for s, w in old_prop_weights.items()},
+                    "rank_as_of": rank_as_of,
                     # snapshot weights at this rebalance (copies — originals rebind next iteration)
                     "full_weights": {s: round(w * 100, 4) for s, w in full_weights.items()},
                     "marg_weights": {s: round(w * 100, 4) for s, w in marg_weights.items()},
@@ -1530,24 +1560,6 @@ def run_backtest(
                 }
             )
             pending_corporate_actions = []
-
-        # ── daily NAV update ──
-        if i > 0 and current_holdings:
-            port_ret_full = 0.0
-            port_ret_marg = 0.0
-            port_ret_prop = 0.0
-            if day in returns_matrix.index:
-                row = returns_matrix.loc[day]
-                for sym in current_holdings:
-                    r = row.get(sym, np.nan)
-                    if pd.isna(r):
-                        continue
-                    port_ret_full += full_weights.get(sym, 0.0) * r
-                    port_ret_marg += marg_weights.get(sym, 0.0) * r
-                    port_ret_prop += prop_weights.get(sym, 0.0) * r
-            nav_full *= 1 + port_ret_full
-            nav_marg *= 1 + port_ret_marg
-            nav_prop *= 1 + port_ret_prop
 
         nav_records.append(
             {"Date": day, "Full Rebalance": nav_full, "Marginal Rebalance": nav_marg, "Prop Rebalance": nav_prop}
