@@ -5,9 +5,10 @@ Entry rule : stock enters portfolio if it ranks in top-M
 Exit rule  : stock leaves portfolio if it falls out of top-N  (N > M)
 Rebalance  : weekly | biweekly | monthly | quarterly | half-yearly
 
-Two portfolio variants are tracked simultaneously:
+Three portfolio variants are tracked simultaneously:
   - Full rebalance   : every rebalance date all holdings reset to equal weight (1/size)
-  - Marginal rebalance: only in/out stocks are adjusted; incumbents keep price-drifted weights
+  - Marginal rebalance: entrants are capped at neutral equal weight; incumbents keep relative weights
+  - Prop rebalance   : entrants are seeded at equal weight before the whole portfolio is normalized
 
 Survivorship-bias mitigations applied:
   - Historical constituent filter via compositions.parquet (only stocks in-index at each date)
@@ -966,7 +967,8 @@ def _compute_weight_variants(
     """
     Compute the three weight vectors after a rebalance:
       Full rebalance    : equal weight 1/size for all holdings.
-      Slot-fill marginal: freed capital split equally among new entrants only.
+      Starter-cap marginal: entrants receive no more than 1/size; incumbents
+                            retain relative weights and absorb any surplus.
       Prop-fill marginal: entrants seeded at 1/size; normalization redistributes surplus.
     Returns (new_full, new_slot, new_prop).
     """
@@ -975,17 +977,35 @@ def _compute_weight_variants(
 
     new_full = {s: 1.0 / size for s in new_holdings}
 
-    freed_slot = sum(marg_weights.get(s, 0.0) for s in exits)
-    new_slot: dict[str, float] = {s: marg_weights[s] for s in new_holdings - entries if s in marg_weights}
-    if entries:
-        per_entry_slot = (freed_slot / len(entries)) if freed_slot > 0 else (1.0 / size)
-        for s in entries:
-            new_slot[s] = per_entry_slot
-    if not new_slot:
-        new_slot = {s: 1.0 / size for s in new_holdings}
-    total_w = sum(new_slot.values())
-    if total_w > 0:
-        new_slot = {s: w / total_w for s, w in new_slot.items()}
+    survivors = new_holdings - entries
+    survivor_weights = {s: marg_weights[s] for s in survivors if s in marg_weights}
+    if entries and survivors:
+        freed_slot = sum(marg_weights.get(s, 0.0) for s in exits)
+        neutral_entry_weight = 1.0 / size
+        # When exits fund the entrants, never let a newcomer inherit more than
+        # a neutral equal-weight position. With entries but no exits, establish
+        # them at neutral weight by proportionally trimming incumbents.
+        per_entry_slot = (
+            min(freed_slot / len(entries), neutral_entry_weight) if freed_slot > 0 else neutral_entry_weight
+        )
+        survivor_target = max(0.0, 1.0 - per_entry_slot * len(entries))
+        survivor_total = sum(survivor_weights.values())
+        if survivor_total > 0:
+            new_slot = {s: w * survivor_target / survivor_total for s, w in survivor_weights.items()}
+        else:
+            new_slot = {s: survivor_target / len(survivors) for s in survivors}
+        new_slot.update({s: per_entry_slot for s in entries})
+    elif entries:
+        # Fresh portfolio: every holding is a newcomer.
+        new_slot = {s: 1.0 / len(entries) for s in entries}
+    else:
+        # Exit-only and no-change events preserve survivor proportions.
+        new_slot = survivor_weights
+        total_w = sum(new_slot.values())
+        if total_w > 0:
+            new_slot = {s: w / total_w for s, w in new_slot.items()}
+        elif survivors:
+            new_slot = {s: 1.0 / len(survivors) for s in survivors}
 
     new_prop: dict[str, float] = {s: prop_weights[s] for s in new_holdings - entries if s in prop_weights}
     if entries:
@@ -1197,7 +1217,7 @@ def run_backtest(
     # ── initialise portfolios ──
     full_weights: dict[str, float] = {}
     full_weights_prev: dict[str, float] = {}  # drift-adjusted full weights from prior rebalance
-    marg_weights: dict[str, float] = {}  # slot-fill marginal weights
+    marg_weights: dict[str, float] = {}  # starter-capped marginal weights
     prop_weights: dict[str, float] = {}  # prop-fill marginal weights
     current_holdings: set[str] = set()
     prev_stage2_scores: dict[str, float] = {}  # Stage 2 score at previous rebalance per holding

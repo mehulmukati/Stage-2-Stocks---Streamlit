@@ -620,7 +620,7 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
 _WEIGHTS_INLINE_THRESHOLD = 50
 
 
-_WT_LABELS = {"full": "Full (equal)", "marg": "Marginal (slot-fill)", "prop": "Prop (prop-fill)"}
+_WT_LABELS = {"full": "Full (equal)", "marg": "Marginal (starter-cap)", "prop": "Prop (prop-fill)"}
 
 
 def _show_weights_chart(entries: list[dict], rule_name: str, file_stem: str = "") -> None:

@@ -556,6 +556,70 @@ def test_compute_weight_variants_full_is_always_equal():
         assert math.isclose(v, 0.5, rel_tol=1e-6)
 
 
+def test_marginal_caps_single_entrant_and_returns_surplus_to_survivors():
+    # The entrant replaces a 40% winner but starts at neutral 25%, not 40%.
+    _, marginal, _ = _compute_weight_variants(
+        new_holdings={"B", "C", "D", "E"},
+        entries={"E"},
+        exits={"A"},
+        marg_weights={"A": 0.40, "B": 0.30, "C": 0.20, "D": 0.10},
+        prop_weights={"A": 0.40, "B": 0.30, "C": 0.20, "D": 0.10},
+        size=4,
+    )
+
+    assert math.isclose(marginal["E"], 0.25)
+    assert math.isclose(marginal["B"], 0.375)
+    assert math.isclose(marginal["C"], 0.25)
+    assert math.isclose(marginal["D"], 0.125)
+    assert math.isclose(sum(marginal.values()), 1.0)
+
+
+def test_marginal_uses_smaller_freed_pool_when_below_starter_cap():
+    # A 10% exit split across two entrants remains 5% each; incumbents are untouched.
+    _, marginal, _ = _compute_weight_variants(
+        new_holdings={"A", "B", "C", "E", "F"},
+        entries={"E", "F"},
+        exits={"D"},
+        marg_weights={"A": 0.40, "B": 0.30, "C": 0.20, "D": 0.10},
+        prop_weights={"A": 0.40, "B": 0.30, "C": 0.20, "D": 0.10},
+        size=5,
+    )
+
+    assert marginal == {"A": 0.40, "B": 0.30, "C": 0.20, "E": 0.05, "F": 0.05}
+
+
+def test_marginal_entry_only_starts_neutral_and_trims_survivors_proportionally():
+    _, marginal, _ = _compute_weight_variants(
+        new_holdings={"A", "B", "C", "D", "E"},
+        entries={"E"},
+        exits=set(),
+        marg_weights={"A": 0.40, "B": 0.30, "C": 0.20, "D": 0.10},
+        prop_weights={"A": 0.40, "B": 0.30, "C": 0.20, "D": 0.10},
+        size=5,
+    )
+
+    expected = {"A": 0.32, "B": 0.24, "C": 0.16, "D": 0.08, "E": 0.20}
+    assert marginal.keys() == expected.keys()
+    for ticker, weight in expected.items():
+        assert math.isclose(marginal[ticker], weight)
+
+
+def test_marginal_exit_only_preserves_survivor_proportions():
+    _, marginal, _ = _compute_weight_variants(
+        new_holdings={"A", "B", "C"},
+        entries=set(),
+        exits={"D"},
+        marg_weights={"A": 0.40, "B": 0.30, "C": 0.20, "D": 0.10},
+        prop_weights={"A": 0.40, "B": 0.30, "C": 0.20, "D": 0.10},
+        size=3,
+    )
+
+    assert math.isclose(marginal["A"], 4 / 9)
+    assert math.isclose(marginal["B"], 3 / 9)
+    assert math.isclose(marginal["C"], 2 / 9)
+    assert math.isclose(sum(marginal.values()), 1.0)
+
+
 # ──────────────────────────────────────────────
 # rank_universe_at_date
 # ──────────────────────────────────────────────
