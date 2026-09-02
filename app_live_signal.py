@@ -7,6 +7,7 @@ chosen signal date, then snapshots the last rebalance event for trade execution.
 """
 
 import hashlib
+import io
 import json
 import warnings
 from datetime import date, timedelta
@@ -14,7 +15,7 @@ from datetime import date, timedelta
 import pandas as pd
 import streamlit as st
 
-from data import check_data_freshness
+from data import check_data_freshness, load_nse_holidays
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -42,10 +43,11 @@ _SORT_OPTIONS = [
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 
-def _next_business_day(d: date) -> date:
-    """Return the next calendar day that is a weekday (Mon–Fri) after d."""
+def _next_business_day(d: date, holidays: frozenset[str] | set[str] | None = None) -> date:
+    """Return the next NSE Capital Market session after *d*."""
+    holidays = load_nse_holidays() if holidays is None else holidays
     d = d + timedelta(days=1)
-    while d.weekday() >= 5:
+    while d.weekday() >= 5 or d.isoformat() in holidays:
         d += timedelta(days=1)
     return d
 
@@ -157,6 +159,195 @@ def _classify_weight_changes(
     return changes
 
 
+def _comparison_weights_for_live_event(
+    current: dict,
+    previous: dict | None,
+    weight_key: str,
+    pre_rebalance_key: str,
+    fresh_portfolio: bool,
+) -> dict[str, float]:
+    """Return the executable pre-trade weights for a live event.
+
+    New engine results carry the price-drifted, corporate-action-adjusted
+    portfolio on the current event. The fallback keeps old cached results
+    renderable until Streamlit regenerates them.
+    """
+    if fresh_portfolio:
+        return {}
+    previous_target = dict(previous.get(weight_key, {})) if previous else {}
+    if pre_rebalance_key in current:
+        return dict(current[pre_rebalance_key])
+    for action in current.get("corporate_actions", []):
+        old_symbol = action["old_symbol"]
+        successor_symbol = action["successor_symbol"]
+        if old_symbol in previous_target:
+            previous_target[successor_symbol] = previous_target.get(successor_symbol, 0.0) + previous_target.pop(
+                old_symbol
+            )
+    return previous_target
+
+
+def _normalise_broker_snapshot(raw: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+    """Return a strict Ticker/Quantity broker snapshot and validation errors."""
+    empty = pd.DataFrame(columns=["Ticker", "Quantity"])
+    if raw is None or raw.empty:
+        return empty, []
+
+    aliases = {
+        "ticker": "Ticker",
+        "symbol": "Ticker",
+        "tradingsymbol": "Ticker",
+        "security": "Ticker",
+        "quantity": "Quantity",
+        "qty": "Quantity",
+        "netqty": "Quantity",
+        "shares": "Quantity",
+    }
+    renamed: dict[object, str] = {}
+    for column in raw.columns:
+        key = "".join(ch for ch in str(column).lower() if ch.isalnum())
+        if key in aliases and aliases[key] not in renamed.values():
+            renamed[column] = aliases[key]
+    frame = raw.rename(columns=renamed)
+    missing = [column for column in ("Ticker", "Quantity") if column not in frame.columns]
+    if missing:
+        return empty, ["Broker snapshot requires Ticker and Quantity columns."]
+
+    frame = frame[["Ticker", "Quantity"]].copy()
+    frame["Ticker"] = (
+        frame["Ticker"].fillna("").astype(str).str.strip().str.upper().str.replace(r"\.NS$", "", regex=True)
+    )
+    frame = frame[frame["Ticker"] != ""].reset_index(drop=True)
+    if frame.empty:
+        return empty, []
+
+    errors: list[str] = []
+    numeric_qty = pd.to_numeric(frame["Quantity"], errors="coerce")
+    bad_qty = frame.loc[numeric_qty.isna(), "Ticker"].tolist()
+    if bad_qty:
+        errors.append("Non-numeric quantity for: " + ", ".join(bad_qty))
+    fractional = frame.loc[numeric_qty.notna() & ((numeric_qty % 1).abs() > 1e-9), "Ticker"].tolist()
+    if fractional:
+        errors.append("Quantities must be whole shares for: " + ", ".join(fractional))
+    negative = frame.loc[numeric_qty.notna() & (numeric_qty < 0), "Ticker"].tolist()
+    if negative:
+        errors.append("Negative quantities are not supported for: " + ", ".join(negative))
+    duplicates = sorted(frame.loc[frame["Ticker"].duplicated(keep=False), "Ticker"].unique())
+    if duplicates:
+        errors.append("Duplicate tickers must be consolidated: " + ", ".join(duplicates))
+
+    if errors:
+        return frame, errors
+    frame["Quantity"] = numeric_qty.astype(int)
+    frame = frame[frame["Quantity"] > 0].sort_values("Ticker").reset_index(drop=True)
+    return frame, []
+
+
+def _read_broker_snapshot(file_name: str, payload: bytes) -> tuple[pd.DataFrame, list[str]]:
+    """Read a fresh CSV/XLSX broker export and normalise its required columns."""
+    try:
+        suffix = file_name.lower().rsplit(".", 1)[-1]
+        if suffix == "csv":
+            raw = pd.read_csv(io.BytesIO(payload))
+        elif suffix == "xlsx":
+            raw = pd.read_excel(io.BytesIO(payload))
+        else:
+            return pd.DataFrame(columns=["Ticker", "Quantity"]), ["Upload a CSV or XLSX file."]
+    except Exception as exc:
+        return pd.DataFrame(columns=["Ticker", "Quantity"]), [f"Could not read broker snapshot: {exc}"]
+    return _normalise_broker_snapshot(raw)
+
+
+def _reconcile_actual_portfolio(
+    snapshot: pd.DataFrame,
+    cash: float,
+    reserve_cash: float,
+    target_weights: dict[str, float],
+    prices: dict[str, float],
+) -> dict:
+    """Convert strategy weights and actual holdings into executable whole-share deltas."""
+    positions, errors = _normalise_broker_snapshot(snapshot)
+    cash = float(cash)
+    reserve_cash = float(reserve_cash)
+    if cash < 0:
+        errors.append("Available cash cannot be negative.")
+
+    actual_qty = dict(zip(positions.get("Ticker", []), positions.get("Quantity", [])))
+    positive_targets = {ticker: float(weight) for ticker, weight in target_weights.items() if float(weight) > 0}
+    target_total = sum(positive_targets.values())
+    normalised_targets = (
+        {ticker: weight * 100.0 / target_total for ticker, weight in positive_targets.items()}
+        if target_total > 0
+        else {}
+    )
+    required = set(actual_qty) | set(normalised_targets)
+    missing_prices = sorted(ticker for ticker in required if not prices.get(ticker, 0) > 0)
+    if missing_prices:
+        errors.append("No signal-date price for: " + ", ".join(missing_prices))
+
+    securities_value = sum(actual_qty[ticker] * prices.get(ticker, 0.0) for ticker in actual_qty)
+    gross_value = cash + securities_value
+    if gross_value <= 0:
+        errors.append("Broker snapshot plus cash must have a positive value.")
+    if reserve_cash < 0:
+        errors.append("Minimum cash reserve cannot be negative.")
+    if reserve_cash > gross_value:
+        errors.append("Minimum cash reserve exceeds the marked-to-market portfolio value.")
+    if errors:
+        return {
+            "errors": errors,
+            "rows": [],
+            "gross_value": gross_value,
+            "securities_value": securities_value,
+            "cash": cash,
+        }
+
+    investable_value = gross_value - reserve_cash
+    rows: list[dict] = []
+    for ticker in sorted(required):
+        price = float(prices[ticker])
+        current_qty = int(actual_qty.get(ticker, 0))
+        strategy_weight = normalised_targets.get(ticker, 0.0)
+        target_value = investable_value * strategy_weight / 100.0
+        target_qty = int(target_value // price)
+        order_qty = target_qty - current_qty
+        action = "BUY" if order_qty > 0 else "SELL" if order_qty < 0 else "HOLD"
+        current_value = current_qty * price
+        projected_value = target_qty * price
+        rows.append(
+            {
+                "Ticker": ticker,
+                "Price": price,
+                "Actual quantity": current_qty,
+                "Actual value (₹)": current_value,
+                "Actual weight (%)": current_value / gross_value * 100.0,
+                "Strategy target (%)": strategy_weight,
+                "Target value (₹)": target_value,
+                "Target quantity": target_qty,
+                "Order quantity": order_qty,
+                "Action": action,
+                "Trade value (₹)": abs(order_qty) * price,
+                "Projected value (₹)": projected_value,
+                "Projected weight (%)": projected_value / gross_value * 100.0,
+            }
+        )
+
+    projected_securities = sum(row["Projected value (₹)"] for row in rows)
+    projected_cash = gross_value - projected_securities
+    turnover_pct = sum(row["Trade value (₹)"] for row in rows) / gross_value * 100.0
+    return {
+        "errors": [],
+        "rows": rows,
+        "gross_value": gross_value,
+        "securities_value": securities_value,
+        "cash": cash,
+        "reserve_cash": reserve_cash,
+        "investable_value": investable_value,
+        "projected_cash": projected_cash,
+        "turnover_pct": turnover_pct,
+    }
+
+
 def _symbols_needed_for_replay(
     indices: list[str],
     constituents: dict[str, list[str]],
@@ -196,15 +387,74 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         "Trades are assumed to execute on the next working day after this date.",
     )
 
-    portfolio_value = st.number_input(
-        "Portfolio value (₹)",
-        min_value=10_000,
+    st.markdown("**Actual broker snapshot**")
+    st.caption("Provide a fresh position snapshot for every signal. Only Ticker and Quantity are required.")
+    st.download_button(
+        "Download snapshot template",
+        b"Ticker,Quantity\n",
+        file_name="live_signal_broker_snapshot_template.csv",
+        mime="text/csv",
+        width="stretch",
+        key="ls_snapshot_template",
+    )
+    uploaded_snapshot = st.file_uploader(
+        "Upload broker positions",
+        type=["csv", "xlsx"],
+        key="ls_broker_snapshot_upload",
+        help="Accepted column aliases include Symbol/Trading Symbol and Qty/Net Qty/Shares.",
+    )
+    imported_snapshot = pd.DataFrame(columns=["Ticker", "Quantity"])
+    broker_errors: list[str] = []
+    snapshot_key = "manual"
+    if uploaded_snapshot is not None:
+        payload = uploaded_snapshot.getvalue()
+        snapshot_key = hashlib.sha256(payload).hexdigest()[:10]
+        imported_snapshot, broker_errors = _read_broker_snapshot(uploaded_snapshot.name, payload)
+    editor_seed = imported_snapshot if not imported_snapshot.empty else pd.DataFrame([{"Ticker": "", "Quantity": 0}])
+    edited_snapshot = st.data_editor(
+        editor_seed,
+        num_rows="dynamic",
+        hide_index=True,
+        width="stretch",
+        key=f"ls_broker_positions_{snapshot_key}",
+        column_config={
+            "Ticker": st.column_config.TextColumn("Ticker", required=True),
+            "Quantity": st.column_config.NumberColumn("Quantity", min_value=0, step=1, required=True),
+        },
+    )
+    broker_snapshot, editor_errors = _normalise_broker_snapshot(edited_snapshot)
+    broker_errors.extend(error for error in editor_errors if error not in broker_errors)
+    for error in broker_errors:
+        st.error(error)
+
+    cash_balance = st.number_input(
+        "Available cash (₹)",
+        min_value=0,
         max_value=100_000_000,
-        value=1_000_000,
+        value=0,
+        step=1_000,
+        format="%d",
+        key="ls_cash_balance",
+    )
+    reserve_cash = st.number_input(
+        "Minimum cash reserve (₹)",
+        min_value=0,
+        max_value=100_000_000,
+        value=0,
+        step=1_000,
+        format="%d",
+        key="ls_reserve_cash",
+        help="Cash deliberately left uninvested after whole-share rounding.",
+    )
+    expected_portfolio_value = st.number_input(
+        "Expected broker total (₹, optional)",
+        min_value=0,
+        max_value=100_000_000,
+        value=0,
         step=10_000,
         format="%d",
-        key="ls_portfolio_value",
-        help="Total invested capital. Used to calculate ₹ values and share quantities.",
+        key="ls_expected_portfolio_value",
+        help="Optional cross-check only. Live Signal calculates value from quantities, prices and cash.",
     )
 
     portfolio_start = st.date_input(
@@ -395,12 +645,15 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         st.session_state["ls_result"] = None
     st.divider()
 
+    snapshot_missing = broker_snapshot.empty and cash_balance <= 0
+    if snapshot_missing:
+        st.warning("Enter at least one broker position or a positive cash balance.")
     if st.button(
         "📡 Generate Signal",
         type="primary",
         width="stretch",
         key="ls_run_btn",
-        disabled=live_data_blocked,
+        disabled=live_data_blocked or bool(broker_errors) or snapshot_missing,
     ):
         st.session_state["ls_run_triggered"] = True
         st.session_state["ls_result"] = None  # invalidate cached result
@@ -421,7 +674,10 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         "indices": list(indices),
         "portfolio_start": portfolio_start,
         "warmup": int(warmup),
-        "portfolio_value": int(portfolio_value),
+        "broker_snapshot": broker_snapshot,
+        "cash_balance": float(cash_balance),
+        "reserve_cash": float(reserve_cash),
+        "expected_portfolio_value": float(expected_portfolio_value),
         "min_history": int(min_history),
         "min_annual_return": float(ls_min_annual_return),
         "pct_from_52w_high": float(ls_pct_from_52w_high),
@@ -452,8 +708,15 @@ def _run_signal(params: dict) -> dict:
     compositions_df = load_compositions()
     constituents = _load_constituents()
     selected_indices = indices or list(constituents)
+    broker_snapshot = params.get("broker_snapshot")
+    broker_tickers = (
+        set(broker_snapshot["Ticker"].astype(str))
+        if isinstance(broker_snapshot, pd.DataFrame) and "Ticker" in broker_snapshot.columns
+        else set()
+    )
     required_current_symbols = sorted(
         {symbol for index_name, symbols in constituents.items() if index_name in selected_indices for symbol in symbols}
+        | broker_tickers
     )
 
     refresh_messages: list[dict[str, str]] = []
@@ -505,6 +768,9 @@ def _run_signal(params: dict) -> dict:
     src = ohlcv.source
     if indices:
         allowed = _symbols_needed_for_replay(indices, constituents, compositions_df, load_corporate_actions())
+        # An actual holding may have left the selected index but still needs a
+        # current price so Live Signal can generate its exit order.
+        allowed.update(broker_tickers)
         symbol_data = {s: df for s, df in symbol_data_all.items() if s in allowed}
     else:
         symbol_data = symbol_data_all
@@ -536,6 +802,7 @@ def _run_signal(params: dict) -> dict:
         # because a previous run ended on Tuesday.
         rebalance_anchor_date=str(signal_date),
         portfolio_start_date=str(params["portfolio_start"]) if params.get("portfolio_start") else None,
+        rank_on_rebalance_date=True,
         stage2_drop_exit=params["s2_drop"],
         stage2_drop_threshold=params["s2_threshold"],
         stage2_entry_filter=params.get("s2_entry", False),
@@ -558,6 +825,7 @@ def _run_signal(params: dict) -> dict:
     # Collect close prices for all tickers that appear in the last two rebalance events
     holdings_log = result["holdings_log"]
     tickers_needed: set[str] = set()
+    tickers_needed.update(broker_tickers)
     if holdings_log:
         tickers_needed.update(holdings_log[-1].get("holdings", []))
         tickers_needed.update(t for s in holdings_log[-1].get("exits", []) for t, _ in [_parse_ticker_reason(s)])
@@ -687,27 +955,16 @@ def live_signal_results(params: dict) -> None:
         return
 
     current = holdings_log[-1]
-    previous = holdings_log[-2] if len(holdings_log) >= 2 else None
 
     # Select weight snapshot for the chosen variant
     _v = params["variant"]
     weight_key = "prop_weights" if "Prop" in _v else "marg_weights" if "Marginal" in _v else "full_weights"
     weights: dict[str, float] = dict(current[weight_key])
-    prev_weights: dict[str, float] = dict(previous[weight_key]) if previous else {}
 
     # A merger changes the security's identity without being a market trade.
     # Move the prior snapshot to the successor so the four tables show the
     # executable successor sale instead of an impossible sale of the old scrip.
     corporate_action_events = current.get("corporate_actions", [])
-    for action in corporate_action_events:
-        old_symbol = action["old_symbol"]
-        successor_symbol = action["successor_symbol"]
-        if old_symbol in prev_weights:
-            prev_weights[successor_symbol] = prev_weights.get(successor_symbol, 0.0) + prev_weights.pop(old_symbol)
-
-    # Parse entries / exits (stored as "TICKER (reason)" strings)
-    entries: dict[str, str] = {t: r for t, r in (_parse_ticker_reason(s) for s in current.get("entries", []))}
-    exits: dict[str, str] = {t: r for t, r in (_parse_ticker_reason(s) for s in current.get("exits", []))}
     holdings: set[str] = set(current.get("holdings", []))
 
     rebalance_date = _to_date(current["date"])
@@ -739,7 +996,7 @@ def live_signal_results(params: dict) -> None:
     sim_start = _simulation_start_date(params)
     portfolio_start = params.get("portfolio_start")
     port_lbl = portfolio_start.strftime("%b %d, %Y") if portfolio_start else "—"
-    fresh_lbl = " 🆕 **Fresh portfolio — all positions are BUY**" if fresh_portfolio else ""
+    fresh_lbl = " 🆕 **Strategy replay starts at this event**" if fresh_portfolio else ""
     st.caption(
         f"Portfolio start: **{port_lbl}**{fresh_lbl} "
         f"· Simulation from: **{sim_start.strftime('%b %d, %Y')}** ({params['warmup']} weeks back) "
@@ -766,76 +1023,43 @@ def live_signal_results(params: dict) -> None:
             + ". Update the corporate-action registry or restore current tradable data before execution."
         )
 
-    # ── portfolio sizing helpers ──────────────────────────────────────────────
-    portfolio_value: int = params.get("portfolio_value", 1_000_000)
+    # ── actual broker portfolio reconciliation ───────────────────────────────
     close_prices: dict[str, float] = result.get("close_prices", {})
     latest_price_dates: dict[str, str] = result.get("latest_price_dates", {})
     tradability_status: dict[str, str] = result.get("tradability_status", {})
+    broker_snapshot = params.get("broker_snapshot", pd.DataFrame(columns=["Ticker", "Quantity"]))
+    reconciliation = _reconcile_actual_portfolio(
+        broker_snapshot,
+        params.get("cash_balance", 0.0),
+        params.get("reserve_cash", 0.0),
+        weights,
+        close_prices,
+    )
+    if reconciliation["errors"]:
+        for error in reconciliation["errors"]:
+            st.error(error)
+        st.error("Trade list blocked. Correct the broker snapshot or price data and regenerate the signal.")
+        return
 
-    def _val(weight_pct: float) -> int:
-        return round(portfolio_value * weight_pct / 100)
+    portfolio_value = float(reconciliation["gross_value"])
+    expected_value = float(params.get("expected_portfolio_value", 0.0))
+    if expected_value > 0:
+        value_gap = portfolio_value - expected_value
+        value_tolerance = max(1_000.0, expected_value * 0.005)
+        if abs(value_gap) > value_tolerance:
+            st.warning(
+                f"Broker-total cross-check differs by ₹{abs(value_gap):,.0f}: "
+                f"calculated ₹{portfolio_value:,.0f} versus expected ₹{expected_value:,.0f}."
+            )
 
-    def _allocate_qtys(
-        buy_targets: dict[str, float],
-        sell_targets: dict[str, float],
-        prices: dict[str, float],
-    ) -> dict[str, int]:
-        """Joint integer allocation: minimise weight deviation s.t. sell ₹ ≈ buy ₹.
-
-        Uses a two-phase greedy:
-          Phase 1 — unconstrained optimal: round each stock to nearest integer share.
-          Phase 2 — cash-balance correction: iteratively apply the cheapest single-share
-                    adjustment (scored by weight-deviation cost per unit remainder) until
-                    |sell_cash - buy_cash| ≤ half the cheapest stock price.
-        """
-        all_targets = {**buy_targets, **sell_targets}
-        if not all_targets:
-            return {}
-        priced = {t: all_targets[t] for t in all_targets if prices.get(t, 0) > 0}
-        if not priced:
-            return {}
-
-        exact = {t: priced[t] / prices[t] for t in priced}
-        f = {t: int(exact[t]) for t in exact}  # floor quantities
-        r = {t: exact[t] - f[t] for t in exact}  # remainders ∈ [0, 1)
-        d = {t: 1 if r[t] >= 0.5 else 0 for t in exact}  # phase-1: round to nearest
-
-        def _gap() -> float:
-            s = sum((f[t] + d[t]) * prices[t] for t in sell_targets if t in f)
-            b = sum((f[t] + d[t]) * prices[t] for t in buy_targets if t in f)
-            return s - b  # positive → sell side heavy, negative → buy side heavy
-
-        tol = min(prices[t] for t in priced) / 2
-
-        for _ in range(200):
-            g = _gap()
-            if abs(g) <= tol:
-                break
-            candidates: list[tuple] = []
-            for t in sell_targets:
-                if t not in f:
-                    continue
-                if g < 0 and d[t] == 0:  # bump sell up → gap increases toward 0
-                    candidates.append((1 - 2 * r[t], +prices[t], t, +1))
-                if g > 0 and d[t] >= 1:  # un-bump sell → gap decreases toward 0
-                    candidates.append((2 * r[t] - 1, -prices[t], t, -1))
-            for t in buy_targets:
-                if t not in f:
-                    continue
-                if g > 0 and d[t] == 0:  # bump buy up → gap decreases toward 0
-                    candidates.append((1 - 2 * r[t], -prices[t], t, +1))
-                if g < 0 and d[t] >= 1:  # un-bump buy → gap increases toward 0
-                    candidates.append((2 * r[t] - 1, +prices[t], t, -1))
-            if not candidates:
-                break
-            candidates.sort()
-            score, delta_gap, best, delta_d = candidates[0]
-            if abs(g + delta_gap) < abs(g):
-                d[best] += delta_d
-            else:
-                break
-
-        return {t: f[t] + d[t] for t in exact}
+    actual_rows: list[dict] = reconciliation["rows"]
+    trade_rows = [row for row in actual_rows if row["Action"] != "HOLD"]
+    buy_rows = sorted((row for row in trade_rows if row["Action"] == "BUY"), key=lambda row: -row["Trade value (₹)"])
+    sell_rows = sorted((row for row in trade_rows if row["Action"] == "SELL"), key=lambda row: -row["Trade value (₹)"])
+    projected_rows = [row for row in actual_rows if row["Target quantity"] > 0]
+    blocking_trade_tickers = sorted(
+        row["Ticker"] for row in trade_rows if tradability_status.get(row["Ticker"], "NO DATA") != "TRADABLE"
+    )
 
     # ── pre-cap weights for trimming callout ─────────────────────────────────
     pre_cap_key = (
@@ -845,28 +1069,16 @@ def live_signal_results(params: dict) -> None:
     )
     pre_cap_weights: dict[str, float] = current.get(pre_cap_key, {})
 
-    # One comparison drives every table, the metrics and the CSV.  A reset
-    # deliberately has no previous portfolio, so every opening position is BUY.
-    comparison_prev_weights = {} if fresh_portfolio else prev_weights
-    portfolio_changes = _classify_weight_changes(comparison_prev_weights, weights)
-    buy_changes = [row for row in portfolio_changes if row["Action"] == "BUY"]
-    sell_changes = [row for row in portfolio_changes if row["Action"] == "SELL"]
-    hold_changes = [row for row in portfolio_changes if row["Action"] == "HOLD"]
-
-    # ── metric cards ─────────────────────────────────────────────────────────
-    turnover_key = (
-        "prop_turnover_pct" if "Prop" in _v else "marg_turnover_pct" if "Marginal" in _v else "full_turnover_pct"
-    )
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Holdings", len(holdings))
-    c2.metric("Buys", len(buy_changes), delta="fresh start" if fresh_portfolio else None)
-    c3.metric(
-        "Sells",
-        len(sell_changes),
-        delta=f"-{len(sell_changes)}" if sell_changes else None,
-        delta_color="inverse",
+    c1.metric("Calculated portfolio", f"₹{portfolio_value:,.0f}")
+    c2.metric("Buys", len(buy_rows))
+    c3.metric("Sells", len(sell_rows), delta=f"-{len(sell_rows)}" if sell_rows else None, delta_color="inverse")
+    c4.metric("Actual turnover", f"{reconciliation['turnover_pct']:.1f}%")
+    st.caption(
+        f"Securities ₹{reconciliation['securities_value']:,.0f} · cash ₹{reconciliation['cash']:,.0f} · "
+        f"reserve ₹{reconciliation['reserve_cash']:,.0f} · projected residual cash "
+        f"₹{reconciliation['projected_cash']:,.0f}"
     )
-    c4.metric("Turnover", f"{current.get(turnover_key, 0):.1f}%")
 
     # ── position cap trimming callout ─────────────────────────────────────────
     if params["max_pos"] > 0 and pre_cap_weights:
@@ -887,221 +1099,136 @@ def live_signal_results(params: dict) -> None:
             )
             st.warning("\n".join(lines))
 
-    # ── joint quantity allocation (pre-compute before rendering any table) ────
-    # Complete exits are sized independently so rounding can never leave an
-    # intended exit open.  All other changes share the cash-balancing allocator.
-    complete_exits = [row for row in sell_changes if row["New weight (%)"] <= 0.001]
-    partial_sells = [row for row in sell_changes if row["New weight (%)"] > 0.001]
-    exit_targets = {row["Ticker"]: abs(row["Weight change (%)"]) * portfolio_value / 100 for row in complete_exits}
-    exit_qtys: dict[str, int] = _allocate_qtys({}, exit_targets, close_prices)
-    buy_targets = {row["Ticker"]: row["Weight change (%)"] * portfolio_value / 100 for row in buy_changes}
-    partial_sell_targets = {
-        row["Ticker"]: abs(row["Weight change (%)"]) * portfolio_value / 100 for row in partial_sells
+    st.info(
+        "**Execution pricing:** trade values and quantities are indicative estimates based on "
+        "signal-date closing prices. Recalculate against the actual next-session price before placing orders."
+    )
+    if blocking_trade_tickers:
+        st.error(
+            "Trade list blocked because these required orders lack a current tradable price: "
+            + ", ".join(blocking_trade_tickers)
+        )
+
+    common_columns = [
+        "Ticker",
+        "Price",
+        "Actual quantity",
+        "Actual value (₹)",
+        "Actual weight (%)",
+        "Strategy target (%)",
+        "Target value (₹)",
+        "Target quantity",
+        "Order quantity",
+        "Trade value (₹)",
+    ]
+    column_config = {
+        "Price": st.column_config.NumberColumn("Signal price", format="₹%.2f"),
+        "Actual value (₹)": st.column_config.NumberColumn("Actual value", format="₹%.0f"),
+        "Actual weight (%)": st.column_config.NumberColumn("Actual weight", format="%.2f%%"),
+        "Strategy target (%)": st.column_config.NumberColumn("Strategy target", format="%.2f%%"),
+        "Target value (₹)": st.column_config.NumberColumn("Target value", format="₹%.0f"),
+        "Trade value (₹)": st.column_config.NumberColumn("Trade value", format="₹%.0f"),
     }
-    joint_qtys: dict[str, int] = _allocate_qtys(buy_targets, partial_sell_targets, close_prices)
 
-    # ── BUY ──────────────────────────────────────────────────────────────────
     st.markdown("---")
-    buy_rows = []
-    for change in buy_changes:
-        ticker = change["Ticker"]
-        buy_rows.append(
-            {
-                **change,
-                "Buy weight (%)": change["Weight change (%)"],
-                "Buy value (₹)": _val(change["Weight change (%)"]),
-                "Qty to buy": joint_qtys.get(ticker),
-                "Buy type": "New position" if change["Previous weight (%)"] <= 0.001 else "Incremental buy",
-                "Reason": entries.get(ticker, "") or ("Top-M" if ticker in entries else "Weight increase"),
-            }
-        )
-    buy_rows.sort(key=lambda row: -row["Buy weight (%)"])
-    buy_columns = [
-        "Ticker",
-        "Previous weight (%)",
-        "New weight (%)",
-        "Buy weight (%)",
-        "Buy value (₹)",
-        "Qty to buy",
-        "Buy type",
-        "Reason",
-    ]
-    st.markdown(f"#### Buy &nbsp;({len(buy_rows)})")
+    actual_position_count = sum(row["Actual quantity"] > 0 for row in actual_rows)
+    st.markdown(f"#### Actual portfolio before trading &nbsp;({actual_position_count})")
     st.dataframe(
-        pd.DataFrame(buy_rows, columns=buy_columns),
+        pd.DataFrame([row for row in actual_rows if row["Actual quantity"] > 0], columns=common_columns),
         hide_index=True,
         width="stretch",
-        column_config={
-            "Ticker": st.column_config.TextColumn("Ticker", width="small"),
-            "Previous weight (%)": st.column_config.NumberColumn("Previous weight (%)", format="%.2f%%", width="small"),
-            "New weight (%)": st.column_config.NumberColumn("New weight (%)", format="%.2f%%", width="small"),
-            "Buy weight (%)": st.column_config.NumberColumn("Buy weight (%)", format="%.2f%%", width="small"),
-            "Buy value (₹)": st.column_config.NumberColumn("Buy value (₹)", format="₹%d", width="small"),
-            "Qty to buy": st.column_config.NumberColumn("Qty to buy", format="%d", width="small"),
-            "Buy type": st.column_config.TextColumn("Buy type", width="small"),
-            "Reason": st.column_config.TextColumn("Reason"),
-        },
+        column_config=column_config,
     )
 
-    # ── SELL ─────────────────────────────────────────────────────────────────
     st.markdown("---")
-    sell_rows = []
-    complete_exit_tickers = {row["Ticker"] for row in complete_exits}
-    for change in sell_changes:
-        ticker = change["Ticker"]
-        is_exit = ticker in complete_exit_tickers
-        sell_weight = abs(change["Weight change (%)"])
-        sell_rows.append(
-            {
-                **change,
-                "Sell weight (%)": sell_weight,
-                "Sell value (₹)": _val(sell_weight),
-                "Qty to sell": exit_qtys.get(ticker) if is_exit else joint_qtys.get(ticker),
-                "Sell type": "Complete exit" if is_exit else "Partial sell",
-                "Reason": exits.get(ticker, "") or ("WRH" if ticker in exits else "Weight reduction"),
-            }
-        )
-    sell_rows.sort(key=lambda row: -row["Sell weight (%)"])
-    sell_columns = [
-        "Ticker",
-        "Previous weight (%)",
-        "New weight (%)",
-        "Sell weight (%)",
-        "Sell value (₹)",
-        "Qty to sell",
-        "Sell type",
-        "Reason",
-    ]
-    st.markdown(f"#### Sell &nbsp;({len(sell_rows)})")
+    st.markdown(f"#### Sell first &nbsp;({len(sell_rows)})")
+    sell_display = [{**row, "Quantity to sell": abs(row["Order quantity"])} for row in sell_rows]
     st.dataframe(
-        pd.DataFrame(sell_rows, columns=sell_columns),
+        pd.DataFrame(sell_display),
         hide_index=True,
         width="stretch",
-        column_config={
-            "Ticker": st.column_config.TextColumn("Ticker", width="small"),
-            "Previous weight (%)": st.column_config.NumberColumn("Previous weight (%)", format="%.2f%%", width="small"),
-            "New weight (%)": st.column_config.NumberColumn("New weight (%)", format="%.2f%%", width="small"),
-            "Sell weight (%)": st.column_config.NumberColumn("Sell weight (%)", format="%.2f%%", width="small"),
-            "Sell value (₹)": st.column_config.NumberColumn("Sell value (₹)", format="₹%d", width="small"),
-            "Qty to sell": st.column_config.NumberColumn("Qty to sell", format="%d", width="small"),
-            "Sell type": st.column_config.TextColumn("Sell type", width="small"),
-            "Reason": st.column_config.TextColumn("Reason"),
-        },
+        column_config={**column_config, "Quantity to sell": st.column_config.NumberColumn(format="%d")},
     )
 
-    # ── HOLD ─────────────────────────────────────────────────────────────────
     st.markdown("---")
-    hold_columns = ["Ticker", "Previous weight (%)", "New weight (%)", "Weight change (%)", "Position value (₹)"]
-    hold_rows = [{**row, "Position value (₹)": _val(row["New weight (%)"])} for row in hold_changes]
-    st.markdown(f"#### Hold — no position changes &nbsp;({len(hold_rows)})")
+    st.markdown(f"#### Buy after sells &nbsp;({len(buy_rows)})")
+    buy_display = [{**row, "Quantity to buy": row["Order quantity"]} for row in buy_rows]
     st.dataframe(
-        pd.DataFrame(hold_rows, columns=hold_columns),
+        pd.DataFrame(buy_display),
         hide_index=True,
         width="stretch",
-        column_config={
-            "Ticker": st.column_config.TextColumn("Ticker", width="small"),
-            "Previous weight (%)": st.column_config.NumberColumn("Previous weight (%)", format="%.2f%%", width="small"),
-            "New weight (%)": st.column_config.NumberColumn("New weight (%)", format="%.2f%%", width="small"),
-            "Weight change (%)": st.column_config.NumberColumn("Weight change (%)", format="%.3f%%", width="small"),
-            "Position value (₹)": st.column_config.NumberColumn("Position value (₹)", format="₹%d", width="small"),
-        },
+        column_config={**column_config, "Quantity to buy": st.column_config.NumberColumn(format="%d")},
     )
 
-    # ── COMPLETE PORTFOLIO ───────────────────────────────────────────────────
     st.markdown("---")
-    complete_columns = [
-        "Ticker",
-        "Previous weight (%)",
-        "New weight (%)",
-        "Weight change (%)",
-        "Action",
-        "Latest price date",
-        "Tradability",
-    ]
-    complete_rows = [
+    st.markdown(f"#### Projected post-trade portfolio &nbsp;({len(projected_rows)})")
+    projected_display = [
         {
-            **row,
+            "Ticker": row["Ticker"],
+            "Target quantity": row["Target quantity"],
+            "Projected value (₹)": row["Projected value (₹)"],
+            "Projected weight (%)": row["Projected weight (%)"],
+            "Strategy target (%)": row["Strategy target (%)"],
             "Latest price date": latest_price_dates.get(row["Ticker"], ""),
             "Tradability": tradability_status.get(row["Ticker"], "NO DATA"),
         }
-        for row in portfolio_changes
+        for row in projected_rows
     ]
-    if complete_rows:
-        complete_rows.append(
-            {
-                "Ticker": "TOTAL",
-                "Previous weight (%)": round(sum(row["Previous weight (%)"] for row in portfolio_changes), 4),
-                "New weight (%)": round(sum(row["New weight (%)"] for row in portfolio_changes), 4),
-                "Weight change (%)": round(sum(row["Weight change (%)"] for row in portfolio_changes), 4),
-                "Action": "",
-                "Latest price date": "",
-                "Tradability": "",
-            }
-        )
-    st.markdown(f"#### Complete portfolio &nbsp;({len(portfolio_changes)})")
+    projected_display.append(
+        {
+            "Ticker": "CASH",
+            "Target quantity": None,
+            "Projected value (₹)": reconciliation["projected_cash"],
+            "Projected weight (%)": reconciliation["projected_cash"] / portfolio_value * 100.0,
+            "Strategy target (%)": 0.0,
+            "Latest price date": "",
+            "Tradability": "",
+        }
+    )
     st.dataframe(
-        pd.DataFrame(complete_rows, columns=complete_columns),
+        pd.DataFrame(projected_display),
         hide_index=True,
         width="stretch",
         column_config={
-            "Ticker": st.column_config.TextColumn("Ticker", width="small"),
-            "Previous weight (%)": st.column_config.NumberColumn("Previous weight (%)", format="%.2f%%", width="small"),
-            "New weight (%)": st.column_config.NumberColumn("New weight (%)", format="%.2f%%", width="small"),
-            "Weight change (%)": st.column_config.NumberColumn("Weight change (%)", format="%.2f%%", width="small"),
-            "Action": st.column_config.TextColumn("Action", width="small"),
-            "Latest price date": st.column_config.TextColumn("Latest price date", width="small"),
-            "Tradability": st.column_config.TextColumn("Tradability", width="small"),
+            "Projected value (₹)": st.column_config.NumberColumn(format="₹%.0f"),
+            "Projected weight (%)": st.column_config.NumberColumn(format="%.2f%%"),
+            "Strategy target (%)": st.column_config.NumberColumn(format="%.2f%%"),
         },
     )
 
-    # ── download ─────────────────────────────────────────────────────────────
     st.markdown("---")
-    trade_rows: list[dict] = []
-    _base = {
-        "Signal Date": str(params["signal_date"]),
-        "Rebalance Date": str(rebalance_date),
-        "Execute Date": str(exec_date),
-        "Portfolio Reset Date": str(reset_date or ""),
-        "Replay ID": result.get("strategy_fingerprint", ""),
-        "Portfolio Value (₹)": portfolio_value,
-    }
-    for change in portfolio_changes:
-        ticker = change["Ticker"]
-        action = change["Action"]
-        if action == "BUY":
-            qty = joint_qtys.get(ticker, "") or ""
-            reason = entries.get(ticker, "") or ("Top-M" if ticker in entries else "Weight increase")
-        elif action == "SELL":
-            qty_source = exit_qtys if ticker in complete_exit_tickers else joint_qtys
-            qty = qty_source.get(ticker, "") or ""
-            reason = exits.get(ticker, "") or ("WRH" if ticker in exits else "Weight reduction")
-        else:
-            qty = ""
-            reason = "No change"
-        trade_rows.append(
+    download_rows = []
+    for row in trade_rows:
+        download_rows.append(
             {
-                "Ticker": ticker,
-                "Action": action,
-                "Previous Weight (%)": round(change["Previous weight (%)"], 4),
-                "New Weight (%)": round(change["New weight (%)"], 4),
-                "Weight Change (%)": round(change["Weight change (%)"], 4),
-                "Trade Value (₹)": _val(abs(change["Weight change (%)"])) if action != "HOLD" else 0,
-                "Qty": qty,
-                "Reason": reason,
-                "Latest Price Date": latest_price_dates.get(ticker, ""),
-                "Tradability": tradability_status.get(ticker, "NO DATA"),
-                **_base,
+                "Ticker": row["Ticker"],
+                "Action": row["Action"],
+                "Order Quantity": abs(row["Order quantity"]),
+                "Actual Quantity": row["Actual quantity"],
+                "Target Quantity": row["Target quantity"],
+                "Signal Price": row["Price"],
+                "Trade Value (₹)": row["Trade value (₹)"],
+                "Actual Weight (%)": round(row["Actual weight (%)"], 4),
+                "Strategy Target (%)": round(row["Strategy target (%)"], 4),
+                "Signal Date": str(params["signal_date"]),
+                "Execute Date": str(exec_date),
+                "Latest Price Date": latest_price_dates.get(row["Ticker"], ""),
+                "Tradability": tradability_status.get(row["Ticker"], "NO DATA"),
+                "Calculated Portfolio Value (₹)": round(portfolio_value, 2),
+                "Input Cash (₹)": reconciliation["cash"],
+                "Minimum Reserve (₹)": reconciliation["reserve_cash"],
+                "Projected Cash (₹)": round(reconciliation["projected_cash"], 2),
+                "Replay ID": result.get("strategy_fingerprint", ""),
             }
         )
-
-    trade_df = pd.DataFrame(trade_rows)
-    if blocking_stale_incumbents:
-        st.warning("CSV download is unavailable until the stale-incumbent error is resolved.")
+    trade_df = pd.DataFrame(download_rows)
+    if blocking_stale_incumbents or blocking_trade_tickers:
+        st.warning("CSV download is unavailable until all stale or missing-price errors are resolved.")
     else:
         st.download_button(
-            "📥 Download Trade List (CSV)",
+            "📥 Download Reconciled Trade List (CSV)",
             trade_df.to_csv(index=False).encode("utf-8"),
-            file_name=f"live_signal_{params['signal_date']}.csv",
+            file_name=f"live_signal_reconciled_{params['signal_date']}.csv",
             mime="text/csv",
             width="stretch",
         )
