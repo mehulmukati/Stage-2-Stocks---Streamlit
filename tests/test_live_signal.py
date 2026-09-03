@@ -7,8 +7,11 @@ from app_live_signal import (
     _comparison_weights_for_live_event,
     _next_business_day,
     _normalise_broker_snapshot,
+    _portfolio_from_replay,
     _read_broker_snapshot,
     _reconcile_actual_portfolio,
+    _simulation_start_date,
+    _strategy_fingerprint,
     _symbols_needed_for_replay,
 )
 
@@ -165,3 +168,47 @@ def test_actual_portfolio_reconciliation_blocks_missing_prices():
 
     assert result["rows"] == []
     assert "No signal-date price for: UNKNOWN" in result["errors"]
+
+
+def test_replayed_portfolio_uses_whole_shares_and_preserves_residual_cash():
+    positions, cash, errors = _portfolio_from_replay(
+        {"A": 60.0, "B": 40.0},
+        portfolio_value=1_000.0,
+        prices={"A": 110.0, "B": 90.0},
+    )
+
+    assert errors == []
+    assert positions.to_dict("records") == [
+        {"Ticker": "A", "Quantity": 5},
+        {"Ticker": "B", "Quantity": 4},
+    ]
+    assert cash == 90.0
+
+
+def test_replayed_fresh_portfolio_starts_entirely_in_cash():
+    positions, cash, errors = _portfolio_from_replay({}, 1_000.0, {})
+
+    assert errors == []
+    assert positions.empty
+    assert cash == 1_000.0
+
+
+def test_replay_start_uses_fixed_internal_buffer_and_ignores_legacy_input():
+    base = {"portfolio_start": date(2026, 1, 5), "signal_date": date(2026, 9, 3)}
+
+    assert _simulation_start_date({**base, "warmup": 26}) == date(2025, 1, 3)
+    assert _simulation_start_date({**base, "warmup": 156}) == date(2025, 1, 3)
+
+
+def test_legacy_warmup_does_not_change_replay_identity():
+    base = {
+        "portfolio_start": date(2026, 1, 5),
+        "signal_date": date(2026, 9, 3),
+        "freq": "weekly",
+        "indices": ["Nifty 50"],
+    }
+
+    short = _strategy_fingerprint({**base, "warmup": 26}, "2026-09-03", "test")
+    long = _strategy_fingerprint({**base, "warmup": 156}, "2026-09-03", "test")
+
+    assert short == long
