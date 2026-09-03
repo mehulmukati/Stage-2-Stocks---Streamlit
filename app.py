@@ -27,7 +27,6 @@ import ichimoku_engine as ichimoku_calculations
 import ichimoku_summary as ichimoku_descriptions
 import workers as worker_functions
 from app_backtest import _sidebar_backtest, render_backtest_tabs
-from app_live_signal import render_live_signal_tabs
 from config import IST, SCREENER_OHLCV_PARQUET
 from ichimoku_tutorial import (
     diagram_svg,
@@ -76,6 +75,19 @@ fetch_chart_data = data_access.fetch_chart_data
 get_universe_coverage = data_access.get_universe_coverage
 momentum_worker = worker_functions.momentum_worker
 stage2_worker = worker_functions.stage2_worker
+
+
+def render_live_signal_tabs(idx_options: list[str]) -> None:
+    """Load Live Signal on demand so an isolated import error cannot stop app startup."""
+    try:
+        live_signal_module = importlib.import_module("app_live_signal")
+        renderer = live_signal_module.render_live_signal_tabs
+    except Exception as exc:
+        logging.exception("Live Signal could not be loaded")
+        st.error(f"Live Signal could not be loaded ({type(exc).__name__}): {exc}")
+        return
+
+    renderer(idx_options)
 
 
 @st.cache_data(ttl=3600)
