@@ -35,6 +35,30 @@ _RED_TEXT = "991B1B"
 _WHITE = "FFFFFF"
 _THIN_GRAY = Side(style="thin", color="D1D5DB")
 
+_CONFIGURATION_DATE_PARAMETERS = {
+    "Signal date",
+    "Portfolio start date",
+}
+_CONFIGURATION_INTEGER_PARAMETERS = {
+    "M (entry)",
+    "N (exit)",
+    "Stage 2 entry threshold",
+    "Stage 2 drop threshold",
+    "Minimum history (sessions)",
+    "Maximum circuits (1 year)",
+}
+_CONFIGURATION_PERCENT_PARAMETERS = {
+    "Max position (%)",
+    "Minimum annual return (%)",
+    "Within 52-week high (%)",
+    "Positive days 3M (%)",
+    "Positive days 6M (%)",
+    "Positive days 12M (%)",
+    "Transaction cost (%)",
+    "STCG rate (%)",
+    "LTCG rate (%)",
+}
+
 
 def _variant_keys(variant: str) -> tuple[str, str, str]:
     if "Prop" in variant:
@@ -391,13 +415,30 @@ def _number_format(header: str) -> str | None:
     lowered = header.lower()
     if "date" in lowered or "session" in lowered or "generated at" in lowered:
         return "yyyy-mm-dd"
-    if "₹" in header or "value" in lowered and "weight" not in lowered:
+    if "₹" in header:
         return "₹#,##0;[Red](₹#,##0);-"
     if "(%)" in header or "(pp)" in header or "turnover" in lowered or "weight" in lowered:
         return "0.00;[Red](0.00);-"
     if any(token in lowered for token in ("quantity", "holdings", "entries", "exits", "week", "rank")):
         return "#,##0;[Red](#,##0);-"
     return None
+
+
+def _format_configuration_sheet(sheet) -> None:
+    """Apply row-specific Excel types and formats to the heterogeneous Value column."""
+    for row in range(2, sheet.max_row + 1):
+        parameter = str(sheet.cell(row, 1).value or "")
+        value_cell = sheet.cell(row, 2)
+        if parameter in _CONFIGURATION_DATE_PARAMETERS:
+            value_cell.number_format = "yyyy-mm-dd"
+        elif parameter in _CONFIGURATION_INTEGER_PARAMETERS:
+            value_cell.number_format = "#,##0"
+        elif parameter in _CONFIGURATION_PERCENT_PARAMETERS:
+            if isinstance(value_cell.value, (int, float)) and not isinstance(value_cell.value, bool):
+                value_cell.value = float(value_cell.value) / 100.0
+            value_cell.number_format = "0.##%"
+        else:
+            value_cell.number_format = "@"
 
 
 def _write_table_sheet(workbook: Workbook, sheet_name: str, frame: pd.DataFrame) -> None:
@@ -523,11 +564,7 @@ def build_live_signal_audit_workbook(
     for table in summary.tables.values():
         table.ref = f"A4:D{summary.max_row}"
 
-    configuration = workbook["Configuration"]
-    for row in range(2, configuration.max_row + 1):
-        parameter = str(configuration.cell(row, 1).value or "")
-        if "date" in parameter.lower():
-            configuration.cell(row, 2).number_format = "yyyy-mm-dd"
+    _format_configuration_sheet(workbook["Configuration"])
 
     buffer = io.BytesIO()
     workbook.save(buffer)

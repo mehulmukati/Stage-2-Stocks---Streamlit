@@ -1020,6 +1020,58 @@ def _run_independent_replay_checks(
     return checks
 
 
+def _audit_method_comparison() -> pd.DataFrame:
+    """Return the user-facing comparison of the two LiveSignal audit levels."""
+    return pd.DataFrame(
+        [
+            {
+                "Aspect": "Source",
+                "Standard Audit Workbook": "Uses the historical replay already calculated for the Live Signal result",
+                "Independent Weekly Replay Verification": "Recalculates every rebalance date separately",
+            },
+            {
+                "Aspect": "Purpose",
+                "Standard Audit Workbook": "Documents what the engine produced",
+                "Independent Weekly Replay Verification": (
+                    "Tests whether each historical signal is independently reproducible"
+                ),
+            },
+            {
+                "Aspect": "Speed",
+                "Standard Audit Workbook": "Available immediately",
+                "Independent Weekly Replay Verification": "Slower; may take several minutes",
+            },
+            {
+                "Aspect": "Checks",
+                "Standard Audit Workbook": (
+                    "Holdings, entries/exits, weights, turnover, calendar shifts, "
+                    "prices, issues, and broker reconciliation"
+                ),
+                "Independent Weekly Replay Verification": (
+                    "Compares each independently generated week with the corresponding week in the full replay"
+                ),
+            },
+            {
+                "Aspect": "Detects",
+                "Standard Audit Workbook": (
+                    "Transition, weight, turnover, price, calendar, and reconciliation anomalies"
+                ),
+                "Independent Weekly Replay Verification": (
+                    "Point-in-time inconsistencies, hidden state leakage, look-ahead effects, "
+                    "and path-dependent results"
+                ),
+            },
+            {
+                "Aspect": "Workbook result",
+                "Standard Audit Workbook": "Replay Checks is marked NOT RUN",
+                "Independent Weekly Replay Verification": (
+                    "Replay Checks reports OK, FAIL, or ERROR for every rebalance"
+                ),
+            },
+        ]
+    )
+
+
 # ── results renderer ──────────────────────────────────────────────────────────
 
 
@@ -1399,11 +1451,25 @@ def live_signal_results(params: dict) -> None:
 
     st.markdown("---")
     with st.expander("Audit & reproducibility", expanded=False):
+        audit_name = f"live_signal_audit_{params['signal_date']}_{result.get('strategy_fingerprint', 'unknown')}"
         st.caption(
             "The standard workbook documents every rebalance in this replay. Independent verification reruns "
             "each historical signal separately and may take several minutes."
         )
-        audit_name = f"live_signal_audit_{params['signal_date']}_{result.get('strategy_fingerprint', 'unknown')}"
+        if st.toggle(
+            "What’s the difference between the two audit levels?",
+            value=False,
+            key=f"ls_show_audit_comparison_{audit_name}",
+        ):
+            st.dataframe(
+                _audit_method_comparison(),
+                hide_index=True,
+                width="stretch",
+            )
+            st.info(
+                "Use the Standard Audit Workbook for routine weekly review. Run Independent Weekly Replay "
+                "Verification after logic or data changes, before deployment, or when a transition looks suspicious."
+            )
         try:
             standard_workbook = build_live_signal_audit_workbook(params, result, reconciliation)
             st.download_button(

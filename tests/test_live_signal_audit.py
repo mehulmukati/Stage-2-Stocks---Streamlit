@@ -1,5 +1,5 @@
 import io
-from datetime import date
+from datetime import date, datetime
 
 from openpyxl import load_workbook
 
@@ -131,6 +131,29 @@ def test_audit_workbook_contains_all_expected_sheets(monkeypatch):
     assert workbook["Weekly Rebalances"].max_row == 3
 
 
+def test_configuration_sheet_uses_semantic_excel_types(monkeypatch):
+    monkeypatch.setattr("live_signal_audit.load_nse_holidays", lambda: frozenset())
+    params = _params()
+    params["max_pos"] = 15
+
+    payload = build_live_signal_audit_workbook(params, _result(), _reconciliation())
+    sheet = load_workbook(io.BytesIO(payload), data_only=False)["Configuration"]
+    values = {sheet.cell(row, 1).value: sheet.cell(row, 2) for row in range(2, sheet.max_row + 1)}
+
+    assert isinstance(values["Signal date"].value, datetime)
+    assert values["Signal date"].number_format == "yyyy-mm-dd"
+    assert values["M (entry)"].value == 2
+    assert values["M (entry)"].data_type == "n"
+    assert values["M (entry)"].number_format == "#,##0"
+    assert values["Stage 2 entry filter"].value == "No"
+    assert values["Stage 2 entry filter"].number_format == "@"
+    assert values["Max position (%)"].value == 0.15
+    assert values["Max position (%)"].number_format == "0.##%"
+    assert values["Transaction cost (%)"].value == 0.001
+    assert values["STCG rate (%)"].value == 0.2
+    assert values["LTCG rate (%)"].value == 0.125
+
+
 def test_audit_flags_turnover_mismatch(monkeypatch):
     monkeypatch.setattr("live_signal_audit.load_nse_holidays", lambda: frozenset())
     result = _result()
@@ -157,3 +180,11 @@ def test_independent_replay_checks_selected_variant(monkeypatch):
 
     assert len(checks) == 2
     assert {row["Status"] for row in checks} == {"OK"}
+
+
+def test_audit_method_comparison_explains_both_levels():
+    comparison = live._audit_method_comparison().set_index("Aspect")
+
+    assert "historical replay already calculated" in comparison.loc["Source", "Standard Audit Workbook"]
+    assert "Recalculates every rebalance date" in comparison.loc["Source", "Independent Weekly Replay Verification"]
+    assert "hidden state leakage" in comparison.loc["Detects", "Independent Weekly Replay Verification"]
