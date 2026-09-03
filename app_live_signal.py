@@ -16,7 +16,6 @@ import pandas as pd
 import streamlit as st
 
 from data import check_data_freshness, load_nse_holidays
-from live_signal_audit import build_live_signal_audit_workbook
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -27,6 +26,18 @@ _ALL_5_INDICES = [
     "Nifty Smallcap 250",
     "Nifty Microcap 250",
 ]
+
+
+def _build_live_signal_audit_workbook(*args, **kwargs) -> bytes:
+    """Load the optional Excel audit code only when a workbook is requested.
+
+    Keeping this import out of module initialisation prevents an audit-only
+    dependency problem from taking down the entire Streamlit application.
+    """
+    from live_signal_audit import build_live_signal_audit_workbook
+
+    return build_live_signal_audit_workbook(*args, **kwargs)
+
 
 _SORT_OPTIONS = [
     "Average of 3/6/9/12 months",
@@ -1471,7 +1482,7 @@ def live_signal_results(params: dict) -> None:
                 "Verification after logic or data changes, before deployment, or when a transition looks suspicious."
             )
         try:
-            standard_workbook = build_live_signal_audit_workbook(params, result, reconciliation)
+            standard_workbook = _build_live_signal_audit_workbook(params, result, reconciliation)
             st.download_button(
                 "📘 Download Standard Audit Workbook",
                 standard_workbook,
@@ -1515,7 +1526,7 @@ def live_signal_results(params: dict) -> None:
             else:
                 st.success(f"Independent verification passed for all {len(replay_checks)} rebalance events.")
             try:
-                verified_workbook = build_live_signal_audit_workbook(
+                verified_workbook = _build_live_signal_audit_workbook(
                     params,
                     result,
                     reconciliation,
