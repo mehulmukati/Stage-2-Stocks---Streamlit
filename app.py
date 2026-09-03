@@ -27,7 +27,7 @@ import ichimoku_engine as ichimoku_calculations
 import ichimoku_summary as ichimoku_descriptions
 import workers as worker_functions
 from app_backtest import _sidebar_backtest, render_backtest_tabs
-from app_live_signal import _sidebar_live_signal, live_signal_results
+from app_live_signal import render_live_signal_tabs
 from config import IST, SCREENER_OHLCV_PARQUET
 from ichimoku_tutorial import (
     diagram_svg,
@@ -894,7 +894,6 @@ def main():
     idx_options = _load_index_options()
 
     bt_params: dict = {}
-    ls_params: dict = {}
     rsi_toggle = False
     show_illiquid = False
     mom_filters: dict = {}
@@ -937,8 +936,6 @@ def main():
         elif screener == "⏱ Momentum Backtest":
             st.markdown("### ⏱ Momentum Backtest")
             bt_params = _sidebar_backtest(idx_options)
-        elif screener == "📡 Live Signal":
-            ls_params = _sidebar_live_signal(idx_options)
 
     # ── AUTOREFRESH — only while the active screener's job runs ──
     _kind_for_screener = {
@@ -1010,7 +1007,7 @@ def main():
             '<p class="sub-hero">Weekly trade instructions from a momentum rebalance snapshot</p>',
             unsafe_allow_html=True,
         )
-        live_signal_results(ls_params)
+        render_live_signal_tabs(idx_options)
     elif screener == "📚 User Guide":
         render_docs()
     else:  # 🚀 Momentum Screener

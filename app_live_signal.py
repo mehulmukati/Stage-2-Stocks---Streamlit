@@ -39,6 +39,8 @@ _SORT_OPTIONS = [
     "3 months",
 ]
 
+_REPLAY_BUFFER_WEEKS = 52
+
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -61,16 +63,15 @@ def _previous_business_day(d: date) -> date:
 
 
 def _simulation_start_date(params: dict) -> date:
-    """Anchor live-signal history to the portfolio's initial execution date.
+    """Return the internal replay start used to establish the inception reset.
 
     The strategy is ranked at the close before a portfolio start date and is
-    executed on that start date.  Keeping this anchor fixed means subsequent
-    weekly signals replay the same history and therefore the same prior
-    holdings; users do not have to increase the lookback every week.
+    executed on that start date. The fixed buffer is deliberately not a user
+    setting: pre-inception holdings are discarded by the backtest engine.
     """
     portfolio_start = params.get("portfolio_start")
     anchor = _previous_business_day(portfolio_start) if portfolio_start else params["signal_date"]
-    return anchor - timedelta(weeks=params["warmup"])
+    return anchor - timedelta(weeks=_REPLAY_BUFFER_WEEKS)
 
 
 def _strategy_fingerprint(params: dict, ohlcv_date: object, ohlcv_source: object) -> str:
@@ -83,7 +84,6 @@ def _strategy_fingerprint(params: dict, ohlcv_date: object, ohlcv_source: object
     """
     fields = (
         "portfolio_start",
-        "warmup",
         "band",
         "variant",
         "m",
@@ -348,6 +348,37 @@ def _reconcile_actual_portfolio(
     }
 
 
+def _portfolio_from_replay(
+    weights: dict[str, float],
+    portfolio_value: float,
+    prices: dict[str, float],
+) -> tuple[pd.DataFrame, float, list[str]]:
+    """Turn replayed pre-trade weights into whole-share positions plus residual cash."""
+    positive_weights = {ticker: float(weight) for ticker, weight in weights.items() if float(weight) > 0}
+    missing_prices = sorted(ticker for ticker in positive_weights if not prices.get(ticker, 0) > 0)
+    if missing_prices:
+        return (
+            pd.DataFrame(columns=["Ticker", "Quantity"]),
+            float(portfolio_value),
+            ["No signal-date price for replayed holding(s): " + ", ".join(missing_prices)],
+        )
+
+    total_weight = sum(positive_weights.values())
+    if total_weight <= 0:
+        return pd.DataFrame(columns=["Ticker", "Quantity"]), float(portfolio_value), []
+
+    positions = []
+    securities_value = 0.0
+    for ticker, weight in sorted(positive_weights.items()):
+        price = float(prices[ticker])
+        quantity = int((float(portfolio_value) * weight / total_weight) // price)
+        if quantity > 0:
+            positions.append({"Ticker": ticker, "Quantity": quantity})
+            securities_value += quantity * price
+    cash = max(0.0, float(portfolio_value) - securities_value)
+    return pd.DataFrame(positions, columns=["Ticker", "Quantity"]), cash, []
+
+
 def _symbols_needed_for_replay(
     indices: list[str],
     constituents: dict[str, list[str]],
@@ -372,121 +403,139 @@ def _symbols_needed_for_replay(
     return symbols
 
 
-# ── sidebar ──────────────────────────────────────────────────────────────────
+# ── inputs ───────────────────────────────────────────────────────────────────
 
 
-def _sidebar_live_signal(idx_options: list[str]) -> dict:
-    st.markdown("### 📡 Live Signal")
+def _live_signal_inputs(idx_options: list[str]) -> dict:
+    st.markdown("### Portfolio basis")
+    source_label = st.radio(
+        "Choose how Live Signal determines your portfolio before this rebalance",
+        ["Replay from start date", "Use current portfolio snapshot"],
+        horizontal=True,
+        key="ls_portfolio_source",
+    )
+    portfolio_source = "replay" if source_label.startswith("Replay") else "snapshot"
+    st.caption(
+        "Replay reconstructs the model portfolio from inception. Snapshot reconciles the positions you actually own."
+    )
 
-    signal_date = st.date_input(
+    date_col, history_col = st.columns(2)
+    signal_date = date_col.date_input(
         "Signal date",
         value=date.today(),
         max_value=date.today(),
         key="ls_signal_date",
-        help="Closing prices from this date are used for ranking. "
-        "Trades are assumed to execute on the next working day after this date.",
+        help="Closing prices from this date are used for ranking. Trades execute on the next NSE session.",
     )
-
-    st.markdown("**Actual broker snapshot**")
-    st.caption("Provide a fresh position snapshot for every signal. Only Ticker and Quantity are required.")
-    st.download_button(
-        "Download snapshot template",
-        b"Ticker,Quantity\n",
-        file_name="live_signal_broker_snapshot_template.csv",
-        mime="text/csv",
-        width="stretch",
-        key="ls_snapshot_template",
-    )
-    uploaded_snapshot = st.file_uploader(
-        "Upload broker positions",
-        type=["csv", "xlsx"],
-        key="ls_broker_snapshot_upload",
-        help="Accepted column aliases include Symbol/Trading Symbol and Qty/Net Qty/Shares.",
-    )
-    imported_snapshot = pd.DataFrame(columns=["Ticker", "Quantity"])
-    broker_errors: list[str] = []
-    snapshot_key = "manual"
-    if uploaded_snapshot is not None:
-        payload = uploaded_snapshot.getvalue()
-        snapshot_key = hashlib.sha256(payload).hexdigest()[:10]
-        imported_snapshot, broker_errors = _read_broker_snapshot(uploaded_snapshot.name, payload)
-    editor_seed = imported_snapshot if not imported_snapshot.empty else pd.DataFrame([{"Ticker": "", "Quantity": 0}])
-    edited_snapshot = st.data_editor(
-        editor_seed,
-        num_rows="dynamic",
-        hide_index=True,
-        width="stretch",
-        key=f"ls_broker_positions_{snapshot_key}",
-        column_config={
-            "Ticker": st.column_config.TextColumn("Ticker", required=True),
-            "Quantity": st.column_config.NumberColumn("Quantity", min_value=0, step=1, required=True),
-        },
-    )
-    broker_snapshot, editor_errors = _normalise_broker_snapshot(edited_snapshot)
-    broker_errors.extend(error for error in editor_errors if error not in broker_errors)
-    for error in broker_errors:
-        st.error(error)
-
-    cash_balance = st.number_input(
-        "Available cash (₹)",
-        min_value=0,
-        max_value=100_000_000,
-        value=0,
-        step=1_000,
-        format="%d",
-        key="ls_cash_balance",
-    )
-    reserve_cash = st.number_input(
-        "Minimum cash reserve (₹)",
-        min_value=0,
-        max_value=100_000_000,
-        value=0,
-        step=1_000,
-        format="%d",
-        key="ls_reserve_cash",
-        help="Cash deliberately left uninvested after whole-share rounding.",
-    )
-    expected_portfolio_value = st.number_input(
-        "Expected broker total (₹, optional)",
-        min_value=0,
-        max_value=100_000_000,
-        value=0,
-        step=10_000,
-        format="%d",
-        key="ls_expected_portfolio_value",
-        help="Optional cross-check only. Live Signal calculates value from quantities, prices and cash.",
-    )
-
-    portfolio_start = st.date_input(
-        "Portfolio start date",
+    portfolio_start = history_col.date_input(
+        "Portfolio start date" if portfolio_source == "replay" else "Strategy inception date",
         value=date.today() + timedelta(days=1),
         key="ls_portfolio_start",
-        help="When you started (or plan to start) your portfolio. This anchors the simulation "
-        "history, so each later rebalance replays the same portfolio path.",
+        help="Anchors the strategy path. Keep this date unchanged for subsequent signals.",
     )
 
-    warmup = st.slider(
-        "Simulation lookback (weeks)",
-        26,
-        156,
-        52,
-        step=1,
-        key="ls_warmup",
-        help="How far back from the portfolio's initial rebalance to run the backtest engine "
-        "to compute Marginal weight drift. Keep this fixed for subsequent signals.",
-    )
+    broker_snapshot = pd.DataFrame(columns=["Ticker", "Quantity"])
+    broker_errors: list[str] = []
+    cash_balance = 0.0
+    reserve_cash = 0.0
+    expected_portfolio_value = 0.0
+    portfolio_value = 0.0
 
+    if portfolio_source == "replay":
+        portfolio_value = st.number_input(
+            "Portfolio value at signal date (₹)",
+            min_value=10_000,
+            max_value=100_000_000,
+            value=1_000_000,
+            step=10_000,
+            format="%d",
+            key="ls_portfolio_value",
+            help="Used to turn the replayed model weights into indicative whole-share quantities.",
+        )
+        st.info("No holdings upload is needed. Trades will be calculated from the replayed strategy portfolio.")
+    else:
+        with st.expander("Current positions", expanded=True):
+            upload_col, template_col = st.columns([3, 1])
+            uploaded_snapshot = upload_col.file_uploader(
+                "Upload broker positions",
+                type=["csv", "xlsx"],
+                key="ls_broker_snapshot_upload",
+                help="Accepted aliases include Symbol/Trading Symbol and Qty/Net Qty/Shares.",
+            )
+            template_col.download_button(
+                "Template",
+                b"Ticker,Quantity\n",
+                file_name="live_signal_broker_snapshot_template.csv",
+                mime="text/csv",
+                width="stretch",
+                key="ls_snapshot_template",
+            )
+            imported_snapshot = pd.DataFrame(columns=["Ticker", "Quantity"])
+            snapshot_key = "manual"
+            if uploaded_snapshot is not None:
+                payload = uploaded_snapshot.getvalue()
+                snapshot_key = hashlib.sha256(payload).hexdigest()[:10]
+                imported_snapshot, broker_errors = _read_broker_snapshot(uploaded_snapshot.name, payload)
+            editor_seed = (
+                imported_snapshot if not imported_snapshot.empty else pd.DataFrame([{"Ticker": "", "Quantity": 0}])
+            )
+            edited_snapshot = st.data_editor(
+                editor_seed,
+                num_rows="dynamic",
+                hide_index=True,
+                width="stretch",
+                key=f"ls_broker_positions_{snapshot_key}",
+                column_config={
+                    "Ticker": st.column_config.TextColumn("Ticker", required=True),
+                    "Quantity": st.column_config.NumberColumn("Quantity", min_value=0, step=1, required=True),
+                },
+            )
+            broker_snapshot, editor_errors = _normalise_broker_snapshot(edited_snapshot)
+            broker_errors.extend(error for error in editor_errors if error not in broker_errors)
+            for error in broker_errors:
+                st.error(error)
+
+        cash_col, reserve_col, check_col = st.columns(3)
+        cash_balance = cash_col.number_input(
+            "Available cash (₹)",
+            min_value=0,
+            max_value=100_000_000,
+            value=0,
+            step=1_000,
+            format="%d",
+            key="ls_cash_balance",
+        )
+        reserve_cash = reserve_col.number_input(
+            "Minimum cash reserve (₹)",
+            min_value=0,
+            max_value=100_000_000,
+            value=0,
+            step=1_000,
+            format="%d",
+            key="ls_reserve_cash",
+            help="Cash deliberately left uninvested after rounding.",
+        )
+        expected_portfolio_value = check_col.number_input(
+            "Expected broker total (₹)",
+            min_value=0,
+            max_value=100_000_000,
+            value=0,
+            step=10_000,
+            format="%d",
+            key="ls_expected_portfolio_value",
+            help="Optional cross-check.",
+        )
     st.divider()
 
     st.markdown("**Strategy**")
-
-    band = st.selectbox(
+    strategy_col, schedule_col = st.columns(2)
+    band = strategy_col.selectbox(
         "Band rule",
         ["classic", "displacement"],
         format_func=str.capitalize,
         key="ls_band",
     )
-    variant = st.selectbox(
+    variant = schedule_col.selectbox(
         "Variant",
         ["Marginal Rebalance", "Prop Rebalance", "Full Rebalance"],
         key="ls_variant",
@@ -496,53 +545,51 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
     m = col_m.number_input("M (entry)", min_value=5, max_value=50, value=15, step=1, key="ls_m")
     n = col_n.number_input("N (exit)", min_value=6, max_value=200, value=30, step=1, key="ls_n")
 
-    sort_method = st.selectbox("Rank by Sharpe", _SORT_OPTIONS, index=0, key="ls_sort_method")
-    freq = st.selectbox(
+    ranking_col, frequency_col = st.columns(2)
+    sort_method = ranking_col.selectbox("Rank by Sharpe", _SORT_OPTIONS, index=0, key="ls_sort_method")
+    freq = frequency_col.selectbox(
         "Rebalance frequency",
         ["weekly", "biweekly", "monthly", "quarterly", "half-yearly"],
         key="ls_freq",
     )
 
     if freq == "weekly":
-        st.divider()
-        st.markdown("**Stage 2 signals** (weekly)")
-        s2_entry = st.toggle(
-            "Enter on Stage 2 score jump",
-            value=False,
-            key="ls_s2_entry",
-            help="Allow a stock to enter if its Weinstein Stage 2 score rises by the threshold or more since last week "
-            "— even if it isn't in the top-M momentum rank.",
-        )
-        s2_entry_threshold = st.number_input(
-            "Score jump threshold",
-            min_value=1,
-            max_value=4,
-            value=2,
-            step=1,
-            disabled=not s2_entry,
-            key="ls_s2_entry_threshold",
-            help="Stage 2 points that must rise in one week to trigger entry (e.g. 2 means score 4→6).",
-        )
-        s2_drop = st.toggle("Stage 2 drop exit", value=False, key="ls_s2_drop")
-        s2_threshold = st.number_input(
-            "Drop threshold",
-            min_value=1,
-            max_value=4,
-            value=2,
-            step=1,
-            disabled=not s2_drop,
-            key="ls_s2_threshold",
-            help="Stage 2 points that must fall in one week to trigger exit (e.g. 2 means score 6→4).",
-        )
+        with st.expander("Stage 2 signals (weekly)", expanded=False):
+            entry_col, exit_col = st.columns(2)
+            s2_entry = entry_col.toggle(
+                "Enter on score jump",
+                value=False,
+                key="ls_s2_entry",
+                help="Allow entry after a qualifying weekly Weinstein Stage 2 score increase.",
+            )
+            s2_entry_threshold = entry_col.number_input(
+                "Score jump threshold",
+                min_value=1,
+                max_value=4,
+                value=2,
+                step=1,
+                disabled=not s2_entry,
+                key="ls_s2_entry_threshold",
+            )
+            s2_drop = exit_col.toggle("Exit on score drop", value=False, key="ls_s2_drop")
+            s2_threshold = exit_col.number_input(
+                "Drop threshold",
+                min_value=1,
+                max_value=4,
+                value=2,
+                step=1,
+                disabled=not s2_drop,
+                key="ls_s2_threshold",
+            )
     else:
         s2_entry = False
         s2_entry_threshold = st.session_state.get("ls_s2_entry_threshold", 2)
         s2_drop = False
         s2_threshold = st.session_state.get("ls_s2_threshold", 2)
 
-    st.divider()
     st.markdown("**Position cap & universe**")
-    max_pos = st.slider(
+    risk_col, universe_col = st.columns(2)
+    max_pos = risk_col.slider(
         "Max position (%)",
         0,
         50,
@@ -552,15 +599,13 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         help="0 = no cap. Recommended 15% for Marginal variant.",
     )
 
-    indices = st.multiselect(
+    indices = universe_col.multiselect(
         "Index universe",
         options=idx_options or _ALL_5_INDICES,
         default=idx_options or _ALL_5_INDICES,
         key="ls_indices",
     )
-    st.divider()
-
-    with st.expander("Quality Filters", expanded=False):
+    with st.expander("Advanced quality filters", expanded=False):
         st.caption(
             "Stocks that fail these filters are excluded from portfolio selection at each rebalance. "
             "0 / 100 / 999 = no filter (default). Match these to the Momentum Screener for consistent results."
@@ -649,7 +694,7 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         st.session_state["ls_result"] = None
     st.divider()
 
-    snapshot_missing = broker_snapshot.empty and cash_balance <= 0
+    snapshot_missing = portfolio_source == "snapshot" and broker_snapshot.empty and cash_balance <= 0
     if snapshot_missing:
         st.warning("Enter at least one broker position or a positive cash balance.")
     if st.button(
@@ -677,7 +722,8 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
         "max_pos": max_pos,
         "indices": list(indices),
         "portfolio_start": portfolio_start,
-        "warmup": int(warmup),
+        "portfolio_source": portfolio_source,
+        "portfolio_value": float(portfolio_value),
         "broker_snapshot": broker_snapshot,
         "cash_balance": float(cash_balance),
         "reserve_cash": float(reserve_cash),
@@ -897,7 +943,7 @@ def _run_signal(params: dict) -> dict:
 
 def live_signal_results(params: dict) -> None:
     if not st.session_state.get("ls_run_triggered", False):
-        st.info("Configure your strategy in the sidebar and click **Generate Signal**.")
+        st.info("Configure the portfolio and strategy in **Input**, then click **Generate Signal**.")
         return
 
     # Run only when button was clicked (ls_result cleared by button handler)
@@ -969,10 +1015,12 @@ def live_signal_results(params: dict) -> None:
         return
 
     current = holdings_log[-1]
+    previous = holdings_log[-2] if len(holdings_log) >= 2 else None
 
     # Select weight snapshot for the chosen variant
     _v = params["variant"]
     weight_key = "prop_weights" if "Prop" in _v else "marg_weights" if "Marginal" in _v else "full_weights"
+    pre_rebalance_key = f"pre_rebalance_{weight_key}"
     weights: dict[str, float] = dict(current[weight_key])
 
     # A merger changes the security's identity without being a market trade.
@@ -993,12 +1041,6 @@ def live_signal_results(params: dict) -> None:
     if params["n"] <= params["m"]:
         st.warning(f"N ({params['n']}) must be greater than M ({params['m']}). Results may be unreliable.")
 
-    if params["warmup"] < 26 and params["variant"] != "Full Rebalance":
-        st.warning(
-            f"Portfolio start date is less than 26 weeks before signal date ({params['warmup']} weeks). "
-            "Marginal weights may not reflect realistic drift — try an earlier start date."
-        )
-
     # ── header ───────────────────────────────────────────────────────────────
     band_lbl = params["band"].capitalize()
     var_lbl = "Prop" if "Prop" in params["variant"] else "Marginal" if "Marginal" in params["variant"] else "Full"
@@ -1007,13 +1049,11 @@ def live_signal_results(params: dict) -> None:
     st.markdown(
         f"**{band_lbl} · {var_lbl} · M={params['m']} · N={params['n']}" f" · {params['sort_method']}{s2_lbl}{cap_lbl}**"
     )
-    sim_start = _simulation_start_date(params)
     portfolio_start = params.get("portfolio_start")
     port_lbl = portfolio_start.strftime("%b %d, %Y") if portfolio_start else "—"
     fresh_lbl = " 🆕 **Strategy replay starts at this event**" if fresh_portfolio else ""
     st.caption(
         f"Portfolio start: **{port_lbl}**{fresh_lbl} "
-        f"· Simulation from: **{sim_start.strftime('%b %d, %Y')}** ({params['warmup']} weeks back) "
         f"· Data as-of: **{ohlcv_date}** "
         f"· Replay ID: **{result.get('strategy_fingerprint', '—')}** "
         f"· {params['freq'].capitalize()} schedule: **{params['signal_date'].strftime('%A')}** "
@@ -1041,11 +1081,30 @@ def live_signal_results(params: dict) -> None:
     close_prices: dict[str, float] = result.get("close_prices", {})
     latest_price_dates: dict[str, str] = result.get("latest_price_dates", {})
     tradability_status: dict[str, str] = result.get("tradability_status", {})
-    broker_snapshot = params.get("broker_snapshot", pd.DataFrame(columns=["Ticker", "Quantity"]))
+    portfolio_source = params.get("portfolio_source", "snapshot")
+    if portfolio_source == "replay":
+        pre_trade_weights = _comparison_weights_for_live_event(
+            current, previous, weight_key, pre_rebalance_key, fresh_portfolio
+        )
+        broker_snapshot, cash_balance, replay_errors = _portfolio_from_replay(
+            pre_trade_weights,
+            params.get("portfolio_value", 0.0),
+            close_prices,
+        )
+        if replay_errors:
+            for error in replay_errors:
+                st.error(error)
+            st.error("Trade list blocked. The replayed portfolio could not be valued at the signal date.")
+            return
+        reserve_cash = 0.0
+    else:
+        broker_snapshot = params.get("broker_snapshot", pd.DataFrame(columns=["Ticker", "Quantity"]))
+        cash_balance = params.get("cash_balance", 0.0)
+        reserve_cash = params.get("reserve_cash", 0.0)
     reconciliation = _reconcile_actual_portfolio(
         broker_snapshot,
-        params.get("cash_balance", 0.0),
-        params.get("reserve_cash", 0.0),
+        cash_balance,
+        reserve_cash,
         weights,
         close_prices,
     )
@@ -1056,7 +1115,7 @@ def live_signal_results(params: dict) -> None:
         return
 
     portfolio_value = float(reconciliation["gross_value"])
-    expected_value = float(params.get("expected_portfolio_value", 0.0))
+    expected_value = float(params.get("expected_portfolio_value", 0.0)) if portfolio_source == "snapshot" else 0.0
     if expected_value > 0:
         value_gap = portfolio_value - expected_value
         value_tolerance = max(1_000.0, expected_value * 0.005)
@@ -1084,7 +1143,8 @@ def live_signal_results(params: dict) -> None:
     pre_cap_weights: dict[str, float] = current.get(pre_cap_key, {})
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Calculated portfolio", f"₹{portfolio_value:,.0f}")
+    portfolio_metric = "Replayed portfolio" if portfolio_source == "replay" else "Calculated portfolio"
+    c1.metric(portfolio_metric, f"₹{portfolio_value:,.0f}")
     c2.metric("Buys", len(buy_rows))
     c3.metric("Sells", len(sell_rows), delta=f"-{len(sell_rows)}" if sell_rows else None, delta_color="inverse")
     c4.metric("Actual turnover", f"{reconciliation['turnover_pct']:.1f}%")
@@ -1146,7 +1206,10 @@ def live_signal_results(params: dict) -> None:
 
     st.markdown("---")
     actual_position_count = sum(row["Actual quantity"] > 0 for row in actual_rows)
-    st.markdown(f"#### Actual portfolio before trading &nbsp;({actual_position_count})")
+    portfolio_heading = (
+        "Replayed portfolio before trading" if portfolio_source == "replay" else "Actual portfolio before trading"
+    )
+    st.markdown(f"#### {portfolio_heading} &nbsp;({actual_position_count})")
     st.dataframe(
         pd.DataFrame([row for row in actual_rows if row["Actual quantity"] > 0], columns=common_columns),
         hide_index=True,
@@ -1240,9 +1303,18 @@ def live_signal_results(params: dict) -> None:
         st.warning("CSV download is unavailable until all stale or missing-price errors are resolved.")
     else:
         st.download_button(
-            "📥 Download Reconciled Trade List (CSV)",
+            "📥 Download Trade List (CSV)",
             trade_df.to_csv(index=False).encode("utf-8"),
-            file_name=f"live_signal_reconciled_{params['signal_date']}.csv",
+            file_name=f"live_signal_{portfolio_source}_{params['signal_date']}.csv",
             mime="text/csv",
             width="stretch",
         )
+
+
+def render_live_signal_tabs(idx_options: list[str]) -> None:
+    """Render Live Signal inputs and output in the main content pane."""
+    input_tab, results_tab = st.tabs(["⚙️ Input", "📊 Results"])
+    with input_tab:
+        params = _live_signal_inputs(idx_options)
+    with results_tab:
+        live_signal_results(params)
