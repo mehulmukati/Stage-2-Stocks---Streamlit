@@ -75,7 +75,6 @@ def get_last_valid_trading_date(start_date_str: str, holidays: frozenset) -> str
 # ──────────────────────────────────────────────
 _STALENESS_DAYS_CONSTITUENTS = 30
 _STALENESS_DAYS_HOLIDAYS = 180  # NSE publishes holiday lists ~annually; refresh twice/year
-_STALENESS_DAYS_COMPOSITIONS = 30
 
 
 def check_data_freshness() -> list[tuple[str, str]]:
@@ -142,31 +141,33 @@ def check_data_freshness() -> list[tuple[str, str]]:
                 )
 
     # ── compositions.parquet ──────────────────
+    # TIME_STAMP is an effective date (a snapshot/event date), not a
+    # "refreshed through" watermark. A composition remains valid until the
+    # next membership change, so its maximum value must not be compared with
+    # today's date. Current-membership freshness is checked independently via
+    # constituents.json above.
     comp_path = os.path.join(repo, "data", "compositions.parquet")
     if not os.path.exists(comp_path):
         issues.append(
             (
-                "warning",
+                "error",
                 "**data/compositions.parquet** not found — survivorship-bias correction is disabled. "
-                "Run `scripts/refresh_backtest_parquet.py` to generate it.",
+                "Restore it or rebuild it with `data/reconstruct_indices.py` from up-to-date source files.",
             )
         )
     else:
         try:
-            df = pd.read_parquet(comp_path, columns=["TIME_STAMP"])
-            max_ts = pd.to_datetime(df["TIME_STAMP"]).max().date()
-            lag = (today - max_ts).days
-            if lag > _STALENESS_DAYS_COMPOSITIONS:
-                issues.append(
-                    (
-                        "warning",
-                        f"**compositions.parquet** last covers {max_ts.strftime('%d %b %Y')} "
-                        f"({lag} days ago) — the constituent filter may be stale. "
-                        "Run `scripts/refresh_backtest_parquet.py` to update.",
-                    )
+            df = pd.read_parquet(comp_path, columns=["INDEX_NAME", "TIME_STAMP", "SYMBOL"])
+            if df.empty or pd.to_datetime(df["TIME_STAMP"], errors="coerce").notna().sum() == 0:
+                raise ValueError("no valid composition snapshots")
+        except Exception as exc:
+            issues.append(
+                (
+                    "error",
+                    f"**data/compositions.parquet** is unreadable or invalid ({exc}) — "
+                    "restore it or rebuild it with `data/reconstruct_indices.py` from up-to-date source files.",
                 )
-        except Exception:
-            pass
+            )
 
     return issues
 

@@ -133,6 +133,16 @@ class OHLCVLoadResult:
             and self.refresh_status in {"fresh", "not_needed", "memory"}
         )
 
+    @property
+    def is_usable_for_signal(self) -> bool:
+        """Whether every required symbol has a recent tradable bar.
+
+        Exact target-session coverage is ideal but not required: suspended or
+        thinly traded constituents can legitimately have no bar on one session,
+        and the ranking engine already enforces the same three-session limit.
+        """
+        return bool(self.symbol_data) and self.actual_latest_date is not None and not self.stale_symbols
+
     def __iter__(self):
         yield self.symbol_data
         yield self.actual_latest_date or self.target_date
@@ -271,6 +281,7 @@ def _fetch_ohlcv_delta(
     """Download the missing tail, retrying failures and partial symbol responses."""
     start_dt = (last_date + timedelta(days=1)).strftime("%Y-%m-%d")
     end_dt = (datetime.strptime(today_key, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+    target_date = pd.Timestamp(today_key)
     empty = pd.DataFrame(columns=["symbol", "date", "Close", "High", "Volume"])
     if start_dt >= end_dt:
         return DeltaFetchResult(empty, list(all_symbols))
@@ -342,24 +353,31 @@ def _fetch_ohlcv_delta(
                     continue
                 sub = sub.copy()
                 sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
-                symbol_had_row = False
+                symbol_had_target_row = False
                 for dt, row in sub.iterrows():
                     close = row.get("Close")
                     if pd.isna(close):
                         continue
                     high = row.get("High")
                     vol = row.get("Volume")
+                    row_date = pd.Timestamp(dt).tz_localize(None).normalize()
+                    volume = int(vol) if not pd.isna(vol) else 0
                     records.append(
                         {
                             "symbol": sym,
-                            "date": pd.Timestamp(dt.date()),
+                            "date": row_date,
                             "Close": float(close),
                             "High": float(high) if not pd.isna(high) else float("nan"),
-                            "Volume": int(vol) if not pd.isna(vol) else 0,
+                            "Volume": volume,
                         }
                     )
-                    symbol_had_row = True
-                if symbol_had_row:
+                    if row_date == target_date and volume > 0:
+                        symbol_had_target_row = True
+                # An older row proves only that the ticker exists; it does not
+                # satisfy the target-session freshness contract. Keep such
+                # symbols pending so the smaller retry batches can recover a
+                # partial Yahoo response.
+                if symbol_had_target_row:
                     pending.discard(sym)
 
     if not records:
@@ -370,7 +388,10 @@ def _fetch_ohlcv_delta(
     df["Close"] = df["Close"].astype("float32")
     df["High"] = df["High"].astype("float32")
     df["Volume"] = df["Volume"].astype("int64")
-    returned = sorted(set(df["symbol"]))
+    target_rows = df[
+        (df["date"] == target_date) & df["Close"].notna() & (pd.to_numeric(df["Volume"], errors="coerce").fillna(0) > 0)
+    ]
+    returned = sorted(set(target_rows["symbol"]))
     error = None
     if pending:
         sample = ", ".join(sorted(pending)[:20])

@@ -82,6 +82,18 @@ def test_partial_response_reports_conservative_actual_date_and_is_not_cached(mon
     assert "2026-08-25" not in db._merged_ohlcv
 
 
+def test_one_session_partial_coverage_is_usable_for_signal(monkeypatch):
+    partial = _long([("A", "2026-08-25", 101), ("B", "2026-08-24", 200)])
+    monkeypatch.setattr(db, "load_nse_holidays", lambda: frozenset())
+
+    result = db._assess_ohlcv_freshness(partial, "2026-08-25", ["A", "B"], "parquet+delta")
+
+    assert not result.is_fresh
+    assert result.missing_target_symbols == ["B"]
+    assert result.stale_symbols == []
+    assert result.is_usable_for_signal
+
+
 def test_fresh_result_uses_observed_date_and_legacy_unpacking(monkeypatch):
     baseline = _long([("A", "2026-08-24", 100)])
     _reset_runtime_caches(monkeypatch, baseline)
@@ -130,6 +142,47 @@ def test_delta_fetch_retries_exception_then_succeeds(monkeypatch):
     assert result.data.iloc[0]["date"] == pd.Timestamp("2026-08-25")
 
 
+def test_delta_fetch_retries_when_first_response_has_only_an_older_session(monkeypatch):
+    calls = 0
+
+    def fake_download(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        day = "2026-08-24" if calls == 1 else "2026-08-25"
+        frame = pd.DataFrame(
+            {"Close": [101.0], "High": [102.0], "Volume": [1000]},
+            index=pd.DatetimeIndex([day]),
+        )
+        return pd.concat({"A.NS": frame}, axis=1)
+
+    monkeypatch.setattr(db.yf, "download", fake_download)
+    monkeypatch.setattr(db.time, "sleep", lambda seconds: None)
+
+    result = db._fetch_ohlcv_delta(["A"], pd.Timestamp("2026-08-23"), "2026-08-25", lambda level, message: None)
+
+    assert calls == 2
+    assert result.attempts == 2
+    assert result.returned_symbols == ["A"]
+    assert result.error is None
+    assert set(result.data["date"]) == {pd.Timestamp("2026-08-24"), pd.Timestamp("2026-08-25")}
+
+
+def test_delta_fetch_does_not_count_older_rows_as_updated(monkeypatch):
+    frame = pd.DataFrame(
+        {"Close": [101.0], "High": [102.0], "Volume": [1000]},
+        index=pd.DatetimeIndex(["2026-08-24"]),
+    )
+    response = pd.concat({"A.NS": frame}, axis=1)
+    monkeypatch.setattr(db.yf, "download", lambda *args, **kwargs: response)
+    monkeypatch.setattr(db.time, "sleep", lambda seconds: None)
+
+    result = db._fetch_ohlcv_delta(["A"], pd.Timestamp("2026-08-23"), "2026-08-25", lambda level, message: None)
+
+    assert result.attempts == 3
+    assert result.returned_symbols == []
+    assert "A" in result.error
+
+
 def test_empty_yahoo_response_is_a_failed_fetch(monkeypatch):
     monkeypatch.setattr(db.yf, "download", lambda *args, **kwargs: pd.DataFrame())
     monkeypatch.setattr(db.time, "sleep", lambda seconds: None)
@@ -142,7 +195,7 @@ def test_empty_yahoo_response_is_a_failed_fetch(monkeypatch):
 
 
 def test_live_signal_blocks_before_backtest_when_refresh_is_not_fresh(monkeypatch):
-    baseline = _long([("A", "2026-08-24", 100)])
+    baseline = _long([("A", "2026-08-18", 100)])
     stale = db._assess_ohlcv_freshness(baseline, "2026-08-25", ["A"], "parquet")
 
     monkeypatch.setattr(db, "_load_constituents", lambda: {"Nifty 50": ["A"]})
@@ -164,7 +217,7 @@ def test_live_signal_blocks_before_backtest_when_refresh_is_not_fresh(monkeypatc
 
     assert "error" in result
     assert "Signal not generated" in result["error"]
-    assert result["data_freshness"]["actual_latest_date"] == "2026-08-24"
+    assert result["data_freshness"]["actual_latest_date"] == "2026-08-18"
 
 
 def test_failed_benchmark_refresh_is_not_hot_cached_and_retries(monkeypatch):

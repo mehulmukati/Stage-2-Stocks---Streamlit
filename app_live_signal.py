@@ -637,10 +637,14 @@ def _sidebar_live_signal(idx_options: list[str]) -> dict:
     live_data_blocked = False
     for _lvl, _msg in freshness_issues:
         (st.error if _lvl == "error" else st.warning)(_msg)
-        if _lvl == "error" or "constituents.json" in _msg or "compositions.parquet" in _msg:
+        # Missing/invalid reference data is an error. A stale current-
+        # constituent file remains blocking even though it is rendered as a
+        # warning; composition TIME_STAMP values are effective dates and are
+        # deliberately not treated as freshness watermarks.
+        if _lvl == "error" or "constituents.json" in _msg:
             live_data_blocked = True
     if live_data_blocked:
-        st.error("LiveSignal is disabled until constituent and composition data are current.")
+        st.error("LiveSignal is disabled until the blocking reference-data issues above are resolved.")
         st.session_state["ls_run_triggered"] = False
         st.session_state["ls_result"] = None
     st.divider()
@@ -753,9 +757,14 @@ def _run_signal(params: dict) -> dict:
             "error": "OHLCV data is missing. Run: python scripts/refresh_backtest_parquet.py",
             "data_freshness": freshness,
         }
-    if not ohlcv.is_fresh:
+    if not ohlcv.is_usable_for_signal:
         available = ohlcv.actual_latest_date or ohlcv.max_price_date or "unknown"
-        reason = ohlcv.refresh_error or "one or more required target-session prices are unavailable"
+        if ohlcv.stale_symbols:
+            reason = f"{len(ohlcv.stale_symbols)} required symbols are more than three NSE sessions stale"
+        elif ohlcv.missing_target_symbols:
+            reason = f"{len(ohlcv.missing_target_symbols)} required symbols have no recent tradable price"
+        else:
+            reason = ohlcv.refresh_error or "required recent prices are unavailable"
         return {
             "error": (
                 f"Signal not generated. Required data targets {ohlcv.target_date}, but verified coverage is "
@@ -922,11 +931,16 @@ def live_signal_results(params: dict) -> None:
             sample = ", ".join(missing[:20])
             suffix = f" (+{len(missing) - 20} more)" if len(missing) > 20 else ""
             st.warning(f"Required symbols without a target-session price: {sample}{suffix}")
+            if not stale:
+                st.info(
+                    "Signal generation is continuing with each symbol's latest tradable price. "
+                    "The ranking engine allows at most three completed NSE sessions of lag."
+                )
         if stale:
             sample = ", ".join(stale[:20])
             suffix = f" (+{len(stale) - 20} more)" if len(stale) > 20 else ""
             st.error(f"Required symbols more than three NSE sessions stale: {sample}{suffix}")
-        if freshness.get("error"):
+        if freshness.get("error") and stale:
             st.caption(f"Refresh detail: {freshness['error']}")
         benchmark = freshness.get("benchmark", {})
         if benchmark:
