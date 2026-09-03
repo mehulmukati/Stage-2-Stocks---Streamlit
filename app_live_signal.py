@@ -16,6 +16,7 @@ import pandas as pd
 import streamlit as st
 
 from data import check_data_freshness, load_nse_holidays
+from live_signal_audit import build_live_signal_audit_workbook
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -925,6 +926,7 @@ def _run_signal(params: dict) -> dict:
 
     strategy_fingerprint = _strategy_fingerprint(params, ohlcv_date, src)
     return {
+        "run_params": params,
         "holdings_log": holdings_log,
         "ohlcv_date": ohlcv_date,
         "ohlcv_source": src,
@@ -936,6 +938,86 @@ def _run_signal(params: dict) -> dict:
         "blocking_stale_incumbents": blocking_stale_incumbents,
         "data_freshness": freshness,
     }
+
+
+def _run_independent_replay_checks(
+    params: dict,
+    result: dict,
+    progress_callback=None,
+) -> list[dict]:
+    """Recreate every post-inception signal independently and compare snapshots."""
+    reset_date = result.get("portfolio_reset_date")
+    expected_events = [
+        event
+        for event in result.get("holdings_log", [])
+        if reset_date is None or pd.Timestamp(event["date"]) >= pd.Timestamp(reset_date)
+    ]
+    weight_key = (
+        "prop_weights"
+        if "Prop" in params["variant"]
+        else "marg_weights" if "Marginal" in params["variant"] else "full_weights"
+    )
+    checks: list[dict] = []
+    total = len(expected_events)
+    for index, expected in enumerate(expected_events, start=1):
+        signal_date = _to_date(expected["date"])
+        check_params = {**params, "signal_date": signal_date}
+        try:
+            checked = _run_signal(check_params)
+            if "error" in checked:
+                checks.append(
+                    {
+                        "Week": index,
+                        "Signal Date": signal_date,
+                        "Status": "ERROR",
+                        "Holdings Match": False,
+                        "Weights Match": False,
+                        "Detail": checked["error"],
+                    }
+                )
+            elif not checked.get("holdings_log"):
+                checks.append(
+                    {
+                        "Week": index,
+                        "Signal Date": signal_date,
+                        "Status": "ERROR",
+                        "Holdings Match": False,
+                        "Weights Match": False,
+                        "Detail": "Independent replay returned no rebalance event.",
+                    }
+                )
+            else:
+                actual = checked["holdings_log"][-1]
+                holdings_match = actual.get("holdings", []) == expected.get("holdings", [])
+                weights_match = actual.get(weight_key, {}) == expected.get(weight_key, {})
+                checks.append(
+                    {
+                        "Week": index,
+                        "Signal Date": signal_date,
+                        "Status": "OK" if holdings_match and weights_match else "FAIL",
+                        "Holdings Match": holdings_match,
+                        "Weights Match": weights_match,
+                        "Detail": (
+                            ""
+                            if holdings_match and weights_match
+                            else "Independent replay differs from final replay path."
+                        ),
+                    }
+                )
+        except Exception as exc:
+            checks.append(
+                {
+                    "Week": index,
+                    "Signal Date": signal_date,
+                    "Status": "ERROR",
+                    "Holdings Match": False,
+                    "Weights Match": False,
+                    "Detail": str(exc),
+                }
+            )
+        if progress_callback is not None:
+            progress_callback(index, total)
+    return checks
 
 
 # ── results renderer ──────────────────────────────────────────────────────────
@@ -952,6 +1034,11 @@ def live_signal_results(params: dict) -> None:
         with st.spinner("Loading data and computing signal… (~15 seconds)"):
             result = _run_signal(params)
         st.session_state["ls_result"] = result
+
+    # Keep the rendered trade list and audit tied to the exact inputs used for
+    # this result even if a widget is edited before Generate Signal is clicked
+    # again.
+    params = result.get("run_params", params)
 
     freshness = result.get("data_freshness", {})
     if freshness:
@@ -1309,6 +1396,75 @@ def live_signal_results(params: dict) -> None:
             mime="text/csv",
             width="stretch",
         )
+
+    st.markdown("---")
+    with st.expander("Audit & reproducibility", expanded=False):
+        st.caption(
+            "The standard workbook documents every rebalance in this replay. Independent verification reruns "
+            "each historical signal separately and may take several minutes."
+        )
+        audit_name = f"live_signal_audit_{params['signal_date']}_{result.get('strategy_fingerprint', 'unknown')}"
+        try:
+            standard_workbook = build_live_signal_audit_workbook(params, result, reconciliation)
+            st.download_button(
+                "📘 Download Standard Audit Workbook",
+                standard_workbook,
+                file_name=f"{audit_name}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                width="stretch",
+                key=f"ls_standard_audit_{audit_name}",
+            )
+        except Exception as exc:
+            st.error(f"Audit workbook could not be generated: {exc}")
+
+        verification_key = f"ls_replay_checks_{result.get('strategy_fingerprint', '')}_{params['signal_date']}"
+        if st.button(
+            "Run Independent Weekly Replay Verification",
+            width="stretch",
+            key=f"ls_verify_audit_{audit_name}",
+        ):
+            progress = st.progress(0.0, text="Starting independent replay verification…")
+
+            def update_progress(done: int, total: int) -> None:
+                progress.progress(
+                    done / max(total, 1),
+                    text=f"Verifying historical signal {done} of {total}…",
+                )
+
+            with st.spinner("Replaying each historical signal independently…"):
+                st.session_state[verification_key] = _run_independent_replay_checks(
+                    params,
+                    result,
+                    progress_callback=update_progress,
+                )
+            progress.empty()
+
+        replay_checks = st.session_state.get(verification_key)
+        if replay_checks is None:
+            st.info("Independent replay verification has not been run for this signal.")
+        else:
+            failed = sum(row["Status"] != "OK" for row in replay_checks)
+            if failed:
+                st.error(f"Independent verification found {failed} failed or errored replay(s).")
+            else:
+                st.success(f"Independent verification passed for all {len(replay_checks)} rebalance events.")
+            try:
+                verified_workbook = build_live_signal_audit_workbook(
+                    params,
+                    result,
+                    reconciliation,
+                    replay_checks,
+                )
+                st.download_button(
+                    "✅ Download Verified Audit Workbook",
+                    verified_workbook,
+                    file_name=f"{audit_name}_verified.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    width="stretch",
+                    key=f"ls_verified_audit_{audit_name}",
+                )
+            except Exception as exc:
+                st.error(f"Verified audit workbook could not be generated: {exc}")
 
 
 def render_live_signal_tabs(idx_options: list[str]) -> None:

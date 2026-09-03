@@ -24,6 +24,7 @@ from backtest_engine import BacktestConfig, run_backtest
 from corporate_actions import load_corporate_actions
 from data import _load_constituents, load_nse_holidays
 from data_backtest import _long_to_symbol_dict, load_compositions
+from live_signal_audit import build_live_signal_audit_workbook
 
 ALL_INDICES = [
     "Nifty 50",
@@ -414,7 +415,51 @@ def main() -> None:
     }
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, indent=2, allow_nan=False), encoding="utf-8")
+    if output.suffix.lower() == ".xlsx":
+        audit_params = {
+            "portfolio_source": "replay",
+            "signal_date": date(2026, 9, 1),
+            "portfolio_start": date(2025, 7, 2),
+            "band": "classic",
+            "variant": "Marginal Rebalance",
+            "m": common["m"],
+            "n": common["n"],
+            "sort_method": common["sort_method"],
+            "freq": common["rebalance_freq"],
+            "indices": ALL_INDICES,
+            "s2_drop": common["stage2_drop_exit"],
+            "s2_threshold": common["stage2_drop_threshold"],
+            "s2_entry": common["stage2_entry_filter"],
+            "s2_entry_threshold": common["stage2_entry_threshold"],
+            "max_pos": 0,
+            "min_history": common["min_history_days"],
+            "min_annual_return": common["min_annual_return"],
+            "pct_from_52w_high": common["pct_from_52w_high"],
+            "max_circuits": common["max_circuits"],
+            "close_above_100dma": common["close_above_100dma"],
+            "close_above_200dma": common["close_above_200dma"],
+            "pos_days_3m_min": common["pos_days_3m_min"],
+            "pos_days_6m_min": common["pos_days_6m_min"],
+            "pos_days_12m_min": common["pos_days_12m_min"],
+        }
+        audit_result = {
+            **result,
+            "ohlcv_date": price_meta["max_date"],
+            "ohlcv_source": ", ".join(price_meta["source_files"]),
+            "strategy_fingerprint": "cli-fixed-audit",
+            "latest_price_dates": {},
+            "tradability_status": {},
+            "data_freshness": {},
+        }
+        output.write_bytes(
+            build_live_signal_audit_workbook(
+                audit_params,
+                audit_result,
+                replay_checks=replay_rows if args.replay_checks else None,
+            )
+        )
+    else:
+        output.write_text(json.dumps(payload, indent=2, allow_nan=False), encoding="utf-8")
     print(
         json.dumps(
             {
