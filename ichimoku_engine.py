@@ -17,6 +17,7 @@ ICHIMOKU_COLUMNS = [
     "Low",
     "Close",
     "Volume",
+    "Execution_Date",
     "Tenkan",
     "Kijun",
     "Senkou_A",
@@ -88,6 +89,7 @@ def resample_ohlcv(df: pd.DataFrame, timeframe: str = "Daily") -> pd.DataFrame:
     clean = _normalise_ohlc(df)
     normalized_timeframe = timeframe.strip().lower()
     if normalized_timeframe == "daily":
+        clean["Execution_Date"] = clean.index
         return clean
     if normalized_timeframe != "weekly":
         raise ValueError("Timeframe must be 'Daily' or 'Weekly'")
@@ -95,7 +97,7 @@ def resample_ohlcv(df: pd.DataFrame, timeframe: str = "Daily") -> pd.DataFrame:
         return clean
 
     weekly_groups = clean.groupby(clean.index.to_period("W-FRI"), sort=True)
-    rows: list[dict[str, float]] = []
+    rows: list[dict[str, Any]] = []
     dates: list[pd.Timestamp] = []
     for _, group in weekly_groups:
         row = {
@@ -106,6 +108,7 @@ def resample_ohlcv(df: pd.DataFrame, timeframe: str = "Daily") -> pd.DataFrame:
         }
         if "Volume" in group:
             row["Volume"] = float(group["Volume"].sum(min_count=1))
+        row["Execution_Date"] = pd.Timestamp(group.index[0])
         rows.append(row)
         dates.append(pd.Timestamp(group.index[-1]))
     return pd.DataFrame(rows, index=pd.DatetimeIndex(dates))
@@ -181,6 +184,7 @@ def compute_ichimoku(
     for column in ("Open", "High", "Low", "Close", "Volume"):
         if column in observed:
             result.loc[observed.index, column] = observed[column].astype(float)
+    result.loc[observed.index, "Execution_Date"] = observed["Execution_Date"]
 
     result.loc[observed.index, "Tenkan"] = tenkan
     result.loc[observed.index, "Kijun"] = kijun
@@ -207,7 +211,9 @@ def compute_ichimoku(
             float(result.at[date, "Senkou_B"]),
         )
 
-    numeric_columns = [c for c in ICHIMOKU_COLUMNS if c not in ("TK_Cross", "Cross_Strength", "IsFuture")]
+    numeric_columns = [
+        c for c in ICHIMOKU_COLUMNS if c not in ("Execution_Date", "TK_Cross", "Cross_Strength", "IsFuture")
+    ]
     result[numeric_columns] = result[numeric_columns].apply(pd.to_numeric, errors="coerce")
     return result
 

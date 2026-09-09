@@ -1,10 +1,14 @@
 import math
 
+import pandas as pd
 import plotly.colors
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-ICHIMOKU_CHART_VERSION = 8
+from strategy_replay import resolve_signal_executions
+
+ICHIMOKU_CHART_VERSION = 10
+HA_EMA_CHART_VERSION = 5
 
 PHASE_COLORS = {
     "Strong Stage 2": "rgba(34, 197, 94, 0.25)",
@@ -55,6 +59,17 @@ ICHIMOKU_COLORS = {
     "bearish_cloud": "rgba(113, 55, 71, 0.28)",
     "bullish_cross": "#4ade80",
     "bearish_cross": "#e879f9",
+    "buy_signal": "#86efac",
+    "exit_signal": "#fca5a5",
+    "buy_execution": "#16a34a",
+    "exit_execution": "#dc2626",
+}
+
+ICHIMOKU_STRATEGY_COLORS = {
+    "Aggressive": "#f97316",
+    "Balanced": "#2563eb",
+    "Conservative": "#16a34a",
+    "Custom": "#a855f7",
 }
 
 _ICHI_BG = "#0f1420"
@@ -94,6 +109,22 @@ _ICHIMOKU_THEMES = {
         "bullish_cross": "#16a34a",
         "bearish_cross": "#c026d3",
     },
+}
+
+HA_EMA_COLORS = {
+    "fast_ema": "#2563eb",
+    "slow_ema": "#f59e0b",
+    "actual_close": "#94a3b8",
+    "buy": "#16a34a",
+    "exit": "#dc2626",
+    "buy_signal": "#86efac",
+    "exit_signal": "#fca5a5",
+    "winning_phase": "rgba(34, 197, 94, 0.13)",
+    "losing_phase": "rgba(239, 68, 68, 0.11)",
+    "open_phase": "rgba(14, 165, 233, 0.11)",
+    "pre_tax": "#2563eb",
+    "post_tax": "#7c3aed",
+    "buy_hold": "#f59e0b",
 }
 
 
@@ -150,6 +181,8 @@ def ichimoku_chart_figure(
     show_crossovers: bool = True,
     timeframe: str = "Daily",
     theme: str = "dark",
+    strategy_signals=None,
+    strategy_name: str | None = None,
 ) -> go.Figure:
     """Build a candlestick Ichimoku chart with regime-colored cloud segments."""
     fig = go.Figure()
@@ -275,6 +308,50 @@ def ichimoku_chart_figure(
                     hovertemplate=(
                         f"<b>{direction.title()} TK cross</b><br>"
                         "%{x|%d %b %Y}<br>%{customdata[0]}<br>Close: %{customdata[1]:.2f}<extra></extra>"
+                    ),
+                )
+            )
+
+    if strategy_signals is not None and not strategy_signals.empty and "Signal" in strategy_signals:
+        strategy_label = strategy_name or "Strategy"
+        for action, symbol, color, anchor_column, multiplier in (
+            ("BUY", "circle-open", ICHIMOKU_COLORS["buy_signal"], "Low", 0.975),
+            ("EXIT", "circle-open", ICHIMOKU_COLORS["exit_signal"], "High", 1.025),
+        ):
+            events = strategy_signals[strategy_signals["Signal"].eq(action)]
+            fig.add_trace(
+                go.Scatter(
+                    x=events.index,
+                    y=events[anchor_column] * multiplier,
+                    name=f"{strategy_label} {action} signal",
+                    mode="markers",
+                    marker=dict(symbol=symbol, size=11, color=color, line=dict(color=color, width=2)),
+                    customdata=events.get("Signal_Reason"),
+                    hovertemplate=(
+                        f"<b>{action} signal · {strategy_label}</b><br>" "%{x|%d %b %Y}<br>%{customdata}<extra></extra>"
+                    ),
+                )
+            )
+
+            executions = resolve_signal_executions(strategy_signals)
+            executions = executions[executions["Signal"].eq(action)] if not executions.empty else executions
+            fig.add_trace(
+                go.Scatter(
+                    x=executions.get("Execution_Date", []),
+                    y=executions.get("Execution_Price", []),
+                    name=f"{strategy_label} {action} execution",
+                    mode="markers",
+                    marker=dict(
+                        symbol="triangle-up" if action == "BUY" else "triangle-down",
+                        size=11,
+                        color=(
+                            ICHIMOKU_COLORS["buy_execution"] if action == "BUY" else ICHIMOKU_COLORS["exit_execution"]
+                        ),
+                        line=dict(color=chart_theme["marker_outline"], width=1),
+                    ),
+                    hovertemplate=(
+                        f"<b>{action} at next Open · {strategy_label}</b><br>"
+                        "%{x|%d %b %Y}<br>Open: ₹%{y:,.2f}<extra></extra>"
                     ),
                 )
             )
@@ -453,6 +530,304 @@ def phase_chart_figure(rolled, ticker: str, use_log_scale: bool = True) -> go.Fi
         height=540,
         margin=dict(l=50, r=20, t=55, b=40),
         legend=dict(orientation="h", y=-0.13),
+        hovermode="x unified",
+        plot_bgcolor=_T,
+        paper_bgcolor=_T,
+    )
+    return fig
+
+
+def _ha_ema_executions(data) -> tuple[list[dict], list[dict]]:
+    """Map close-confirmed signals to the following session's opening execution."""
+
+    executions: list[dict] = []
+    phases: list[dict] = []
+    open_entry: dict | None = None
+    resolved = resolve_signal_executions(data)
+    for _, row in resolved.iterrows():
+        signal = str(row["Signal"])
+        signal_date = pd.Timestamp(row["Signal_Date"])
+        event = {
+            "type": signal,
+            "signal_date": signal_date,
+            "signal_close": float(data.loc[signal_date, "Close"]),
+            "execution_date": pd.Timestamp(row["Execution_Date"]),
+            "execution_price": float(row["Execution_Price"]),
+            "trade_return_pct": None,
+        }
+        if signal == "BUY":
+            open_entry = event
+        elif open_entry is not None:
+            trade_return = (event["execution_price"] / open_entry["execution_price"] - 1.0) * 100.0
+            event["trade_return_pct"] = trade_return
+            phases.append(
+                {
+                    "start": open_entry["execution_date"],
+                    "end": event["execution_date"],
+                    "outcome": "winning" if trade_return >= 0 else "losing",
+                    "return_pct": trade_return,
+                }
+            )
+            open_entry = None
+        executions.append(event)
+
+    if open_entry is not None:
+        phases.append(
+            {
+                "start": open_entry["execution_date"],
+                "end": data.index[-1],
+                "outcome": "open",
+                "return_pct": (float(data["Close"].iloc[-1]) / open_entry["execution_price"] - 1.0) * 100.0,
+            }
+        )
+    return executions, phases
+
+
+def ha_ema_chart_figure(
+    data,
+    ticker: str,
+    fast_length: int = 10,
+    slow_length: int = 30,
+    use_log_scale: bool = True,
+    theme: str = "dark",
+    candle_style: str = "Normal OHLC",
+) -> go.Figure:
+    """Plot signal closes, next-open executions and execution-aligned phases."""
+
+    fig = go.Figure()
+    if data.empty:
+        return fig
+    chart_theme = _ICHIMOKU_THEMES["light" if theme.strip().lower() == "light" else "dark"]
+    show_heikin_ashi = candle_style.strip().lower() in {"heikin-ashi", "heikin ashi", "ha"}
+
+    executions, phases = _ha_ema_executions(data)
+    for phase in phases:
+        fig.add_vrect(
+            x0=phase["start"],
+            x1=phase["end"],
+            fillcolor=HA_EMA_COLORS[f"{phase['outcome']}_phase"],
+            layer="below",
+            line_width=0,
+        )
+
+    fig.add_trace(
+        go.Candlestick(
+            x=data.index,
+            open=data["HA_Open"] if show_heikin_ashi else data["Open"],
+            high=data["HA_High"] if show_heikin_ashi else data["High"],
+            low=data["HA_Low"] if show_heikin_ashi else data["Low"],
+            close=data["HA_Close"] if show_heikin_ashi else data["Close"],
+            name="Heikin-Ashi" if show_heikin_ashi else "Normal OHLC",
+            increasing_line_color="#16a34a",
+            increasing_fillcolor="#22c55e",
+            decreasing_line_color="#dc2626",
+            decreasing_fillcolor="#ef4444",
+            whiskerwidth=0.35,
+        )
+    )
+    if show_heikin_ashi:
+        fig.add_trace(
+            go.Scatter(
+                x=data.index,
+                y=data["Close"],
+                name="Actual close",
+                line=dict(color=HA_EMA_COLORS["actual_close"], width=1, dash="dot"),
+                opacity=0.7,
+            )
+        )
+    fig.add_trace(
+        go.Scatter(
+            x=data.index,
+            y=data["EMA_Fast"],
+            name=f"EMA {fast_length}",
+            line=dict(color=HA_EMA_COLORS["fast_ema"], width=1.6),
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=data.index,
+            y=data["EMA_Slow"],
+            name=f"EMA {slow_length}",
+            line=dict(color=HA_EMA_COLORS["slow_ema"], width=1.6),
+        )
+    )
+    for signal, symbol, color in (
+        ("BUY", "triangle-up", HA_EMA_COLORS["buy"]),
+        ("EXIT", "triangle-down", HA_EMA_COLORS["exit"]),
+    ):
+        events = [event for event in executions if event["type"] == signal]
+        fig.add_trace(
+            go.Scatter(
+                x=[event["execution_date"] for event in events],
+                y=[event["execution_price"] for event in events],
+                name=f"{signal} execution",
+                mode="markers",
+                marker=dict(
+                    symbol=symbol,
+                    size=11,
+                    color=color,
+                    line=dict(color=chart_theme["marker_outline"], width=1),
+                ),
+                customdata=[
+                    [event["signal_date"], event["signal_close"], event["trade_return_pct"]] for event in events
+                ],
+                hovertemplate=(
+                    f"<b>{signal} execution</b><br>"
+                    "Execution: %{x|%d %b %Y} at ₹%{y:,.2f}<br>"
+                    "Signal: %{customdata[0]|%d %b %Y} at close ₹%{customdata[1]:,.2f}<br>"
+                    + ("Gross phase return: %{customdata[2]:+.2f}%<br>" if signal == "EXIT" else "")
+                    + "<extra></extra>"
+                ),
+            )
+        )
+
+    for signal, color in (
+        ("BUY", HA_EMA_COLORS["buy_signal"]),
+        ("EXIT", HA_EMA_COLORS["exit_signal"]),
+    ):
+        signal_events = data[data["Signal"] == signal]
+        fig.add_trace(
+            go.Scatter(
+                x=signal_events.index,
+                y=signal_events["Close"],
+                name=f"{signal} signal close",
+                mode="markers",
+                marker=dict(symbol="circle-open", size=7, color=color, line=dict(width=1.5)),
+                customdata=list(zip(signal_events["Return_Pct"], signal_events["Average_Volume"])),
+                hovertemplate=(
+                    f"<b>{signal} signal confirmed</b><br>%{{x|%d %b %Y}}<br>"
+                    "Close: ₹%{y:,.2f}<br>"
+                    "1Y return: %{customdata[0]:.1f}%<br>"
+                    "30-week avg volume: %{customdata[1]:,.0f}<extra></extra>"
+                ),
+            )
+        )
+
+    default_start = data.index[max(0, len(data) - 300)]
+    fig.update_layout(
+        title=dict(
+            text=f"{ticker} — Weekly HA Turn + EMA Trend",
+            x=0.01,
+            font=dict(size=15, color=chart_theme["title"]),
+        ),
+        yaxis=dict(
+            type="log" if use_log_scale else "linear",
+            title="Price (₹)",
+            side="right",
+            showgrid=True,
+            gridcolor=chart_theme["grid"],
+            zeroline=False,
+        ),
+        xaxis=dict(
+            range=[default_start, data.index[-1]],
+            rangeslider=dict(visible=False),
+            rangebreaks=[dict(bounds=["sat", "mon"])],
+            showgrid=False,
+        ),
+        height=640,
+        margin=dict(l=14, r=72, t=58, b=72),
+        legend=dict(orientation="h", x=0.01, y=-0.13),
+        hovermode="x unified",
+        hoverlabel=dict(
+            bgcolor=chart_theme["hover_background"],
+            bordercolor=chart_theme["hover_border"],
+            font=dict(color=chart_theme["hover_text"]),
+        ),
+        plot_bgcolor=chart_theme["background"],
+        paper_bgcolor=chart_theme["background"],
+        font=dict(color=chart_theme["text"]),
+    )
+    return fig
+
+
+def ha_ema_equity_figure(equity, initial_capital: float = 100_000.0) -> go.Figure:
+    """Plot strategy values and the same-start buy-and-hold benchmark."""
+
+    fig = go.Figure()
+    if equity.empty:
+        return fig
+    fig.add_trace(
+        go.Scatter(
+            x=equity.index,
+            y=equity["Pre_Tax_Value"],
+            name="Pre-tax value",
+            line=dict(color=HA_EMA_COLORS["pre_tax"], width=2.2),
+        )
+    )
+    if "Buy_Hold_Value" in equity:
+        fig.add_trace(
+            go.Scatter(
+                x=equity.index,
+                y=equity["Buy_Hold_Value"],
+                name="Buy & hold",
+                line=dict(color=HA_EMA_COLORS["buy_hold"], width=1.8, dash="dot"),
+            )
+        )
+    fig.add_trace(
+        go.Scatter(
+            x=equity.index,
+            y=equity["Post_Tax_Realised_Value"],
+            name="After realised-tax estimate",
+            line=dict(color=HA_EMA_COLORS["post_tax"], width=1.8, dash="dash"),
+        )
+    )
+    fig.add_hline(y=initial_capital, line_color="#94a3b8", line_dash="dot", line_width=1)
+    fig.update_layout(
+        title="₹1 lakh signal replay",
+        height=390,
+        margin=dict(l=55, r=25, t=48, b=55),
+        yaxis=dict(title="Account value (₹)", showgrid=True, gridcolor=_GRID),
+        xaxis=dict(showgrid=False, rangebreaks=[dict(bounds=["sat", "mon"])]),
+        legend=dict(orientation="h", y=-0.18),
+        hovermode="x unified",
+        plot_bgcolor=_T,
+        paper_bgcolor=_T,
+    )
+    return fig
+
+
+def ichimoku_strategy_comparison_figure(
+    comparison,
+    initial_capital: float = 100_000.0,
+    selected_strategy: str = "Balanced",
+) -> go.Figure:
+    """Compare pre-tax account values for the three presets and Custom."""
+
+    fig = go.Figure()
+    if comparison.empty:
+        return fig
+    for name in ("Aggressive", "Balanced", "Conservative", "Custom"):
+        if name not in comparison:
+            continue
+        selected = name == selected_strategy
+        values = comparison[name].astype(float)
+        gain_pct = (values / float(initial_capital) - 1.0) * 100.0
+        fig.add_trace(
+            go.Scatter(
+                x=comparison.index,
+                y=values,
+                name=name,
+                line=dict(
+                    color=ICHIMOKU_STRATEGY_COLORS[name],
+                    width=3.2 if selected else 1.8,
+                    dash="solid" if selected else "dot",
+                ),
+                opacity=1.0 if selected else 0.78,
+                customdata=gain_pct,
+                hovertemplate=(
+                    f"<b>{name}</b><br>%{{x|%d %b %Y}}<br>"
+                    "Value: ₹%{y:,.0f}<br>Gain: %{customdata:+.2f}%<extra></extra>"
+                ),
+            )
+        )
+    fig.add_hline(y=initial_capital, line_color="#94a3b8", line_dash="dot", line_width=1)
+    fig.update_layout(
+        title="Ichimoku strategies · pre-tax ₹1 lakh comparison",
+        height=410,
+        margin=dict(l=55, r=25, t=48, b=60),
+        yaxis=dict(title="Account value (₹)", showgrid=True, gridcolor=_GRID),
+        xaxis=dict(showgrid=False, rangebreaks=[dict(bounds=["sat", "mon"])]),
+        legend=dict(orientation="h", y=-0.18),
         hovermode="x unified",
         plot_bgcolor=_T,
         paper_bgcolor=_T,

@@ -57,6 +57,7 @@ def test_weekly_candles_use_true_ohlcv_aggregation():
     assert weekly.iloc[0]["Low"] == source.iloc[:5]["Low"].min()
     assert weekly.iloc[0]["Close"] == source.iloc[4]["Close"]
     assert weekly.iloc[0]["Volume"] == source.iloc[:5]["Volume"].sum()
+    assert weekly.iloc[0]["Execution_Date"] == source.index[0]
 
 
 def test_weekly_ichimoku_projects_26_weekly_bars():

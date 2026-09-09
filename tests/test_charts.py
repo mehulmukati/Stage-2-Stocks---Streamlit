@@ -1,7 +1,18 @@
 import math
 
-from charts import ICHIMOKU_COLORS, ichimoku_chart_figure
+import pandas as pd
+
+from charts import (
+    HA_EMA_COLORS,
+    ICHIMOKU_COLORS,
+    ha_ema_chart_figure,
+    ha_ema_equity_figure,
+    ichimoku_chart_figure,
+    ichimoku_strategy_comparison_figure,
+)
+from ha_ema_engine import HAEMAStrategyConfig, compute_ha_ema_signals
 from ichimoku_engine import compute_ichimoku
+from strategy_replay import replay_single_stock
 
 from .conftest import make_ohlcv
 
@@ -91,3 +102,131 @@ def test_linear_chart_overlays_keep_raw_price_coordinates():
     assert {annotation.y for annotation in figure.layout.annotations} == expected
     assert figure.layout.shapes[-1].y0 == float(observed["Close"].iloc[-1])
     assert figure.layout.shapes[-1].y1 == float(observed["Close"].iloc[-1])
+
+
+def test_ichimoku_strategy_overlay_distinguishes_signal_and_next_open_execution():
+    data = compute_ichimoku(make_ohlcv(100, close=[100.0 + i * 0.2 for i in range(100)]))
+    observed = data[~data["IsFuture"].astype(bool)].copy()
+    observed["Signal"] = ""
+    observed["Signal_Reason"] = ""
+    signal_date = observed.index[-3]
+    execution_date = observed.index[-2]
+    observed.loc[signal_date, ["Signal", "Signal_Reason"]] = ["BUY", "Test setup"]
+
+    figure = ichimoku_chart_figure(data, "TEST", strategy_signals=observed, strategy_name="Balanced")
+    signal = next(trace for trace in figure.data if trace.name == "Balanced BUY signal")
+    execution = next(trace for trace in figure.data if trace.name == "Balanced BUY execution")
+
+    assert list(signal.x) == [signal_date]
+    assert list(execution.x) == [execution_date]
+    assert list(execution.y) == [observed.at[execution_date, "Open"]]
+
+
+def test_ichimoku_strategy_comparison_highlights_selected_curve():
+    index = pd.bdate_range("2025-01-01", periods=3)
+    comparison = pd.DataFrame(
+        {
+            "Aggressive": [100_000.0, 101_000.0, 102_000.0],
+            "Balanced": [100_000.0, 102_000.0, 104_000.0],
+            "Conservative": [100_000.0, 100_500.0, 101_000.0],
+            "Custom": [100_000.0, 99_000.0, 103_000.0],
+        },
+        index=index,
+    )
+    figure = ichimoku_strategy_comparison_figure(comparison, selected_strategy="Balanced")
+    widths = {trace.name: trace.line.width for trace in figure.data}
+
+    assert widths["Balanced"] > widths["Aggressive"]
+    assert figure.layout.yaxis.title.text == "Account value (₹)"
+
+
+def test_ha_ema_chart_defaults_to_normal_candles_with_emas_and_signal_traces():
+    source = make_ohlcv(300, close=[100.0 + i for i in range(300)])
+    config = HAEMAStrategyConfig(minimum_return_pct=0.0)
+    data = compute_ha_ema_signals(source, config)
+    figure = ha_ema_chart_figure(data, "TEST")
+    names = {trace.name for trace in figure.data}
+
+    assert {
+        "Normal OHLC",
+        "EMA 10",
+        "EMA 30",
+        "BUY execution",
+        "EXIT execution",
+        "BUY signal close",
+        "EXIT signal close",
+    }.issubset(names)
+    candles = next(trace for trace in figure.data if trace.name == "Normal OHLC")
+    assert candles.type == "candlestick"
+    assert list(candles.open) == list(data["Open"])
+    assert "Actual close" not in names
+
+
+def test_ha_ema_view_toggle_changes_only_candles_and_actual_close_reference():
+    source = make_ohlcv(300, close=[100.0 + i for i in range(300)])
+    data = compute_ha_ema_signals(source, HAEMAStrategyConfig(minimum_return_pct=0.0))
+    data["Signal"] = ""
+    data.loc[data.index[30], "Signal"] = "BUY"
+
+    normal = ha_ema_chart_figure(data, "TEST", candle_style="Normal OHLC")
+    heikin_ashi = ha_ema_chart_figure(data, "TEST", candle_style="Heikin-Ashi")
+    normal_names = {trace.name for trace in normal.data}
+    ha_names = {trace.name for trace in heikin_ashi.data}
+
+    assert "Normal OHLC" in normal_names
+    assert "Actual close" not in normal_names
+    assert {"Heikin-Ashi", "Actual close"}.issubset(ha_names)
+    ha_candles = next(trace for trace in heikin_ashi.data if trace.name == "Heikin-Ashi")
+    assert list(ha_candles.open) == list(data["HA_Open"])
+
+    for marker_name in ("BUY execution", "EXIT execution", "BUY signal close", "EXIT signal close"):
+        normal_marker = next(trace for trace in normal.data if trace.name == marker_name)
+        ha_marker = next(trace for trace in heikin_ashi.data if trace.name == marker_name)
+        assert list(normal_marker.x) == list(ha_marker.x)
+        assert list(normal_marker.y) == list(ha_marker.y)
+
+
+def test_ha_ema_chart_shades_completed_winning_phase_from_execution_dates():
+    source = make_ohlcv(300, close=[100.0 + i for i in range(300)])
+    data = compute_ha_ema_signals(source, HAEMAStrategyConfig(minimum_return_pct=0.0))
+    data["Signal"] = ""
+    data.loc[data.index[-20], "Signal"] = "BUY"
+    data.loc[data.index[-5], "Signal"] = "EXIT"
+    figure = ha_ema_chart_figure(data, "TEST")
+
+    phase = next(shape for shape in figure.layout.shapes if shape.fillcolor == HA_EMA_COLORS["winning_phase"])
+    assert phase.x0 == data["Execution_Date"].iloc[-19]
+    assert phase.x1 == data["Execution_Date"].iloc[-4]
+
+
+def test_ha_ema_triangles_show_next_open_execution_not_signal_close():
+    source = make_ohlcv(300, close=[100.0 + i for i in range(300)])
+    data = compute_ha_ema_signals(source, HAEMAStrategyConfig(minimum_return_pct=0.0))
+    data["Signal"] = ""
+    signal_position = 30
+    data.loc[data.index[signal_position], "Signal"] = "BUY"
+
+    figure = ha_ema_chart_figure(data, "TEST")
+    execution = next(trace for trace in figure.data if trace.name == "BUY execution")
+    signal = next(trace for trace in figure.data if trace.name == "BUY signal close")
+
+    assert execution.x[0] == data["Execution_Date"].iloc[signal_position + 1]
+    assert execution.y[0] == data["Open"].iloc[signal_position + 1]
+    assert signal.x[0] == data.index[signal_position]
+    assert signal.y[0] == data["Close"].iloc[signal_position]
+
+
+def test_ha_ema_equity_chart_includes_same_start_buy_and_hold_series():
+    source = make_ohlcv(300, close=[100.0 + i for i in range(300)])
+    data = compute_ha_ema_signals(source, HAEMAStrategyConfig(minimum_return_pct=0.0))
+    data["Signal"] = ""
+    data.loc[data.index[20], "Signal"] = "BUY"
+    data.loc[data.index[40], "Signal"] = "EXIT"
+    replay = replay_single_stock(data)
+    figure = ha_ema_equity_figure(replay["equity"])
+
+    assert {trace.name for trace in figure.data} == {
+        "Pre-tax value",
+        "After realised-tax estimate",
+        "Buy & hold",
+    }
