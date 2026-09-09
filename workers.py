@@ -4,26 +4,36 @@ Each function signature: (params: dict, emit: Callable, cancel_evt: Event) -> di
 """
 
 import dataclasses
+import importlib
 import threading
 from typing import Callable
 
 import pandas as pd
 
+import data_backtest as backtest_data
+import quant_portfolio_engine as quant_portfolio
 from backtest_engine import BacktestConfig, run_backtest
+
+if getattr(backtest_data, "BACKTEST_DATA_VERSION", 0) < 4:
+    backtest_data = importlib.reload(backtest_data)
+if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 4:
+    quant_portfolio = importlib.reload(quant_portfolio)
+
+QuantPortfolioConfig = quant_portfolio.QuantPortfolioConfig
+run_quant_portfolio = quant_portfolio.run_quant_portfolio
 
 # Screener workers stay on the DB-backed pipeline.
 from data import resolve_screener_data
 
 # Backtest worker uses the parquet-backed pipeline — no DB dependency.
-from data_backtest import (
-    _load_constituents,
-    load_benchmark_series,
-    load_compositions,
-    load_ohlcv_for_backtest,
-    sync_benchmark_data,
-)
+_load_constituents = backtest_data._load_constituents
+load_benchmark_series = backtest_data.load_benchmark_series
+load_compositions = backtest_data.load_compositions
+load_ohlcv_for_backtest = backtest_data.load_ohlcv_for_backtest
+load_quant_ohlcv_snapshot = backtest_data.load_quant_ohlcv_snapshot
+sync_benchmark_data = backtest_data.sync_benchmark_data
 
-SCREENER_WORKER_VERSION = 2
+SCREENER_WORKER_VERSION = 7
 
 
 def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
@@ -38,6 +48,62 @@ def momentum_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
     if df.empty:
         raise RuntimeError("No Momentum data available. Try again in a few minutes or check your internet connection.")
     return {"df": df, "cache_date": cache_date, "source": source}
+
+
+def quant_portfolio_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
+    """Load the survivorship-aware universe and run one Quant Portfolio Lab simulation."""
+    emit("info", "Loading the local portfolio-research dataset…")
+    compositions = load_compositions() if params.get("use_compositions", True) else pd.DataFrame()
+    # Candle strategies require Open and Low, which the long Momentum baseline
+    # does not currently contain. Use the local full-OHLCV snapshot without a
+    # thousand-symbol live refresh in the request path.
+    loaded = load_quant_ohlcv_snapshot(emit=emit)
+    if not loaded.symbol_data:
+        raise RuntimeError("Backtest price history is missing or unreadable.")
+    requested_start = pd.Timestamp(params["start_date"]) if params.get("start_date") else None
+    available_start = pd.Timestamp(loaded.earliest_price_date) if loaded.earliest_price_date else None
+    if requested_start is not None and available_start is not None and requested_start < available_start:
+        raise RuntimeError(
+            f"The requested start date {requested_start:%d %b %Y} cannot be honoured: complete OHLCV "
+            f"history currently starts on {available_start:%d %b %Y}. The run was stopped instead of "
+            "silently shortening the backtest. Rebuild the long candle baseline with "
+            "`python scripts/refresh_backtest_parquet.py --full`, then run again."
+        )
+    if cancel_evt.is_set():
+        raise RuntimeError("Cancelled")
+    emit("info", f"Preparing {len(loaded.symbol_data):,} symbol histories…")
+    config = QuantPortfolioConfig(
+        strategy=params["strategy"],
+        strategy_settings=params.get("strategy_settings", {}),
+        start_date=params.get("start_date"),
+        end_date=params.get("end_date"),
+        index_names=params.get("universe", []),
+        compositions_df=compositions if not compositions.empty else None,
+        max_holdings=params.get("max_holdings", 10),
+        initial_capital=params.get("initial_capital", 1_000_000.0),
+        transaction_cost_pct=params.get("transaction_cost_pct", 0.1) / 100.0,
+        brokerage_per_order=params.get("brokerage_per_order", 0.0),
+        stcg_rate=params.get("stcg_rate", 0.0) / 100.0,
+        ltcg_rate=params.get("ltcg_rate", 0.0) / 100.0,
+        min_history_days=params.get("min_history_days", 260),
+        minimum_median_volume=params.get("minimum_median_volume", 100_000.0),
+        ranking_method=params.get("ranking_method", "strategy_score"),
+        ranking_lookback_sessions=params.get("ranking_lookback_sessions", 55),
+        ranking_benchmark="Nifty 100",
+    )
+    result = run_quant_portfolio(
+        loaded.symbol_data,
+        load_benchmark_series(refresh=False),
+        config,
+        emit,
+        cancel_evt,
+    )
+    if "error" in result:
+        raise RuntimeError(result["error"])
+    result["ohlcv_date"] = loaded.max_price_date or loaded.actual_latest_date
+    result["ohlcv_start_date"] = loaded.earliest_price_date
+    result["ohlcv_source"] = loaded.source
+    return result
 
 
 def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
