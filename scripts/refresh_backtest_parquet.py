@@ -23,12 +23,12 @@ The symbol universe is the UNION of:
 Outputs
 -------
   data/backtest_history.parquet
-      long-form {symbol, date, Close, High, Volume}
-      dtypes: string, date32, float32, float32, int64
-      ~25–30 MB for ~1,144 symbols × 10 y (ex-members have partial history)
+      long-form {symbol, date, Open, High, Low, Close, Volume}
+      dtypes: string, date32, float32 × 4, int64
+      ~50 MB for ~1,144 symbols × 10 y (ex-members have partial history)
 
   data/benchmarks.parquet
-      wide-form {date, "Nifty 50", "Nifty 500"}   (Close only)
+      wide-form {date, "Nifty 50", "Nifty 100", "Nifty 500"}   (Close only)
       <1 MB
 
 Usage
@@ -65,6 +65,7 @@ CHECKPOINT_FILE = os.path.join(DATA_DIR, ".backtest_rebuild_checkpoint.json")
 
 BENCHMARK_TICKERS = {
     "Nifty 50": "^NSEI",
+    "Nifty 100": "^CNX100",
     "Nifty 500": "^CRSLDX",
 }
 
@@ -158,14 +159,18 @@ def _reshape_batch(raw: pd.DataFrame, tickers: list[str]) -> list[dict]:
             close = row.get("Close")
             if pd.isna(close):
                 continue
+            open_price = row.get("Open")
             high = row.get("High")
+            low = row.get("Low")
             vol = row.get("Volume")
             records.append(
                 {
                     "symbol": sym,
                     "date": dt.date(),
+                    "Open": float(open_price) if not pd.isna(open_price) else float("nan"),
                     "Close": float(close),
                     "High": float(high) if not pd.isna(high) else float("nan"),
+                    "Low": float(low) if not pd.isna(low) else float("nan"),
                     "Volume": int(vol) if not pd.isna(vol) else 0,
                 }
             )
@@ -273,8 +278,8 @@ def _fetch_ohlcv_full(symbols: list[str]) -> pd.DataFrame:
 
     df = pd.concat(frames, ignore_index=True)
     df["date"] = pd.to_datetime(df["date"]).dt.date
-    df["Close"] = df["Close"].astype("float32")
-    df["High"] = df["High"].astype("float32")
+    for column in ("Open", "High", "Low", "Close"):
+        df[column] = df[column].astype("float32")
     df["Volume"] = df["Volume"].astype("int64")
     df = df.sort_values(["symbol", "date"]).reset_index(drop=True)
 
@@ -309,8 +314,8 @@ def _fetch_ohlcv_incremental(symbols: list[str], existing: pd.DataFrame) -> pd.D
 
     delta = pd.DataFrame(records)
     delta["date"] = pd.to_datetime(delta["date"])
-    delta["Close"] = delta["Close"].astype("float32")
-    delta["High"] = delta["High"].astype("float32")
+    for column in ("Open", "High", "Low", "Close"):
+        delta[column] = delta[column].astype("float32")
     delta["Volume"] = delta["Volume"].astype("int64")
 
     merged = pd.concat([existing, delta], ignore_index=True)
@@ -396,6 +401,9 @@ def main(force_full: bool = False) -> None:
         print("▸ Loading existing baseline…")
         existing = pd.read_parquet(OUT_OHLCV)
         print(f"  Baseline: {len(existing):,} rows · {existing['symbol'].nunique()} symbols")
+        if {"Open", "Low"}.difference(existing.columns):
+            print("  ⚠️  Existing baseline lacks full OHLCV; forcing a one-time full rebuild.")
+            force_full = True
 
     if force_full or existing is None or existing.empty:
         print(f"▸ Full {FULL_HISTORY_PERIOD} rebuild (batched, BATCH_SIZE={BATCH_SIZE})…")

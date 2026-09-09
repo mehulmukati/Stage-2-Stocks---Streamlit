@@ -45,11 +45,13 @@ from datetime import datetime, timedelta
 from typing import Callable
 
 import pandas as pd
+import pyarrow.parquet as pq
 import yfinance as yf
 
-from config import IST
+from config import IST, SCREENER_OHLCV_PARQUET
 from data import _load_constituents, get_last_valid_trading_date, load_nse_holidays  # noqa: F401
 
+BACKTEST_DATA_VERSION = 4
 _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
 
@@ -71,6 +73,7 @@ BENCH_DELTA_PARQUET = os.path.join(REPO_ROOT, "data", "benchmarks_delta.parquet"
 
 BENCHMARK_TICKERS = {
     "Nifty 50": "^NSEI",
+    "Nifty 100": "^CNX100",
     "Nifty 500": "^CRSLDX",
 }
 
@@ -91,6 +94,9 @@ _merged_bench: dict[str, dict[str, pd.Series]] = {}  # {today_key: {label: serie
 # ``_merged_ohlcv`` so a later button click can retry without a process restart.
 _ohlcv_refresh_latches: dict[str, threading.Event] = {}
 _ohlcv_refresh_results: dict[str, "OHLCVLoadResult"] = {}
+_quant_snapshot_cache: tuple[str, float, "OHLCVLoadResult"] | None = None
+
+_QUANT_PRICE_COLUMNS = ("symbol", "date", "Open", "High", "Low", "Close", "Volume")
 
 
 @dataclass
@@ -122,6 +128,7 @@ class OHLCVLoadResult:
     missing_target_symbols: list[str] = field(default_factory=list)
     stale_symbols: list[str] = field(default_factory=list)
     attempts: int = 0
+    earliest_price_date: str | None = None
 
     @property
     def is_fresh(self) -> bool:
@@ -168,6 +175,70 @@ def load_compositions() -> pd.DataFrame:
         return pd.DataFrame()
     df = pd.read_parquet(path, columns=["INDEX_NAME", "TIME_STAMP", "SYMBOL"])
     return df.dropna(subset=["SYMBOL"])
+
+
+def load_quant_ohlcv_snapshot(emit: Callable[[str, str], None] = _NOOP_EMIT) -> OHLCVLoadResult:
+    """Load the local full-OHLCV snapshot required by candle-based quant methods.
+
+    Prefer the long research baseline once it contains full OHLCV. Until that
+    one-time rebuild has happened, fall back to the shorter screener snapshot.
+    Portfolio requests never trigger a thousand-symbol network refresh.
+    """
+    target_key = _get_target_key()
+
+    def has_full_schema(path: str) -> bool:
+        if not os.path.exists(path):
+            return False
+        try:
+            return set(_QUANT_PRICE_COLUMNS).issubset(pq.ParquetFile(path).schema.names)
+        except Exception:
+            return False
+
+    if has_full_schema(OHLCV_PARQUET):
+        source_path = OHLCV_PARQUET
+        source_name = "quant-long-history-parquet"
+    elif has_full_schema(SCREENER_OHLCV_PARQUET):
+        source_path = SCREENER_OHLCV_PARQUET
+        source_name = "quant-short-history-parquet"
+    else:
+        message = "No local parquet contains symbol, date and complete OHLCV columns."
+        return OHLCVLoadResult({}, target_key, None, None, "error", "failed", message)
+    modified = os.path.getmtime(source_path)
+    global _quant_snapshot_cache
+    with _lock:
+        cached = _quant_snapshot_cache
+    if cached is not None and cached[0] == source_path and cached[1] == modified:
+        emit("info", f"⚡ Reusing full-OHLCV snapshot ({len(cached[2].symbol_data):,} stocks)")
+        return cached[2]
+    emit("info", f"📦 Loading {os.path.basename(source_path)} for Quant Portfolio Lab…")
+    data = pd.read_parquet(source_path, columns=list(_QUANT_PRICE_COLUMNS))
+    missing = set(_QUANT_PRICE_COLUMNS).difference(data.columns)
+    if missing:
+        message = f"Quant snapshot is missing columns: {', '.join(sorted(missing))}"
+        return OHLCVLoadResult({}, target_key, None, None, "error", "failed", message)
+    data["date"] = pd.to_datetime(data["date"])
+    latest = pd.Timestamp(data["date"].max()).strftime("%Y-%m-%d") if not data.empty else None
+    earliest = pd.Timestamp(data["date"].min()).strftime("%Y-%m-%d") if not data.empty else None
+    emit(
+        "info",
+        f"⚡ Full OHLCV: {data['symbol'].nunique():,} stocks · {earliest or 'unknown'} → {latest or 'unknown'}",
+    )
+    symbol_data = _long_to_symbol_dict(data)
+    for frame in symbol_data.values():
+        frame.attrs["quant_normalized"] = True
+    result = OHLCVLoadResult(
+        symbol_data=symbol_data,
+        target_date=target_key,
+        actual_latest_date=latest,
+        max_price_date=latest,
+        source=source_name,
+        refresh_status="snapshot",
+        requested_symbols=sorted(data["symbol"].dropna().unique()),
+        earliest_price_date=earliest,
+    )
+    with _lock:
+        _quant_snapshot_cache = (source_path, modified, result)
+    return result
 
 
 # ──────────────────────────────────────────────
@@ -282,7 +353,7 @@ def _fetch_ohlcv_delta(
     start_dt = (last_date + timedelta(days=1)).strftime("%Y-%m-%d")
     end_dt = (datetime.strptime(today_key, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
     target_date = pd.Timestamp(today_key)
-    empty = pd.DataFrame(columns=["symbol", "date", "Close", "High", "Volume"])
+    empty = pd.DataFrame(columns=_QUANT_PRICE_COLUMNS)
     if start_dt >= end_dt:
         return DeltaFetchResult(empty, list(all_symbols))
 
@@ -358,7 +429,9 @@ def _fetch_ohlcv_delta(
                     close = row.get("Close")
                     if pd.isna(close):
                         continue
+                    open_price = row.get("Open")
                     high = row.get("High")
+                    low = row.get("Low")
                     vol = row.get("Volume")
                     row_date = pd.Timestamp(dt).tz_localize(None).normalize()
                     volume = int(vol) if not pd.isna(vol) else 0
@@ -366,8 +439,10 @@ def _fetch_ohlcv_delta(
                         {
                             "symbol": sym,
                             "date": row_date,
+                            "Open": float(open_price) if not pd.isna(open_price) else float("nan"),
                             "Close": float(close),
                             "High": float(high) if not pd.isna(high) else float("nan"),
+                            "Low": float(low) if not pd.isna(low) else float("nan"),
                             "Volume": volume,
                         }
                     )
@@ -385,8 +460,8 @@ def _fetch_ohlcv_delta(
         return DeltaFetchResult(empty, requested, attempts=attempts, error=error)
 
     df = pd.DataFrame.from_records(records).drop_duplicates(subset=["symbol", "date"], keep="last")
-    df["Close"] = df["Close"].astype("float32")
-    df["High"] = df["High"].astype("float32")
+    for column in ("Open", "High", "Low", "Close"):
+        df[column] = df[column].astype("float32")
     df["Volume"] = df["Volume"].astype("int64")
     target_rows = df[
         (df["date"] == target_date) & df["Close"].notna() & (pd.to_numeric(df["Volume"], errors="coerce").fillna(0) > 0)
@@ -438,7 +513,7 @@ def _fetch_bench_delta(
 # Public API (matches data.py surface)
 # ──────────────────────────────────────────────
 def _long_to_symbol_dict(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
-    """Convert long-form {symbol, date, Close, High, Volume} → {symbol: DF indexed by date}."""
+    """Convert long-form price rows into per-symbol frames without discarding extra columns."""
     result: dict[str, pd.DataFrame] = {}
     for sym, grp in df.groupby("symbol", sort=False):
         sub = grp.drop(columns="symbol").copy()
@@ -518,6 +593,7 @@ def _assess_ohlcv_freshness(
 def load_ohlcv_for_backtest(
     emit: Callable[[str, str], None] = _NOOP_EMIT,
     required_symbols: list[str] | set[str] | None = None,
+    refresh: bool = True,
 ) -> OHLCVLoadResult:
     """
     Return data plus freshness metadata. Tuple unpacking remains backward compatible.
@@ -539,6 +615,17 @@ def load_ohlcv_for_backtest(
     global_max = pd.Timestamp(base["date"].max())
     active = _active_symbols(base, global_max)
     required = sorted(set(required_symbols if required_symbols is not None else active))
+
+    if not refresh:
+        source = "parquet+delta" if os.path.exists(DELTA_PARQUET) else "parquet"
+        result = _assess_ohlcv_freshness(base, target_key, required, source)
+        result.refresh_status = "snapshot"
+        emit(
+            "info",
+            f"⚡ Using local snapshot through {result.max_price_date or result.actual_latest_date or 'unknown'} "
+            "(live tail refresh skipped)",
+        )
+        return result
 
     # A hot cache is usable only if it satisfies this caller's required universe.
     with _lock:
@@ -616,7 +703,10 @@ def load_ohlcv_for_backtest(
     return result
 
 
-def load_benchmark_series(with_status: bool = False) -> dict[str, pd.Series] | BenchmarkLoadResult:
+def load_benchmark_series(
+    with_status: bool = False,
+    refresh: bool = True,
+) -> dict[str, pd.Series] | BenchmarkLoadResult:
     """Return close-price Series per benchmark label, indexed by date."""
     target_key = _get_target_key()
     with _lock:
@@ -643,7 +733,7 @@ def load_benchmark_series(with_status: bool = False) -> dict[str, pd.Series] | B
     gap_days = (datetime.strptime(target_key, "%Y-%m-%d") - last_date.to_pydatetime()).days
 
     fetched = False
-    if gap_days > 0:
+    if refresh and gap_days > 0:
         delta = _fetch_bench_delta(last_date, target_key, _NOOP_EMIT)
         if not delta.empty:
             fetched = True
@@ -675,7 +765,7 @@ def load_benchmark_series(with_status: bool = False) -> dict[str, pd.Series] | B
         result,
         target_key,
         actual.strftime("%Y-%m-%d") if actual is not None else None,
-        "not_needed" if not fetched and not missing else status,
+        "snapshot" if not refresh else ("not_needed" if not fetched and not missing else status),
         missing,
     )
     return load_result if with_status else result

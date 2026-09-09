@@ -82,6 +82,46 @@ def test_partial_response_reports_conservative_actual_date_and_is_not_cached(mon
     assert "2026-08-25" not in db._merged_ohlcv
 
 
+def test_snapshot_mode_never_calls_live_delta_fetch(monkeypatch):
+    baseline = _long([("A", "2026-08-24", 100), ("B", "2026-08-23", 200)])
+    _reset_runtime_caches(monkeypatch, baseline)
+
+    def unexpected_fetch(*args, **kwargs):
+        raise AssertionError("snapshot mode must not contact Yahoo")
+
+    monkeypatch.setattr(db, "_fetch_ohlcv_delta", unexpected_fetch)
+    result = db.load_ohlcv_for_backtest(required_symbols=["A", "B"], refresh=False)
+
+    assert result.refresh_status == "snapshot"
+    assert set(result.symbol_data) == {"A", "B"}
+    assert result.max_price_date == "2026-08-24"
+
+
+def test_quant_snapshot_requires_and_returns_full_ohlcv(monkeypatch, tmp_path):
+    path = tmp_path / "quant.parquet"
+    pd.DataFrame(
+        {
+            "symbol": ["A"],
+            "date": [pd.Timestamp("2026-08-24")],
+            "Open": [99.0],
+            "High": [102.0],
+            "Low": [98.0],
+            "Close": [100.0],
+            "Volume": [1_000],
+        }
+    ).to_parquet(path, index=False)
+    monkeypatch.setattr(db, "OHLCV_PARQUET", str(tmp_path / "missing-long-history.parquet"))
+    monkeypatch.setattr(db, "SCREENER_OHLCV_PARQUET", str(path))
+    monkeypatch.setattr(db, "_get_target_key", lambda: "2026-08-25")
+    monkeypatch.setattr(db, "_quant_snapshot_cache", None)
+
+    result = db.load_quant_ohlcv_snapshot()
+
+    assert result.refresh_status == "snapshot"
+    assert result.actual_latest_date == "2026-08-24"
+    assert set(result.symbol_data["A"].columns) == {"Open", "High", "Low", "Close", "Volume"}
+
+
 def test_one_session_partial_coverage_is_usable_for_signal(monkeypatch):
     partial = _long([("A", "2026-08-25", 101), ("B", "2026-08-24", 200)])
     monkeypatch.setattr(db, "load_nse_holidays", lambda: frozenset())
@@ -225,6 +265,7 @@ def test_failed_benchmark_refresh_is_not_hot_cached_and_retries(monkeypatch):
         {
             "date": pd.to_datetime(["2026-08-24"]),
             "Nifty 50": [25000.0],
+            "Nifty 100": [24000.0],
             "Nifty 500": [22000.0],
         }
     )
@@ -239,7 +280,14 @@ def test_failed_benchmark_refresh_is_not_hot_cached_and_retries(monkeypatch):
         calls += 1
         if calls == 1:
             return pd.DataFrame()
-        return pd.DataFrame({"date": pd.to_datetime([target]), "Nifty 50": [25100.0], "Nifty 500": [22100.0]})
+        return pd.DataFrame(
+            {
+                "date": pd.to_datetime([target]),
+                "Nifty 50": [25100.0],
+                "Nifty 100": [24100.0],
+                "Nifty 500": [22100.0],
+            }
+        )
 
     monkeypatch.setattr(db, "_fetch_bench_delta", fake_fetch)
 
