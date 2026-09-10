@@ -1,4 +1,4 @@
-"""Public navigation contract for the Quant-Portfolio-Maker sub-application."""
+"""Public navigation contract for the standalone Quant-Portfolio-Maker application."""
 
 ENHANCED_ICHIMOKU_PAGE = "☁️ Enhanced Ichimoku"
 HA_EMA_PAGE = "🕯️ HA + EMA Trend"

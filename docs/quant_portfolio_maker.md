@@ -1,8 +1,8 @@
 # Quant-Portfolio-Maker
 
-Quant-Portfolio-Maker is the strategy-research area inside the main application. It uses the same market-data,
-charting and calculation modules as the screeners while keeping its controls and replay workflow isolated from the
-original technical-analysis pages.
+Quant-Portfolio-Maker is a standalone Streamlit application within this repository. Run it with
+`streamlit run apps/quant_portfolio_maker/app.py`. It uses the same market-data, charting and calculation modules as
+the screeners while keeping its navigation, controls and replay workflow separate from the main application.
 
 ## Enhanced Ichimoku
 

@@ -1,6 +1,6 @@
 # NSE Stage 2 Screener & Momentum Backtester
 
-A pair of Streamlit apps for systematic stock analysis on the NSE (National Stock Exchange of India). The **screener** applies Stan Weinstein's Stage 2 methodology and momentum ranking across ~750 stocks in real time; the **backtester** simulates momentum portfolio strategies on 10+ years of historical data with realistic costs and survivorship-bias controls.
+Streamlit applications for systematic stock analysis on the NSE (National Stock Exchange of India). The **screener** applies Stan Weinstein's Stage 2 methodology and momentum ranking across ~750 stocks in real time; the **backtester** simulates momentum portfolio strategies on 10+ years of historical data with realistic costs and survivorship-bias controls; and the standalone **Quant-Portfolio-Maker** provides strategy research and fixed-slot portfolio construction.
 
 ---
 
@@ -12,7 +12,6 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 | Momentum screener (Sharpe ratio ranking) | Entry/exit band parameters (M / N) |
 | Phase Chart — rolling Stage 2 score for any ticker | Weekly / biweekly / monthly / quarterly / half-yearly rebalance |
 | Ichimoku Chart — colored clouds, TK crossovers, and deterministic stock summary | |
-| Quant-Portfolio-Maker — Enhanced Ichimoku, HA + EMA and multi-stock Portfolio Lab | |
 | Fuzzy ticker search (typo-tolerant) | Anti-survivorship-bias via historical constituents |
 | CSV export | Transaction-cost drag modelling |
 | Live auto-refresh during background data sync | NAV chart, rolling CAGR, and drawdown metrics |
@@ -32,7 +31,7 @@ A pair of Streamlit apps for systematic stock analysis on the NSE (National Stoc
 ```
 app.py                  ← Screener  (Parquet-backed, no external DB required)
 app_backtest.py         ← Backtester (Parquet-backed, no external DB required)
-apps/quant_portfolio_maker/ ← strategy research and Portfolio Lab presentation layer
+apps/quant_portfolio_maker/app.py ← standalone strategy research and Portfolio Lab app
 
 Shared modules:
   stage2_engine.py      Weinstein 8-point scoring, RSI, consolidation detection
@@ -49,7 +48,7 @@ Shared modules:
   config.py             Shared constants
 ```
 
-Both apps are fully self-contained — no external database or credentials required.
+The applications require no external database or credentials.
 
 ---
 
@@ -72,7 +71,7 @@ pip install -r requirements.txt
 
 ## Data Setup
 
-Both apps use local Parquet files under `data/` — no external database or credentials needed.
+The applications use local Parquet files under `data/` — no external database or credentials needed.
 
 ### Seed the screener baseline (first run only)
 
@@ -110,6 +109,15 @@ streamlit run app_backtest.py
 
 Opens at `http://localhost:8501` (or `8502` if the screener is already running). Configure M/N thresholds, rebalance frequency, date range, and universe in the sidebar, then click **Run Backtest**.
 
+### Quant-Portfolio-Maker
+
+```bash
+streamlit run apps/quant_portfolio_maker/app.py
+```
+
+This is a separate application and does not appear in the main screener's navigation. It contains Enhanced Ichimoku,
+HA + EMA Trend and the fixed-slot Portfolio Lab while reusing the repository's shared data and calculation modules.
+
 ---
 
 ## App Details
@@ -124,9 +132,13 @@ Opens at `http://localhost:8501` (or `8502` if the screener is already running).
 
 **Ichimoku Chart** plots adjusted daily or weekly candlesticks with the standard 9/26/52 Ichimoku system, green/red clouds projected 26 bars forward, classified Tenkan–Kijun crossovers, and a concise deterministic technical summary.
 
-**Quant-Portfolio-Maker** is an isolated sub-application containing Enhanced Ichimoku, HA + EMA Trend and a fixed-slot multi-stock Portfolio Lab. Its UI lives under `apps/quant_portfolio_maker/`, while the tools use the repository's shared OHLCV data, charting, signal, historical-constituent and replay engines directly. The original Ichimoku Chart remains a separate descriptive technical-analysis page.
-
 Data flows: `data/screener_ohlcv.parquet` → score cache (`data/stage2_cache.parquet` / `data/momentum_cache.parquet`) → in-memory cache → yfinance delta fetch.
+
+### Quant-Portfolio-Maker (`apps/quant_portfolio_maker/app.py`)
+
+The standalone Quant-Portfolio-Maker contains Enhanced Ichimoku, HA + EMA Trend and a fixed-slot multi-stock
+Portfolio Lab. It uses the repository's shared OHLCV data, charting, signal, historical-constituent and replay engines
+directly. The main screener retains its original descriptive Ichimoku Chart but does not mount the Quant application.
 
 ### Backtester (`app_backtest.py`)
 
