@@ -21,6 +21,7 @@ from streamlit_autorefresh import st_autorefresh
 warnings.filterwarnings("ignore", category=FutureWarning)
 logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
+import apps.quant_portfolio_maker as qpm_navigation
 import charts as chart_builders
 import data as data_access
 import ichimoku_engine as ichimoku_calculations
@@ -40,6 +41,16 @@ from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
 from ui_helpers import _get_user_token, _poll_job
+
+# Streamlit reuses imported package objects across reruns. Refresh the small
+# navigation contract when this process predates the Portfolio Lab addition.
+if not hasattr(qpm_navigation, "PORTFOLIO_LAB_PAGE"):
+    qpm_navigation = importlib.reload(qpm_navigation)
+
+ENHANCED_ICHIMOKU_PAGE = qpm_navigation.ENHANCED_ICHIMOKU_PAGE
+HA_EMA_PAGE = qpm_navigation.HA_EMA_PAGE
+PORTFOLIO_LAB_PAGE = qpm_navigation.PORTFOLIO_LAB_PAGE
+QPM_PAGE_LABELS = qpm_navigation.PAGE_LABELS
 
 # Streamlit reruns app.py in the same process and can retain pre-change modules.
 # Reload only when a cached module predates the current Ichimoku interfaces.
@@ -680,6 +691,7 @@ _DOCS_SECTIONS = {
     "Momentum Screener": "momentum_screener.md",
     "Phase Chart": "phase_chart.md",
     "Ichimoku Chart": "ichimoku_chart.md",
+    "Quant-Portfolio-Maker": "quant_portfolio_maker.md",
     "Data & Methodology": "data_methodology.md",
     "Momentum Backtest": "../backtest_user_guide.md",
 }
@@ -850,6 +862,11 @@ _NAV_GROUPS = {
         "📈 Phase Chart",
         "☁️ Ichimoku Chart",
     ),
+    "Quant-Portfolio-Maker": (
+        ENHANCED_ICHIMOKU_PAGE,
+        HA_EMA_PAGE,
+        PORTFOLIO_LAB_PAGE,
+    ),
     "Momentum Factor": (
         "🚀 Momentum Screener",
         "⏱ Momentum Backtest",
@@ -863,6 +880,7 @@ _NAV_GROUPS = {
 
 _NAV_GROUP_ICONS = {
     "Technical Analysis": "📊",
+    "Quant-Portfolio-Maker": "🧮",
     "Momentum Factor": "🚀",
     "Info Hub": "ℹ️",
 }
@@ -906,6 +924,7 @@ def main():
     idx_options = _load_index_options()
 
     bt_params: dict = {}
+    quant_portfolio_params: dict = {}
     rsi_toggle = False
     show_illiquid = False
     mom_filters: dict = {}
@@ -925,6 +944,7 @@ def main():
         if screener not in (
             "📈 Phase Chart",
             "☁️ Ichimoku Chart",
+            *QPM_PAGE_LABELS,
             "📚 User Guide",
             "⏱ Momentum Backtest",
             "📋 Coverage",
@@ -937,7 +957,14 @@ def main():
                     selected_indices.append(idx)
             st.caption("💡 N50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market")
 
-        if screener in ("📈 Phase Chart", "☁️ Ichimoku Chart"):
+        if screener == PORTFOLIO_LAB_PAGE:
+            import apps.quant_portfolio_maker.portfolio as portfolio_ui
+
+            if getattr(portfolio_ui, "PORTFOLIO_UI_VERSION", 0) < 7:
+                portfolio_ui = importlib.reload(portfolio_ui)
+
+            quant_portfolio_params = portfolio_ui.render_portfolio_sidebar(idx_options)
+        elif screener in ("📈 Phase Chart", "☁️ Ichimoku Chart", ENHANCED_ICHIMOKU_PAGE, HA_EMA_PAGE):
             _sidebar_phase_chart()
         elif screener == "📊 Stage 2 Screener":
             rsi_toggle, show_illiquid = _sidebar_stage2()
@@ -1007,6 +1034,15 @@ def main():
             render_ichimoku_tutorial()
         with cheat_sheet_tab:
             render_ichimoku_cheat_sheet()
+    elif screener in QPM_PAGE_LABELS:
+        ticker = st.session_state.get("chart_ticker", "")
+        try:
+            from apps.quant_portfolio_maker.app import render_quant_portfolio_maker
+        except Exception as exc:
+            logging.exception("Quant-Portfolio-Maker could not be loaded")
+            st.error(f"Quant-Portfolio-Maker could not be loaded ({type(exc).__name__}: {exc}).")
+        else:
+            render_quant_portfolio_maker(screener, ticker, quant_portfolio_params)
     elif screener == "📋 Coverage":
         coverage_results()
     elif screener == "📊 Stage 2 Screener":

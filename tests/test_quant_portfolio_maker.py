@@ -2,6 +2,7 @@ import ast
 import importlib
 from pathlib import Path
 
+import pytest
 from streamlit.testing.v1 import AppTest
 
 import apps.quant_portfolio_maker as qpm_navigation
@@ -52,14 +53,14 @@ def test_portfolio_ui_refreshes_stale_metrics_module(monkeypatch):
     assert refreshed.portfolio_metrics.QUANT_PORTFOLIO_METRICS_VERSION == 2
 
 
-def test_root_app_keeps_basic_ichimoku_without_mounting_quant_application():
+def test_root_app_keeps_basic_ichimoku_and_lazy_loads_quant_application():
     source = (ROOT / "app.py").read_text(encoding="utf-8")
 
     assert '"☁️ Ichimoku Chart"' in source
     assert "strategy_signals=strategy_signals" not in source
-    assert "apps.quant_portfolio_maker" not in source
-    assert '"Quant-Portfolio-Maker": (' not in source
-    assert "QPM_PAGE_LABELS" not in source
+    assert "from apps.quant_portfolio_maker.app import render_quant_portfolio_maker" in source
+    assert '"Quant-Portfolio-Maker": (' in source
+    assert "QPM_PAGE_LABELS" in source
     assert "import ha_ema_engine" not in source
     assert "import ichimoku_strategy" not in source
 
@@ -104,10 +105,25 @@ def test_relative_strength_ranking_control_is_scoped_to_ha_ema():
     assert 'ranking_method = "strategy_score"' in source[ichimoku_branch:ha_branch]
 
 
-def test_main_app_runs_without_quant_portfolio_navigation():
+@pytest.mark.parametrize("page", PAGE_LABELS)
+def test_main_app_can_open_each_quant_portfolio_maker_page(page):
     app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=30).run()
     assert not app.exception
-    assert all("Quant-Portfolio-Maker" not in button.label for button in app.button)
+
+    app.button(key=f"nav_{page}").click().run()
+
+    assert not app.exception
+
+
+def test_main_app_portfolio_lab_mounts_its_sidebar_controls():
+    app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=30).run()
+
+    app.button(key=f"nav_{PORTFOLIO_LAB_PAGE}").click().run()
+
+    assert not app.exception
+    assert app.selectbox(key="qpm_pf_strategy").value == "HA + EMA Trend"
+    assert app.multiselect(key="qpm_pf_indices").value
+    assert any(button.label == "Run Quant Portfolio" for button in app.button)
 
 
 def test_quant_portfolio_maker_can_run_as_a_direct_streamlit_entrypoint():

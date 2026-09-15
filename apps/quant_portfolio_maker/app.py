@@ -1,4 +1,4 @@
-"""Streamlit presentation layer for the standalone Quant-Portfolio-Maker application."""
+"""Streamlit presentation layer for the embedded and standalone Quant-Portfolio-Maker application."""
 
 from __future__ import annotations
 
@@ -799,7 +799,7 @@ def render_enhanced_ichimoku(ticker: str) -> None:
 
 
 def render_quant_portfolio_maker(page: str, ticker: str, portfolio_params: dict | None = None) -> None:
-    """Dispatch one Quant-Portfolio-Maker page within its standalone shell."""
+    """Dispatch one Quant-Portfolio-Maker page without owning the surrounding app shell."""
 
     if page not in PAGE_LABELS:
         st.error("Unknown Quant-Portfolio-Maker page.")
