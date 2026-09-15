@@ -1,14 +1,21 @@
-"""Merge a working-tree Parquet file with the same file from a remote Git branch.
+"""Reconcile a Parquet file and its Git history with a remote branch.
 
 The command fetches the requested remote branch, reads the remote file directly
-from ``FETCH_HEAD``, merges rows by their logical key, and atomically replaces
-the local file. Local rows win when the same key exists in both versions.
+from ``FETCH_HEAD`` and merges rows by their logical key. It then inspects the
+commit graph: behind branches are fast-forwarded and diverged branches receive a
+real merge commit, so the next push is fast-forwardable. A resulting local
+overlay is committed with only the requested parquet staged. Local overlap wins
+only when the working file or local branch changed the parquet; otherwise the
+clean, newer remote file wins.
 
-This intentionally does not merge the Git branch, stage files, commit, or push.
+The command never pushes unless ``--push`` is supplied. Use ``--file-only`` for
+the original behavior (rewrite the file without integrating Git history).
 
 Examples
 --------
 python scripts/merge_remote_parquet.py data/screener_ohlcv.parquet
+python scripts/merge_remote_parquet.py data/screener_ohlcv.parquet --push
+python scripts/merge_remote_parquet.py data/screener_ohlcv.parquet --file-only
 python scripts/merge_remote_parquet.py data/benchmarks.parquet --keys date
 python scripts/merge_remote_parquet.py data/custom.parquet --remote upstream --branch main --keys symbol date
 """
@@ -26,7 +33,7 @@ import pandas as pd
 
 
 class MergeError(RuntimeError):
-    """A condition that prevents a safe file-level merge."""
+    """A condition that prevents a safe parquet or history merge."""
 
 
 KEY_CANDIDATES = (
@@ -108,8 +115,15 @@ def _validate_frame(frame: pd.DataFrame, label: str, keys: list[str]) -> None:
         raise MergeError(f"{label} file contains {duplicates} duplicate key rows")
 
 
-def merge_frames(remote: pd.DataFrame, local: pd.DataFrame, keys: list[str] | None = None) -> tuple[pd.DataFrame, dict]:
-    """Return a remote+local row merge and summary; local duplicate keys win."""
+def merge_frames(
+    remote: pd.DataFrame,
+    local: pd.DataFrame,
+    keys: list[str] | None = None,
+    prefer: str = "local",
+) -> tuple[pd.DataFrame, dict]:
+    """Return a keyed row merge; ``prefer`` selects the winner on overlap."""
+    if prefer not in {"local", "remote"}:
+        raise MergeError("prefer must be either 'local' or 'remote'")
     if set(remote.columns) != set(local.columns):
         remote_only = sorted(set(remote.columns) - set(local.columns))
         local_only = sorted(set(local.columns) - set(remote.columns))
@@ -126,7 +140,8 @@ def merge_frames(remote: pd.DataFrame, local: pd.DataFrame, keys: list[str] | No
     local_only_count = len(local_index.difference(remote_index))
     overlap_count = len(remote_index.intersection(local_index))
 
-    merged = pd.concat([remote, local], ignore_index=True)
+    frames = [remote, local] if prefer == "local" else [local, remote]
+    merged = pd.concat(frames, ignore_index=True)
     merged = merged.drop_duplicates(merge_keys, keep="last").sort_values(merge_keys).reset_index(drop=True)
     _validate_frame(merged, "merged", merge_keys)
     summary = {
@@ -137,6 +152,7 @@ def merge_frames(remote: pd.DataFrame, local: pd.DataFrame, keys: list[str] | No
         "local_only_rows": local_only_count,
         "overlap_rows": overlap_count,
         "merged_rows": len(merged),
+        "overlap_winner": prefer,
     }
     return merged, summary
 
@@ -178,13 +194,174 @@ def _write_atomic(frame: pd.DataFrame, target: Path) -> None:
         temp_path.unlink(missing_ok=True)
 
 
-def run(file: str, remote: str, branch: str | None, keys: list[str] | None) -> dict:
+def _write_bytes_atomic(content: bytes, target: Path) -> None:
+    with tempfile.NamedTemporaryFile(dir=target.parent, prefix=f".{target.name}.", suffix=".tmp", delete=False) as fh:
+        temp_path = Path(fh.name)
+        fh.write(content)
+    try:
+        os.replace(temp_path, target)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+def _git_bytes(repo: Path, *args: str) -> bytes:
+    result = _git(repo, *args, capture_bytes=True)
+    if result.returncode:
+        detail = result.stderr.decode(errors="replace").strip()
+        raise MergeError(f"git {' '.join(args)} failed: {detail or 'unknown Git error'}")
+    return result.stdout
+
+
+def _git_succeeds(repo: Path, *args: str) -> bool:
+    return _git(repo, *args).returncode == 0
+
+
+def classify_history(repo: Path, local_ref: str = "HEAD", remote_ref: str = "FETCH_HEAD") -> str:
+    """Classify two commits as equal, ahead, behind or diverged."""
+    local_oid = _git_text(repo, "rev-parse", local_ref)
+    remote_oid = _git_text(repo, "rev-parse", remote_ref)
+    if local_oid == remote_oid:
+        return "equal"
+    if _git_succeeds(repo, "merge-base", "--is-ancestor", local_ref, remote_ref):
+        return "behind"
+    if _git_succeeds(repo, "merge-base", "--is-ancestor", remote_ref, local_ref):
+        return "ahead"
+    return "diverged"
+
+
+def _path_changed(repo: Path, old_ref: str, new_ref: str, relative: str) -> bool:
+    return not _git_succeeds(repo, "diff", "--quiet", old_ref, new_ref, "--", relative)
+
+
+def _path_dirty(repo: Path, relative: str) -> bool:
+    return not _git_succeeds(repo, "diff", "--quiet", "--", relative)
+
+
+def _frames_equal(left: pd.DataFrame, right: pd.DataFrame, keys: list[str]) -> bool:
+    if list(left.columns) != list(right.columns) or len(left) != len(right):
+        return False
+    left_sorted = left.sort_values(keys).reset_index(drop=True)
+    right_sorted = right.sort_values(keys).reset_index(drop=True)
+    return left_sorted.equals(right_sorted)
+
+
+def _assert_graph_integration_safe(repo: Path, relative: str, history: str) -> None:
+    if _git_succeeds(repo, "rev-parse", "--verify", "-q", "MERGE_HEAD"):
+        raise MergeError("a Git merge is already in progress")
+    if _git_text(repo, "diff", "--cached", "--name-only"):
+        raise MergeError("the index contains staged changes; commit or unstage them before integrating Git history")
+    if history not in {"behind", "diverged"}:
+        return
+
+    merge_base = _git_text(repo, "merge-base", "HEAD", "FETCH_HEAD")
+    remote_changed = set(filter(None, _git_text(repo, "diff", "--name-only", merge_base, "FETCH_HEAD").splitlines()))
+    dirty_tracked = set(filter(None, _git_text(repo, "diff", "--name-only").splitlines()))
+    unsafe = sorted((dirty_tracked - {relative}) & remote_changed)
+    if unsafe:
+        raise MergeError("uncommitted files would overlap remote changes: " + ", ".join(unsafe))
+    if history == "diverged":
+        local_changed = set(filter(None, _git_text(repo, "diff", "--name-only", merge_base, "HEAD").splitlines()))
+        concurrent = sorted((local_changed & remote_changed) - {relative})
+        if concurrent:
+            raise MergeError(
+                "both branches changed non-parquet files; merge them manually first: " + ", ".join(concurrent)
+            )
+
+
+def _commit_target(repo: Path, relative: str, remote: str, branch: str) -> None:
+    _git_text(repo, "add", "--", relative)
+    result = _git(
+        repo,
+        "commit",
+        "--only",
+        "-m",
+        f"data: reconcile {Path(relative).name} with {remote}/{branch}",
+        "--",
+        relative,
+    )
+    if result.returncode:
+        detail = (result.stderr or result.stdout).strip()
+        raise MergeError(f"could not commit reconciled parquet: {detail or 'git commit failed'}")
+
+
+def _merge_diverged_history(
+    repo: Path,
+    target: Path,
+    relative: str,
+    merged: pd.DataFrame,
+    remote: str,
+    branch: str,
+) -> None:
+    result = _git(repo, "merge", "--no-commit", "--no-ff", "FETCH_HEAD")
+    unresolved = set(filter(None, _git_text(repo, "diff", "--name-only", "--diff-filter=U").splitlines()))
+    unexpected = sorted(unresolved - {relative})
+    if unexpected:
+        _git(repo, "merge", "--abort")
+        raise MergeError("merge has non-parquet conflicts requiring manual resolution: " + ", ".join(unexpected))
+    if result.returncode and relative not in unresolved:
+        detail = (result.stderr or result.stdout).strip()
+        _git(repo, "merge", "--abort")
+        raise MergeError(f"git merge failed: {detail or 'unknown Git error'}")
+
+    _write_atomic(merged, target)
+    _git_text(repo, "add", "--", relative)
+    remaining = _git_text(repo, "diff", "--name-only", "--diff-filter=U")
+    if remaining:
+        _git(repo, "merge", "--abort")
+        raise MergeError(f"merge still has unresolved files: {remaining.replace(chr(10), ', ')}")
+
+    message = f"Merge {remote}/{branch} with parquet reconciliation"
+    commit = _git(repo, "commit", "-m", message)
+    if commit.returncode:
+        detail = (commit.stderr or commit.stdout).strip()
+        raise MergeError(f"parquet was resolved but the merge commit failed: {detail or 'git commit failed'}")
+
+
+def _fast_forward_with_local_overlay(
+    repo: Path,
+    target: Path,
+    relative: str,
+    merged: pd.DataFrame,
+    remote_frame: pd.DataFrame,
+    keys: list[str],
+) -> None:
+    original = target.read_bytes()
+    dirty = _path_dirty(repo, relative)
+    if dirty:
+        _write_bytes_atomic(_git_bytes(repo, "show", f"HEAD:{relative}"), target)
+    result = _git(repo, "merge", "--ff-only", "FETCH_HEAD")
+    if result.returncode:
+        if dirty:
+            _write_bytes_atomic(original, target)
+        detail = (result.stderr or result.stdout).strip()
+        raise MergeError(f"fast-forward failed: {detail or 'unknown Git error'}")
+    if not _frames_equal(merged, remote_frame, keys):
+        _write_atomic(merged, target)
+
+
+def run(
+    file: str,
+    remote: str,
+    branch: str | None,
+    keys: list[str] | None,
+    *,
+    integrate: bool = True,
+    push: bool = False,
+) -> dict:
     repo = _repo_root()
     local_path, relative = _resolve_file(repo, file)
     remote_url = _git_text(repo, "remote", "get-url", remote)
     selected_branch = branch or _git_text(repo, "branch", "--show-current")
     if not selected_branch:
         raise MergeError("cannot infer a branch in detached HEAD state; pass --branch")
+    current_branch = _git_text(repo, "branch", "--show-current")
+    if integrate and selected_branch != current_branch:
+        raise MergeError(
+            f"graph integration requires the checked-out branch ({current_branch}) "
+            f"to match --branch ({selected_branch})"
+        )
+    if push and not integrate:
+        raise MergeError("--push cannot be combined with --file-only")
 
     print(f"Repository : {repo}")
     print(f"Local file : {relative}")
@@ -196,8 +373,33 @@ def run(file: str, remote: str, branch: str | None, keys: list[str] | None) -> d
     remote_frame, remote_temp = _read_remote_file(repo, relative)
     try:
         local_frame = pd.read_parquet(local_path)
-        merged, summary = merge_frames(remote_frame, local_frame, keys)
-        _write_atomic(merged, local_path)
+        history = classify_history(repo)
+        working_dirty = _path_dirty(repo, relative)
+        if integrate:
+            merge_base = _git_text(repo, "merge-base", "HEAD", "FETCH_HEAD")
+            locally_changed = working_dirty or _path_changed(repo, merge_base, "HEAD", relative)
+        else:
+            locally_changed = True
+        overlap_winner = "local" if not integrate or locally_changed else "remote"
+        merged, summary = merge_frames(remote_frame, local_frame, keys, prefer=overlap_winner)
+        merged_differs = not _frames_equal(merged, local_frame, summary["keys"])
+
+        if not integrate:
+            _write_atomic(merged, local_path)
+        else:
+            _assert_graph_integration_safe(repo, relative, history)
+            if history == "behind":
+                _fast_forward_with_local_overlay(repo, local_path, relative, merged, remote_frame, summary["keys"])
+            elif history == "diverged":
+                if working_dirty:
+                    if merged_differs:
+                        _write_atomic(merged, local_path)
+                    _commit_target(repo, relative, remote, selected_branch)
+                _merge_diverged_history(repo, local_path, relative, merged, remote, selected_branch)
+            elif merged_differs:
+                _write_atomic(merged, local_path)
+            if history != "diverged" and _path_dirty(repo, relative):
+                _commit_target(repo, relative, remote, selected_branch)
     except MergeError:
         raise
     except Exception as exc:
@@ -208,11 +410,19 @@ def run(file: str, remote: str, branch: str | None, keys: list[str] | None) -> d
     print(f"Keys       : {', '.join(summary['keys'])}")
     print(f"Remote rows: {summary['remote_rows']:,} ({summary['remote_only_rows']:,} remote-only)")
     print(f"Local rows : {summary['local_rows']:,} ({summary['local_only_rows']:,} local-only)")
-    print(f"Overlap    : {summary['overlap_rows']:,} (local rows retained)")
+    print(f"Overlap    : {summary['overlap_rows']:,} ({summary['overlap_winner']} rows retained)")
     print(f"Merged rows: {summary['merged_rows']:,}")
+    print(f"History    : {history}")
+    print(f"Precedence : {summary['overlap_winner']} rows win on overlap")
     status = _git_text(repo, "status", "--short", "--", relative) or "clean (merged content matches HEAD)"
     print(f"Git status : {status}")
-    print("No commit was created and nothing was pushed.")
+    if push:
+        if _path_dirty(repo, relative):
+            _commit_target(repo, relative, remote, selected_branch)
+        _git_text(repo, "push", remote, f"HEAD:{selected_branch}")
+        print(f"Pushed     : {remote}/{selected_branch}")
+    else:
+        print("Push       : not requested (use --push, or run git push normally)")
     return summary
 
 
@@ -222,13 +432,19 @@ def main() -> int:
     parser.add_argument("--remote", default="origin", help="Git remote to fetch (default: origin)")
     parser.add_argument("--branch", help="Remote branch (default: current local branch)")
     parser.add_argument("--keys", nargs="+", help="Logical row-key columns (default: infer known schemas)")
+    parser.add_argument(
+        "--file-only",
+        action="store_true",
+        help="merge parquet rows only; do not fast-forward or merge Git history",
+    )
+    parser.add_argument("--push", action="store_true", help="push after successful graph integration")
     args = parser.parse_args()
     try:
-        run(args.file, args.remote, args.branch, args.keys)
+        run(args.file, args.remote, args.branch, args.keys, integrate=not args.file_only, push=args.push)
         return 0
     except MergeError as exc:
         print(f"Cannot merge: {exc}", file=sys.stderr)
-        print("No commit was created and nothing was pushed.", file=sys.stderr)
+        print("Nothing was pushed.", file=sys.stderr)
         return 1
 
 

@@ -87,6 +87,17 @@ To force a full rebuild later:
 python scripts/refresh_screener_parquet.py --full
 ```
 
+If an automated remote refresh and local parquet work diverge, reconcile both the keyed rows and Git history with:
+
+```bash
+python scripts/merge_remote_parquet.py data/screener_ohlcv.parquet
+```
+
+The command detects equal, ahead, behind and diverged histories; fast-forwards or creates a merge commit as needed;
+preserves intentional local rows on overlap; and commits only the requested parquet when a local overlay remains. Add
+`--push` to publish the reconciled branch, or `--file-only` to retain the legacy behavior that updates only the working
+file.
+
 The backtester baseline (`data/backtest_history.parquet`) is committed to the repo — no seed step required.
 
 ---
