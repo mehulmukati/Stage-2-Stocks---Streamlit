@@ -3,6 +3,7 @@ from datetime import date
 import pandas as pd
 
 from app_live_signal import (
+    _annotate_trade_reasons,
     _classify_weight_changes,
     _comparison_weights_for_live_event,
     _next_business_day,
@@ -134,6 +135,27 @@ def test_broker_csv_reader_uses_required_columns():
     assert frame.to_dict("records") == [{"Ticker": "AKUMS", "Quantity": 12}]
 
 
+def test_broker_csv_reader_finds_positions_after_portfolio_overview():
+    payload = b"""Investment Overview,,,,,,Returns Breakdown
+Current Value,,,,,,Total Returns
+1590625.13,,,,,,44209.33
+Current Investment,Money Put In,,,Current Returns,Realized Returns,Dividends
+1497321.05,1813102.11,,,93304.08,-50694.96,1600.20
+
+Name,Ticker,Current Price (Rs.),Avg Buy Price (Rs.),Returns (%),Weightage,Shares
+Welspun Corp Ltd,WELCORP,2599.50,1577.96,64.73,4.24,26
+Laurus Labs Ltd,LAURUSLABS,1946.90,1590.64,22.39,0.48,4
+"""
+
+    frame, errors = _read_broker_snapshot("portfolio.csv", payload)
+
+    assert errors == []
+    assert frame.to_dict("records") == [
+        {"Ticker": "LAURUSLABS", "Quantity": 4},
+        {"Ticker": "WELCORP", "Quantity": 26},
+    ]
+
+
 def test_actual_portfolio_reconciliation_sells_off_model_and_preserves_reserve():
     snapshot = pd.DataFrame({"Ticker": ["A", "X"], "Quantity": [5, 2]})
     result = _reconcile_actual_portfolio(
@@ -212,3 +234,51 @@ def test_legacy_warmup_does_not_change_replay_identity():
     long = _strategy_fingerprint({**base, "warmup": 156}, "2026-09-03", "test")
 
     assert short == long
+
+
+def test_trade_reasons_distinguish_strategy_changes_from_reconciliation():
+    rows = [
+        {"Ticker": "NEW", "Action": "BUY", "Actual quantity": 0, "Target quantity": 5, "Strategy target (%)": 10.0},
+        {"Ticker": "EXIT", "Action": "SELL", "Actual quantity": 4, "Target quantity": 0, "Strategy target (%)": 0.0},
+        {"Ticker": "MISSING", "Action": "BUY", "Actual quantity": 0, "Target quantity": 3, "Strategy target (%)": 8.0},
+        {"Ticker": "TRIM", "Action": "SELL", "Actual quantity": 9, "Target quantity": 6, "Strategy target (%)": 12.0},
+    ]
+
+    explained = _by_ticker(
+        _annotate_trade_reasons(
+            rows,
+            {"NEW": "rank #7"},
+            {"EXIT": "left universe"},
+            fresh_portfolio=False,
+            m=15,
+            n=30,
+        )
+    )
+
+    assert explained["NEW"]["Trade type"] == "Strategy entry"
+    assert explained["NEW"]["Reason"] == "Momentum rank #7 is within the entry band (M=15)."
+    assert explained["EXIT"]["Trade type"] == "Strategy exit"
+    assert explained["EXIT"]["Reason"] == "Stock is no longer in the selected index universe."
+    assert explained["MISSING"]["Trade type"] == "Establish target"
+    assert explained["TRIM"]["Trade type"] == "Reduce to target"
+
+
+def test_stage2_trade_reasons_are_expanded_for_display():
+    rows = [
+        {"Ticker": "UP", "Action": "BUY", "Actual quantity": 0, "Target quantity": 2, "Strategy target (%)": 5.0},
+        {"Ticker": "DOWN", "Action": "SELL", "Actual quantity": 2, "Target quantity": 0, "Strategy target (%)": 0.0},
+    ]
+
+    explained = _by_ticker(
+        _annotate_trade_reasons(
+            rows,
+            {"UP": "S2 +2"},
+            {"DOWN": "S2 -3"},
+            fresh_portfolio=False,
+            m=15,
+            n=30,
+        )
+    )
+
+    assert explained["UP"]["Reason"] == "Stage 2 score increased by 2, triggering entry."
+    assert explained["DOWN"]["Reason"] == "Stage 2 score decreased by 3, triggering exit."

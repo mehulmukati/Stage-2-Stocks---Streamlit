@@ -255,19 +255,47 @@ def _normalise_broker_snapshot(raw: pd.DataFrame) -> tuple[pd.DataFrame, list[st
     return frame, []
 
 
+def _find_broker_positions_block(raw: pd.DataFrame) -> pd.DataFrame:
+    """Extract Ticker/Quantity data from a table whose header may follow a summary block."""
+    ticker_headers = {"ticker", "symbol", "tradingsymbol", "security"}
+    quantity_headers = {"quantity", "qty", "netqty", "shares"}
+
+    for row_number, row in raw.iterrows():
+        normalised_cells = {
+            "".join(ch for ch in str(value).lower() if ch.isalnum()): column
+            for column, value in row.items()
+            if pd.notna(value)
+        }
+        ticker_matches = ticker_headers & normalised_cells.keys()
+        quantity_matches = quantity_headers & normalised_cells.keys()
+        if not ticker_matches or not quantity_matches:
+            continue
+
+        ticker_column = normalised_cells[next(header for header in ticker_headers if header in ticker_matches)]
+        quantity_column = normalised_cells[next(header for header in quantity_headers if header in quantity_matches)]
+        positions = raw.loc[row_number + 1 :, [ticker_column, quantity_column]].copy()
+        positions.columns = ["Ticker", "Quantity"]
+        return positions.reset_index(drop=True)
+
+    return pd.DataFrame(columns=["Ticker", "Quantity"])
+
+
 def _read_broker_snapshot(file_name: str, payload: bytes) -> tuple[pd.DataFrame, list[str]]:
-    """Read a fresh CSV/XLSX broker export and normalise its required columns."""
+    """Read a CSV/XLSX broker export, ignoring any summary before the positions table."""
     try:
         suffix = file_name.lower().rsplit(".", 1)[-1]
         if suffix == "csv":
-            raw = pd.read_csv(io.BytesIO(payload))
+            raw = pd.read_csv(io.BytesIO(payload), header=None, dtype=object)
         elif suffix == "xlsx":
-            raw = pd.read_excel(io.BytesIO(payload))
+            raw = pd.read_excel(io.BytesIO(payload), header=None, dtype=object)
         else:
             return pd.DataFrame(columns=["Ticker", "Quantity"]), ["Upload a CSV or XLSX file."]
     except Exception as exc:
         return pd.DataFrame(columns=["Ticker", "Quantity"]), [f"Could not read broker snapshot: {exc}"]
-    return _normalise_broker_snapshot(raw)
+    positions = _find_broker_positions_block(raw)
+    if positions.empty:
+        return positions, ["Broker snapshot requires a positions table with Ticker and Quantity/Shares columns."]
+    return _normalise_broker_snapshot(positions)
 
 
 def _reconcile_actual_portfolio(
@@ -391,6 +419,75 @@ def _portfolio_from_replay(
     return pd.DataFrame(positions, columns=["Ticker", "Quantity"]), cash, []
 
 
+def _explain_strategy_reason(reason: str, action: str, m: int, n: int) -> str:
+    """Translate the engine's compact entry/exit reason into user-facing text."""
+    reason = str(reason or "").strip()
+    if reason.startswith("rank #"):
+        rank = reason.removeprefix("rank #")
+        if action == "BUY":
+            return f"Momentum rank #{rank} is within the entry band (M={m})."
+        return f"Momentum rank #{rank} is outside the hold band (N={n})."
+    if reason == "left universe":
+        return "Stock is no longer in the selected index universe."
+    if reason.startswith("S2 +"):
+        change = reason.removeprefix("S2 +")
+        return f"Stage 2 score increased by {change}, triggering entry."
+    if reason.startswith("S2 -"):
+        change = reason.removeprefix("S2 -")
+        return f"Stage 2 score decreased by {change}, triggering exit."
+    return reason or ("Entered the strategy." if action == "BUY" else "Exited the strategy.")
+
+
+def _annotate_trade_reasons(
+    rows: list[dict],
+    entry_reasons: dict[str, str],
+    exit_reasons: dict[str, str],
+    *,
+    fresh_portfolio: bool,
+    m: int,
+    n: int,
+) -> list[dict]:
+    """Explain whether each order is a strategy change or portfolio reconciliation."""
+    explained = []
+    for source_row in rows:
+        row = dict(source_row)
+        ticker = str(row["Ticker"])
+        action = row["Action"]
+        actual_qty = int(row["Actual quantity"])
+        target_qty = int(row["Target quantity"])
+        target_weight = float(row["Strategy target (%)"])
+
+        if action == "BUY" and ticker in entry_reasons:
+            trade_type = "Strategy entry"
+            reason = _explain_strategy_reason(entry_reasons[ticker], action, m, n)
+        elif action == "SELL" and ticker in exit_reasons:
+            trade_type = "Strategy exit"
+            reason = _explain_strategy_reason(exit_reasons[ticker], action, m, n)
+        elif action == "BUY" and fresh_portfolio:
+            trade_type = "Initial deployment"
+            reason = f"Opening the portfolio at the {target_weight:.2f}% strategy target."
+        elif action == "BUY" and actual_qty == 0:
+            trade_type = "Establish target"
+            reason = f"Current portfolio has no shares; strategy target is {target_weight:.2f}%."
+        elif action == "BUY":
+            trade_type = "Increase to target"
+            reason = f"Current quantity {actual_qty} is below target quantity {target_qty}."
+        elif action == "SELL" and target_qty == 0:
+            trade_type = "Off-model exit"
+            reason = "Holding is absent from the current strategy target."
+        elif action == "SELL":
+            trade_type = "Reduce to target"
+            reason = f"Current quantity {actual_qty} is above target quantity {target_qty}."
+        else:
+            trade_type = "No order"
+            reason = "Current quantity already matches the rounded strategy target."
+
+        row["Trade type"] = trade_type
+        row["Reason"] = reason
+        explained.append(row)
+    return explained
+
+
 def _symbols_needed_for_replay(
     indices: list[str],
     constituents: dict[str, list[str]],
@@ -472,7 +569,10 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
                 "Upload broker positions",
                 type=["csv", "xlsx"],
                 key="ls_broker_snapshot_upload",
-                help="Accepted aliases include Symbol/Trading Symbol and Qty/Net Qty/Shares.",
+                help=(
+                    "The positions table may appear after a portfolio-summary block. "
+                    "Accepted aliases include Symbol/Trading Symbol and Qty/Net Qty/Shares."
+                ),
             )
             template_col.download_button(
                 "Template",
@@ -1172,6 +1272,8 @@ def live_signal_results(params: dict) -> None:
     weight_key = "prop_weights" if "Prop" in _v else "marg_weights" if "Marginal" in _v else "full_weights"
     pre_rebalance_key = f"pre_rebalance_{weight_key}"
     weights: dict[str, float] = dict(current[weight_key])
+    entry_reasons = dict(_parse_ticker_reason(item) for item in current.get("entries", []))
+    exit_reasons = dict(_parse_ticker_reason(item) for item in current.get("exits", []))
 
     # A merger changes the security's identity without being a market trade.
     # Move the prior snapshot to the successor so the four tables show the
@@ -1218,6 +1320,36 @@ def live_signal_results(params: dict) -> None:
             f"effective {action['effective_date']} at {action['share_ratio']:.4g} successor shares per old share. "
             "The identity conversion is not treated as a taxable market sale."
         )
+
+    strategy_entries = [
+        {
+            "Ticker": ticker,
+            "Reason": _explain_strategy_reason(reason, "BUY", params["m"], params["n"]),
+        }
+        for ticker, reason in sorted(entry_reasons.items())
+    ]
+    strategy_exits = [
+        {
+            "Ticker": ticker,
+            "Reason": _explain_strategy_reason(reason, "SELL", params["m"], params["n"]),
+        }
+        for ticker, reason in sorted(exit_reasons.items())
+    ]
+    with st.expander("Why the strategy changed", expanded=bool(strategy_entries or strategy_exits)):
+        if not strategy_entries and not strategy_exits:
+            st.caption("No stocks entered or exited the strategy at this rebalance.")
+        else:
+            exit_col, entry_col = st.columns(2)
+            with exit_col:
+                st.markdown(f"**Exits ({len(strategy_exits)})**")
+                st.dataframe(
+                    pd.DataFrame(strategy_exits, columns=["Ticker", "Reason"]), hide_index=True, width="stretch"
+                )
+            with entry_col:
+                st.markdown(f"**Entries ({len(strategy_entries)})**")
+                st.dataframe(
+                    pd.DataFrame(strategy_entries, columns=["Ticker", "Reason"]), hide_index=True, width="stretch"
+                )
 
     blocking_stale_incumbents: list[str] = result.get("blocking_stale_incumbents", [])
     if blocking_stale_incumbents:
@@ -1275,7 +1407,14 @@ def live_signal_results(params: dict) -> None:
                 f"calculated ₹{portfolio_value:,.0f} versus expected ₹{expected_value:,.0f}."
             )
 
-    actual_rows: list[dict] = reconciliation["rows"]
+    actual_rows = _annotate_trade_reasons(
+        reconciliation["rows"],
+        entry_reasons,
+        exit_reasons,
+        fresh_portfolio=fresh_portfolio,
+        m=params["m"],
+        n=params["n"],
+    )
     trade_rows = [row for row in actual_rows if row["Action"] != "HOLD"]
     buy_rows = sorted((row for row in trade_rows if row["Action"] == "BUY"), key=lambda row: -row["Trade value (₹)"])
     sell_rows = sorted((row for row in trade_rows if row["Action"] == "SELL"), key=lambda row: -row["Trade value (₹)"])
@@ -1352,6 +1491,8 @@ def live_signal_results(params: dict) -> None:
         "Strategy target (%)": st.column_config.NumberColumn("Strategy target", format="%.2f%%"),
         "Target value (₹)": st.column_config.NumberColumn("Target value", format="₹%.0f"),
         "Trade value (₹)": st.column_config.NumberColumn("Trade value", format="₹%.0f"),
+        "Trade type": st.column_config.TextColumn("Trade type", width="medium"),
+        "Reason": st.column_config.TextColumn("Reason", width="large"),
     }
 
     st.markdown("---")
@@ -1370,8 +1511,20 @@ def live_signal_results(params: dict) -> None:
     st.markdown("---")
     st.markdown(f"#### Sell first &nbsp;({len(sell_rows)})")
     sell_display = [{**row, "Quantity to sell": abs(row["Order quantity"])} for row in sell_rows]
+    sell_columns = [
+        "Ticker",
+        "Trade type",
+        "Reason",
+        "Price",
+        "Actual quantity",
+        "Target quantity",
+        "Quantity to sell",
+        "Trade value (₹)",
+        "Actual weight (%)",
+        "Strategy target (%)",
+    ]
     st.dataframe(
-        pd.DataFrame(sell_display),
+        pd.DataFrame(sell_display, columns=sell_columns),
         hide_index=True,
         width="stretch",
         column_config={**column_config, "Quantity to sell": st.column_config.NumberColumn(format="%d")},
@@ -1380,8 +1533,20 @@ def live_signal_results(params: dict) -> None:
     st.markdown("---")
     st.markdown(f"#### Buy after sells &nbsp;({len(buy_rows)})")
     buy_display = [{**row, "Quantity to buy": row["Order quantity"]} for row in buy_rows]
+    buy_columns = [
+        "Ticker",
+        "Trade type",
+        "Reason",
+        "Price",
+        "Actual quantity",
+        "Target quantity",
+        "Quantity to buy",
+        "Trade value (₹)",
+        "Actual weight (%)",
+        "Strategy target (%)",
+    ]
     st.dataframe(
-        pd.DataFrame(buy_display),
+        pd.DataFrame(buy_display, columns=buy_columns),
         hide_index=True,
         width="stretch",
         column_config={**column_config, "Quantity to buy": st.column_config.NumberColumn(format="%d")},
@@ -1430,6 +1595,8 @@ def live_signal_results(params: dict) -> None:
             {
                 "Ticker": row["Ticker"],
                 "Action": row["Action"],
+                "Trade Type": row["Trade type"],
+                "Reason": row["Reason"],
                 "Order Quantity": abs(row["Order quantity"]),
                 "Actual Quantity": row["Actual quantity"],
                 "Target Quantity": row["Target quantity"],
