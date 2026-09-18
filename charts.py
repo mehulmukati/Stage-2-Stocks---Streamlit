@@ -587,10 +587,33 @@ def phase_chart_figure(rolled, ticker: str, use_log_scale: bool = True) -> go.Fi
         phase_str = valid["Phase"].astype(str)
         seg_id = (phase_str != phase_str.shift()).cumsum()
         for _, grp in valid.groupby(seg_id, sort=False):
-            color = PHASE_COLORS.get(grp["Phase"].iloc[0])
+            phase = str(grp["Phase"].iloc[0])
+            color = PHASE_COLORS.get(phase)
             if color is None:
                 continue
             fig.add_vrect(x0=grp.index[0], x1=grp.index[-1], fillcolor=color, layer="below", line_width=0)
+            midpoint = grp.index[0] + (grp.index[-1] - grp.index[0]) / 2
+            short_label = {
+                "Strong Stage 2": "Strong",
+                "Likely Stage 2": "Likely",
+                "Early/Weak Stage 2": "Early/Weak",
+            }[phase]
+            fig.add_annotation(
+                x=midpoint,
+                y=0.96,
+                xref="x",
+                yref="paper",
+                xanchor="center",
+                yanchor="top",
+                text=f"<b>{short_label}</b><br>{len(grp)}d",
+                showarrow=False,
+                align="center",
+                font=dict(size=10, color="#f8fafc"),
+                bgcolor="rgba(15, 23, 42, 0.65)",
+                bordercolor="rgba(226, 232, 240, 0.35)",
+                borderwidth=1,
+                borderpad=3,
+            )
 
     fig.add_trace(
         go.Scatter(

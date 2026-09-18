@@ -9,12 +9,46 @@ from charts import (
     ha_ema_equity_figure,
     ichimoku_chart_figure,
     ichimoku_strategy_comparison_figure,
+    phase_chart_figure,
+    stage2_breadth_count_figure,
+    stage2_breadth_percent_figure,
 )
 from ha_ema_engine import HAEMAStrategyConfig, compute_ha_ema_signals
 from ichimoku_engine import compute_ichimoku
+from stage2_engine import compute_rolling_stage2
 from strategy_replay import replay_single_stock
 
 from .conftest import make_ohlcv
+
+
+def test_stage2_breadth_figures_have_all_phase_layers():
+    daily = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2025-01-01", "2025-01-02"]),
+            "Eligible": [10, 10],
+            "Not Stage 2": [4, 3],
+            "Early": [2, 2],
+            "Likely": [2, 3],
+            "Strong": [2, 2],
+            "Stage 2": [6, 7],
+            "Stage 2 %": [60.0, 70.0],
+            "Strong %": [20.0, 20.0],
+            "Average Score": [3.5, 3.8],
+        }
+    )
+    for figure in (stage2_breadth_count_figure(daily), stage2_breadth_percent_figure(daily)):
+        assert [trace.name for trace in figure.data] == ["Strong", "Likely", "Early", "Not Stage 2"]
+
+    overlay = stage2_breadth_count_figure(daily, {"Nifty 50": pd.Series([22000, 22100], index=daily["date"])})
+    assert overlay.data[-1].yaxis == "y2"
+    assert overlay.layout.yaxis2.type == "log"
+
+
+def test_phase_chart_displays_stage_duration_summary():
+    rolled = compute_rolling_stage2(make_ohlcv(300, close=[100 + i * 0.2 for i in range(300)]))
+    figure = phase_chart_figure(rolled, "TEST")
+    assert figure.layout.annotations
+    assert any("d" in annotation.text for annotation in figure.layout.annotations)
 
 
 def test_ichimoku_chart_contains_core_traces_and_projection():
