@@ -1,6 +1,6 @@
 import pandas as pd
 
-from stage2_engine import check_weinstein_retest, score_stage2
+from stage2_engine import check_weinstein_retest, current_stage2_run, score_stage2
 
 from .conftest import make_ohlcv
 
@@ -133,6 +133,13 @@ def test_score_stage2_not_stage2_label_for_declining_fast():
     # Inverted MA stack, below all MAs, no HH/HL, no consolidation, no vol surge → score = 0
     assert result["Score"] == 0
     assert "Not Stage 2" in result["Stage"]
+
+
+def test_current_stage2_run_counts_continuous_stage2_sessions():
+    df = make_ohlcv(300, close=[100 + i * 0.2 for i in range(300)], volume=1_000_000)
+    result = current_stage2_run(df)
+    assert result["Stage 2 Days"] > 0
+    assert result["Stage 2 Since"]
 
 
 # ──────────────────────────────────────────────

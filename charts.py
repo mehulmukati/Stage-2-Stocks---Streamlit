@@ -9,12 +9,111 @@ from strategy_replay import resolve_signal_executions
 
 ICHIMOKU_CHART_VERSION = 10
 HA_EMA_CHART_VERSION = 5
+STAGE2_BREADTH_CHART_VERSION = 1
 
 PHASE_COLORS = {
     "Strong Stage 2": "rgba(34, 197, 94, 0.25)",
     "Likely Stage 2": "rgba(234, 179, 8, 0.25)",
     "Early/Weak Stage 2": "rgba(249, 115, 22, 0.22)",
 }
+
+STAGE2_BREADTH_COLORS = {
+    "Strong": "#22c55e",
+    "Likely": "#eab308",
+    "Early": "#f97316",
+    "Not Stage 2": "#94a3b8",
+}
+
+
+def _add_breadth_index_overlays(fig: go.Figure, index_series: dict[str, pd.Series] | None) -> None:
+    """Overlay local benchmark closes on a log-scaled right axis."""
+    if not index_series:
+        return
+    colors = {"Nifty 50": "#2563eb", "Nifty 100": "#a855f7", "Nifty 500": "#ec4899"}
+    for name, series in index_series.items():
+        observed = series.dropna()
+        if observed.empty:
+            continue
+        fig.add_trace(
+            go.Scatter(
+                x=observed.index,
+                y=observed,
+                name=name,
+                mode="lines",
+                yaxis="y2",
+                line={"width": 1.6, "color": colors.get(name, "#0ea5e9")},
+                hovertemplate=f"<b>{name}</b><br>%{{x|%d %b %Y}}<br>%{{y:,.2f}}<extra></extra>",
+            )
+        )
+    fig.update_layout(
+        yaxis2={"title": "Index level (log)", "type": "log", "overlaying": "y", "side": "right", "showgrid": False}
+    )
+
+
+def stage2_breadth_count_figure(daily: pd.DataFrame, index_series: dict[str, pd.Series] | None = None) -> go.Figure:
+    """Stacked daily count view of Stage 2 breadth."""
+    fig = go.Figure()
+    for column in ("Strong", "Likely", "Early", "Not Stage 2"):
+        fig.add_trace(
+            go.Scatter(
+                x=daily["date"],
+                y=daily[column],
+                name=column,
+                stackgroup="breadth",
+                mode="lines",
+                line={"width": 0.6, "color": STAGE2_BREADTH_COLORS[column]},
+                fillcolor=STAGE2_BREADTH_COLORS[column],
+                customdata=daily[["Eligible", "Stage 2", "Stage 2 %", "Strong %"]],
+                hovertemplate=(
+                    "<b>%{x|%d %b %Y}</b><br>" + column + ": %{y:,}<br>Eligible: %{customdata[0]:,}<br>"
+                    "Stage 2: %{customdata[1]:,} (%{customdata[2]:.1f}%)<br>"
+                    "Strong: %{customdata[3]:.1f}%<extra></extra>"
+                ),
+            )
+        )
+    fig.update_layout(
+        title="Daily Stage 2 Breadth — Eligible Stock Count",
+        yaxis_title="Stocks",
+        hovermode="x unified",
+        legend={"orientation": "h", "y": 1.08},
+        margin={"l": 30, "r": 20, "t": 60, "b": 25},
+    )
+    _add_breadth_index_overlays(fig, index_series)
+    return fig
+
+
+def stage2_breadth_percent_figure(daily: pd.DataFrame, index_series: dict[str, pd.Series] | None = None) -> go.Figure:
+    """100%-stacked companion view, insensitive to changes in coverage size."""
+    fig = go.Figure()
+    eligible = daily["Eligible"].replace(0, pd.NA)
+    for column in ("Strong", "Likely", "Early", "Not Stage 2"):
+        fig.add_trace(
+            go.Scatter(
+                x=daily["date"],
+                y=daily[column].div(eligible).fillna(0).mul(100),
+                name=column,
+                stackgroup="breadth_pct",
+                groupnorm="percent",
+                mode="lines",
+                line={"width": 0.6, "color": STAGE2_BREADTH_COLORS[column]},
+                fillcolor=STAGE2_BREADTH_COLORS[column],
+                customdata=daily[["Eligible", "Stage 2 %", "Average Score"]],
+                hovertemplate=(
+                    "<b>%{x|%d %b %Y}</b><br>" + column + ": %{y:.1f}%<br>Eligible: %{customdata[0]:,}<br>"
+                    "Stage 2 breadth: %{customdata[1]:.1f}%<br>Average score: %{customdata[2]:.2f}/8<extra></extra>"
+                ),
+            )
+        )
+    fig.update_layout(
+        title="Daily Stage 2 Breadth — Percentage of Eligible Stocks",
+        yaxis={"title": "Universe share", "ticksuffix": "%", "range": [0, 100]},
+        hovermode="x unified",
+        legend={"orientation": "h", "y": 1.08},
+        margin={"l": 30, "r": 20, "t": 60, "b": 25},
+    )
+    _add_breadth_index_overlays(fig, index_series)
+    return fig
+
 
 # Strategy colors — mid-range saturation so they read on both light and dark backgrounds.
 # Line dash encodes rebalance method; color encodes band rule.

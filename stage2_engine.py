@@ -71,6 +71,21 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+def current_stage2_run(df: pd.DataFrame) -> dict[str, int | str]:
+    """Return the current uninterrupted Stage 2 run (score >= 2).
+
+    Zone changes within Stage 2 are deliberately not breaks: an Early setup
+    that becomes Likely and then Strong remains one continuous Stage 2 run.
+    """
+    rolled = compute_rolling_stage2(df)
+    valid = rolled.iloc[250:].dropna(subset=["MA50", "MA150", "MA200"])
+    if valid.empty or int(valid["Score"].iloc[-1]) < 2:
+        return {"Stage 2 Days": 0, "Stage 2 Since": ""}
+    in_stage2 = valid["Score"].ge(2).iloc[::-1]
+    days = int(in_stage2.cumprod().sum())
+    return {"Stage 2 Days": days, "Stage 2 Since": str(pd.Timestamp(valid.index[-days]).date())}
+
+
 def score_stage2(df: pd.DataFrame) -> dict | None:
     """Score a stock on 8 Weinstein Stage 2 criteria; returns metric dict or None if insufficient data."""
     if len(df) < 250:

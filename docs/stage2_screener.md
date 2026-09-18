@@ -36,6 +36,26 @@ Each criterion contributes **1 point** (0 or 1). The maximum score is 8.
 
 ---
 
+## Market Breadth
+
+The **Stage 2 Market Breadth** view aggregates the daily classifications of every eligible stock into
+Early/Weak, Likely, Strong, and Not Stage 2 zones. It includes an absolute-count chart and a
+percentage-of-eligible-stocks chart; the latter makes breadth comparable when coverage changes.
+
+The first visit builds a local, atomic parquet cache of daily per-symbol Stage 2 classifications.
+It is automatically rebuilt when either local OHLCV source changes. It uses the long backtest
+history for the required lookback and the fresher screener OHLCV tail for recent sessions. When an index is selected,
+historical membership from `data/compositions.parquet` is applied where available.
+
+“Eligible” means the symbol traded that day and had sufficient prior price history to calculate the
+full Stage 2 model. The dashboard uses the existing Early/Weak, Likely, and Strong definitions; it
+does not label Strong Stage 2 as “late,” because trend maturity needs a separate, explicit rule.
+
+The optional log-scale price overlays use the same indices selected in the sidebar (not a separate
+benchmark universe). Their Yahoo Finance history is cached locally in `data/index_overlay_prices.parquet`.
+
+---
+
 ## Filters
 
 ### RSI between 50–70

@@ -37,8 +37,10 @@ from ichimoku_tutorial import (
     strip_title,
     tutorial_parts,
 )
+from index_overlay_data import load_index_overlay_series
 from jobs import JobStatus, registry
 from momentum_engine import _calculate_avg_sharpe
+from stage2_breadth import aggregate_breadth, load_breadth_score_history
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
 from ui_helpers import _get_user_token, _poll_job
 
@@ -57,6 +59,9 @@ QPM_PAGE_LABELS = qpm_navigation.PAGE_LABELS
 if (
     getattr(chart_builders, "ICHIMOKU_CHART_VERSION", 0) < 8
     or not hasattr(chart_builders, "ichimoku_chart_figure")
+    or getattr(chart_builders, "STAGE2_BREADTH_CHART_VERSION", 0) < 1
+    or not hasattr(chart_builders, "stage2_breadth_count_figure")
+    or not hasattr(chart_builders, "stage2_breadth_percent_figure")
     or "timeframe" not in inspect.signature(chart_builders.ichimoku_chart_figure).parameters
     or "theme" not in inspect.signature(chart_builders.ichimoku_chart_figure).parameters
 ):
@@ -69,7 +74,7 @@ if (
 if getattr(ichimoku_descriptions, "ICHIMOKU_SUMMARY_VERSION", 0) < 2 or not hasattr(ichimoku_descriptions, "_periods"):
     ichimoku_descriptions = importlib.reload(ichimoku_descriptions)
 _data_access_reloaded = False
-if getattr(data_access, "CHART_DATA_VERSION", 0) < 2 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 2:
+if getattr(data_access, "CHART_DATA_VERSION", 0) < 2 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 3:
     data_access = importlib.reload(data_access)
     _data_access_reloaded = True
 if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 4:
@@ -77,6 +82,8 @@ if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION",
 
 ichimoku_chart_figure = chart_builders.ichimoku_chart_figure
 phase_chart_figure = chart_builders.phase_chart_figure
+stage2_breadth_count_figure = chart_builders.stage2_breadth_count_figure
+stage2_breadth_percent_figure = chart_builders.stage2_breadth_percent_figure
 _compute_ichimoku = ichimoku_calculations.compute_ichimoku
 latest_ichimoku_state = ichimoku_calculations.latest_ichimoku_state
 build_ichimoku_summary = ichimoku_descriptions.build_ichimoku_summary
@@ -342,7 +349,10 @@ def _render_source_banner(source: str, cache_date: str, count: int = None) -> No
 def _invalidate_legacy_score_result(kind: str, cached: dict) -> bool:
     """Discard pre-price-date results retained in Streamlit/process memory."""
     frame = cached.get("df")
-    if isinstance(frame, pd.DataFrame) and "Price Date" in frame.columns:
+    required_columns = {"Price Date"}
+    if kind == "stage2":
+        required_columns.update({"Stage 2 Days", "Stage 2 Since"})
+    if isinstance(frame, pd.DataFrame) and required_columns.issubset(frame.columns):
         return False
     st.session_state.pop(f"{kind}_cached_result", None)
     _score_cache[kind] = {"date": None, "data": None}
@@ -487,7 +497,20 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
 
     display_df["Symbol"] = display_df.apply(_decorate_symbol, axis=1)
     display_df = display_df[
-        ["Symbol", "Index", "Stage", "Score", "Close", "Price Date", "Volume", "Avg_Vol", "Vol_Ratio", "RSI"]
+        [
+            "Symbol",
+            "Index",
+            "Stage",
+            "Score",
+            "Stage 2 Days",
+            "Stage 2 Since",
+            "Close",
+            "Price Date",
+            "Volume",
+            "Avg_Vol",
+            "Vol_Ratio",
+            "RSI",
+        ]
     ]
 
     c1, c2, c3, c4 = st.columns(4)
@@ -518,6 +541,8 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
             "Index": st.column_config.TextColumn("Source", width="medium"),
             "Stage": st.column_config.TextColumn("Classification", width="medium"),
             "Score": st.column_config.NumberColumn("Score", format="%d/8", width="small"),
+            "Stage 2 Days": st.column_config.NumberColumn("Stage 2 Days", format="%d", width="small"),
+            "Stage 2 Since": st.column_config.TextColumn("Stage 2 Since", width="small"),
             "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
             "Price Date": st.column_config.TextColumn("Price Date", width="small"),
             "Volume": st.column_config.NumberColumn("Volume", format="%,d", width="small"),
@@ -541,6 +566,107 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
 # ──────────────────────────────────────────────
 # RESULTS — MOMENTUM
 # ──────────────────────────────────────────────
+
+
+@st.cache_data(show_spinner=False)
+def _load_breadth_compositions(modified_ns: int) -> pd.DataFrame:
+    """Keep the historical membership lookup in Streamlit's in-process cache."""
+    del modified_ns  # Cache-key only; changes invalidate Streamlit's cached result.
+    path = os.path.join(os.path.dirname(__file__), "data", "compositions.parquet")
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    try:
+        return pd.read_parquet(path, columns=["INDEX_NAME", "TIME_STAMP", "SYMBOL"])
+    except Exception as exc:
+        logging.warning("Could not load historical compositions for breadth: %s", exc)
+        return pd.DataFrame()
+
+
+def render_stage2_breadth(selected_indices: list[str]) -> None:
+    st.markdown('<p class="hero">🌡️ Stage 2 Market Breadth</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">Daily distribution of mature stocks across the 8-point Weinstein Stage 2 model</p>',
+        unsafe_allow_html=True,
+    )
+    if not os.path.exists(SCREENER_OHLCV_PARQUET):
+        st.error("Historical breadth needs `data/screener_ohlcv.parquet`. Seed the screener data first.")
+        return
+
+    with st.spinner("Loading historical Stage 2 classifications…"):
+        try:
+            scores, from_disk_cache = load_breadth_score_history()
+        except Exception as exc:
+            logging.exception("Could not calculate Stage 2 breadth")
+            st.error(f"Could not calculate Stage 2 breadth ({type(exc).__name__}: {exc}).")
+            return
+
+    composition_path = os.path.join(os.path.dirname(__file__), "data", "compositions.parquet")
+    modified_ns = os.stat(composition_path).st_mtime_ns if os.path.exists(composition_path) else 0
+    compositions = _load_breadth_compositions(modified_ns)
+    daily = aggregate_breadth(scores, selected_indices, compositions)
+    if daily.empty:
+        st.warning("No mature Stage 2 observations are available for this universe yet.")
+        return
+
+    available_start, available_end = daily["date"].min().date(), daily["date"].max().date()
+    range_key = "stage2_breadth_range_" + "|".join(sorted(selected_indices))
+    start, end = st.slider(
+        "Date range",
+        min_value=available_start,
+        max_value=available_end,
+        value=(available_start, available_end),
+        key=range_key,
+    )
+    shown = daily[(daily["date"].dt.date >= start) & (daily["date"].dt.date <= end)].copy()
+    if shown.empty:
+        st.warning("No observations fall within the selected range.")
+        return
+
+    latest, prior = shown.iloc[-1], shown.iloc[-2] if len(shown) > 1 else shown.iloc[-1]
+    cols = st.columns(4)
+    cols[0].metric("Eligible stocks", f"{int(latest['Eligible']):,}")
+    cols[1].metric(
+        "Stage 2 breadth", f"{latest['Stage 2 %']:.1f}%", f"{latest['Stage 2 %'] - prior['Stage 2 %']:+.1f} pp"
+    )
+    cols[2].metric("Strong Stage 2", f"{int(latest['Strong']):,}", f"{latest['Strong'] - prior['Strong']:+.0f}")
+    cols[3].metric(
+        "Average score", f"{latest['Average Score']:.2f}/8", f"{latest['Average Score'] - prior['Average Score']:+.2f}"
+    )
+
+    selected_overlays = st.multiselect(
+        "Index overlay (log-scaled right axis)",
+        options=selected_indices,
+        default=["Nifty 50"] if "Nifty 50" in selected_indices else [],
+        help=(
+            "Uses the same index labels as the sidebar. The breadth bands stay linear; "
+            "index levels use the log-scaled right axis."
+        ),
+        key="stage2_breadth_benchmark_overlays_" + "|".join(sorted(selected_indices)),
+    )
+    start_ts, end_ts = pd.Timestamp(start), pd.Timestamp(end)
+    with st.spinner("Loading selected index overlays…"):
+        overlays, unavailable_overlays = load_index_overlay_series(selected_overlays, start_ts, end_ts)
+    if unavailable_overlays:
+        st.warning("No Yahoo Finance price history was available for: " + ", ".join(unavailable_overlays))
+    st.plotly_chart(stage2_breadth_count_figure(shown, overlays), width="stretch")
+    st.plotly_chart(stage2_breadth_percent_figure(shown, overlays), width="stretch")
+    source = "persisted daily-score cache" if from_disk_cache else "fresh calculation saved to the daily-score cache"
+    membership_note = (
+        "Historical index membership is applied for the selected indices. "
+        if not compositions.empty and selected_indices
+        else "All locally available screener symbols are included. "
+    )
+    st.caption(
+        f"{membership_note}‘Eligible’ means a stock traded that day and had enough prior history for the model. "
+        f"Source: {source}."
+    )
+    st.download_button(
+        "📥 Download daily breadth",
+        shown.to_csv(index=False).encode("utf-8"),
+        file_name="stage2_market_breadth.csv",
+        mime="text/csv",
+        width="stretch",
+    )
 
 
 def momentum_results(selected_indices: list[str], idx_options: list[str], filters: dict):
@@ -859,6 +985,7 @@ def _sidebar_momentum() -> dict:
 _NAV_GROUPS = {
     "Technical Analysis": (
         "📊 Stage 2 Screener",
+        "🌡️ Stage 2 Breadth",
         "📈 Phase Chart",
         "☁️ Ichimoku Chart",
     ),
@@ -1047,6 +1174,8 @@ def main():
         coverage_results()
     elif screener == "📊 Stage 2 Screener":
         stage2_results(selected_indices, rsi_toggle, show_illiquid)
+    elif screener == "🌡️ Stage 2 Breadth":
+        render_stage2_breadth(selected_indices)
     elif screener == "⏱ Momentum Backtest":
         render_backtest_tabs(bt_params)
     elif screener == "📡 Live Signal":

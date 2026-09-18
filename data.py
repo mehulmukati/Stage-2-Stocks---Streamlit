@@ -14,7 +14,7 @@ import streamlit as st
 import yfinance as yf
 
 CHART_DATA_VERSION = 2
-SCREENER_DATA_VERSION = 2
+SCREENER_DATA_VERSION = 3
 
 # Default no-op emit used when callers don't need progress reporting.
 # Signature: (level: str, message: str) -> None
@@ -30,7 +30,7 @@ from config import (
     STAGE2_CACHE_PARQUET,
 )
 from momentum_engine import score_momentum
-from stage2_engine import check_weinstein_retest, score_stage2
+from stage2_engine import check_weinstein_retest, current_stage2_run, score_stage2
 
 
 # ──────────────────────────────────────────────
@@ -275,7 +275,7 @@ def _load_latest_score_cache(path: str) -> tuple[pd.DataFrame | None, str | None
 
 
 _SCORE_CACHE_MAX_DATES = 5  # rolling window kept in each score-cache parquet
-_SCORE_CACHE_SCHEMA_VERSION = 2
+_SCORE_CACHE_SCHEMA_VERSION = 3
 
 
 def _save_score_cache(path: str, target_date: str, df: pd.DataFrame) -> None:
@@ -667,6 +667,7 @@ def _load_and_score(
                 )
                 if not for_momentum:
                     res["Retest"] = check_weinstein_retest(sub)
+                    res.update(current_stage2_run(sub))
                 results.append(res)
         except Exception as exc:
             logging.warning("scoring failed for %s: %s", sym, exc)
