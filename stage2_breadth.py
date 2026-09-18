@@ -10,15 +10,21 @@ import threading
 
 import pandas as pd
 
-from config import (
-    BACKTEST_HISTORY_PARQUET,
-    SCREENER_OHLCV_PARQUET,
-    STAGE2_BREADTH_CACHE_META,
-    STAGE2_BREADTH_CACHE_PARQUET,
-)
+import config
 from stage2_engine import compute_rolling_stage2
 
 BREADTH_CACHE_VERSION = 3
+_DATA_DIR = os.path.dirname(config.SCREENER_OHLCV_PARQUET)
+SCREENER_OHLCV_PARQUET = config.SCREENER_OHLCV_PARQUET
+BACKTEST_HISTORY_PARQUET = getattr(
+    config, "BACKTEST_HISTORY_PARQUET", os.path.join(_DATA_DIR, "backtest_history.parquet")
+)
+STAGE2_BREADTH_CACHE_PARQUET = getattr(
+    config, "STAGE2_BREADTH_CACHE_PARQUET", os.path.join(_DATA_DIR, "stage2_breadth_scores.parquet")
+)
+STAGE2_BREADTH_CACHE_META = getattr(
+    config, "STAGE2_BREADTH_CACHE_META", os.path.join(_DATA_DIR, "stage2_breadth_scores.meta.json")
+)
 _PHASE_TO_COLUMN = {
     "Not Stage 2": "Not Stage 2",
     "Early/Weak Stage 2": "Early",

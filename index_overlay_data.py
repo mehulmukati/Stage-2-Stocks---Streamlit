@@ -9,7 +9,12 @@ import threading
 import pandas as pd
 import yfinance as yf
 
-from config import INDEX_OVERLAY_CACHE_PARQUET
+import config
+
+_DATA_DIR = os.path.dirname(config.SCREENER_OHLCV_PARQUET)
+INDEX_OVERLAY_CACHE_PARQUET = getattr(
+    config, "INDEX_OVERLAY_CACHE_PARQUET", os.path.join(_DATA_DIR, "index_overlay_prices.parquet")
+)
 
 # These labels intentionally match constituents.json and the left sidebar.
 NSE_INDEX_TICKERS = {
