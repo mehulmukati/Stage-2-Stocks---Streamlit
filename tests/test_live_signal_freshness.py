@@ -298,3 +298,86 @@ def test_failed_benchmark_refresh_is_not_hot_cached_and_retries(monkeypatch):
     assert first.status == "partial"
     assert second.actual_latest_date == "2026-08-25"
     assert calls == 2
+
+
+def test_refresh_only_requests_missing_real_prices(monkeypatch):
+    baseline = _long([("A", "2026-08-25", 101), ("B", "2026-08-24", 200), ("DUMMYHEG", "2026-08-24", 1)])
+    _reset_runtime_caches(monkeypatch, baseline)
+    calls = []
+
+    def fetch(symbols, last_date, target, emit):
+        calls.append(symbols)
+        return db.DeltaFetchResult(_long([("B", target, 201)]), symbols, ["B"], 1)
+
+    monkeypatch.setattr(db, "_fetch_ohlcv_delta", fetch)
+    result = db.load_ohlcv_for_backtest(required_symbols=["A", "B"])
+    assert calls == [["B"]]
+    assert result.is_fresh
+
+
+def test_partial_success_is_retained_for_next_refresh(monkeypatch):
+    baseline = _long([("A", "2026-08-24", 100), ("B", "2026-08-24", 200)])
+    _reset_runtime_caches(monkeypatch, baseline)
+    monkeypatch.setattr(db, "_baseline_ohlcv", baseline)
+    monkeypatch.setattr(db, "_ensure_baseline_ohlcv", lambda emit: db._baseline_ohlcv)
+    calls = []
+
+    def fetch(symbols, last_date, target, emit):
+        calls.append(symbols)
+        symbol = "A" if len(calls) == 1 else "B"
+        return db.DeltaFetchResult(_long([(symbol, target, 201)]), symbols, [symbol], 1)
+
+    monkeypatch.setattr(db, "_fetch_ohlcv_delta", fetch)
+    first = db.load_ohlcv_for_backtest(required_symbols=["A", "B"])
+    second = db.load_ohlcv_for_backtest(required_symbols=["A", "B"])
+    assert first.missing_target_symbols == ["B"]
+    assert calls == [["A", "B"], ["B"]]
+    assert second.is_fresh
+
+
+def test_benchmark_retries_nan_target_close(monkeypatch):
+    monkeypatch.setattr(db, "BENCHMARK_TICKERS", {"Nifty 50": "^NSEI"})
+    monkeypatch.setattr(db.time, "sleep", lambda seconds: None)
+    calls = []
+
+    def download(*args, **kwargs):
+        calls.append(args)
+        return pd.DataFrame(
+            {"Close": [25000.0, float("nan") if len(calls) == 1 else 25100.0]},
+            index=pd.to_datetime(["2026-08-24", "2026-08-25"]),
+        )
+
+    monkeypatch.setattr(db.yf, "download", download)
+    result = db._fetch_bench_delta(pd.Timestamp("2026-08-23"), "2026-08-25", lambda *args: None)
+    assert len(calls) == 2
+    assert result.iloc[-1]["Nifty 50"] == 25100.0
+
+
+def test_error_does_not_use_newest_individual_price_as_verified_coverage(monkeypatch):
+    baseline = _long([("A", "2026-08-25", 100)])
+    partial = db._assess_ohlcv_freshness(baseline, "2026-08-25", ["A", "MISSING"], "parquet")
+    monkeypatch.setattr(db, "_load_constituents", lambda: {"Nifty 50": ["A", "MISSING"]})
+    monkeypatch.setattr(db, "load_compositions", lambda: pd.DataFrame())
+    monkeypatch.setattr(db, "sync_benchmark_data", lambda: None)
+    monkeypatch.setattr(db, "load_ohlcv_for_backtest", lambda **kwargs: partial)
+    monkeypatch.setattr(
+        db,
+        "load_benchmark_series",
+        lambda **kwargs: db.BenchmarkLoadResult({}, "2026-08-25", None, "partial", ["Nifty 50"]),
+    )
+    result = live._run_signal({"indices": ["Nifty 50"]})
+    assert "verified universe coverage: not fully covered" in result["error"]
+
+
+def test_benchmark_partial_save_preserves_other_valid_closes(monkeypatch, tmp_path):
+    path = tmp_path / "bench_delta.parquet"
+    monkeypatch.setattr(db, "BENCH_DELTA_PARQUET", str(path))
+    pd.DataFrame({"date": pd.to_datetime(["2026-08-25"]), "Nifty 50": [100.0], "Nifty 100": [float("nan")]}).to_parquet(
+        path, index=False
+    )
+    db._save_bench_delta(
+        pd.DataFrame({"date": pd.to_datetime(["2026-08-25"]), "Nifty 50": [float("nan")], "Nifty 100": [200.0]})
+    )
+    result = pd.read_parquet(path)
+    assert result.iloc[0]["Nifty 50"] == 100.0
+    assert result.iloc[0]["Nifty 100"] == 200.0

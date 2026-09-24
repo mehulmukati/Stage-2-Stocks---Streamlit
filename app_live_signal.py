@@ -916,7 +916,7 @@ def _run_signal(params: dict) -> dict:
             "data_freshness": freshness,
         }
     if not ohlcv.is_usable_for_signal:
-        available = ohlcv.actual_latest_date or ohlcv.max_price_date or "unknown"
+        available = ohlcv.actual_latest_date or "not fully covered"
         if ohlcv.stale_symbols:
             reason = f"{len(ohlcv.stale_symbols)} required symbols are more than three NSE sessions stale"
         elif ohlcv.missing_target_symbols:
@@ -925,8 +925,8 @@ def _run_signal(params: dict) -> dict:
             reason = ohlcv.refresh_error or "required recent prices are unavailable"
         return {
             "error": (
-                f"Signal not generated. Required data targets {ohlcv.target_date}, but verified coverage is "
-                f"through {available}. {reason}. Click Generate Signal to retry."
+                f"Signal not generated. Required data targets {ohlcv.target_date}; verified universe coverage: "
+                f"{available}. {reason}. Click Generate Signal to retry."
             ),
             "data_freshness": freshness,
         }

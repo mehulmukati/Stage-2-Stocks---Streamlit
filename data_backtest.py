@@ -329,9 +329,7 @@ def _save_bench_delta(new_df: pd.DataFrame) -> None:
             if os.path.exists(BENCH_DELTA_PARQUET):
                 existing = pd.read_parquet(BENCH_DELTA_PARQUET)
                 existing["date"] = pd.to_datetime(existing["date"])
-                combined = pd.concat([existing, new_df], ignore_index=True)
-                combined = combined.drop_duplicates(subset=["date"], keep="last")
-                combined = combined.sort_values("date").reset_index(drop=True)
+                combined = new_df.set_index("date").combine_first(existing.set_index("date")).sort_index().reset_index()
             else:
                 combined = new_df.copy()
             combined.to_parquet(BENCH_DELTA_PARQUET, index=False)
@@ -372,10 +370,10 @@ def _fetch_ohlcv_delta(
             emit("info", f"🔁 Yahoo retry {attempt}/{max_attempts} in {delay:g}s ({len(pending)} symbols)…")
             time.sleep(delay)
 
-        # Smaller retry batches are more reliable when Yahoo partially rejects a
-        # large multi-ticker request.
+        # Bound concurrency on every attempt; a full-universe burst can overwhelm
+        # Yahoo before retries even start.
         pending_list = sorted(pending)
-        batch_size = len(pending_list) if attempt == 1 else 100
+        batch_size = 50 if attempt == 1 else 20
         for offset in range(0, len(pending_list), batch_size):
             symbols = pending_list[offset : offset + batch_size]
             tickers = [f"{s}.NS" for s in symbols]
@@ -390,7 +388,7 @@ def _fetch_ohlcv_delta(
                     start=start_dt,
                     end=end_dt,
                     group_by="ticker",
-                    threads=True,
+                    threads=4,
                     progress=False,
                     auto_adjust=True,
                 )
@@ -471,7 +469,7 @@ def _fetch_ohlcv_delta(
     if pending:
         sample = ", ".join(sorted(pending)[:20])
         suffix = f" (+{len(pending) - 20} more)" if len(pending) > 20 else ""
-        error = f"Yahoo returned no usable rows for {sample}{suffix}"
+        error = f"Yahoo returned no usable target-session prices for {sample}{suffix}"
     return DeltaFetchResult(df, requested, returned, attempts, error)
 
 
@@ -494,11 +492,14 @@ def _fetch_bench_delta(
                 if raw is None or raw.empty:
                     raise RuntimeError("empty Yahoo response")
                 raw.columns = [c[0] if isinstance(c, tuple) else c for c in raw.columns]
-                s = raw["Close"].copy()
-                s.index = pd.to_datetime(s.index)
+                s = raw["Close"].dropna().copy()
+                s.index = pd.to_datetime(s.index).tz_localize(None).normalize()
                 s.name = label
-                series[label] = s.astype("float32")
-                break
+                if not s.empty:
+                    series[label] = s.astype("float32")
+                if pd.Timestamp(today_key) in s.index:
+                    break
+                raise RuntimeError("no target-session closing price in Yahoo response")
             except Exception as exc:
                 emit("warning", f"⚠️ benchmark fetch {label} attempt {attempt}/3 failed: {exc}")
     if not series:
@@ -603,6 +604,7 @@ def load_ohlcv_for_backtest(
     Tier 2  parquet-only (no gap or delta fetch failed) → 'parquet'
     Tier 3  parquet + yfinance delta → 'parquet+delta'
     """
+    global _baseline_ohlcv
     target_key = _get_target_key()
 
     # Tier 1b + Tier 2 — load baseline from parquet
@@ -640,10 +642,17 @@ def load_ohlcv_for_backtest(
             cached.refresh_status = "memory"
             return cached
 
-    refresh_symbols = sorted(set(active) | set(required))
-    maxima = base.groupby("symbol")["date"].max()
+    valid = base[base["Close"].notna() & (pd.to_numeric(base["Volume"], errors="coerce").fillna(0) > 0)]
+    maxima = valid.groupby("symbol")["date"].max()
+    refresh_symbols = sorted(
+        sym
+        for sym in set(active) | set(required)
+        if not sym.startswith("DUMMY") and (sym not in maxima.index or maxima[sym] < pd.Timestamp(target_key))
+    )
     refresh_maxima = [pd.Timestamp(maxima[s]) for s in refresh_symbols if s in maxima.index]
-    last_date = min(refresh_maxima) if refresh_maxima else global_max
+    last_date = min(refresh_maxima) if refresh_maxima else pd.Timestamp(target_key)
+    if any(sym not in maxima.index for sym in refresh_symbols):
+        last_date = min(last_date, pd.Timestamp(target_key) - timedelta(days=1))
     gap_days = (datetime.strptime(target_key, "%Y-%m-%d") - last_date.to_pydatetime()).days
 
     if gap_days <= 0:
@@ -682,6 +691,10 @@ def load_ohlcv_for_backtest(
             source = "parquet+delta"
             emit("info", f"  ✅ Merged {len(fetch.data):,} delta rows")
             _save_ohlcv_delta(fetch.data, emit)
+            # Preserve successful partial downloads for the next retry in this
+            # process; the baseline loader otherwise keeps returning its old cache.
+            with _lock:
+                _baseline_ohlcv = merged
 
     result = _assess_ohlcv_freshness(merged, target_key, required, source, fetch)
     if result.is_fresh:
@@ -708,6 +721,7 @@ def load_benchmark_series(
     refresh: bool = True,
 ) -> dict[str, pd.Series] | BenchmarkLoadResult:
     """Return close-price Series per benchmark label, indexed by date."""
+    global _baseline_bench
     target_key = _get_target_key()
     with _lock:
         hit = _merged_bench.get(target_key)
@@ -738,9 +752,12 @@ def load_benchmark_series(
         if not delta.empty:
             fetched = True
             delta["date"] = pd.to_datetime(delta["date"])
-            base = pd.concat([base, delta], ignore_index=True)
-            base = base.drop_duplicates(subset=["date"], keep="last").sort_values("date")
+            # A partial benchmark response must not erase another benchmark's
+            # valid close on an overlapping date.
+            base = delta.set_index("date").combine_first(base.set_index("date")).sort_index().reset_index()
             _save_bench_delta(delta)
+            with _lock:
+                _baseline_bench = base
 
     result: dict[str, pd.Series] = {}
     for col in base.columns:
