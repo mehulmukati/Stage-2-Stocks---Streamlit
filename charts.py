@@ -639,6 +639,17 @@ def phase_chart_figure(rolled, ticker: str, use_log_scale: bool = True) -> go.Fi
         )
     )
     fig.add_trace(go.Scatter(x=rolled.index, y=rolled["Close"], name=ticker, line=dict(color="#38bdf8", width=2)))
+    fig.add_trace(
+        go.Scatter(
+            x=valid.index,
+            y=valid["Score"],
+            name="Stage 2 Score (out of 8)",
+            mode="lines",
+            line=dict(color="#ec4899", width=2),
+            yaxis="y2",
+            hovertemplate="%{y:.0f} / 8 indicators satisfied<extra>Stage 2 Score</extra>",
+        )
+    )
 
     fig.update_layout(
         title=dict(text=f"{ticker} — Stage 2 Phase Map", font=dict(size=16)),
@@ -648,9 +659,21 @@ def phase_chart_figure(rolled, ticker: str, use_log_scale: bool = True) -> go.Fi
             gridcolor=_GRID,
             title="Price (log)" if use_log_scale else "Price",
         ),
+        yaxis2=dict(
+            title="Stage 2 Score (out of 8)",
+            overlaying="y",
+            side="right",
+            type="linear",
+            range=[0, 8],
+            tick0=0,
+            dtick=1,
+            showgrid=False,
+            zeroline=False,
+            fixedrange=True,
+        ),
         xaxis=dict(showgrid=False),
         height=540,
-        margin=dict(l=50, r=20, t=55, b=40),
+        margin=dict(l=50, r=70, t=55, b=40),
         legend=dict(orientation="h", y=-0.13),
         hovermode="x unified",
         plot_bgcolor=_T,

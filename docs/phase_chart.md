@@ -29,6 +29,9 @@ The background is shaded according to the rolling daily Stage 2 score:
 
 Phase bands only appear once the MA200 has enough history to be computed (200 trading days from the start of the data).
 
+### Daily indicator count
+The pink **Stage 2 Score (out of 8)** line shows how many of the eight Stage 2 conditions were satisfied on each date. Read it against the right-hand axis, which stays linear from 0 to 8 even when price uses a log scale. Hover to see the exact count. Like the phase bands, the score line starts once MA200 is available.
+
 ### Log scale
 By default the y-axis uses a **logarithmic scale**, which shows percentage moves consistently regardless of price level — a move from 100 to 200 (100%) looks the same as a move from 500 to 1000 (100%). This is almost always preferable for multi-year charts. Toggle it off in the chart controls if you need a linear view.
 

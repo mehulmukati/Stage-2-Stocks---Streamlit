@@ -51,6 +51,20 @@ def test_phase_chart_displays_stage_duration_summary():
     assert any("d" in annotation.text for annotation in figure.layout.annotations)
 
 
+def test_phase_chart_score_matches_daily_indicators_on_independent_axis():
+    rolled = compute_rolling_stage2(make_ohlcv(300, close=[100 + i * 0.2 for i in range(300)]))
+    valid = rolled.dropna(subset=["MA200"])
+    for use_log_scale in (True, False):
+        figure = phase_chart_figure(rolled, "TEST", use_log_scale=use_log_scale)
+        score = next(trace for trace in figure.data if trace.yaxis == "y2")
+        assert list(score.x) == list(valid.index)
+        assert list(score.y) == list(valid["Score"])
+        assert figure.layout.yaxis.type == ("log" if use_log_scale else "linear")
+        assert figure.layout.yaxis2.type == "linear"
+        assert tuple(figure.layout.yaxis2.range) == (0, 8)
+        assert figure.layout.yaxis2.dtick == 1
+
+
 def test_ichimoku_chart_contains_core_traces_and_projection():
     close = [100.0 + i * 0.2 for i in range(100)]
     data = compute_ichimoku(make_ohlcv(100, close=close))
