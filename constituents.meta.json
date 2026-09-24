@@ -1,0 +1,31 @@
+{
+  "verified_at": "2026-09-23T08:09:45.797582+00:00",
+  "constituents_sha256": "e978edcf60d1c209a99df08a0e46328f699a33d87cc52b7f44ec1d7176f1f019",
+  "sources": {
+    "Nifty 50": {
+      "url": "https://www.niftyindices.com/IndexConstituent/ind_nifty50list.csv",
+      "count": 50,
+      "sha256": "9fb8832853c279448d2bc05f0e7dd5f460ed2ff35332fea8c40fc1250362ad28"
+    },
+    "Nifty Next 50": {
+      "url": "https://www.niftyindices.com/IndexConstituent/ind_niftynext50list.csv",
+      "count": 50,
+      "sha256": "e4654c80b911e3eaeb8044ec3a9e61d89b9db0702cc98b80e5a8fe86fbf83d5e"
+    },
+    "Nifty Midcap 150": {
+      "url": "https://www.niftyindices.com/IndexConstituent/ind_niftymidcap150list.csv",
+      "count": 150,
+      "sha256": "e829eff81784648511bf884ff45b71faadb279bcde0f6749e6a50cf60c4fb3d3"
+    },
+    "Nifty Smallcap 250": {
+      "url": "https://www.niftyindices.com/IndexConstituent/ind_niftysmallcap250list.csv",
+      "count": 251,
+      "sha256": "d109adb29310df0b9384594ae1ed9046d670fcc954a34ce7e87795afc2a541c4"
+    },
+    "Nifty Microcap 250": {
+      "url": "https://www.niftyindices.com/IndexConstituent/ind_niftymicrocap250_list.csv",
+      "count": 254,
+      "sha256": "51ea38463cc9f67236cc95f78c82254039395ba856b8f368e2fd59206f0786c8"
+    }
+  }
+}

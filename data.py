@@ -1,4 +1,5 @@
 import functools
+import hashlib
 import json
 import logging
 import os
@@ -97,14 +98,37 @@ def check_data_freshness() -> list[tuple[str, str]]:
             )
         )
     else:
-        age = (today - datetime.fromtimestamp(os.path.getmtime(const_path)).date()).days
+        verified = datetime.fromtimestamp(os.path.getmtime(const_path), IST)
+        metadata_path = os.path.join(repo, "constituents.meta.json")
+        if os.path.exists(metadata_path):
+            try:
+                with open(metadata_path, encoding="utf-8") as handle:
+                    metadata = json.load(handle)
+                with open(const_path, encoding="utf-8") as handle:
+                    snapshot = json.load(handle)
+                digest = hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest()
+                if digest != metadata["constituents_sha256"]:
+                    raise ValueError("membership differs from the verified NSE snapshot")
+                verified = datetime.fromisoformat(metadata["verified_at"])
+                if verified.tzinfo is None or verified.astimezone(IST).date() > today:
+                    raise ValueError("invalid verification date")
+                verified = verified.astimezone(IST)
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                issues.append(
+                    (
+                        "error",
+                        f"**constituents.json** verification failed ({exc}). "
+                        "Run `python scripts/refresh_constituents.py`.",
+                    )
+                )
+        age = (today - verified.date()).days
         if age > _STALENESS_DAYS_CONSTITUENTS:
-            updated = datetime.fromtimestamp(os.path.getmtime(const_path)).strftime("%d %b %Y")
+            updated = verified.strftime("%d %b %Y")
             issues.append(
                 (
                     "warning",
                     f"**constituents.json** is {age} days old (last updated {updated}). "
-                    "Index membership may be stale — refresh from NSE.",
+                    "Index membership may be stale — run `python scripts/refresh_constituents.py` to refresh from NSE.",
                 )
             )
 
@@ -175,14 +199,21 @@ def check_data_freshness() -> list[tuple[str, str]]:
 # ──────────────────────────────────────────────
 # CONSTITUENTS
 # ──────────────────────────────────────────────
-@functools.lru_cache(maxsize=None)
 def _load_constituents() -> dict:
-    """Load index-to-symbols mapping from constituents.json; returns {} if missing."""
+    """Load tradable index members; NSE DUMMY placeholders have no market ticker.
+
+    Keep the official snapshot intact for audit, but never rank or request prices
+    for temporary corporate-action placeholders.
+    """
     const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
     if not os.path.exists(const_path):
         return {}
     with open(const_path, "r") as f:
-        return json.load(f)
+        constituents = json.load(f)
+    return {
+        index: [symbol for symbol in symbols if not symbol.startswith("DUMMY")]
+        for index, symbols in constituents.items()
+    }
 
 
 # ──────────────────────────────────────────────
