@@ -10,6 +10,7 @@ from strategy_replay import resolve_signal_executions
 ICHIMOKU_CHART_VERSION = 10
 HA_EMA_CHART_VERSION = 5
 STAGE2_BREADTH_CHART_VERSION = 1
+PHASE_CHART_VERSION = 1
 
 PHASE_COLORS = {
     "Strong Stage 2": "rgba(34, 197, 94, 0.25)",

@@ -55,9 +55,10 @@ PORTFOLIO_LAB_PAGE = qpm_navigation.PORTFOLIO_LAB_PAGE
 QPM_PAGE_LABELS = qpm_navigation.PAGE_LABELS
 
 # Streamlit reruns app.py in the same process and can retain pre-change modules.
-# Reload only when a cached module predates the current Ichimoku interfaces.
+# Reload only when a cached module predates the current chart interfaces.
 if (
     getattr(chart_builders, "ICHIMOKU_CHART_VERSION", 0) < 8
+    or getattr(chart_builders, "PHASE_CHART_VERSION", 0) < 1
     or not hasattr(chart_builders, "ichimoku_chart_figure")
     or getattr(chart_builders, "STAGE2_BREADTH_CHART_VERSION", 0) < 1
     or not hasattr(chart_builders, "stage2_breadth_count_figure")
