@@ -12,6 +12,7 @@ Streamlit applications for systematic stock analysis on the NSE (National Stock 
 | Momentum screener (Sharpe ratio ranking) | Entry/exit band parameters (M / N) |
 | Phase Chart — rolling Stage 2 score for any ticker | Weekly / biweekly / monthly / quarterly / half-yearly rebalance |
 | Ichimoku Chart — colored clouds, TK crossovers, and deterministic stock summary | |
+| [Multi Charts](docs/multi_charts.md) — three analyses for one stock, or paginated charts and all-page PDF for a ticker list | |
 | Quant-Portfolio-Maker — Enhanced Ichimoku, HA + EMA and multi-stock Portfolio Lab | |
 | Fuzzy ticker search (typo-tolerant) | Anti-survivorship-bias via historical constituents |
 | CSV export | Transaction-cost drag modelling |

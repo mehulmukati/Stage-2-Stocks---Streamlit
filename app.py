@@ -990,6 +990,10 @@ _NAV_GROUPS = {
         "📈 Phase Chart",
         "☁️ Ichimoku Chart",
     ),
+    "Multi Charts": (
+        "🔎 One Stock, Three Views",
+        "▦ Many Stocks, One View",
+    ),
     "Quant-Portfolio-Maker": (
         ENHANCED_ICHIMOKU_PAGE,
         HA_EMA_PAGE,
@@ -1008,6 +1012,7 @@ _NAV_GROUPS = {
 
 _NAV_GROUP_ICONS = {
     "Technical Analysis": "📊",
+    "Multi Charts": "▦",
     "Quant-Portfolio-Maker": "🧮",
     "Momentum Factor": "🚀",
     "Info Hub": "ℹ️",
@@ -1018,6 +1023,25 @@ _NAV_LABEL_ALIASES = {
     "🚀 Momentum": "🚀 Momentum Screener",
     "⏱ Backtest": "⏱ Momentum Backtest",
 }
+
+_MULTI_VIEW_DESTINATIONS = {
+    "phase": "📈 Phase Chart",
+    "ichimoku": "☁️ Ichimoku Chart",
+    "ha-ema": HA_EMA_PAGE,
+}
+
+
+def _apply_multi_chart_link() -> None:
+    """Consume a compact-chart link before the sidebar widgets are created."""
+    view = st.query_params.get("multi_view")
+    ticker = st.query_params.get("multi_ticker", "").strip().upper()
+    destination = _MULTI_VIEW_DESTINATIONS.get(view)
+    if destination and ticker and data_access._VALID_TICKER_RE.fullmatch(ticker):
+        st.session_state["active_screener"] = destination
+        st.session_state["chart_ticker"] = ticker
+        st.session_state["chart_ticker_input"] = ticker
+        del st.query_params["multi_view"]
+        del st.query_params["multi_ticker"]
 
 
 def _sidebar_navigation() -> str:
@@ -1048,6 +1072,7 @@ def _sidebar_navigation() -> str:
 
 
 def main():
+    _apply_multi_chart_link()
     user_token = _get_user_token()
     idx_options = _load_index_options()
 
@@ -1072,6 +1097,8 @@ def main():
         if screener not in (
             "📈 Phase Chart",
             "☁️ Ichimoku Chart",
+            "🔎 One Stock, Three Views",
+            "▦ Many Stocks, One View",
             *QPM_PAGE_LABELS,
             "📚 User Guide",
             "⏱ Momentum Backtest",
@@ -1092,7 +1119,13 @@ def main():
                 portfolio_ui = importlib.reload(portfolio_ui)
 
             quant_portfolio_params = portfolio_ui.render_portfolio_sidebar(idx_options)
-        elif screener in ("📈 Phase Chart", "☁️ Ichimoku Chart", ENHANCED_ICHIMOKU_PAGE, HA_EMA_PAGE):
+        elif screener in (
+            "📈 Phase Chart",
+            "☁️ Ichimoku Chart",
+            "🔎 One Stock, Three Views",
+            ENHANCED_ICHIMOKU_PAGE,
+            HA_EMA_PAGE,
+        ):
             _sidebar_phase_chart()
         elif screener == "📊 Stage 2 Screener":
             rsi_toggle, show_illiquid = _sidebar_stage2()
@@ -1120,7 +1153,14 @@ def main():
         if _run_triggered or (_active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
             st_autorefresh(interval=1500, key="job_autorefresh")
 
-    if screener == "📈 Phase Chart":
+    if screener in ("🔎 One Stock, Three Views", "▦ Many Stocks, One View"):
+        import multi_charts
+
+        if screener == multi_charts.ONE_STOCK_PAGE:
+            multi_charts.render_one_stock(st.session_state.get("chart_ticker", ""))
+        else:
+            multi_charts.render_many_stocks()
+    elif screener == "📈 Phase Chart":
         ticker = st.session_state.get("chart_ticker", "")
         if not ticker:
             st.markdown('<p class="hero">📈 Stage 2 Phase Chart</p>', unsafe_allow_html=True)
