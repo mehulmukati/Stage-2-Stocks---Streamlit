@@ -11,6 +11,9 @@ __pycache__/
 .coverage
 htmlcov/
 .pytest_cache/
+.codex-runtime/
+data/.market-publisher.lock
+data/*.parquet.tmp
 
 # Claude local tooling
 .claude/

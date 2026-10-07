@@ -11,10 +11,11 @@ from typing import Callable
 import pandas as pd
 
 import data_backtest as backtest_data
+import market_data as shared_market
 import quant_portfolio_engine as quant_portfolio
 from backtest_engine import BacktestConfig, run_backtest
 
-if getattr(backtest_data, "BACKTEST_DATA_VERSION", 0) < 4:
+if getattr(backtest_data, "BACKTEST_DATA_VERSION", 0) < 5:
     backtest_data = importlib.reload(backtest_data)
 if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 4:
     quant_portfolio = importlib.reload(quant_portfolio)
@@ -22,7 +23,7 @@ if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 4:
 QuantPortfolioConfig = quant_portfolio.QuantPortfolioConfig
 run_quant_portfolio = quant_portfolio.run_quant_portfolio
 
-# Screener workers stay on the DB-backed pipeline.
+# All workers use the shared market sources.
 from data import resolve_screener_data
 
 # Backtest worker uses the parquet-backed pipeline — no DB dependency.
@@ -33,31 +34,32 @@ load_ohlcv_for_backtest = backtest_data.load_ohlcv_for_backtest
 load_quant_ohlcv_snapshot = backtest_data.load_quant_ohlcv_snapshot
 sync_benchmark_data = backtest_data.sync_benchmark_data
 
-SCREENER_WORKER_VERSION = 7
+SCREENER_WORKER_VERSION = 8
 
 
 def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
     df, cache_date, source = resolve_screener_data(for_momentum=False, emit=emit)
     if df.empty:
-        raise RuntimeError("No Stage 2 data available. Yahoo Finance may be syncing — try again in 30 mins.")
+        raise RuntimeError("No Stage 2 data available in the shared sources. Run the shared refresh.")
     return {"df": df, "cache_date": cache_date, "source": source}
 
 
 def momentum_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
-    df, cache_date, source = resolve_screener_data(for_momentum=True, emit=emit)
+    df, cache_date, source = resolve_screener_data(for_momentum=True, emit=emit, as_of_date=params.get("as_of_date"))
     if df.empty:
-        raise RuntimeError("No Momentum data available. Try again in a few minutes or check your internet connection.")
+        raise RuntimeError("No Momentum data available in the shared sources. Run the shared refresh.")
     return {"df": df, "cache_date": cache_date, "source": source}
 
 
 def quant_portfolio_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
     """Load the survivorship-aware universe and run one Quant Portfolio Lab simulation."""
     emit("info", "Loading the local portfolio-research dataset…")
-    compositions = load_compositions() if params.get("use_compositions", True) else pd.DataFrame()
+    snapshot = shared_market.load_snapshot(params.get("end_date"))
+    compositions = load_compositions(snapshot=snapshot) if params.get("use_compositions", True) else pd.DataFrame()
     # Candle strategies require Open and Low, which the long Momentum baseline
     # does not currently contain. Use the local full-OHLCV snapshot without a
     # thousand-symbol live refresh in the request path.
-    loaded = load_quant_ohlcv_snapshot(emit=emit)
+    loaded = load_quant_ohlcv_snapshot(emit=emit, snapshot=snapshot)
     if not loaded.symbol_data:
         raise RuntimeError("Backtest price history is missing or unreadable.")
     requested_start = pd.Timestamp(params["start_date"]) if params.get("start_date") else None
@@ -93,13 +95,14 @@ def quant_portfolio_worker(params: dict, emit: Callable, cancel_evt: threading.E
     )
     result = run_quant_portfolio(
         loaded.symbol_data,
-        load_benchmark_series(refresh=False),
+        load_benchmark_series(refresh=False, snapshot=snapshot),
         config,
         emit,
         cancel_evt,
     )
     if "error" in result:
         raise RuntimeError(result["error"])
+    result["source_revisions"] = snapshot.revisions
     result["ohlcv_date"] = loaded.max_price_date or loaded.actual_latest_date
     result["ohlcv_start_date"] = loaded.earliest_price_date
     result["ohlcv_source"] = loaded.source
@@ -113,7 +116,9 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
     if cancel_evt.is_set():
         raise RuntimeError("Cancelled")
 
-    symbol_data, ohlcv_date, ohlcv_source = load_ohlcv_for_backtest(emit=emit)
+    snapshot = shared_market.load_snapshot(params.get("end_date"))
+    loaded = load_ohlcv_for_backtest(emit=emit, snapshot=snapshot)
+    symbol_data, ohlcv_date, ohlcv_source = loaded
     if not symbol_data:
         raise RuntimeError("Backtest parquet missing or unreadable. " "Run: python scripts/refresh_backtest_parquet.py")
 
@@ -121,17 +126,17 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         raise RuntimeError("Cancelled")
 
     if params.get("universe"):
-        constituents = _load_constituents()
-        allowed = {s for idx, syms in constituents.items() if idx in params["universe"] for s in syms}
+        selected_keys = {shared_market.index_key(i) for i in params["universe"]}
+        allowed = set(snapshot.membership.loc[snapshot.membership.INDEX_NAME.isin(selected_keys), "SYMBOL"])
         symbol_data = {s: df for s, df in symbol_data.items() if s in allowed}
 
-    compositions_df = load_compositions() if params.get("use_compositions") else None
+    compositions_df = load_compositions(snapshot=snapshot) if params.get("use_compositions") else None
     if compositions_df is not None and not compositions_df.empty:
         emit("info", "🛡️ Historical constituent filter active (survivorship-bias mitigation)")
     elif params.get("use_compositions"):
-        emit("warning", "compositions.parquet not found — constituent filter disabled")
+        emit("warning", "Shared historical membership unavailable")
 
-    benchmarks = load_benchmark_series()
+    benchmarks = load_benchmark_series(snapshot=snapshot)
 
     base_config = BacktestConfig(
         m=params["m"],
@@ -145,6 +150,8 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         transaction_cost_pct=params["transaction_cost_pct"] / 100.0,
         min_history_days=params["min_history_days"],
         apply_volume_filter=True,
+        minimum_median_volume=params.get("minimum_median_volume", 100_000),
+        max_stale_sessions=params.get("max_stale_sessions", 3),
         brokerage_per_sale=params.get("brokerage_per_sale", 0.0),
         initial_capital=params.get("initial_capital", 1_000_000),
         ltcg_rate=params.get("ltcg_rate", 0.0),
@@ -172,7 +179,10 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
     if cancel_evt.is_set():
         raise RuntimeError("Cancelled")
 
-    emit("info", f"Running Displacement band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…")
+    emit(
+        "info",
+        f"Running Displacement band rule ({params['rebalance_freq']}, M={params['m']}, N={params['n']})…",
+    )
     result_disp = run_backtest(symbol_data, benchmarks, dataclasses.replace(base_config, band_rule="displacement"))
     if "error" in result_disp:
         raise RuntimeError(result_disp["error"])
@@ -257,6 +267,19 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         "rebalance_dates": result_classic["rebalance_dates"],
         "trading_days": result_classic["trading_days"],
         "ohlcv_date": ohlcv_date,
+        "source_revisions": snapshot.revisions,
         "ohlcv_source": ohlcv_source,
         "m": params["m"],
     }
+
+
+def shared_market_refresh_worker(params, emit, cancel_evt):
+    from scripts.refresh_constituents import refresh
+    from scripts.refresh_market_data import refresh_prices
+
+    emit("info", "Verifying shared constituents…")
+    refresh()
+    if cancel_evt.is_set():
+        raise RuntimeError("Cancelled")
+    report = refresh_prices(emit=emit)
+    return dict(report=report, source_revisions=shared_market.source_revisions())

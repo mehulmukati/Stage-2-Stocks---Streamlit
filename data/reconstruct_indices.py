@@ -75,13 +75,13 @@ CSV_PATH = DATA_DIR / "index_const.csv"
 XLS_PATH = DATA_DIR / "IndexInclExcl - Upto 2020.xls"
 XLSX_PATH = DATA_DIR / "N750 Historical Constituents - 202409 onwards.xlsx"
 
-OUT_COMPOSITIONS = DATA_DIR / "compositions.parquet"
+OUT_COMPOSITIONS = DATA_DIR / "constituents.parquet"
 OUT_EVENTS = DATA_DIR / "events.csv"
 OUT_MAP = DATA_DIR / "scrip_symbol_map.csv"
 OUT_UNRESOLVED = DATA_DIR / "scrip_symbol_unresolved.csv"
 OUT_OVERRIDES = DATA_DIR / "manual_overrides.json"
 OUT_VALIDATION = DATA_DIR / "validation_report.csv"
-OUT_CONSTITUENTS = PROJECT_ROOT / "constituents.json"
+OUT_CONSTITUENTS = OUT_COMPOSITIONS
 
 # File 3 sheet name -> canonical index name (N100 empty, Sheet8 is a note)
 SHEET_TO_INDEX = {
@@ -834,7 +834,15 @@ def validate_and_report(df_comp, df_f1, df_f3, df_val):
     log("S5: writing validation report")
     if df_val.empty:
         pd.DataFrame(
-            columns=["INDEX_NAME", "DATE", "MISSING_FROM_RECON", "EXTRA_IN_RECON", "N_MISSING", "N_EXTRA", "TYPE"]
+            columns=[
+                "INDEX_NAME",
+                "DATE",
+                "MISSING_FROM_RECON",
+                "EXTRA_IN_RECON",
+                "N_MISSING",
+                "N_EXTRA",
+                "TYPE",
+            ]
         ).to_csv(OUT_VALIDATION, index=False)
     else:
         df_val.sort_values(["INDEX_NAME", "DATE"]).to_csv(OUT_VALIDATION, index=False, encoding="utf-8")
@@ -860,34 +868,29 @@ def validate_and_report(df_comp, df_f1, df_f3, df_val):
 # 10. STAGE S6 — Refresh constituents.json (latest composition)
 # =============================================================================
 def refresh_constituents(df_comp):
-    """Overwrite constituents.json with latest-date composition per index."""
-    log("S6: refreshing constituents.json with latest composition")
+    """Publish missing historical snapshots; preserve accepted current membership."""
+    import sys
+
+    sys.path.insert(0, str(PROJECT_ROOT))
+    import market_data as md
+
     if df_comp.empty:
-        log("     [WARN] empty compositions, skipping constituents.json refresh", "WARN")
         return
-
-    latest_idx = df_comp.groupby("INDEX_NAME")["TIME_STAMP"].transform("max")
-    latest = df_comp[df_comp["TIME_STAMP"] == latest_idx]
-
-    out = {}
-    for idx, g in latest.groupby("INDEX_NAME"):
-        out[idx] = sorted(g["SYMBOL"].unique().tolist())
-
-    # Preserve existing hand-curated entries that aren't in our reconstruction,
-    # but overwrite reconstructed indices.
-    existing = {}
-    if OUT_CONSTITUENTS.exists():
-        try:
-            existing = json.loads(OUT_CONSTITUENTS.read_text("utf-8"))
-        except Exception:
-            pass
-
-    # Merge: reconstructed wins; untouched indices preserved
-    merged = dict(existing)
-    merged.update(out)
-
-    OUT_CONSTITUENTS.write_text(json.dumps(merged, indent=2, ensure_ascii=False), encoding="utf-8")
-    log(f"     wrote {len(out)} reconstructed indices (+{len(merged) - len(out)} preserved) " f"-> {OUT_CONSTITUENTS}")
+    incoming = md.normalize_membership(df_comp)
+    with md.publisher_lock():
+        if md.MEMBERSHIP_PATH.exists():
+            history, metadata = md._read(md.MEMBERSHIP_PATH)
+            keys = pd.MultiIndex.from_frame(history[["INDEX_NAME", "TIME_STAMP"]])
+            missing = ~pd.MultiIndex.from_frame(incoming[["INDEX_NAME", "TIME_STAMP"]]).isin(keys)
+            combined = md.normalize_membership(pd.concat([history, incoming.loc[missing]], ignore_index=True))
+            md.write_source(combined, md.MEMBERSHIP_PATH, dict(metadata), expected_revision=metadata["revision"])
+        else:
+            md.write_source(
+                incoming,
+                md.MEMBERSHIP_PATH,
+                {"source": "NSE historical reconstruction", "membership_date_basis": "reconstructed"},
+            )
+    log("S6: published shared historical membership; current snapshots preserved")
 
 
 # =============================================================================
@@ -917,8 +920,7 @@ def main():
 
     # Write outputs
     df_comp = df_comp.sort_values(["INDEX_NAME", "TIME_STAMP", "SYMBOL"]).reset_index(drop=True)
-    df_comp.to_parquet(OUT_COMPOSITIONS, index=False, compression="snappy")
-    log(f"     wrote {OUT_COMPOSITIONS.name} ({len(df_comp):,} rows)")
+    # Publication happens once after the reconstruction validation below.
 
     df_evt_unified = df_evt_unified.sort_values(["INDEX_NAME", "EVENT_DATE", "SYMBOL"]).reset_index(drop=True)
     df_evt_unified.to_csv(OUT_EVENTS, index=False, encoding="utf-8")

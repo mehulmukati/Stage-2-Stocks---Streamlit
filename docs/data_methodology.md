@@ -1,138 +1,34 @@
 # Data & Methodology
 
-## Data source
+## Shared market sources
 
-All price data is sourced from **Yahoo Finance** via the `yfinance` library. NSE stocks are fetched with the `.NS` suffix (e.g. `RELIANCE.NS`). Benchmark indices use their Yahoo Finance tickers (`^NSEI` for Nifty 50, `^CRSLDX` for Nifty 500).
+Every section reads the same two accepted market files: **`data/screener_ohlcv.parquet`** for pricing and **`data/constituents.parquet`** for dated membership. The pricing file retains full available history, including equities, adjusted ETFs, benchmark price indices, imported NSE TRI and a labeled cash proxy. The membership file retains historical snapshots as well as current membership.
 
-Yahoo Finance provides **adjusted close prices** (adjusted for splits and dividends). All return and MA calculations use adjusted prices, which means historical charts show what an investor would have actually experienced, not raw price levels.
+Equity/ETF vendor observations use Yahoo Finance with adjusted OHLC prices. Imported TRI is sourced from NSE Indices. Synthetic cash history is clearly distinguished from actual ETF prices. Legacy data with incomplete candles or unresolved adjustment conflicts is retained and reported while complete replacements are sought; no missing candle values are invented.
 
----
+## Date, universe and revisions
 
-## Cache architecture
+For the same date, selected indices and eligibility settings, Momentum Screener and portfolio ranking share the same eligible symbols, prices, scores and ranks. Results identify the **price revision** and **constituent revision**. Changing either source, including a correction on the same date, invalidates cached results.
 
-### Screener — 3-tier cache
+Choose **As of date** in Momentum Screener and match it to Live Signal. Match minimum history, median volume, maximum stale sessions and the quality filters. The default universe is the five core indices. Other historical index snapshots remain stored without expanding that selection.
 
-Data flows through three tiers to minimise redundant fetches:
+Historical runs use the latest membership snapshot effective on or before each date. A current CSV observation with no verified effective date is recorded on its observation date, with an explicit date basis; it is never silently backdated. Verification time describes freshness and is separate from membership effective dates.
 
-```
-Request
-   │
-   ▼
-Tier 1 — In-memory dict
-   │  (same process, keyed by last trading date)
-   │  HIT → return immediately
-   ▼
-Tier 2 — screener_ohlcv.parquet on disk
-   │  (persists across restarts; checked if memory cache is stale)
-   │  HIT → load from file, populate memory cache
-   ▼
-Tier 3 — yfinance (internet)
-      (only when parquet is stale — fetches incrementally from last parquet date)
-      → merge into screener_ohlcv.parquet → populate memory cache
-```
+## Refresh behavior
 
-The screener parquet is updated in-place on each delta fetch.
+Opening a page reads accepted local data. It does not fetch its own vendor prices or create a private delta. The scheduled GitHub Actions publisher runs at **7:45 PM IST**, verifies constituents and updates the two shared files. **Refresh shared market data** runs the same publishers explicitly in the background.
 
-### Backtester — 4-tier cache
+The publisher preserves full history, uses each instrument's coverage and replaces a source atomically only after validation. Partial failures retain accepted observations and record actual coverage. A changed adjusted price requires a complete historical replacement; an incomplete correction cannot create a seam in stored history.
 
-The backtester keeps the committed baseline parquet read-only (so git stays clean) and
-maintains a separate gitignored delta cache for tail rows:
+In-process caches follow the calculation date and both source revisions. The legacy replay baselines, benchmark files, JSON constituent snapshots and page-specific caches are migration/recovery inputs rather than active data sources. Operational details are documented in `docs/shared_market_data.md`.
 
-```
-Request
-   │
-   ▼
-Tier 1 — In-memory dict
-   │  (keyed by target trading date; survives for the container lifetime)
-   │  HIT → return immediately
-   ▼
-Tier 1b — In-memory baseline DataFrame
-   │  (materialised once from Tier 2 + 2.5 combined; amortises read_parquet)
-   │  HIT → compute gap, skip to Tier 3 if needed
-   ▼
-Tier 2 — backtest_history.parquet (committed to repo, never written at runtime)
-   +
-Tier 2.5 — backtest_delta.parquet (gitignored, grows with each fetch)
-   │  Merged on first load; last_date = max(Tier 2, Tier 2.5)
-   ▼
-Tier 3 — yfinance (internet)
-      Only dates after max(Tier 2, Tier 2.5) last date
-      → new rows appended to backtest_delta.parquet → populate memory cache
-```
+## NSE trading calendar and eligibility
 
-This means on a typical day after the first run, the gap is 0 or 1 day and yfinance
-is either skipped entirely or fetches just that day's data. The committed baseline
-never changes between explicit rebuilds.
+The completed-session cutoff is **7:00 PM IST**. Before that time, the app targets the previous NSE session; after it, the app can target the current session. Weekends and the NSE Capital Market holiday calendar are excluded.
 
----
+Momentum defaults to 252 rows of history, median daily volume of 100,000 shares, and a three-session maximum price lag. These are visible settings across the Momentum sections. Stale nonholdings are excluded from ranking. Live Signal blocks a stale actual/model holding when it needs a reliable trade price. Stage 2 needs its indicator warm-up; candle strategies explicitly report excluded incomplete OHLCV observations.
 
-## Parquet file layout
-
-### Screener
-
-| File | Committed | Contents |
-|---|---|---|
-| `data/screener_ohlcv.parquet` | ✅ | Long-form `{symbol, date, Open, High, Low, Close, Volume}` for ~750 NSE symbols, ~2 years |
-| `data/stage2_cache.parquet` | ❌ Gitignored | Most-recent Stage 2 scores with a `cache_date` column |
-| `data/momentum_cache.parquet` | ❌ Gitignored | Most-recent Momentum scores with a `cache_date` column |
-
-### Backtester
-
-| File | Committed | Contents |
-|---|---|---|
-| `data/backtest_history.parquet` | ✅ | Long-form `{symbol, date, Close, High, Volume}` for ~750 NSE symbols, ~10 years |
-| `data/benchmarks.parquet` | ✅ | Nifty 50 & Nifty 500 daily close history |
-| `data/compositions.parquet` | ✅ | Historical index constituent snapshots |
-| `data/backtest_delta.parquet` | ❌ Gitignored | Accumulated yfinance tail rows (OHLCV) since last baseline rebuild |
-| `data/benchmarks_delta.parquet` | ❌ Gitignored | Accumulated yfinance tail rows for benchmarks |
-
-Score caches store only the most recent scored date. On read, the `cache_date` column is compared to the target trading date; a mismatch triggers a re-score and overwrites the file atomically.
-
-Concurrent writes are protected by a `threading.Lock` (same-process serialisation) plus an atomic `tempfile` + `os.replace()` rename so that readers always see either the complete old file or the complete new file.
-
-### Seeding the screener baseline
-
-Run once after cloning:
-
-```bash
-python scripts/refresh_screener_parquet.py
-```
-
-This downloads ~2 years of OHLCV for all symbols in `constituents.json` and writes `data/screener_ohlcv.parquet`. After the initial seed the app performs incremental delta fetches automatically at startup.
-
----
-
-## NSE trading calendar
-
-The app resolves the "last valid trading date" by walking backwards from the current date, skipping:
-- Weekends (Saturday, Sunday)
-- NSE market holidays from `nse_holidays.json`
-
-The holiday file covers all NSE segment holidays (equity, F&O, currency). The back-walk extends up to **10 days** to handle extended closure windows such as Diwali, Budget Day, and consecutive public holidays.
-
-After-market cutoff is set at **7:00 pm IST**. Before 7 pm, the app uses the previous trading day as the cache key (today's data may not yet be available on yfinance). After 7 pm, it targets today's date.
-
----
-
-## Incremental sync
-
-When the parquet baseline is stale, data is fetched from 5 days before the last parquet date (small overlap to avoid missing the most-recent partial day). This keeps incremental syncs fast (typically a few seconds).
-
-A full rebuild is triggered only when: the parquet file does not exist, it is empty, or the latest date is more than ~2 years old. Force a full rebuild at any time with:
-
-```bash
-python scripts/refresh_screener_parquet.py --full
-```
-
----
-
-## Constituent universe
-
-The app screens the stocks present in **`constituents.json`**, which maps each NSE index to its current list of symbols. Run `python scripts/refresh_constituents.py` at least every 30 days and after membership changes. This downloads all five lists from NSE Indices and validates them before replacing the snapshot. Temporary corporate-action constituents are retained exactly as published by NSE.
-
-`constituents.meta.json` records the verification time, source URLs, counts, and SHA-256 hashes. The freshness check uses this verification time, rather than file modification time, when metadata is present. A mismatched snapshot blocks LiveSignal and requires another refresh. Historical files without metadata retain the legacy file-age check. Current downloads do not rewrite `data/compositions.parquet`, whose dates represent historical effective membership. Restart or rerun the app after a refresh.
-
-The official snapshot can include temporary `DUMMY*` corporate-action placeholders. The application excludes these from its tradable universe and Yahoo price requests because they have no market ticker. Actual broker holdings remain subject to price-coverage checks. Missing closes for real stocks remain visible as partial coverage; LiveSignal retains its maximum three-session lag rule.
+Temporary `DUMMY*` placeholders remain in the stored membership record but are excluded from the tradable universe and vendor requests. Portfolio holdings can differ from a fresh top-15 list because entry/hold bands, Stage 2 exits and allocation rules act on portfolio history; the underlying ranking still agrees under matched inputs.
 
 ---
 

@@ -70,7 +70,7 @@ Checkboxes to require the close to be above the 100-day and/or 200-day moving av
 
 ## How to use
 
-1. Select indices in the sidebar, set your filters, and click **Run**.
+1. Select the **As of date** and indices, match history/volume/staleness and quality settings to Live Signal, then click **Run**.
 2. Results are pre-sorted by Sharpe (descending). Re-sort other columns as needed.
 3. Cross-reference with the Stage 2 Screener — stocks that rank highly on both momentum and Weinstein criteria are the strongest candidates.
 4. Switch to the **Phase Chart** tab and type a symbol to review its full price history.

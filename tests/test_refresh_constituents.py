@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from scripts.refresh_constituents import SOURCES, parse_symbols, refresh
@@ -30,11 +28,10 @@ def test_retains_temporary_corporate_action_constituents():
     assert "DUMMYINGL1" in parse_symbols(raw, 250)
 
 
-def test_failed_refresh_preserves_snapshot_and_metadata(tmp_path):
-    snapshot = tmp_path / "constituents.json"
-    metadata = tmp_path / "constituents.meta.json"
-    snapshot.write_text("original snapshot")
-    metadata.write_text("original metadata")
+def test_failed_refresh_preserves_shared_revision(market):
+    import market_data as md
+
+    before = md.source_revisions()
     calls = []
 
     def fetch(url):
@@ -42,17 +39,20 @@ def test_failed_refresh_preserves_snapshot_and_metadata(tmp_path):
         return _csv(50) if len(calls) == 1 else b"<html>Unavailable</html>"
 
     with pytest.raises(ValueError):
-        refresh(tmp_path, fetch)
-    assert len(calls) == 2
-    assert snapshot.read_text() == "original snapshot"
-    assert metadata.read_text() == "original metadata"
+        refresh(md.PRICE_PATH.parent.parent, fetch)
+    assert md.source_revisions() == before
 
 
-def test_successful_refresh_records_all_sources(tmp_path):
+def test_successful_refresh_records_sources_and_preserves_history(market):
+    import market_data as md
+
+    _, history, days = market
     counts = {filename: count for filename, count in SOURCES.values()}
-    metadata = refresh(tmp_path, lambda url: _csv(counts[url.rsplit("/", 1)[-1]]))
-    snapshot = json.loads((tmp_path / "constituents.json").read_text())
-    assert set(snapshot) == set(SOURCES)
-    assert sum(map(len, snapshot.values())) == 750
+    metadata = refresh(md.PRICE_PATH.parent.parent, lambda url: _csv(counts[url.rsplit("/", 1)[-1]]))
+    snapshot = md.load_snapshot()
+    assert set(snapshot.constituents()) == set(SOURCES)
+    assert sum(map(len, snapshot.constituents().values())) == 750
     assert set(metadata["sources"]) == set(SOURCES)
-    assert json.loads((tmp_path / "constituents.meta.json").read_text()) == metadata
+    assert snapshot.constituent_revision == metadata["revision"]
+    assert snapshot.constituents(as_of=days[-11]) == {"Nifty 50": ["A", "LOWVOL"]}
+    assert snapshot.membership.attrs["membership_date_basis"] == "observed_not_effective"

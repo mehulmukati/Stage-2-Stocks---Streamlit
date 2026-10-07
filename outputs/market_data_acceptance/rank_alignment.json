@@ -1,0 +1,55 @@
+{
+  "as_of": "2026-10-06",
+  "settings": {
+    "min_history_days": 252,
+    "minimum_median_volume": 100000,
+    "max_stale_sessions": 3,
+    "min_annual_return": 7,
+    "pct_from_52w_high": 25,
+    "max_circuits": 18,
+    "close_above_200dma": true,
+    "pos_days_3m_min": 45,
+    "pos_days_6m_min": 45,
+    "pos_days_12m_min": 45
+  },
+  "source_revisions": [
+    "9f51df58606b415b95cb47432f8815fb",
+    "06afd4354bd9473f9f88d67d732e2d12"
+  ],
+  "eligible_count": 146,
+  "universe_count": 750,
+  "passed": true,
+  "top15": [
+    "CUPID",
+    "SHILPAMED",
+    "LAURUSLABS",
+    "SHREEJISPG",
+    "WELCORP",
+    "DIVISLAB",
+    "DIACABS",
+    "HFCL",
+    "WELSPUNLIV",
+    "SKYGOLD",
+    "SANSERA",
+    "SONACOMS",
+    "CPPLUS",
+    "RRKABEL",
+    "SAILIFE"
+  ],
+  "selected": {
+    "LOTUSDEV": 16,
+    "UNIMECH": null,
+    "CPPLUS": 13,
+    "SHREEJISPG": 4
+  },
+  "metadata_only_republication": {
+    "previous_price_revision": "67fa5b87db6845fea4bf54efb7965621",
+    "prices_exactly_unchanged": true,
+    "reason": "coverage restricted to five selected core indices",
+    "missing_target_symbols": [
+      "BAGMANE",
+      "BIRET",
+      "EMBASSY"
+    ]
+  }
+}

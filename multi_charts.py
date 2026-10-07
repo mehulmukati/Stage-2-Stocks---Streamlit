@@ -77,7 +77,13 @@ def _display_start(last: pd.Timestamp, choice: str) -> pd.Timestamp | None:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def analyze(ticker: str, analysis: str, timeframe: str = "Daily", target_session: str | None = None) -> dict:
+def analyze(
+    ticker: str,
+    analysis: str,
+    timeframe: str = "Daily",
+    target_session: str | None = None,
+    source_revisions=None,
+) -> dict:
     """Calculate against full history; the selected visible range is applied later."""
     if not _SYMBOL.fullmatch(ticker):
         return {"ticker": ticker, "analysis": analysis, "error": "Invalid NSE symbol"}
@@ -134,7 +140,9 @@ def analyze(ticker: str, analysis: str, timeframe: str = "Daily", target_session
 
 def analyze_current(ticker: str, analysis: str, timeframe: str = "Daily") -> dict:
     """Include the completed market session in the analysis cache key."""
-    return analyze(ticker, analysis, timeframe, data._get_target_key())
+    from market_data import source_revisions
+
+    return analyze(ticker, analysis, timeframe, data._get_target_key(), source_revisions())
 
 
 def _draw_candles(ax, frame: pd.DataFrame, prefix: str = "") -> None:
@@ -209,7 +217,11 @@ def draw_tile(ax, record: dict, display_range: str) -> None:
         ax.legend(loc="upper left", fontsize=6, ncol=4, frameon=False)
     elif analysis == "Ichimoku":
         observed = visible[~visible["IsFuture"].astype(bool)]
-        for column, color, width in (("Close", "#0f172a", 1.1), ("Tenkan", "#2563eb", 0.8), ("Kijun", "#dc2626", 0.8)):
+        for column, color, width in (
+            ("Close", "#0f172a", 1.1),
+            ("Tenkan", "#2563eb", 0.8),
+            ("Kijun", "#dc2626", 0.8),
+        ):
             ax.plot(observed.index, observed[column].astype(float), color=color, linewidth=width, label=column)
         cloud = visible.dropna(subset=["Senkou_A", "Senkou_B"])
         if not cloud.empty:
@@ -236,7 +248,14 @@ def draw_tile(ax, record: dict, display_range: str) -> None:
 
     ax.set_title(ticker, loc="left", fontsize=11, fontweight="bold", pad=12)
     ax.text(
-        1, 1.03, f"Data {last:%d %b %Y}", ha="right", va="bottom", transform=ax.transAxes, fontsize=7, color="#64748b"
+        1,
+        1.03,
+        f"Data {last:%d %b %Y}",
+        ha="right",
+        va="bottom",
+        transform=ax.transAxes,
+        fontsize=7,
+        color="#64748b",
     )
     ax.text(
         0,
@@ -284,7 +303,11 @@ def build_pdf(
                     ax.axis("off")
             label = f"{analysis} ({timeframe})" if analysis == "Ichimoku" else analysis
             fig.suptitle(
-                f"Multi Charts  |  {label}  |  {display_range}", x=0.04, ha="left", fontsize=15, fontweight="bold"
+                f"Multi Charts  |  {label}  |  {display_range}",
+                x=0.04,
+                ha="left",
+                fontsize=15,
+                fontweight="bold",
             )
             fig.text(
                 0.04,

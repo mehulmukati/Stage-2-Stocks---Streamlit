@@ -7,7 +7,6 @@ Backtest lives in app_backtest.py (separate parquet baseline).
 import difflib
 import importlib
 import inspect
-import json
 import logging
 import os
 import threading
@@ -26,6 +25,7 @@ import charts as chart_builders
 import data as data_access
 import ichimoku_engine as ichimoku_calculations
 import ichimoku_summary as ichimoku_descriptions
+import market_data as shared_market
 import workers as worker_functions
 from app_backtest import _sidebar_backtest, render_backtest_tabs
 from config import IST, SCREENER_OHLCV_PARQUET
@@ -39,7 +39,7 @@ from ichimoku_tutorial import (
 )
 from index_overlay_data import load_index_overlay_series
 from jobs import JobStatus, registry
-from momentum_engine import _calculate_avg_sharpe
+from momentum_ranking import rank_momentum_frame
 from stage2_breadth import aggregate_breadth, load_breadth_score_history
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
 from ui_helpers import _get_user_token, _poll_job
@@ -75,10 +75,10 @@ if (
 if getattr(ichimoku_descriptions, "ICHIMOKU_SUMMARY_VERSION", 0) < 2 or not hasattr(ichimoku_descriptions, "_periods"):
     ichimoku_descriptions = importlib.reload(ichimoku_descriptions)
 _data_access_reloaded = False
-if getattr(data_access, "CHART_DATA_VERSION", 0) < 2 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 3:
+if getattr(data_access, "CHART_DATA_VERSION", 0) < 3 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 4:
     data_access = importlib.reload(data_access)
     _data_access_reloaded = True
-if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 4:
+if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 8:
     worker_functions = importlib.reload(worker_functions)
 
 ichimoku_chart_figure = chart_builders.ichimoku_chart_figure
@@ -332,7 +332,9 @@ def render_ichimoku_cheat_sheet() -> None:
 
 def _render_source_banner(source: str, cache_date: str, count: int = None) -> None:
     suffix = f" · {count} stocks" if count is not None else ""
-    if source == "memory":
+    if source == "shared":
+        st.caption(f"Shared market snapshot · as of {cache_date}{suffix}")
+    elif source == "memory":
         st.success(f"⚡ Served from memory cache for **{cache_date}**{suffix}.")
     elif source == "db":
         st.info(f"💾 Loaded from local database for **{cache_date}**{suffix}.")
@@ -353,7 +355,11 @@ def _invalidate_legacy_score_result(kind: str, cached: dict) -> bool:
     required_columns = {"Price Date"}
     if kind == "stage2":
         required_columns.update({"Stage 2 Days", "Stage 2 Since"})
-    if isinstance(frame, pd.DataFrame) and required_columns.issubset(frame.columns):
+    if (
+        isinstance(frame, pd.DataFrame)
+        and required_columns.issubset(frame.columns)
+        and frame.attrs.get("source_revisions") == shared_market.source_revisions()
+    ):
         return False
     st.session_state.pop(f"{kind}_cached_result", None)
     _score_cache[kind] = {"date": None, "data": None}
@@ -378,15 +384,16 @@ def coverage_results():
 
     cov = get_universe_coverage()
     if not cov:
-        st.error("Could not load coverage data — constituents.json or parquet may be missing.")
+        st.error("Could not load coverage data — shared market sources may be missing.")
         return
 
     s = cov["summary"]
 
     st.markdown(
         """
-Both screeners (**Stage 2** and **Momentum**) require a stock to have at least **250 trading days**
-of price history within the last 550 calendar days before it can be scored. Stocks that fall below
+Momentum defaults to **252 trading days** of price history, with eligibility settings shared
+with Live Signal. Stage 2 needs at least 250 rows for its indicators. Both read full stored history.
+Stocks that fall below
 this threshold — typically recent IPOs or newly-added index constituents — are silently excluded
 from the universe count. They will appear automatically once they accumulate enough data.
 """
@@ -554,7 +561,12 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
         height=650,
     )
 
-    csv = display_df.to_csv(index=False).encode("utf-8")
+    exported = display_df.copy()
+    revisions = df.attrs.get("source_revisions")
+    if revisions:
+        exported["Price Revision"], exported["Constituent Revision"] = revisions
+    exported["As Of Date"] = cache_date
+    csv = exported.to_csv(index=False).encode("utf-8")
     st.download_button(
         "📥 Download Results",
         csv,
@@ -569,18 +581,8 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
 # ──────────────────────────────────────────────
 
 
-@st.cache_data(show_spinner=False)
-def _load_breadth_compositions(modified_ns: int) -> pd.DataFrame:
-    """Keep the historical membership lookup in Streamlit's in-process cache."""
-    del modified_ns  # Cache-key only; changes invalidate Streamlit's cached result.
-    path = os.path.join(os.path.dirname(__file__), "data", "compositions.parquet")
-    if not os.path.exists(path):
-        return pd.DataFrame()
-    try:
-        return pd.read_parquet(path, columns=["INDEX_NAME", "TIME_STAMP", "SYMBOL"])
-    except Exception as exc:
-        logging.warning("Could not load historical compositions for breadth: %s", exc)
-        return pd.DataFrame()
+def _load_breadth_compositions(modified_ns=None) -> pd.DataFrame:
+    return shared_market.load_snapshot().membership.copy()
 
 
 def render_stage2_breadth(selected_indices: list[str]) -> None:
@@ -595,15 +597,15 @@ def render_stage2_breadth(selected_indices: list[str]) -> None:
 
     with st.spinner("Loading historical Stage 2 classifications…"):
         try:
-            scores, from_disk_cache = load_breadth_score_history()
+            breadth_snapshot = shared_market.load_snapshot()
+            scores, from_disk_cache = load_breadth_score_history(snapshot=breadth_snapshot)
         except Exception as exc:
             logging.exception("Could not calculate Stage 2 breadth")
             st.error(f"Could not calculate Stage 2 breadth ({type(exc).__name__}: {exc}).")
             return
 
-    composition_path = os.path.join(os.path.dirname(__file__), "data", "compositions.parquet")
-    modified_ns = os.stat(composition_path).st_mtime_ns if os.path.exists(composition_path) else 0
-    compositions = _load_breadth_compositions(modified_ns)
+    compositions = breadth_snapshot.membership
+    st.caption(shared_market.revision_label(breadth_snapshot.revisions))
     daily = aggregate_breadth(scores, selected_indices, compositions)
     if daily.empty:
         st.warning("No mature Stage 2 observations are available for this universe yet.")
@@ -627,11 +629,15 @@ def render_stage2_breadth(selected_indices: list[str]) -> None:
     cols = st.columns(4)
     cols[0].metric("Eligible stocks", f"{int(latest['Eligible']):,}")
     cols[1].metric(
-        "Stage 2 breadth", f"{latest['Stage 2 %']:.1f}%", f"{latest['Stage 2 %'] - prior['Stage 2 %']:+.1f} pp"
+        "Stage 2 breadth",
+        f"{latest['Stage 2 %']:.1f}%",
+        f"{latest['Stage 2 %'] - prior['Stage 2 %']:+.1f} pp",
     )
     cols[2].metric("Strong Stage 2", f"{int(latest['Strong']):,}", f"{latest['Strong'] - prior['Strong']:+.0f}")
     cols[3].metric(
-        "Average score", f"{latest['Average Score']:.2f}/8", f"{latest['Average Score'] - prior['Average Score']:+.2f}"
+        "Average score",
+        f"{latest['Average Score']:.2f}/8",
+        f"{latest['Average Score'] - prior['Average Score']:+.2f}",
     )
 
     selected_overlays = st.multiselect(
@@ -676,7 +682,7 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
     st.markdown(f'<p class="sub-hero">Sharpe Ratio Based Momentum Analysis · {now_ist}</p>', unsafe_allow_html=True)
     st.divider()
 
-    if _poll_job("momentum", momentum_worker):
+    if _poll_job("momentum", momentum_worker, {"as_of_date": filters.get("as_of_date")}):
         return
 
     cached = st.session_state.get("momentum_cached_result")
@@ -696,37 +702,32 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
     full_df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
     _render_source_banner(source, cache_date, count=len(full_df))
 
+    if filters.get("as_of_date") and cache_date != str(filters["as_of_date"]):
+        st.info("The selected date changed. Click Run to calculate that dated snapshot.")
+        return
+
     display_df = full_df[full_df["Index"].isin(selected_indices)].copy() if selected_indices else full_df.copy()
 
-    if filters["min_annual_return"] > 0:
-        display_df = display_df[
-            display_df["1Y_Change"].notna() & (display_df["1Y_Change"] >= filters["min_annual_return"])
-        ]
-    if filters["close_above_100dma"]:
-        display_df = display_df[display_df["DMA100"].notna() & (display_df["Close"] > display_df["DMA100"])]
-    if filters["close_above_200dma"]:
-        display_df = display_df[display_df["DMA200"].notna() & (display_df["Close"] > display_df["DMA200"])]
-
-    threshold = (100 - filters["pct_from_52w_high"]) / 100
-    display_df = display_df[display_df["Close"] >= (threshold * display_df["52w_High"])]
-    display_df = display_df[display_df["Circuit_Count"] <= filters["max_circuits"]]
-
-    for col, key in [("Pos_Days_3M", "pos_days_3m"), ("Pos_Days_6M", "pos_days_6m"), ("Pos_Days_12M", "pos_days_12m")]:
-        if filters[key] > 0:
-            display_df = display_df[display_df[col].notna() & (display_df[col] >= filters[key])]
-
+    display_df = rank_momentum_frame(
+        display_df,
+        filters["sort_method"],
+        min_history_days=filters.get("min_history_days", 252),
+        minimum_median_volume=filters.get("minimum_median_volume", 100_000),
+        max_stale_sessions=filters.get("max_stale_sessions", 3),
+        min_annual_return=filters["min_annual_return"],
+        pct_from_52w_high=filters["pct_from_52w_high"],
+        max_circuits=filters["max_circuits"],
+        close_above_100dma=filters["close_above_100dma"],
+        close_above_200dma=filters["close_above_200dma"],
+        pos_days_3m_min=filters["pos_days_3m"],
+        pos_days_6m_min=filters["pos_days_6m"],
+        pos_days_12m_min=filters["pos_days_12m"],
+    )
     if display_df.empty:
-        st.warning("No stocks match the selected filters. Adjust criteria and try again.")
+        st.warning("No stocks match the selected eligibility and ranking settings.")
         return
-
-    display_df["Avg_Sharpe"] = display_df.apply(lambda row: _calculate_avg_sharpe(row, filters["sort_method"]), axis=1)
-    display_df = display_df[display_df["Avg_Sharpe"].notna()]
-
-    if display_df.empty:
-        st.warning("No stocks have valid Sharpe ratios for the selected sorting method.")
-        return
-
-    display_df = display_df.sort_values("Avg_Sharpe", ascending=False)
+    if full_df.attrs.get("source_revisions"):
+        st.caption(shared_market.revision_label(full_df.attrs["source_revisions"]))
     display_df = display_df[
         [
             "Symbol",
@@ -788,7 +789,12 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
         height=650,
     )
 
-    csv = display_df.to_csv(index=False).encode("utf-8")
+    exported = display_df.copy()
+    revisions = full_df.attrs.get("source_revisions")
+    if revisions:
+        exported["Price Revision"], exported["Constituent Revision"] = revisions
+    exported["As Of Date"] = cache_date
+    csv = exported.to_csv(index=False).encode("utf-8")
     st.download_button(
         "📥 Download Results",
         csv,
@@ -803,13 +809,8 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
 # ──────────────────────────────────────────────
 
 
-@st.cache_resource
 def _load_index_options() -> list[str]:
-    const_path = os.path.join(os.path.dirname(__file__), "constituents.json")
-    if not os.path.exists(const_path):
-        return []
-    with open(const_path, "r") as f:
-        return list(json.load(f).keys())
+    return list(_load_constituents())
 
 
 _DOCS_SECTIONS = {
@@ -923,6 +924,30 @@ def _sidebar_stage2() -> tuple[bool, bool]:
 
 
 def _sidebar_momentum() -> dict:
+    if st.button("Refresh shared market data", key="shared_price_refresh"):
+        st.session_state["market_refresh_run_triggered"] = True
+    active_refresh = registry.latest(_get_user_token(), "market_refresh")
+    if st.session_state.get("market_refresh_run_triggered") or (
+        active_refresh and active_refresh.status in (JobStatus.RUNNING, JobStatus.QUEUED)
+    ):
+        st_autorefresh(interval=1500, key="shared_market_refresh_poll")
+    _poll_job("market_refresh", worker_functions.shared_market_refresh_worker)
+    completed_refresh = st.session_state.get("market_refresh_cached_result")
+    if completed_refresh and completed_refresh.get("source_revisions") == shared_market.source_revisions():
+        report = completed_refresh["report"]
+        if report.get("missing_target_symbols"):
+            st.warning(
+                f"Shared refresh published; {len(report['missing_target_symbols'])} "
+                "constituents lack target-session prices."
+            )
+        else:
+            st.success("Shared data refreshed. Run the screener again.")
+    as_of_date = st.date_input(
+        "As of date",
+        value=pd.Timestamp(data_access._get_target_key()).date(),
+        max_value=pd.Timestamp(data_access._get_target_key()).date(),
+        key="mom_as_of_date",
+    )
     st.markdown("**Filters**")
     sort_options = [
         "Average of 3/6/9/12 months",
@@ -962,11 +987,22 @@ def _sidebar_momentum() -> dict:
     pos_days_12m = st.number_input(
         "Pos Days 12M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_12m"
     )
+    min_history_days = st.number_input(
+        "Min history (trading days)", min_value=63, max_value=1260, value=252, step=21, key="mom_min_history"
+    )
+    minimum_median_volume = st.number_input(
+        "Min median daily volume (shares)", min_value=0, value=100_000, step=10_000, key="mom_min_volume"
+    )
+    max_stale_sessions = st.number_input("Max stale sessions", min_value=0, max_value=20, value=3, key="mom_max_stale")
     st.divider()
     if st.button("🚀 Run", type="primary", width="stretch", key="mom_run_btn"):
         st.session_state["momentum_run_triggered"] = True
     return {
+        "as_of_date": as_of_date,
         "sort_method": sort_method,
+        "min_history_days": min_history_days,
+        "minimum_median_volume": minimum_median_volume,
+        "max_stale_sessions": max_stale_sessions,
         "min_annual_return": min_annual_return,
         "pct_from_52w_high": pct_from_52w_high,
         "max_circuits": max_circuits,
@@ -1075,6 +1111,7 @@ def main():
     _apply_multi_chart_link()
     user_token = _get_user_token()
     idx_options = _load_index_options()
+    st.caption(shared_market.revision_label(shared_market.source_revisions()))
 
     bt_params: dict = {}
     quant_portfolio_params: dict = {}
@@ -1084,9 +1121,7 @@ def main():
 
     if not _baseline_ok:
         st.warning(
-            "⚠️ **screener_ohlcv.parquet not found** — first run will download ~2 years of data "
-            "from Yahoo Finance. Run `python scripts/refresh_screener_parquet.py` to seed the "
-            "baseline and commit it so future deploys start instantly."
+            "Shared market files are missing. Run the explicit migration/bootstrap process before using the app."
         )
 
     with st.sidebar:
@@ -1165,7 +1200,8 @@ def main():
         if not ticker:
             st.markdown('<p class="hero">📈 Stage 2 Phase Chart</p>', unsafe_allow_html=True)
             st.markdown(
-                '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>', unsafe_allow_html=True
+                '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>',
+                unsafe_allow_html=True,
             )
         else:
             col1, col2 = st.columns([0.85, 0.15])

@@ -1,13 +1,12 @@
 """Refresh current membership from NSE: python scripts/refresh_constituents.py.
 
 All five downloads must validate before any reference file is replaced.
-Historical compositions are deliberately not changed by a current snapshot.
+Publishes dated snapshots into the one shared constituent file; preserves earlier history.
 """
 
 import csv
 import hashlib
 import io
-import json
 import os
 import re
 import tempfile
@@ -58,28 +57,56 @@ def write_atomic(path: Path, content: bytes) -> None:
         temp_path.unlink(missing_ok=True)
 
 
-def refresh(root: Path = ROOT, fetch=download) -> dict:
+def refresh(root=ROOT, fetch=download, effective_date=None, effective_source=None):
+    import sys
+
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    import pandas as pd
+
+    import market_data as md
+
     constituents = {}
     sources = {}
     for name, (filename, expected) in SOURCES.items():
         url = BASE_URL + filename
         raw = fetch(url)
         constituents[name] = parse_symbols(raw, expected)
-        sources[name] = {"url": url, "count": len(constituents[name]), "sha256": hashlib.sha256(raw).hexdigest()}
-    content = (json.dumps(constituents, indent=2) + "\n").encode("utf-8")
-    metadata = {
-        "verified_at": datetime.now(timezone.utc).isoformat(),
-        "constituents_sha256": hashlib.sha256(json.dumps(constituents, sort_keys=True).encode()).hexdigest(),
-        "sources": sources,
-    }
-    # A crash between writes leaves a hash mismatch, which blocks LiveSignal safely.
-    write_atomic(root / "constituents.json", content)
-    write_atomic(root / "constituents.meta.json", (json.dumps(metadata, indent=2) + "\n").encode("utf-8"))
-    return metadata
+        sources[name] = {
+            "url": url,
+            "count": len(constituents[name]),
+            "sha256": hashlib.sha256(raw).hexdigest(),
+        }
+    verified_at = datetime.now(timezone.utc).isoformat()
+    observed = pd.Timestamp(verified_at).tz_convert("Asia/Kolkata").date()
+    if effective_date and not effective_source:
+        raise ValueError("An effective date requires its official source")
+    path = Path(root) / "data" / "constituents.parquet"
+    with md.publisher_lock():
+        history, accepted = md._read(path)
+        updated = md.append_membership_snapshot(
+            history,
+            constituents,
+            effective_date or observed,
+            verified_at,
+            effective_source or "NSE current constituent CSVs",
+            "official" if effective_date else "observed_not_effective",
+        )
+        metadata = {
+            "verified_at": verified_at,
+            "sources": sources,
+            "membership_date_basis": "official" if effective_date else "observed_not_effective",
+        }
+        revision = md.write_source(updated, path, metadata, expected_revision=accepted["revision"])
+    return metadata | {"revision": revision}
 
 
 if __name__ == "__main__":
-    result = refresh()
-    print(f"Verified from NSE at {result['verified_at']}")
-    for index, source in result["sources"].items():
-        print(f"  {index}: {source['count']} constituents")
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--effective-date")
+    parser.add_argument("--effective-source")
+    args = parser.parse_args()
+    result = refresh(effective_date=args.effective_date, effective_source=args.effective_source)
+    print(f"Published shared constituent revision {result['revision']} verified at {result['verified_at']}")

@@ -155,10 +155,21 @@ def render_portfolio_lab(params: dict) -> None:
     if _poll_job("quant_portfolio", quant_portfolio_worker, params):
         return
     result = st.session_state.get("quant_portfolio_cached_result")
+    import market_data as shared_market
+
+    if result is not None and result.get("source_revisions") != shared_market.source_revisions():
+        st.session_state.pop("quant_portfolio_cached_result", None)
+        st.info("Market sources changed. Run the portfolio again using the current revisions.")
+        return
+
     if result is None:
         st.info("Choose a method and universe in the sidebar, then click **Run Quant Portfolio**.")
         return
 
+    import market_data as shared_market
+
+    if result.get("source_revisions"):
+        st.caption(shared_market.revision_label(result["source_revisions"]))
     data_start = result.get("ohlcv_start_date")
     coverage = f"{data_start or '—'} → {result.get('ohlcv_date', '—')}"
     st.caption(f"Candle coverage **{coverage}** · {result.get('ohlcv_source', '—')}")

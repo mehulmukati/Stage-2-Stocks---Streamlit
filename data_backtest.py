@@ -1,57 +1,20 @@
-"""
-Parquet-backed data layer for the backtest app (App 2).
-
-Provides the same public surface that `workers.backtest_worker` already uses:
-  - `_load_constituents()`
-  - `load_compositions()`
-  - `load_benchmark_series()`
-  - `load_ohlcv_for_backtest(emit=...)`
-  - `sync_benchmark_data()`  (no-op — benchmarks live in the parquet)
-
-No DB. Ever. Caching tiers:
-
-  Tier 1   module-level dict keyed by today_IST   — serves hot reruns in <1 ms
-  Tier 1b  module-level baseline DataFrame        — amortizes pd.read_parquet
-  Tier 2   data/backtest_history.parquet on disk  — committed to repo
-  Tier 2.5 data/backtest_delta.parquet on disk    — gitignored local delta cache;
-             accumulates yfinance tail rows so restarts skip re-fetching known dates
-  Tier 3   yfinance                               — only truly new dates not in Tier 2/2.5
-
-Survivorship bias:
-  The parquet is built from the UNION of current constituents AND historical
-  ex-members (stocks that were in an index at some point in the last 10 years
-  but have since been removed). The backtest_engine compositions filter
-  (_valid_symbols_at_date) then restricts eligibility at each rebalance date
-  to only stocks actually in the index at that time.
-
-Runtime flow:
-  1. Baseline parquet + delta cache (if present) → memory (once per container).
-  2. Compute gap vs today_IST; if > 0, yfinance-download only the missing tail,
-     merge in memory, and persist those rows to the delta cache parquet.
-  3. Cache the merged per-symbol dict under today_IST for the rest of the day.
-
-The committed parquet is rebuilt out-of-band by `scripts/refresh_backtest_parquet.py`.
-After a rebuild the delta cache becomes redundant (overlapping rows are deduped on load).
-"""
+"""Compatibility adapters over the two shared market sources; no runtime downloads."""
 
 from __future__ import annotations
 
-import logging
 import os
 import threading
-import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Callable
 
 import pandas as pd
-import pyarrow.parquet as pq
-import yfinance as yf
 
+import market_data as shared_market
 from config import IST, SCREENER_OHLCV_PARQUET
 from data import _load_constituents, get_last_valid_trading_date, load_nse_holidays  # noqa: F401
 
-BACKTEST_DATA_VERSION = 4
+BACKTEST_DATA_VERSION = 5
 _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
 
@@ -64,7 +27,7 @@ def _get_target_key(now: datetime | None = None) -> str:
 
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
-OHLCV_PARQUET = os.path.join(REPO_ROOT, "data", "backtest_history.parquet")
+OHLCV_PARQUET = SCREENER_OHLCV_PARQUET
 BENCH_PARQUET = os.path.join(REPO_ROOT, "data", "benchmarks.parquet")
 
 # Gitignored local delta caches — accumulate yfinance tail rows across restarts.
@@ -129,6 +92,7 @@ class OHLCVLoadResult:
     stale_symbols: list[str] = field(default_factory=list)
     attempts: int = 0
     earliest_price_date: str | None = None
+    source_revisions: tuple[str, str] | None = None
 
     @property
     def is_fresh(self) -> bool:
@@ -168,346 +132,60 @@ class BenchmarkLoadResult:
 # ──────────────────────────────────────────────
 # Compositions (backtest-specific parquet; constituents shared via data.py)
 # ──────────────────────────────────────────────
-def load_compositions() -> pd.DataFrame:
-    """Load historical index compositions for survivorship-bias-aware backtesting."""
-    path = os.path.join(REPO_ROOT, "data", "compositions.parquet")
-    if not os.path.exists(path):
-        return pd.DataFrame()
-    df = pd.read_parquet(path, columns=["INDEX_NAME", "TIME_STAMP", "SYMBOL"])
-    return df.dropna(subset=["SYMBOL"])
+def load_compositions(snapshot=None) -> pd.DataFrame:
+    return (snapshot or shared_market.load_snapshot()).membership
 
 
-def load_quant_ohlcv_snapshot(emit: Callable[[str, str], None] = _NOOP_EMIT) -> OHLCVLoadResult:
-    """Load the local full-OHLCV snapshot required by candle-based quant methods.
-
-    Prefer the long research baseline once it contains full OHLCV. Until that
-    one-time rebuild has happened, fall back to the shorter screener snapshot.
-    Portfolio requests never trigger a thousand-symbol network refresh.
-    """
-    target_key = _get_target_key()
-
-    def has_full_schema(path: str) -> bool:
-        if not os.path.exists(path):
-            return False
-        try:
-            return set(_QUANT_PRICE_COLUMNS).issubset(pq.ParquetFile(path).schema.names)
-        except Exception:
-            return False
-
-    if has_full_schema(OHLCV_PARQUET):
-        source_path = OHLCV_PARQUET
-        source_name = "quant-long-history-parquet"
-    elif has_full_schema(SCREENER_OHLCV_PARQUET):
-        source_path = SCREENER_OHLCV_PARQUET
-        source_name = "quant-short-history-parquet"
-    else:
-        message = "No local parquet contains symbol, date and complete OHLCV columns."
-        return OHLCVLoadResult({}, target_key, None, None, "error", "failed", message)
-    modified = os.path.getmtime(source_path)
-    global _quant_snapshot_cache
-    with _lock:
-        cached = _quant_snapshot_cache
-    if cached is not None and cached[0] == source_path and cached[1] == modified:
-        emit("info", f"⚡ Reusing full-OHLCV snapshot ({len(cached[2].symbol_data):,} stocks)")
-        return cached[2]
-    emit("info", f"📦 Loading {os.path.basename(source_path)} for Quant Portfolio Lab…")
-    data = pd.read_parquet(source_path, columns=list(_QUANT_PRICE_COLUMNS))
-    missing = set(_QUANT_PRICE_COLUMNS).difference(data.columns)
-    if missing:
-        message = f"Quant snapshot is missing columns: {', '.join(sorted(missing))}"
-        return OHLCVLoadResult({}, target_key, None, None, "error", "failed", message)
-    data["date"] = pd.to_datetime(data["date"])
-    latest = pd.Timestamp(data["date"].max()).strftime("%Y-%m-%d") if not data.empty else None
-    earliest = pd.Timestamp(data["date"].min()).strftime("%Y-%m-%d") if not data.empty else None
-    emit(
-        "info",
-        f"⚡ Full OHLCV: {data['symbol'].nunique():,} stocks · {earliest or 'unknown'} → {latest or 'unknown'}",
-    )
-    symbol_data = _long_to_symbol_dict(data)
-    for frame in symbol_data.values():
-        frame.attrs["quant_normalized"] = True
-    result = OHLCVLoadResult(
-        symbol_data=symbol_data,
-        target_date=target_key,
-        actual_latest_date=latest,
-        max_price_date=latest,
-        source=source_name,
-        refresh_status="snapshot",
-        requested_symbols=sorted(data["symbol"].dropna().unique()),
-        earliest_price_date=earliest,
-    )
-    with _lock:
-        _quant_snapshot_cache = (source_path, modified, result)
-    return result
-
-
-# ──────────────────────────────────────────────
-# Baseline parquet load (Tier 2 → Tier 1b)
-# ──────────────────────────────────────────────
-def _ensure_baseline_ohlcv(emit: Callable[[str, str], None]) -> pd.DataFrame:
-    global _baseline_ohlcv
-    with _lock:
-        if _baseline_ohlcv is not None:
-            return _baseline_ohlcv
-    if not os.path.exists(OHLCV_PARQUET):
-        raise RuntimeError(f"Missing {OHLCV_PARQUET}. Run: python scripts/refresh_backtest_parquet.py")
-    emit("info", f"📦 Loading 10y backtest baseline from {os.path.basename(OHLCV_PARQUET)}…")
-    df = pd.read_parquet(OHLCV_PARQUET)
-    df["date"] = pd.to_datetime(df["date"])
-    # Tier 2.5 — merge local delta cache (gitignored) to extend baseline without re-fetching.
-    if os.path.exists(DELTA_PARQUET):
-        try:
-            delta_df = pd.read_parquet(DELTA_PARQUET)
-            delta_df["date"] = pd.to_datetime(delta_df["date"])
-            if not delta_df.empty:
-                df = pd.concat([df, delta_df], ignore_index=True)
-                df = df.drop_duplicates(subset=["symbol", "date"], keep="last")
-                df = df.sort_values(["symbol", "date"]).reset_index(drop=True)
-                emit("info", f"  📂 Delta cache: +{len(delta_df):,} rows through {delta_df['date'].max().date()}")
-        except Exception as exc:
-            emit("warning", f"⚠️ Delta cache unreadable, ignoring: {exc}")
-    with _lock:
-        _baseline_ohlcv = df
-    emit("info", f"  ✅ {len(df):,} rows · {df['symbol'].nunique()} symbols · through {df['date'].max().date()}")
-    return df
-
-
-def _ensure_baseline_bench(emit: Callable[[str, str], None]) -> pd.DataFrame:
-    global _baseline_bench
-    with _lock:
-        if _baseline_bench is not None:
-            return _baseline_bench
-    if not os.path.exists(BENCH_PARQUET):
-        raise RuntimeError(f"Missing {BENCH_PARQUET}. Run: python scripts/refresh_backtest_parquet.py")
-    df = pd.read_parquet(BENCH_PARQUET)
-    df["date"] = pd.to_datetime(df["date"])
-    # Tier 2.5 — merge benchmark delta cache.
-    if os.path.exists(BENCH_DELTA_PARQUET):
-        try:
-            delta_df = pd.read_parquet(BENCH_DELTA_PARQUET)
-            delta_df["date"] = pd.to_datetime(delta_df["date"])
-            if not delta_df.empty:
-                df = pd.concat([df, delta_df], ignore_index=True)
-                df = df.drop_duplicates(subset=["date"], keep="last")
-                df = df.sort_values("date").reset_index(drop=True)
-        except Exception as exc:
-            logging.warning("Benchmark delta cache unreadable, ignoring: %s", exc)
-    with _lock:
-        _baseline_bench = df
-    return df
-
-
-# ──────────────────────────────────────────────
-# Delta cache writers (Tier 2.5 — gitignored local parquets)
-# ──────────────────────────────────────────────
-def _save_ohlcv_delta(new_df: pd.DataFrame, emit: Callable[[str, str], None]) -> None:
-    """Persist freshly fetched OHLCV rows to the local delta cache (non-fatal on error)."""
-    if new_df.empty:
-        return
-    with _lock:
-        try:
-            if os.path.exists(DELTA_PARQUET):
-                existing = pd.read_parquet(DELTA_PARQUET)
-                existing["date"] = pd.to_datetime(existing["date"])
-                combined = pd.concat([existing, new_df], ignore_index=True)
-                combined = combined.drop_duplicates(subset=["symbol", "date"], keep="last")
-                combined = combined.sort_values(["symbol", "date"]).reset_index(drop=True)
+def load_quant_ohlcv_snapshot(emit=_NOOP_EMIT, snapshot=None) -> OHLCVLoadResult:
+    loaded = load_ohlcv_for_backtest(emit=emit, refresh=False, snapshot=snapshot)
+    incomplete = {}
+    for symbol, frame in list(loaded.symbol_data.items()):
+        valid = frame[["Open", "High", "Low", "Close", "Volume"]].notna().all(axis=1)
+        if not valid.all():
+            incomplete[symbol] = int((~valid).sum())
+            cleaned = frame.loc[valid].copy()
+            if cleaned.empty:
+                loaded.symbol_data.pop(symbol)
             else:
-                combined = new_df.copy()
-            combined.to_parquet(DELTA_PARQUET, index=False)
-            emit("info", f"  💾 Delta cache saved ({len(combined):,} rows through {combined['date'].max().date()})")
-        except Exception as exc:
-            emit("warning", f"⚠️ Could not save delta cache: {exc}")
+                loaded.symbol_data[symbol] = cleaned
+    loaded.incomplete_candle_rows = incomplete
+    if incomplete:
+        emit(
+            "warning",
+            f"Excluded {sum(incomplete.values())} incomplete historical candles across "
+            f"{len(incomplete)} symbols; shared closes are preserved.",
+        )
+    starts = [frame.index.min() for frame in loaded.symbol_data.values() if not frame.empty]
+    loaded.earliest_price_date = str(min(starts).date()) if starts else None
+    return loaded
 
 
-def _save_bench_delta(new_df: pd.DataFrame) -> None:
-    """Persist freshly fetched benchmark rows to the local delta cache (non-fatal on error)."""
-    if new_df.empty:
-        return
-    with _lock:
-        try:
-            if os.path.exists(BENCH_DELTA_PARQUET):
-                existing = pd.read_parquet(BENCH_DELTA_PARQUET)
-                existing["date"] = pd.to_datetime(existing["date"])
-                combined = new_df.set_index("date").combine_first(existing.set_index("date")).sort_index().reset_index()
-            else:
-                combined = new_df.copy()
-            combined.to_parquet(BENCH_DELTA_PARQUET, index=False)
-        except Exception:
-            pass  # non-fatal
+def _ensure_baseline_ohlcv(emit=_NOOP_EMIT) -> pd.DataFrame:
+    snapshot = shared_market.load_snapshot()
+    return snapshot.prices[snapshot.prices.series_type == "equity"].drop(columns="series_type")
 
 
-# ──────────────────────────────────────────────
-# Delta fetch (Tier 3 — yfinance, only truly new dates)
-# ──────────────────────────────────────────────
-def _fetch_ohlcv_delta(
-    all_symbols: list[str],
-    last_date: pd.Timestamp,
-    today_key: str,
-    emit: Callable[[str, str], None],
-    max_attempts: int = 3,
-) -> DeltaFetchResult:
-    """Download the missing tail, retrying failures and partial symbol responses."""
-    start_dt = (last_date + timedelta(days=1)).strftime("%Y-%m-%d")
-    end_dt = (datetime.strptime(today_key, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-    target_date = pd.Timestamp(today_key)
-    empty = pd.DataFrame(columns=_QUANT_PRICE_COLUMNS)
-    if start_dt >= end_dt:
-        return DeltaFetchResult(empty, list(all_symbols))
-
-    requested = sorted(set(all_symbols))
-    pending = set(requested)
-    records: list[dict] = []
-    errors: list[str] = []
-    attempts = 0
-
-    for attempt in range(1, max_attempts + 1):
-        if not pending:
-            break
-        attempts = attempt
-        if attempt > 1:
-            delay = 0.5 * (2 ** (attempt - 2))
-            emit("info", f"🔁 Yahoo retry {attempt}/{max_attempts} in {delay:g}s ({len(pending)} symbols)…")
-            time.sleep(delay)
-
-        # Bound concurrency on every attempt; a full-universe burst can overwhelm
-        # Yahoo before retries even start.
-        pending_list = sorted(pending)
-        batch_size = 50 if attempt == 1 else 20
-        for offset in range(0, len(pending_list), batch_size):
-            symbols = pending_list[offset : offset + batch_size]
-            tickers = [f"{s}.NS" for s in symbols]
-            emit(
-                "info",
-                f"🌐 Fetching Yahoo delta {start_dt} → {today_key} "
-                f"({len(tickers)} symbols, attempt {attempt}/{max_attempts})…",
-            )
-            try:
-                raw = yf.download(
-                    tickers,
-                    start=start_dt,
-                    end=end_dt,
-                    group_by="ticker",
-                    threads=4,
-                    progress=False,
-                    auto_adjust=True,
-                )
-            except Exception as exc:
-                errors.append(str(exc))
-                emit("warning", f"⚠️ Yahoo attempt {attempt} failed: {exc}")
-                continue
-            if raw is None or raw.empty:
-                errors.append("Yahoo returned an empty response")
-                emit("warning", f"⚠️ Yahoo attempt {attempt} returned no rows")
-                continue
-
-            if isinstance(raw.columns, pd.MultiIndex):
-                level0 = set(raw.columns.get_level_values(0).unique().tolist())
-                level1 = set(raw.columns.get_level_values(1).unique().tolist())
-                available = (level0 | level1) & set(tickers)
-            else:
-                available = set(tickers)
-            for ticker in tickers:
-                if ticker not in available:
-                    continue
-                sym = ticker.removesuffix(".NS")
-                try:
-                    if isinstance(raw.columns, pd.MultiIndex) and ticker in level0:
-                        sub = raw[ticker].dropna(how="all")
-                    elif isinstance(raw.columns, pd.MultiIndex) and ticker in level1:
-                        sub = raw.xs(ticker, axis=1, level=1).dropna(how="all")
-                    else:
-                        sub = raw.dropna(how="all")
-                except (KeyError, TypeError):
-                    continue
-                sub = sub.copy()
-                sub.columns = [c[0] if isinstance(c, tuple) else c for c in sub.columns]
-                symbol_had_target_row = False
-                for dt, row in sub.iterrows():
-                    close = row.get("Close")
-                    if pd.isna(close):
-                        continue
-                    open_price = row.get("Open")
-                    high = row.get("High")
-                    low = row.get("Low")
-                    vol = row.get("Volume")
-                    row_date = pd.Timestamp(dt).tz_localize(None).normalize()
-                    volume = int(vol) if not pd.isna(vol) else 0
-                    records.append(
-                        {
-                            "symbol": sym,
-                            "date": row_date,
-                            "Open": float(open_price) if not pd.isna(open_price) else float("nan"),
-                            "Close": float(close),
-                            "High": float(high) if not pd.isna(high) else float("nan"),
-                            "Low": float(low) if not pd.isna(low) else float("nan"),
-                            "Volume": volume,
-                        }
-                    )
-                    if row_date == target_date and volume > 0:
-                        symbol_had_target_row = True
-                # An older row proves only that the ticker exists; it does not
-                # satisfy the target-session freshness contract. Keep such
-                # symbols pending so the smaller retry batches can recover a
-                # partial Yahoo response.
-                if symbol_had_target_row:
-                    pending.discard(sym)
-
-    if not records:
-        error = errors[-1] if errors else "Yahoo returned no usable OHLCV rows"
-        return DeltaFetchResult(empty, requested, attempts=attempts, error=error)
-
-    df = pd.DataFrame.from_records(records).drop_duplicates(subset=["symbol", "date"], keep="last")
-    for column in ("Open", "High", "Low", "Close"):
-        df[column] = df[column].astype("float32")
-    df["Volume"] = df["Volume"].astype("int64")
-    target_rows = df[
-        (df["date"] == target_date) & df["Close"].notna() & (pd.to_numeric(df["Volume"], errors="coerce").fillna(0) > 0)
-    ]
-    returned = sorted(set(target_rows["symbol"]))
-    error = None
-    if pending:
-        sample = ", ".join(sorted(pending)[:20])
-        suffix = f" (+{len(pending) - 20} more)" if len(pending) > 20 else ""
-        error = f"Yahoo returned no usable target-session prices for {sample}{suffix}"
-    return DeltaFetchResult(df, requested, returned, attempts, error)
+def _ensure_baseline_bench(emit=_NOOP_EMIT) -> pd.DataFrame:
+    series = shared_market.load_snapshot().series("index_price", list(BENCHMARK_TICKERS))
+    frame = pd.DataFrame(series)
+    frame.index.name = "date"
+    return frame.reset_index()
 
 
-def _fetch_bench_delta(
-    last_date: pd.Timestamp,
-    today_key: str,
-    emit: Callable[[str, str], None],
-) -> pd.DataFrame:
-    start_dt = (last_date + timedelta(days=1)).strftime("%Y-%m-%d")
-    end_dt = (datetime.strptime(today_key, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-    if start_dt >= end_dt:
-        return pd.DataFrame()
-    series: dict[str, pd.Series] = {}
-    for label, ticker in BENCHMARK_TICKERS.items():
-        for attempt in range(1, 4):
-            if attempt > 1:
-                time.sleep(0.5 * (2 ** (attempt - 2)))
-            try:
-                raw = yf.download(ticker, start=start_dt, end=end_dt, auto_adjust=True, progress=False)
-                if raw is None or raw.empty:
-                    raise RuntimeError("empty Yahoo response")
-                raw.columns = [c[0] if isinstance(c, tuple) else c for c in raw.columns]
-                s = raw["Close"].dropna().copy()
-                s.index = pd.to_datetime(s.index).tz_localize(None).normalize()
-                s.name = label
-                if not s.empty:
-                    series[label] = s.astype("float32")
-                if pd.Timestamp(today_key) in s.index:
-                    break
-                raise RuntimeError("no target-session closing price in Yahoo response")
-            except Exception as exc:
-                emit("warning", f"⚠️ benchmark fetch {label} attempt {attempt}/3 failed: {exc}")
-    if not series:
-        return pd.DataFrame()
-    df = pd.concat(series.values(), axis=1)
-    df.columns = list(series.keys())
-    df.index.name = "date"
-    return df.reset_index()
+def _save_ohlcv_delta(new_df, emit=_NOOP_EMIT):
+    raise RuntimeError("Page-level delta writes are retired. Use the shared publisher.")
+
+
+def _save_bench_delta(new_df):
+    raise RuntimeError("Page-level benchmark writes are retired. Use the shared publisher.")
+
+
+def _fetch_ohlcv_delta(*args, **kwargs):
+    raise RuntimeError("Private downloads are retired; use the shared publisher")
+
+
+def _fetch_bench_delta(*args, **kwargs):
+    raise RuntimeError("Private downloads are retired; use the shared publisher")
 
 
 # ──────────────────────────────────────────────
@@ -519,15 +197,24 @@ def _long_to_symbol_dict(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
     for sym, grp in df.groupby("symbol", sort=False):
         sub = grp.drop(columns="symbol").copy()
         sub = sub.set_index("date").sort_index()
-        sub["Volume"] = sub["Volume"].astype("Int64")
         result[sym] = sub
     return result
 
 
 def _active_symbols(base: pd.DataFrame, global_max: pd.Timestamp) -> list[str]:
     """Symbols trading recently enough to merit a runtime tail refresh."""
-    maxima = base.groupby("symbol", sort=False)["date"].max()
-    cutoff = global_max - timedelta(days=14)
+    # Yahoo can carry a delisted symbol forward with a positive Close but
+    # zero Volume. Those placeholders must not make it appear active or drag
+    # the entire universe's download start back by years.
+    traded = base[
+        base["Close"].notna()
+        & (pd.to_numeric(base["Close"], errors="coerce").fillna(0) > 0)
+        & (pd.to_numeric(base["Volume"], errors="coerce").fillna(0) > 0)
+    ]
+    if traded.empty:
+        return []
+    maxima = traded.groupby("symbol", sort=False)["date"].max()
+    cutoff = min(global_max, maxima.max()) - timedelta(days=14)
     return sorted(maxima[maxima >= cutoff].index.astype(str).tolist())
 
 
@@ -591,201 +278,50 @@ def _assess_ohlcv_freshness(
     )
 
 
-def load_ohlcv_for_backtest(
-    emit: Callable[[str, str], None] = _NOOP_EMIT,
-    required_symbols: list[str] | set[str] | None = None,
-    refresh: bool = True,
-) -> OHLCVLoadResult:
-    """
-    Return data plus freshness metadata. Tuple unpacking remains backward compatible.
-      source ∈ {'memory', 'parquet', 'parquet+delta', 'error'}
-
-    Tier 1  today's merged cache hit → 'memory'
-    Tier 2  parquet-only (no gap or delta fetch failed) → 'parquet'
-    Tier 3  parquet + yfinance delta → 'parquet+delta'
-    """
-    global _baseline_ohlcv
-    target_key = _get_target_key()
-
-    # Tier 1b + Tier 2 — load baseline from parquet
+def load_ohlcv_for_backtest(emit=_NOOP_EMIT, required_symbols=None, refresh=False, snapshot=None) -> OHLCVLoadResult:
+    # refresh is retained for callers but readers never perform upstream requests.
     try:
-        base = _ensure_baseline_ohlcv(emit)
-    except RuntimeError as exc:
-        emit("error", f"❌ {exc}")
-        return OHLCVLoadResult({}, target_key, None, None, "error", "failed", str(exc))
-
-    global_max = pd.Timestamp(base["date"].max())
-    active = _active_symbols(base, global_max)
-    required = sorted(set(required_symbols if required_symbols is not None else active))
-
-    if not refresh:
-        source = "parquet+delta" if os.path.exists(DELTA_PARQUET) else "parquet"
-        result = _assess_ohlcv_freshness(base, target_key, required, source)
-        result.refresh_status = "snapshot"
-        emit(
-            "info",
-            f"⚡ Using local snapshot through {result.max_price_date or result.actual_latest_date or 'unknown'} "
-            "(live tail refresh skipped)",
-        )
-        return result
-
-    # A hot cache is usable only if it satisfies this caller's required universe.
-    with _lock:
-        hit = _merged_ohlcv.get(target_key)
-    if hit is not None:
-        hit_long = pd.concat(
-            [frame.reset_index().assign(symbol=sym) for sym, frame in hit.items()],
-            ignore_index=True,
-        )
-        cached = _assess_ohlcv_freshness(hit_long, target_key, required, "memory")
-        if cached.is_fresh:
-            cached.refresh_status = "memory"
-            return cached
-
-    valid = base[base["Close"].notna() & (pd.to_numeric(base["Volume"], errors="coerce").fillna(0) > 0)]
-    maxima = valid.groupby("symbol")["date"].max()
-    refresh_symbols = sorted(
-        sym
-        for sym in set(active) | set(required)
-        if not sym.startswith("DUMMY") and (sym not in maxima.index or maxima[sym] < pd.Timestamp(target_key))
-    )
-    refresh_maxima = [pd.Timestamp(maxima[s]) for s in refresh_symbols if s in maxima.index]
-    last_date = min(refresh_maxima) if refresh_maxima else pd.Timestamp(target_key)
-    if any(sym not in maxima.index for sym in refresh_symbols):
-        last_date = min(last_date, pd.Timestamp(target_key) - timedelta(days=1))
-    gap_days = (datetime.strptime(target_key, "%Y-%m-%d") - last_date.to_pydatetime()).days
-
-    if gap_days <= 0:
-        merged = base
-        source = "parquet"
-        fetch = None
-    else:
-        emit("info", f"📅 Baseline through {last_date.date()} · target {target_key} · gap {gap_days}d")
-        latch_key = target_key + ":" + ",".join(required)
-        with _lock:
-            latch = _ohlcv_refresh_latches.get(latch_key)
-            if latch is None:
-                latch = threading.Event()
-                _ohlcv_refresh_latches[latch_key] = latch
-                leader = True
-            else:
-                leader = False
-        if not leader:
-            emit("info", "⏳ An OHLCV refresh is already running — waiting…")
-            latch.wait(timeout=300)
-            with _lock:
-                waited = _ohlcv_refresh_results.get(latch_key)
-            if waited is not None:
-                return waited
-
-        fetch = _fetch_ohlcv_delta(refresh_symbols, last_date, target_key, emit)
-        if fetch.data.empty:
-            merged = base
-            source = "parquet"
-            emit("error", f"❌ Yahoo refresh unavailable; prices remain through {global_max.date()}")
+        snapshot = snapshot or shared_market.load_snapshot()
+        target_key = str(snapshot.as_of.date()) if snapshot.as_of is not None else _get_target_key()
+        base = snapshot.prices[snapshot.prices.series_type == "equity"].drop(columns="series_type")
+        base = base[base.date <= pd.Timestamp(target_key)]
+        required = sorted(set(required_symbols if required_symbols is not None else snapshot.symbols(as_of=target_key)))
+        result = _assess_ohlcv_freshness(base, target_key, required, "shared")
+        result.source_revisions = snapshot.revisions
+        result.earliest_price_date = str(base.date.min().date()) if not base.empty else None
+        if result.is_fresh:
+            result.refresh_status = "fresh"
         else:
-            # dtype-align baseline chunk to match delta so concat stays float32
-            merged = pd.concat([base, fetch.data], ignore_index=True)
-            merged = merged.drop_duplicates(subset=["symbol", "date"], keep="last")
-            merged = merged.sort_values(["symbol", "date"]).reset_index(drop=True)
-            source = "parquet+delta"
-            emit("info", f"  ✅ Merged {len(fetch.data):,} delta rows")
-            _save_ohlcv_delta(fetch.data, emit)
-            # Preserve successful partial downloads for the next retry in this
-            # process; the baseline loader otherwise keeps returning its old cache.
-            with _lock:
-                _baseline_ohlcv = merged
-
-    result = _assess_ohlcv_freshness(merged, target_key, required, source, fetch)
-    if result.is_fresh:
-        with _lock:
-            _merged_ohlcv[target_key] = result.symbol_data
-    elif result.missing_target_symbols:
-        sample = ", ".join(result.missing_target_symbols[:20])
-        suffix = (
-            f" (+{len(result.missing_target_symbols) - 20} more)" if len(result.missing_target_symbols) > 20 else ""
-        )
-        emit("error", f"❌ Required target-session prices are missing: {sample}{suffix}")
-
-    if gap_days > 0:
-        with _lock:
-            _ohlcv_refresh_results[latch_key] = result
-            event = _ohlcv_refresh_latches.pop(latch_key, None)
-            if event is not None:
-                event.set()
-    return result
+            emit(
+                "warning",
+                "Shared prices are incomplete for the target session. Run the shared refresh workflow.",
+            )
+        return result
+    except (OSError, ValueError, RuntimeError) as exc:
+        return OHLCVLoadResult({}, _get_target_key(), None, None, "error", "failed", str(exc))
 
 
-def load_benchmark_series(
-    with_status: bool = False,
-    refresh: bool = True,
-) -> dict[str, pd.Series] | BenchmarkLoadResult:
-    """Return close-price Series per benchmark label, indexed by date."""
-    global _baseline_bench
-    target_key = _get_target_key()
-    with _lock:
-        hit = _merged_bench.get(target_key)
-    if hit is not None:
-        actual = min((s.index.max() for s in hit.values() if not s.empty), default=None)
-        result = BenchmarkLoadResult(
-            hit,
-            target_key,
-            actual.strftime("%Y-%m-%d") if actual is not None else None,
-            "memory",
-        )
-        return result if with_status else hit
-
-    try:
-        base = _ensure_baseline_bench(_NOOP_EMIT)
-    except RuntimeError:
-        result = BenchmarkLoadResult({}, target_key, None, "failed", list(BENCHMARK_TICKERS))
-        return result if with_status else {}
-
-    benchmark_maxima = [base.loc[base[col].notna(), "date"].max() for col in BENCHMARK_TICKERS if col in base]
-    benchmark_maxima = [pd.Timestamp(value) for value in benchmark_maxima if pd.notna(value)]
-    last_date = min(benchmark_maxima) if benchmark_maxima else pd.Timestamp(base["date"].max())
-    gap_days = (datetime.strptime(target_key, "%Y-%m-%d") - last_date.to_pydatetime()).days
-
-    fetched = False
-    if refresh and gap_days > 0:
-        delta = _fetch_bench_delta(last_date, target_key, _NOOP_EMIT)
-        if not delta.empty:
-            fetched = True
-            delta["date"] = pd.to_datetime(delta["date"])
-            # A partial benchmark response must not erase another benchmark's
-            # valid close on an overlapping date.
-            base = delta.set_index("date").combine_first(base.set_index("date")).sort_index().reset_index()
-            _save_bench_delta(delta)
-            with _lock:
-                _baseline_bench = base
-
-    result: dict[str, pd.Series] = {}
-    for col in base.columns:
-        if col == "date":
-            continue
-        s = base.set_index("date")[col].dropna()
-        s.name = col
-        result[col] = s
-
+def load_benchmark_series(with_status=False, refresh=False, snapshot=None):
+    snapshot = snapshot or shared_market.load_snapshot()
+    target_key = str(snapshot.as_of.date()) if snapshot.as_of is not None else _get_target_key()
+    result = snapshot.series("index_price", list(BENCHMARK_TICKERS))
     missing = sorted(
         label
         for label in BENCHMARK_TICKERS
-        if label not in result or result[label].empty or result[label].index.max() < pd.Timestamp(target_key)
+        if label not in result or result[label].index.max() < pd.Timestamp(target_key)
     )
-    observed = [s.index.max() for s in result.values() if not s.empty]
-    actual = min(observed) if len(observed) == len(BENCHMARK_TICKERS) else None
-    status = "fresh" if not missing else ("partial" if result else "failed")
-    if not missing:
-        with _lock:
-            _merged_bench[target_key] = result
-    load_result = BenchmarkLoadResult(
+    actual = (
+        min((s.index.max() for s in result.values()), default=None) if len(result) == len(BENCHMARK_TICKERS) else None
+    )
+    loaded = BenchmarkLoadResult(
         result,
         target_key,
-        actual.strftime("%Y-%m-%d") if actual is not None else None,
-        "snapshot" if not refresh else ("not_needed" if not fetched and not missing else status),
+        str(actual.date()) if actual is not None else None,
+        "fresh" if not missing else "partial",
         missing,
     )
-    return load_result if with_status else result
+    loaded.source_revisions = snapshot.revisions
+    return loaded if with_status else result
 
 
 def sync_benchmark_data() -> bool:

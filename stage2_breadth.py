@@ -11,6 +11,7 @@ import threading
 import pandas as pd
 
 import config
+import market_data as shared_market
 from stage2_engine import compute_rolling_stage2
 
 BREADTH_CACHE_VERSION = 3
@@ -37,20 +38,12 @@ _aggregate_lock = threading.RLock()
 _aggregate_memory: dict[tuple, pd.DataFrame] = {}
 
 
-def _available_ohlcv_sources() -> list[str]:
-    """Use long history for the lookback and the screener baseline for its fresher tail."""
-    paths = [path for path in (BACKTEST_HISTORY_PARQUET, SCREENER_OHLCV_PARQUET) if os.path.exists(path)]
-    if not paths:
-        raise FileNotFoundError("No local OHLCV parquet is available for Stage 2 breadth.")
-    return paths
+def _available_ohlcv_sources():
+    return [str(shared_market.PRICE_PATH)]
 
 
-def _source_fingerprint() -> dict:
-    sources = []
-    for path in _available_ohlcv_sources():
-        stat = os.stat(path)
-        sources.append({"path": os.path.basename(path), "mtime_ns": stat.st_mtime_ns, "size": stat.st_size})
-    return {"version": BREADTH_CACHE_VERSION, "sources": sources}
+def _source_fingerprint():
+    return {"version": BREADTH_CACHE_VERSION, "revisions": list(shared_market.source_revisions())}
 
 
 def _atomic_write_parquet(df: pd.DataFrame, path: str) -> None:
@@ -132,31 +125,17 @@ def build_breadth_score_history(ohlcv: pd.DataFrame) -> pd.DataFrame:
     return out.sort_values(["date", "symbol"]).reset_index(drop=True)
 
 
-def load_breadth_score_history() -> tuple[pd.DataFrame, bool]:
+def load_breadth_score_history(snapshot=None) -> tuple[pd.DataFrame, bool]:
     """Load scores from memory/disk, rebuilding only after OHLCV changes."""
     global _score_history_memory
-    fingerprint = _source_fingerprint()
+    snapshot = snapshot or shared_market.load_snapshot()
+    fingerprint = {"version": BREADTH_CACHE_VERSION, "revisions": list(snapshot.revisions)}
     with _score_history_lock:
         if _score_history_memory is not None and _score_history_memory[0] == fingerprint:
             return _score_history_memory[1], True
-        cached = _read_valid_cache(fingerprint)
-        if cached is not None:
-            _score_history_memory = (fingerprint, cached)
-            return cached, True
-        frames = [
-            pd.read_parquet(path, columns=["symbol", "date", "Close", "Volume"]) for path in _available_ohlcv_sources()
-        ]
-        # The fresher screener baseline is deliberately last, so it overrides
-        # overlapping rows from the long research baseline.
-        ohlcv = pd.concat(frames, ignore_index=True).drop_duplicates(subset=["symbol", "date"], keep="last")
-        # Three calendar years supply the ~250-session lookback needed to show
-        # two full years of mature Stage 2 classifications without doing a
-        # costly ten-year calculation.
-        newest = pd.to_datetime(ohlcv["date"]).max()
-        ohlcv = ohlcv[pd.to_datetime(ohlcv["date"]) >= newest - pd.DateOffset(years=3)]
+        ohlcv = snapshot.prices[snapshot.prices.series_type == "equity"]
         scores = build_breadth_score_history(ohlcv)
-        _atomic_write_parquet(scores, STAGE2_BREADTH_CACHE_PARQUET)
-        _atomic_write_json(fingerprint, STAGE2_BREADTH_CACHE_META)
+        scores.attrs["source_revisions"] = snapshot.revisions
         _score_history_memory = (fingerprint, scores)
         return scores, False
 
@@ -213,6 +192,8 @@ def aggregate_breadth(
         return pd.DataFrame(columns=columns)
 
     cache_key = (
+        scores.attrs.get("source_revisions"),
+        compositions.attrs.get("revision"),
         tuple(sorted(selected_indices)),
         len(scores),
         str(scores["date"].min()),

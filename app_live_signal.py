@@ -15,6 +15,7 @@ from datetime import date, timedelta
 import pandas as pd
 import streamlit as st
 
+import market_data as shared_market
 from data import check_data_freshness, load_nse_holidays
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -108,6 +109,9 @@ def _strategy_fingerprint(params: dict, ohlcv_date: object, ohlcv_source: object
         "s2_entry_threshold",
         "max_pos",
         "min_history",
+        "minimum_median_volume",
+        "max_stale_sessions",
+        "source_revisions",
         "min_annual_return",
         "pct_from_52w_high",
         "max_circuits",
@@ -512,6 +516,28 @@ def _symbols_needed_for_replay(
     return symbols
 
 
+def _signal_price_coverage(ohlcv, required_symbols, broker_tickers, max_stale_sessions=3):
+    """Exclude unrankable candidates; block stale holdings that require a trade price."""
+    from backtest_engine import latest_tradable_date, trading_session_age
+
+    target = pd.Timestamp(ohlcv.target_date)
+    calendar = pd.bdate_range(target - pd.DateOffset(years=10), target)
+    calendar = calendar[~calendar.strftime("%Y-%m-%d").isin(load_nse_holidays())]
+    fresh = {}
+    stale = set()
+    for symbol in required_symbols:
+        frame = ohlcv.symbol_data.get(symbol)
+        last = latest_tradable_date(frame, target) if frame is not None else None
+        if last is None or trading_session_age(last, target, calendar) > max_stale_sessions:
+            stale.add(symbol)
+        else:
+            fresh[symbol] = last
+    excluded = sorted(stale - set(broker_tickers))
+    blocking = sorted(stale & set(broker_tickers))
+    coverage = min(fresh.values()).strftime("%Y-%m-%d") if fresh else None
+    return excluded, blocking, coverage
+
+
 # ── inputs ───────────────────────────────────────────────────────────────────
 
 
@@ -720,7 +746,7 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
     with st.expander("Advanced quality filters", expanded=False):
         st.caption(
             "Stocks that fail these filters are excluded from portfolio selection at each rebalance. "
-            "0 / 100 / 999 = no filter (default). Match these to the Momentum Screener for consistent results."
+            "Defaults match Momentum Screener. Use 0 / 100 / 999 to disable the corresponding filters."
         )
         ls_min_annual_return = st.number_input(
             "Min Annual Return (%)",
@@ -790,6 +816,10 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
         help="Minimum trading days of data a stock must have before it can be ranked. 252 ≈ 1 year.",
     )
 
+    minimum_median_volume = st.number_input(
+        "Min median daily volume (shares)", min_value=0, value=100_000, step=10_000, key="ls_min_volume"
+    )
+    max_stale_sessions = st.number_input("Max stale sessions", min_value=0, max_value=20, value=3, key="ls_max_stale")
     freshness_issues = check_data_freshness()
     live_data_blocked = False
     for _lvl, _msg in freshness_issues:
@@ -841,6 +871,9 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
         "reserve_cash": float(reserve_cash),
         "expected_portfolio_value": float(expected_portfolio_value),
         "min_history": int(min_history),
+        "minimum_median_volume": int(minimum_median_volume),
+        "max_stale_sessions": int(max_stale_sessions),
+        "source_revisions": shared_market.source_revisions(),
         "min_annual_return": float(ls_min_annual_return),
         "pct_from_52w_high": float(ls_pct_from_52w_high),
         "max_circuits": int(ls_max_circuits),
@@ -858,17 +891,13 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
 def _run_signal(params: dict) -> dict:
     from backtest_engine import BacktestConfig, latest_tradable_date, run_backtest, trading_session_age
     from corporate_actions import load_corporate_actions
-    from data_backtest import (
-        _load_constituents,
-        load_benchmark_series,
-        load_compositions,
-        load_ohlcv_for_backtest,
-        sync_benchmark_data,
-    )
+    from data_backtest import load_benchmark_series, load_compositions, load_ohlcv_for_backtest, sync_benchmark_data
 
     indices = params["indices"]
-    compositions_df = load_compositions()
-    constituents = _load_constituents()
+    shared_snapshot = shared_market.load_snapshot(params["signal_date"])
+    params = dict(params, source_revisions=shared_snapshot.revisions)
+    compositions_df = load_compositions(snapshot=shared_snapshot)
+    constituents = shared_snapshot.constituents()
     selected_indices = indices or list(constituents)
     broker_snapshot = params.get("broker_snapshot")
     broker_tickers = (
@@ -887,8 +916,11 @@ def _run_signal(params: dict) -> dict:
         refresh_messages.append({"level": level, "message": message})
 
     sync_benchmark_data()
-    ohlcv = load_ohlcv_for_backtest(emit=_capture_refresh, required_symbols=required_current_symbols)
+    ohlcv = load_ohlcv_for_backtest(
+        emit=_capture_refresh, required_symbols=required_current_symbols, snapshot=shared_snapshot
+    )
     freshness = {
+        "source_revisions": shared_snapshot.revisions,
         "target_date": ohlcv.target_date,
         "actual_latest_date": ohlcv.actual_latest_date,
         "max_price_date": ohlcv.max_price_date,
@@ -902,7 +934,7 @@ def _run_signal(params: dict) -> dict:
         "error": ohlcv.refresh_error,
         "messages": refresh_messages,
     }
-    benchmark_load = load_benchmark_series(with_status=True)
+    benchmark_load = load_benchmark_series(with_status=True, snapshot=shared_snapshot)
     freshness["benchmark"] = {
         "target_date": benchmark_load.target_date,
         "actual_latest_date": benchmark_load.actual_latest_date,
@@ -915,10 +947,19 @@ def _run_signal(params: dict) -> dict:
             "error": "OHLCV data is missing. Run: python scripts/refresh_backtest_parquet.py",
             "data_freshness": freshness,
         }
-    if not ohlcv.is_usable_for_signal:
+    # A constituent with no local price history cannot pass the ranking
+    # engine's minimum-history rule. It need not block a signal unless it is
+    # an actual broker holding requiring a price for reconciliation.
+    excluded_unpriced, blocking_stale, signal_coverage_date = _signal_price_coverage(
+        ohlcv, required_current_symbols, broker_tickers, params.get("max_stale_sessions", 3)
+    )
+    freshness["excluded_unpriced_symbols"] = excluded_unpriced
+    freshness["blocking_stale_symbols"] = blocking_stale
+    freshness["signal_coverage_date"] = signal_coverage_date
+    if blocking_stale or signal_coverage_date is None:
         available = ohlcv.actual_latest_date or "not fully covered"
-        if ohlcv.stale_symbols:
-            reason = f"{len(ohlcv.stale_symbols)} required symbols are more than three NSE sessions stale"
+        if blocking_stale:
+            reason = f"{len(blocking_stale)} holdings exceed the configured stale-session limit"
         elif ohlcv.missing_target_symbols:
             reason = f"{len(ohlcv.missing_target_symbols)} required symbols have no recent tradable price"
         else:
@@ -931,7 +972,7 @@ def _run_signal(params: dict) -> dict:
             "data_freshness": freshness,
         }
 
-    ohlcv_date = ohlcv.actual_latest_date
+    ohlcv_date = signal_coverage_date
     src = ohlcv.source
     if indices:
         allowed = _symbols_needed_for_replay(indices, constituents, compositions_df, load_corporate_actions())
@@ -959,6 +1000,8 @@ def _run_signal(params: dict) -> dict:
         transaction_cost_pct=0.001,
         min_history_days=params.get("min_history", 252),
         apply_volume_filter=True,
+        minimum_median_volume=params.get("minimum_median_volume", 100_000),
+        max_stale_sessions=params.get("max_stale_sessions", 3),
         brokerage_per_sale=0.0,
         initial_capital=1_000_000.0,
         ltcg_rate=0.125,
@@ -1024,7 +1067,9 @@ def _run_signal(params: dict) -> dict:
             continue
         latest_price_dates[ticker] = str(last_tradable.date())
         age = trading_session_age(last_tradable, target_date, trading_calendar)
-        tradability_status[ticker] = "TRADABLE" if age <= 3 else f"STALE ({age} sessions)"
+        tradability_status[ticker] = (
+            "TRADABLE" if age <= params.get("max_stale_sessions", 3) else f"STALE ({age} sessions)"
+        )
 
     current_event = holdings_log[-1] if holdings_log else {}
     prior_holdings = set(holdings_log[-2].get("holdings", [])) if len(holdings_log) >= 2 else set()
@@ -1193,8 +1238,12 @@ def live_signal_results(params: dict) -> None:
 
     # Run only when button was clicked (ls_result cleared by button handler)
     result = st.session_state.get("ls_result")
+    if result and result.get("data_freshness", {}).get("source_revisions") != shared_market.source_revisions():
+        result = None
+        st.session_state["ls_result"] = None
+        st.info("Shared market data changed. Generate the signal again to use the accepted revisions.")
     if result is None:
-        with st.spinner("Loading data and computing signal… (~15 seconds)"):
+        with st.spinner("Refreshing prices and replaying the strategy…"):
             result = _run_signal(params)
         st.session_state["ls_result"] = result
 
@@ -1204,6 +1253,8 @@ def live_signal_results(params: dict) -> None:
     params = result.get("run_params", params)
 
     freshness = result.get("data_freshness", {})
+    if freshness.get("source_revisions"):
+        st.caption(shared_market.revision_label(freshness["source_revisions"]))
     if freshness:
         target = freshness.get("target_date", "—")
         verified = freshness.get("actual_latest_date") or "not fully covered"
@@ -1222,12 +1273,13 @@ def live_signal_results(params: dict) -> None:
         (st.success if freshness.get("status") in {"fresh", "not_needed", "memory"} else st.warning)(summary)
 
         missing = freshness.get("missing_target_symbols", [])
-        stale = freshness.get("stale_symbols", [])
+        stale = freshness.get("blocking_stale_symbols", freshness.get("stale_symbols", []))
+        excluded_unpriced = freshness.get("excluded_unpriced_symbols", [])
         if missing:
             sample = ", ".join(missing[:20])
             suffix = f" (+{len(missing) - 20} more)" if len(missing) > 20 else ""
             st.warning(f"Required symbols without a target-session price: {sample}{suffix}")
-            if not stale:
+            if not stale and not excluded_unpriced:
                 st.info(
                     "Signal generation is continuing with each symbol's latest tradable price. "
                     "The ranking engine allows at most three completed NSE sessions of lag."
@@ -1236,7 +1288,14 @@ def live_signal_results(params: dict) -> None:
             sample = ", ".join(stale[:20])
             suffix = f" (+{len(stale) - 20} more)" if len(stale) > 20 else ""
             st.error(f"Required symbols more than three NSE sessions stale: {sample}{suffix}")
-        if freshness.get("error") and stale:
+        if excluded_unpriced:
+            sample = ", ".join(excluded_unpriced[:20])
+            suffix = f" (+{len(excluded_unpriced) - 20} more)" if len(excluded_unpriced) > 20 else ""
+            st.warning(
+                f"Unpriced, non-held constituents excluded from ranking: {sample}{suffix}. "
+                "They have no local price history and cannot meet the minimum-history rule."
+            )
+        if freshness.get("error") and (stale or excluded_unpriced):
             st.caption(f"Refresh detail: {freshness['error']}")
         benchmark = freshness.get("benchmark", {})
         if benchmark:
@@ -1343,12 +1402,16 @@ def live_signal_results(params: dict) -> None:
             with exit_col:
                 st.markdown(f"**Exits ({len(strategy_exits)})**")
                 st.dataframe(
-                    pd.DataFrame(strategy_exits, columns=["Ticker", "Reason"]), hide_index=True, width="stretch"
+                    pd.DataFrame(strategy_exits, columns=["Ticker", "Reason"]),
+                    hide_index=True,
+                    width="stretch",
                 )
             with entry_col:
                 st.markdown(f"**Entries ({len(strategy_entries)})**")
                 st.dataframe(
-                    pd.DataFrame(strategy_entries, columns=["Ticker", "Reason"]), hide_index=True, width="stretch"
+                    pd.DataFrame(strategy_entries, columns=["Ticker", "Reason"]),
+                    hide_index=True,
+                    width="stretch",
                 )
 
     blocking_stale_incumbents: list[str] = result.get("blocking_stale_incumbents", [])
@@ -1621,7 +1684,14 @@ def live_signal_results(params: dict) -> None:
     else:
         st.download_button(
             "📥 Download Trade List (CSV)",
-            trade_df.to_csv(index=False).encode("utf-8"),
+            trade_df.assign(
+                **{
+                    "Price Revision": freshness["source_revisions"][0],
+                    "Constituent Revision": freshness["source_revisions"][1],
+                }
+            )
+            .to_csv(index=False)
+            .encode("utf-8"),
             file_name=f"live_signal_{portfolio_source}_{params['signal_date']}.csv",
             mime="text/csv",
             width="stretch",

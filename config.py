@@ -8,7 +8,8 @@ HISTORY_DAYS = 750  # calendar days ≈ 2y; screener requests last 550 of these 
 # ── Screener parquet paths (relative to repo root) ──────────────────────────
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 SCREENER_OHLCV_PARQUET = os.path.join(_DATA_DIR, "screener_ohlcv.parquet")
-BACKTEST_HISTORY_PARQUET = os.path.join(_DATA_DIR, "backtest_history.parquet")
+BACKTEST_HISTORY_PARQUET = SCREENER_OHLCV_PARQUET  # compatibility alias; one pricing source
+CONSTITUENTS_PARQUET = os.path.join(_DATA_DIR, "constituents.parquet")
 STAGE2_CACHE_PARQUET = os.path.join(_DATA_DIR, "stage2_cache.parquet")
 # Historical per-symbol Stage 2 classifications used by the breadth dashboard.
 # Unlike STAGE2_CACHE_PARQUET, this is derived from the full OHLCV history.

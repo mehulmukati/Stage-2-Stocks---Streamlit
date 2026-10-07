@@ -1,7 +1,7 @@
 """Generate a machine-readable weekly Live Signal continuity audit.
 
 This script is intentionally read-only with respect to market/reference data.  It
-uses the committed parquet files plus any existing local delta cache and never
+uses the two authoritative shared market files and never
 performs a network refresh.
 """
 
@@ -22,8 +22,8 @@ if str(ROOT) not in sys.path:
 from app_live_signal import _parse_ticker_reason, _symbols_needed_for_replay
 from backtest_engine import BacktestConfig, run_backtest
 from corporate_actions import load_corporate_actions
-from data import _load_constituents, load_nse_holidays
-from data_backtest import _long_to_symbol_dict, load_compositions
+from data import load_nse_holidays
+from data_backtest import load_compositions
 from live_signal_audit import build_live_signal_audit_workbook
 
 ALL_INDICES = [
@@ -35,28 +35,20 @@ ALL_INDICES = [
 ]
 
 
-def _load_prices() -> tuple[dict[str, pd.DataFrame], dict]:
-    paths = [ROOT / "data" / "backtest_history.parquet", ROOT / "data" / "backtest_delta.parquet"]
-    frames = []
-    sources = []
-    for path in paths:
-        if path.exists():
-            frame = pd.read_parquet(path)
-            frame["date"] = pd.to_datetime(frame["date"])
-            frames.append(frame)
-            sources.append(path.name)
-    if not frames:
-        raise FileNotFoundError("No OHLCV parquet data found")
-    merged = pd.concat(frames, ignore_index=True)
-    merged = merged.drop_duplicates(["symbol", "date"], keep="last").sort_values(["symbol", "date"])
-    meta = {
-        "source_files": sources,
-        "row_count": int(len(merged)),
-        "symbol_count": int(merged["symbol"].nunique()),
-        "min_date": str(merged["date"].min().date()),
-        "max_date": str(merged["date"].max().date()),
-    }
-    return _long_to_symbol_dict(merged), meta
+def _load_prices(snapshot=None):
+    import market_data as md
+
+    snapshot = snapshot or md.load_snapshot()
+    frame = snapshot.prices[snapshot.prices.series_type == "equity"]
+    meta = dict(
+        source_files=["screener_ohlcv.parquet", "constituents.parquet"],
+        source_revisions=snapshot.revisions,
+        row_count=len(frame),
+        symbol_count=frame.symbol.nunique(),
+        min_date=str(frame.date.min().date()),
+        max_date=str(frame.date.max().date()),
+    )
+    return snapshot.ohlcv(), meta
 
 
 def _next_nse_session(d: date, holidays: set[str]) -> date:
@@ -101,9 +93,12 @@ def main() -> None:
     parser.add_argument("--replay-checks", action="store_true")
     args = parser.parse_args()
 
-    symbol_data_all, price_meta = _load_prices()
-    compositions = load_compositions()
-    constituents = _load_constituents()
+    import market_data as md
+
+    snapshot = md.load_snapshot("2026-09-01")
+    symbol_data_all, price_meta = _load_prices(snapshot)
+    compositions = load_compositions(snapshot=snapshot)
+    constituents = snapshot.constituents()
     corporate_actions = load_corporate_actions()
     allowed = _symbols_needed_for_replay(ALL_INDICES, constituents, compositions, corporate_actions)
     symbol_data = {symbol: frame for symbol, frame in symbol_data_all.items() if symbol in allowed}

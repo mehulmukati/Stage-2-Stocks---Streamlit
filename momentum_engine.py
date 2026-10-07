@@ -146,7 +146,7 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
     # 1Y change: c.iloc[-1] / c.iloc[-252] − 1 = c / c.shift(251) − 1 = pct_change(251)
     return pd.DataFrame(
         {
-            "Close": c.round(2),
+            "Close": c,
             "52w_High": high_52w.round(2),
             "DMA100": c.rolling(100, min_periods=100).mean().round(2),
             "DMA200": c.rolling(200, min_periods=200).mean().round(2),
@@ -196,4 +196,6 @@ def _calculate_avg_sharpe(row, method: str) -> float | None:
     if keys is None:
         return None
     vals = [v for k in keys if (v := row.get(k)) is not None and not pd.isna(v)]
-    return sum(vals) / len(vals) if vals else None
+    import math
+
+    return math.fsum(float(value) for value in vals) / len(vals) if vals else None

@@ -30,7 +30,7 @@ from dateutil.relativedelta import relativedelta
 
 from config import MIN_VOLUME
 from corporate_actions import load_corporate_actions
-from momentum_engine import _calculate_avg_sharpe, precompute_metrics, score_momentum
+from momentum_engine import _calculate_avg_sharpe, precompute_metrics
 from stage2_engine import compute_rolling_stage2
 
 # ──────────────────────────────────────────────────────────────
@@ -55,6 +55,7 @@ class BacktestConfig:
     # Universe filtering
     min_history_days: int = 750
     apply_volume_filter: bool = True
+    minimum_median_volume: float = MIN_VOLUME
     max_stale_sessions: int = 3
     max_position_pct: float | None = None
     corporate_actions: list[dict] = field(
@@ -135,8 +136,15 @@ def trading_session_age(
     if as_of <= last_tradable:
         return 0
     if trading_calendar is not None and len(trading_calendar):
-        calendar = pd.DatetimeIndex(trading_calendar).normalize().unique()
-        return int(((calendar > last_tradable) & (calendar <= as_of)).sum())
+        # The replay passes a sorted, unique DatetimeIndex of NSE sessions.
+        # Binary search avoids normalizing and scanning it for every symbol
+        # at every rebalance.
+        calendar = (
+            trading_calendar if isinstance(trading_calendar, pd.DatetimeIndex) else pd.DatetimeIndex(trading_calendar)
+        )
+        if not calendar.is_monotonic_increasing or not calendar.is_unique:
+            calendar = calendar.normalize().sort_values().unique()
+        return int(calendar.searchsorted(as_of, side="right") - calendar.searchsorted(last_tradable, side="right"))
     return int(np.busday_count(last_tradable.date(), as_of.date()))
 
 
@@ -369,7 +377,9 @@ def _valid_symbols_at_date(
         idx_rows = eligible[eligible["_INDEX_KEY"] == idx_key]
         if idx_rows.empty:
             logging.debug(
-                "Index %r has no composition snapshot on or before %s — skipping for this rebalance", idx_name, as_of
+                "Index %r has no composition snapshot on or before %s — skipping for this rebalance",
+                idx_name,
+                as_of,
             )
             continue
         latest_ts = idx_rows["TIME_STAMP"].max()
@@ -394,6 +404,17 @@ def _precompute_all_metrics(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.
     return result
 
 
+def _precompute_tradable_dates(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.DatetimeIndex]:
+    """Index valid bars once for repeated rebalance-date freshness checks."""
+    result: dict[str, pd.DatetimeIndex] = {}
+    for sym, df in all_ohlcv.items():
+        close = pd.to_numeric(df["Close"], errors="coerce")
+        volume = pd.to_numeric(df["Volume"], errors="coerce")
+        valid = close.notna() & close.gt(0) & volume.notna() & volume.gt(0)
+        result[sym] = pd.DatetimeIndex(df.index[valid]).normalize().sort_values().unique()
+    return result
+
+
 def _precompute_stage2_scores(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.Series]:
     """Pre-compute Stage 2 score series per symbol for fast .asof() lookup."""
     result: dict[str, pd.Series] = {}
@@ -405,53 +426,7 @@ def _precompute_stage2_scores(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, p
     return result
 
 
-def _fails_quality_filters(
-    row,
-    min_annual_return: float,
-    pct_from_52w_high: float,
-    max_circuits: int,
-    close_above_100dma: bool,
-    close_above_200dma: bool,
-    pos_days_3m_min: float,
-    pos_days_6m_min: float,
-    pos_days_12m_min: float,
-) -> bool:
-    """Return True if the row fails any active quality pre-filter (should be excluded)."""
-    if min_annual_return > 0:
-        v = row.get("1Y_Change") if hasattr(row, "get") else row["1Y_Change"]
-        if pd.isna(v) or v < min_annual_return:
-            return True
-    if pct_from_52w_high < 100:
-        v = row.get("Pct_From_52W_High") if hasattr(row, "get") else row["Pct_From_52W_High"]
-        if pd.isna(v) or v < -pct_from_52w_high:
-            return True
-    if max_circuits < 999:
-        v = row.get("Circuit_Count") if hasattr(row, "get") else row["Circuit_Count"]
-        if not pd.isna(v) and v > max_circuits:
-            return True
-    if close_above_100dma:
-        close = row.get("Close") if hasattr(row, "get") else row["Close"]
-        dma = row.get("DMA100") if hasattr(row, "get") else row["DMA100"]
-        if not pd.isna(close) and not pd.isna(dma) and close <= dma:
-            return True
-    if close_above_200dma:
-        close = row.get("Close") if hasattr(row, "get") else row["Close"]
-        dma = row.get("DMA200") if hasattr(row, "get") else row["DMA200"]
-        if not pd.isna(close) and not pd.isna(dma) and close <= dma:
-            return True
-    if pos_days_3m_min > 0:
-        v = row.get("Pos_Days_3M") if hasattr(row, "get") else row["Pos_Days_3M"]
-        if pd.isna(v) or v < pos_days_3m_min:
-            return True
-    if pos_days_6m_min > 0:
-        v = row.get("Pos_Days_6M") if hasattr(row, "get") else row["Pos_Days_6M"]
-        if pd.isna(v) or v < pos_days_6m_min:
-            return True
-    if pos_days_12m_min > 0:
-        v = row.get("Pos_Days_12M") if hasattr(row, "get") else row["Pos_Days_12M"]
-        if pd.isna(v) or v < pos_days_12m_min:
-            return True
-    return False
+from momentum_ranking import fails_quality_filters as _fails_quality_filters
 
 
 def rank_universe_at_date(
@@ -461,6 +436,7 @@ def rank_universe_at_date(
     valid_symbols: set[str] | None = None,
     min_history_days: int = 750,
     apply_volume_filter: bool = True,
+    minimum_median_volume: float = MIN_VOLUME,
     precomputed: dict[str, pd.DataFrame] | None = None,
     return_excluded_reasons: bool = False,
     min_annual_return: float = 0.0,
@@ -473,6 +449,8 @@ def rank_universe_at_date(
     pos_days_12m_min: float = 0.0,
     max_stale_sessions: int = 3,
     trading_calendar: pd.DatetimeIndex | None = None,
+    tradable_dates: dict[str, pd.DatetimeIndex] | None = None,
+    metric_arrays: dict[str, dict[str, np.ndarray]] | None = None,
 ) -> "list[str] | tuple[list[str], dict[str, str]]":
     """
     Score every symbol using data up to `as_of` and return symbols ordered
@@ -485,6 +463,8 @@ def rank_universe_at_date(
     apply_volume_filter    : if True, exclude symbols whose median volume < MIN_VOLUME
     precomputed            : pre-computed metric DataFrames from _precompute_all_metrics;
                              when provided, uses O(log n) date lookup instead of slicing OHLCV
+    metric_arrays          : NumPy views of the pre-computed columns for cheap row access
+    tradable_dates          : pre-computed valid trading dates for fast freshness checks
     return_excluded_reasons: if True, return (ranked_list, excluded_reasons_dict) where
                              excluded_reasons maps symbol → reason string for every symbol
                              in valid_symbols that failed a pre-ranking filter
@@ -496,7 +476,12 @@ def rank_universe_at_date(
         if valid_symbols is not None and sym not in valid_symbols:
             continue
 
-        last_tradable = latest_tradable_date(df, as_of)
+        if tradable_dates is not None and sym in tradable_dates:
+            dates = tradable_dates[sym]
+            position = dates.searchsorted(as_of, side="right") - 1
+            last_tradable = pd.Timestamp(dates[position]) if position >= 0 else None
+        else:
+            last_tradable = latest_tradable_date(df, as_of)
         if last_tradable is None:
             if excluded_reasons is not None:
                 excluded_reasons[sym] = "no_tradable_data"
@@ -519,7 +504,8 @@ def rank_universe_at_date(
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "no_data"
                 continue
-            row = mdf.iloc[idx]
+            arrays = metric_arrays.get(sym) if metric_arrays is not None else None
+            row = {name: values[idx] for name, values in arrays.items()} if arrays is not None else mdf.iloc[idx]
             if row["_count"] < min_history_days:
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "insufficient_history"
@@ -528,9 +514,9 @@ def rank_universe_at_date(
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "missing_data"
                 continue
-            if apply_volume_filter:
+            if apply_volume_filter and minimum_median_volume > 0:
                 vol = row.get("Vol_Median")
-                if pd.isna(vol) or vol < MIN_VOLUME:
+                if pd.isna(vol) or vol < minimum_median_volume:
                     if excluded_reasons is not None:
                         excluded_reasons[sym] = "low_volume"
                     continue
@@ -565,14 +551,14 @@ def rank_universe_at_date(
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "missing_data"
                 continue
-            metrics = score_momentum(sub)
+            metrics = precompute_metrics(sub).iloc[-1].to_dict() if len(sub) else None
             if metrics is None:
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "no_valid_score"
                 continue
-            if apply_volume_filter:
+            if apply_volume_filter and minimum_median_volume > 0:
                 vol = metrics.get("Vol_Median")
-                if vol is None or vol < MIN_VOLUME:
+                if pd.isna(vol) or vol < minimum_median_volume:
                     if excluded_reasons is not None:
                         excluded_reasons[sym] = "low_volume"
                     continue
@@ -598,7 +584,7 @@ def rank_universe_at_date(
 
         ranked.append((sym, score))
 
-    ranked.sort(key=lambda x: x[1], reverse=True)
+    ranked.sort(key=lambda x: (-x[1], x[0]))
     ranked_list = [sym for sym, _ in ranked]
 
     if return_excluded_reasons:
@@ -1209,6 +1195,11 @@ def run_backtest(
 
     # Pre-compute rolling metrics once per symbol (O(symbols)) instead of per rebalance date
     precomputed = _precompute_all_metrics(all_ohlcv)
+    metric_arrays = {
+        sym: {name: column.to_numpy(copy=False) for name, column in metrics.items()}
+        for sym, metrics in precomputed.items()
+    }
+    tradable_dates = _precompute_tradable_dates(all_ohlcv)
     stage2_precomputed = _precompute_stage2_scores(all_ohlcv) if (stage2_drop_exit or stage2_entry_filter) else {}
 
     # Pre-build returns matrix so daily NAV update uses O(1) row lookups instead of per-symbol index ops
@@ -1330,7 +1321,9 @@ def run_backtest(
                 valid_symbols=valid_syms,
                 min_history_days=min_history_days,
                 apply_volume_filter=apply_volume_filter,
+                minimum_median_volume=config.minimum_median_volume,
                 precomputed=precomputed,
+                metric_arrays=metric_arrays,
                 return_excluded_reasons=True,
                 min_annual_return=min_annual_return,
                 pct_from_52w_high=pct_from_52w_high,
@@ -1342,6 +1335,7 @@ def run_backtest(
                 pos_days_12m_min=pos_days_12m_min,
                 max_stale_sessions=max_stale_sessions,
                 trading_calendar=trading_days,
+                tradable_dates=tradable_dates,
             )
             top_m = set(ranked[:m])
             top_n = set(ranked[:n])
@@ -1582,7 +1576,12 @@ def run_backtest(
             pending_corporate_actions = []
 
         nav_records.append(
-            {"Date": day, "Full Rebalance": nav_full, "Marginal Rebalance": nav_marg, "Prop Rebalance": nav_prop}
+            {
+                "Date": day,
+                "Full Rebalance": nav_full,
+                "Marginal Rebalance": nav_marg,
+                "Prop Rebalance": nav_prop,
+            }
         )
 
     nav_df = pd.DataFrame(nav_records).set_index("Date")

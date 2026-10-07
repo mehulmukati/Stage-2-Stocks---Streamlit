@@ -11,6 +11,7 @@ from backtest_engine import (
     _compute_summary_stats,
     _compute_weight_variants,
     _drift_weights,
+    _precompute_tradable_dates,
     _prepare_compositions,
     _trading_days,
     _valid_symbols_at_date,
@@ -51,6 +52,28 @@ def test_rank_universe_excludes_price_stale_beyond_session_limit():
 
     assert ranked == []
     assert excluded["STALE"].startswith("stale_price:")
+
+
+def test_precomputed_tradable_dates_preserve_staleness_decision():
+    df = make_ohlcv(10, start="2026-07-06")
+    df.loc[df.index[-4] :, "Volume"] = 0
+    kwargs = {
+        "valid_symbols": {"STALE"},
+        "min_history_days": 5,
+        "apply_volume_filter": False,
+        "return_excluded_reasons": True,
+        "trading_calendar": df.index,
+    }
+    expected = rank_universe_at_date({"STALE": df}, df.index[-1], "1 year", **kwargs)
+    actual = rank_universe_at_date(
+        {"STALE": df},
+        df.index[-1],
+        "1 year",
+        tradable_dates=_precompute_tradable_dates({"STALE": df}),
+        **kwargs,
+    )
+
+    assert actual == expected
 
 
 def test_apply_due_corporate_action_transfers_weights_and_tax_lots():
@@ -675,6 +698,26 @@ def test_rank_universe_volume_filter_excludes_low_vol():
     )
     assert "LOW" not in result
     assert "OK" in result
+
+
+def test_metric_array_rows_match_dataframe_ranking():
+    close = [100.0 + i * 0.05 + (i % 7) * 0.02 for i in range(300)]
+    df = make_ohlcv(300, close=close)
+    metrics = engine.precompute_metrics(df)
+    kwargs = {
+        "precomputed": {"A": metrics},
+        "tradable_dates": _precompute_tradable_dates({"A": df}),
+        "min_history_days": 252,
+        "apply_volume_filter": False,
+        "return_excluded_reasons": True,
+        "trading_calendar": df.index,
+    }
+
+    expected = rank_universe_at_date({"A": df}, df.index[-1], "1 year", **kwargs)
+    arrays = {name: column.to_numpy(copy=False) for name, column in metrics.items()}
+    actual = rank_universe_at_date({"A": df}, df.index[-1], "1 year", metric_arrays={"A": arrays}, **kwargs)
+
+    assert actual == expected
 
 
 # ──────────────────────────────────────────────

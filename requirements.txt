@@ -10,3 +10,5 @@ matplotlib>=3.8.0
 xlrd>=2.0.1
 openpyxl>=3.1.0
 rapidfuzz>=3.0
+
+pyarrow>=14.0.0

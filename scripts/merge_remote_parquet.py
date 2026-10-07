@@ -182,6 +182,8 @@ def _read_remote_file(repo: Path, relative: str) -> tuple[pd.DataFrame, Path]:
 
 
 def _write_atomic(frame: pd.DataFrame, target: Path) -> None:
+    if target.name in {"screener_ohlcv.parquet", "constituents.parquet"}:
+        raise MergeError("Authoritative market files cannot be row-merged; use the shared publisher.")
     with tempfile.NamedTemporaryFile(dir=target.parent, prefix=f".{target.name}.", suffix=".tmp", delete=False) as fh:
         temp_path = Path(fh.name)
     try:
@@ -350,6 +352,10 @@ def run(
 ) -> dict:
     repo = _repo_root()
     local_path, relative = _resolve_file(repo, file)
+    if local_path.name in {"screener_ohlcv.parquet", "constituents.parquet"}:
+        raise MergeError(
+            "Authoritative market files cannot be row-merged; use the shared publisher and accepted source pair."
+        )
     remote_url = _git_text(repo, "remote", "get-url", remote)
     selected_branch = branch or _git_text(repo, "branch", "--show-current")
     if not selected_branch:

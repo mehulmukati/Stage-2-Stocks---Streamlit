@@ -246,3 +246,13 @@ def test_run_refuses_concurrent_non_parquet_changes(tmp_path, monkeypatch):
         run("data/prices.parquet", "origin", "main", None)
 
     assert subprocess.run(["git", "rev-parse", "--verify", "-q", "MERGE_HEAD"], cwd=local, check=False).returncode != 0
+
+
+def test_generic_merge_cannot_strip_shared_market_provenance(tmp_path):
+    from scripts.merge_remote_parquet import _write_atomic
+
+    target = tmp_path / "screener_ohlcv.parquet"
+    target.write_bytes(b"accepted")
+    with pytest.raises(MergeError, match="Authoritative market files"):
+        _write_atomic(pd.DataFrame(dict(symbol=["A"], date=["2026-10-06"], Close=[100.0])), target)
+    assert target.read_bytes() == b"accepted"

@@ -1,4 +1,4 @@
-name: Refresh Screener Parquet
+name: Refresh Shared Market Data
 
 on:
   schedule:
@@ -9,12 +9,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: refresh-screener-parquet
+  group: shared-market-publisher
   cancel-in-progress: false
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,20 +31,23 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Refresh screener OHLCV parquet
+      - name: Verify current constituents and preserve dated history
+        run: python scripts/refresh_constituents.py
+
+      - name: Refresh shared full-history pricing file
         run: |
-          python scripts/refresh_screener_parquet.py
+          python scripts/refresh_market_data.py
 
       - name: Commit refreshed parquet
         run: |
-          if git diff --quiet -- data/screener_ohlcv.parquet; then
+          if git diff --quiet -- data/screener_ohlcv.parquet data/constituents.parquet; then
             echo "No screener parquet changes to commit."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/screener_ohlcv.parquet
-          git commit -m "data: refresh screener OHLCV parquet" \
-            -m "Automated daily refresh of data/screener_ohlcv.parquet after market close."
+          git add data/screener_ohlcv.parquet data/constituents.parquet
+          git commit -m "data: refresh shared market sources" \
+            -m "Daily full-history publication for all app sections after market close."
           git push

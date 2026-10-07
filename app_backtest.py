@@ -109,10 +109,21 @@ def backtest_results(params: dict):
         return
 
     result = st.session_state.get("backtest_cached_result")
+    import market_data as shared_market
+
+    if result is not None and result.get("source_revisions") != shared_market.source_revisions():
+        st.session_state.pop("backtest_cached_result", None)
+        st.info("Market sources changed. Run the backtest again using the current revisions.")
+        return
+
     if result is None:
         st.info("Configure parameters in the sidebar and click **Run Backtest**.")
         return
 
+    import market_data as shared_market
+
+    if result.get("source_revisions"):
+        st.caption(shared_market.revision_label(result["source_revisions"]))
     ohlcv_date = result.get("ohlcv_date")
     ohlcv_source = result.get("ohlcv_source")
     _source_icons = {
@@ -526,6 +537,10 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
             "concentration from large exits funnelling weight into a single entrant."
         ),
     )
+    bt_min_volume = st.number_input(
+        "Min median daily volume (shares)", min_value=0, value=100_000, step=10_000, key="bt_min_volume"
+    )
+    bt_max_stale = st.number_input("Max stale sessions", min_value=0, max_value=20, value=3, key="bt_max_stale")
     bt_use_compositions = st.toggle(
         "Use historical constituents (anti-survivorship)",
         key="bt_use_compositions",
@@ -594,6 +609,8 @@ def _sidebar_backtest(idx_options: list[str]) -> dict:
         "transaction_cost_pct": bt_cost_pct,
         "use_compositions": bt_use_compositions,
         "min_history_days": bt_min_history,
+        "minimum_median_volume": bt_min_volume,
+        "max_stale_sessions": bt_max_stale,
         "initial_capital": bt_initial_capital,
         "brokerage_per_sale": bt_brokerage_per_sale,
         "stcg_rate": bt_stcg_rate / 100.0,
