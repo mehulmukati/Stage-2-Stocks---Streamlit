@@ -16,7 +16,7 @@ import pandas as pd
 import yfinance as yf
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import market_data as md
+import market_data as md  # noqa: E402 -- repo imports need the script's parent on sys.path
 
 INDEX_TICKERS = {
     "Nifty 50": "^NSEI",
@@ -142,6 +142,76 @@ def revision_needs_full_history(existing, new):
     return set(zip(overlap.loc[changed, "series_type"], overlap.loc[changed, "symbol"]))
 
 
+def history_is_complete(previous, replacement):
+    """Require every accepted observation, excluding known non-trading placeholders.
+
+    Yahoo omits zero-volume holiday/suspension rows carried by legacy files.
+    Those rows must not permanently prevent a full adjusted-history rebuild.
+    A missing weekend trading session may retain its accepted quote only when
+    both surrounding observations confirm an unchanged adjustment basis.
+    Unknown-volume close-only history still requires replacement coverage.
+    """
+    if replacement.empty:
+        return False
+    required = previous.loc[previous.Volume.ne(0), "date"]
+    missing = sorted(set(required) - set(replacement.date))
+    if not missing:
+        return True
+    overlap = previous[previous.Volume.ne(0)].merge(replacement, on="date", suffixes=("_old", "_new"))
+    overlap = overlap.sort_values("date")
+    for day in missing:
+        if day.weekday() < 5:
+            return False
+        before = overlap[overlap.date.lt(day)].tail(1)
+        after = overlap[overlap.date.gt(day)].head(1)
+        if before.empty or after.empty:
+            return False
+        neighbors = pd.concat([before, after])
+        if (neighbors.date - day).abs().gt(pd.Timedelta(days=7)).any():
+            return False
+        tolerance = neighbors.Close_old.abs().mul(1e-5).clip(lower=0.01)
+        if (neighbors.Close_old - neighbors.Close_new).abs().gt(tolerance).any():
+            return False
+    return True
+
+
+def price_coverage(prices, current, target_date):
+    target = pd.Timestamp(target_date)
+    eligible = prices[prices.date.le(target) & prices.Close.gt(0)]
+    equities = eligible[eligible.series_type.eq("equity") & eligible.Volume.gt(0)]
+    observed = equities.groupby("symbol").date.max()
+    missing = sorted(s for s in current if s not in observed or observed[s] < target)
+    dates = observed.reindex(sorted(current)).dropna()
+    benchmarks = eligible[eligible.series_type.eq("index_price")].groupby("symbol").date.max()
+    missing_benchmarks = sorted(
+        name for name in ("Nifty 50", "Nifty 100", "Nifty 500") if name not in benchmarks or benchmarks[name] < target
+    )
+    return {
+        "missing_target_symbols": missing,
+        "current_symbol_count": len(current),
+        "target_session_symbol_count": len(current) - len(missing),
+        "actual_latest_date": str(dates.min().date()) if len(dates) == len(current) and len(dates) else None,
+        "max_price_date": str(dates.max().date()) if len(dates) else None,
+        "missing_target_benchmarks": missing_benchmarks,
+        "publication_status": "partial" if missing or missing_benchmarks else "fresh",
+    }
+
+
+def check_publication(target_date=None):
+    """Check the accepted shared revision without downloading or writing data."""
+    snapshot = md.load_snapshot()
+    target = target_date or completed_session()
+    coverage = price_coverage(snapshot.prices, snapshot.symbols(as_of=target), target)
+    failures = []
+    if not coverage["target_session_symbol_count"]:
+        failures.append(f"no current constituents have a tradable {target} price")
+    if coverage["missing_target_benchmarks"]:
+        failures.append("benchmarks lack target-session prices: " + ", ".join(coverage["missing_target_benchmarks"]))
+    if failures:
+        raise RuntimeError("Shared publication is incomplete: " + "; ".join(failures))
+    return coverage
+
+
 def refresh_prices(
     target_date=None, force_full=False, emit=lambda level, msg: print(msg), fetch=download, only_series=None
 ):
@@ -235,7 +305,7 @@ def refresh_prices(
                         previous = previous_groups.get(identity, pd.DataFrame(columns=md.PRICE_COLUMNS))
                         replacement = replacement_groups.get(identity, pd.DataFrame(columns=md.PRICE_COLUMNS))
                         # A partial upstream response must not create an adjustment seam.
-                        if not replacement.empty and set(previous.date).issubset(set(replacement.date)):
+                        if history_is_complete(previous, replacement):
                             successful.add(identity)
                             rebuilt.add(symbol)
                     full = (
@@ -259,6 +329,15 @@ def refresh_prices(
                     if identity not in returned:
                         errors.setdefault(ticker, "no usable observations returned")
                         retained.append(ticker)
+                    else:
+                        symbol, kind = identity
+                        observations = new[new.symbol.eq(symbol) & new.series_type.eq(kind)]
+                        if kind != "index_price":
+                            observations = observations[observations.Volume.gt(0)]
+                        latest = observations.date.max()
+                        if pd.isna(latest) or latest < target_ts:
+                            available = str(latest.date()) if pd.notna(latest) else "none"
+                            errors.setdefault(ticker, f"no tradable {target} observation; latest returned: {available}")
                 if not new.empty:
                     additions.append(new)
         new = pd.concat(additions, ignore_index=True) if additions else pd.DataFrame(columns=md.PRICE_COLUMNS)
@@ -292,12 +371,8 @@ def refresh_prices(
                 ),
             }
         # Embed actual coverage, not just the requested date, in this same file.
-        observed = (
-            merged[(merged.series_type == "equity") & merged.Close.gt(0) & merged.Volume.gt(0)]
-            .groupby("symbol")
-            .date.max()
-        )
-        missing = sorted(s for s in current if s not in observed or observed[s] < target_ts)
+        coverage_report = price_coverage(merged, current, target)
+        missing = coverage_report["missing_target_symbols"]
         report = {
             "target_date": target,
             "retrieved_at": datetime.now(timezone.utc).isoformat(),
@@ -309,11 +384,14 @@ def refresh_prices(
             "constituent_revision": snapshot.constituent_revision,
             "history_rebuild_required": sorted(pending_rebuild - rebuilt),
         }
+        report.update(coverage_report)
         report.update(cash_metadata)
         revision = md.write_source(merged, md.PRICE_PATH, report, expected_revision=snapshot.price_revision)
         emit(
-            "warning" if missing else "success",
-            f"Published price revision {revision[:12]}; {len(missing)} constituents lack target-session prices",
+            "warning" if report["publication_status"] == "partial" else "success",
+            f"Published price revision {revision[:12]}; "
+            f"{coverage_report['target_session_symbol_count']}/{len(current)} constituents cover {target}; "
+            f"{len(coverage_report['missing_target_benchmarks'])} benchmarks lack target-session prices",
         )
         return report | {"revision": revision}
 
@@ -322,6 +400,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--target-date")
+    parser.add_argument("--check-coverage", action="store_true", help="Check accepted publication without downloading")
     parser.add_argument("--series-type", action="append", choices=["equity", "index_price", "etf_adjusted"])
     args = parser.parse_args()
-    refresh_prices(args.target_date, args.full, only_series=args.series_type)
+    if args.check_coverage:
+        print(check_publication(args.target_date))
+    else:
+        refresh_prices(args.target_date, args.full, only_series=args.series_type)

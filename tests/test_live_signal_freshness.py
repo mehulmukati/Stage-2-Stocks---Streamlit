@@ -113,6 +113,8 @@ def test_live_signal_blocks_before_backtest_when_refresh_is_not_fresh(monkeypatc
 
     assert "error" in result
     assert "Signal not generated" in result["error"]
+    assert "Refresh Shared Market Data workflow" in result["error"]
+    assert "does not download prices" in result["error"]
     assert result["data_freshness"]["actual_latest_date"] == "2026-08-18"
 
 

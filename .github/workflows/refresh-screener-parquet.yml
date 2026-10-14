@@ -51,3 +51,6 @@ jobs:
           git commit -m "data: refresh shared market sources" \
             -m "Daily full-history publication for all app sections after market close."
           git push
+
+      - name: Verify accepted target-session coverage
+        run: python scripts/refresh_market_data.py --check-coverage

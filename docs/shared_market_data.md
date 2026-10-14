@@ -31,11 +31,12 @@ Stale candidates are excluded consistently. Live Signal separately blocks a stal
 
 ## Publication and scheduling
 
-The existing GitHub Actions workflow remains at **19:45 IST daily**, with manual dispatch available. It first verifies current NSE constituents, then runs the shared pricing publisher, then commits the two files together. GitHub concurrency and a local publisher lock serialize writers. Each file replacement validates data, checks the expected prior revision and publishes atomically. A failed download never erases accepted history. Partial failures and actual coverage are embedded in the file metadata and shown through the shared readers.
+The existing GitHub Actions workflow remains scheduled for **19:45 IST daily**, with manual dispatch available; GitHub may start scheduled runs later. It first verifies current NSE constituents, then runs the shared pricing publisher, then commits the two files together. After committing accepted data, a read-only coverage check fails the workflow if no current constituents cover the target session or any of the three Live Signal benchmarks lack a target-session price. Useful partial observations remain published, while a green run cannot hide a universe-wide lag. GitHub concurrency and a local publisher lock serialize writers. Each file replacement validates data, checks the expected prior revision and publishes atomically. A failed download never erases accepted history. Partial failures and actual coverage are embedded in the file metadata and shown through the shared readers.
 
 ```sh
 python scripts/refresh_constituents.py
 python scripts/refresh_market_data.py
+python scripts/refresh_market_data.py --check-coverage
 # Explicit official effective-date membership update:
 python scripts/refresh_constituents.py --effective-date YYYY-MM-DD --effective-source URL
 # Targeted shared series or full history rebuild:
@@ -43,7 +44,9 @@ python scripts/refresh_market_data.py --series-type etf_adjusted
 python scripts/refresh_market_data.py --full
 ```
 
-Pricing refreshes use each instrument's own coverage and overlapping sessions. A changed adjusted close requires full stored-history coverage for that instrument. An incomplete correction response retains the prior history and records the failure; it cannot introduce an adjustment seam. Legacy adjustment conflicts stay in `history_rebuild_required` until the complete upstream history is accepted, so later scheduled runs retry them.
+Pricing refreshes use each instrument's own coverage and overlapping sessions. A changed adjusted close requires full stored-history coverage for that instrument, except known zero-volume non-trading placeholders that Yahoo omits. An omitted weekend trading quote is retained only when overlapping observations on both sides (within seven calendar days) confirm the same adjustment basis. A changed basis, missing boundary, or omitted ordinary trading observation still rejects the rebuild. Legacy closes with unknown volume require the same coverage checks. Existing placeholder rows remain stored; they never establish tradable coverage. An incomplete correction response retains the prior history and records the failure; it cannot introduce an adjustment seam between accepted trading observations. Legacy adjustment conflicts stay in `history_rebuild_required` until the complete upstream history is accepted, so later scheduled runs retry them.
+
+Generate Signal reads the accepted shared revision. It does not fetch prices. To repair stale prices, run the shared publisher (locally) or the Refresh Shared Market Data workflow (for the hosted app), then generate the signal again.
 
 TRI CSVs are source ingestion inputs, imported by `scripts/build_dual_momentum_tri.py` into the shared price file. ETF prices, TRI and price indices are distinct series types. RBI repo-rate inputs are auxiliary rate assumptions for the labeled cash proxy, whose generated price history lives in the same price file. Holiday and corporate-action calendars are auxiliary reference data, not competing market-price or membership stores.
 

@@ -944,7 +944,7 @@ def _run_signal(params: dict) -> dict:
     symbol_data_all = ohlcv.symbol_data
     if not symbol_data_all:
         return {
-            "error": "OHLCV data is missing. Run: python scripts/refresh_backtest_parquet.py",
+            "error": "Shared price data is missing. Run the Refresh Shared Market Data workflow, then Generate Signal.",
             "data_freshness": freshness,
         }
     # A constituent with no local price history cannot pass the ranking
@@ -967,7 +967,9 @@ def _run_signal(params: dict) -> dict:
         return {
             "error": (
                 f"Signal not generated. Required data targets {ohlcv.target_date}; verified universe coverage: "
-                f"{available}. {reason}. Click Generate Signal to retry."
+                f"{available}. {reason}. Run the Refresh Shared Market Data workflow, "
+                "then click Generate Signal. Generate Signal reads the accepted shared file "
+                "and does not download prices."
             ),
             "data_freshness": freshness,
         }
@@ -1243,7 +1245,7 @@ def live_signal_results(params: dict) -> None:
         st.session_state["ls_result"] = None
         st.info("Shared market data changed. Generate the signal again to use the accepted revisions.")
     if result is None:
-        with st.spinner("Refreshing prices and replaying the strategy…"):
+        with st.spinner("Reading shared prices and replaying the strategy…"):
             result = _run_signal(params)
         st.session_state["ls_result"] = result
 
@@ -1282,18 +1284,19 @@ def live_signal_results(params: dict) -> None:
             if not stale and not excluded_unpriced:
                 st.info(
                     "Signal generation is continuing with each symbol's latest tradable price. "
-                    "The ranking engine allows at most three completed NSE sessions of lag."
+                    f"The ranking engine allows at most {params.get('max_stale_sessions', 3)} "
+                    "completed NSE sessions of lag."
                 )
         if stale:
             sample = ", ".join(stale[:20])
             suffix = f" (+{len(stale) - 20} more)" if len(stale) > 20 else ""
-            st.error(f"Required symbols more than three NSE sessions stale: {sample}{suffix}")
+            st.error(f"Holdings more than {params.get('max_stale_sessions', 3)} NSE sessions stale: {sample}{suffix}")
         if excluded_unpriced:
             sample = ", ".join(excluded_unpriced[:20])
             suffix = f" (+{len(excluded_unpriced) - 20} more)" if len(excluded_unpriced) > 20 else ""
             st.warning(
-                f"Unpriced, non-held constituents excluded from ranking: {sample}{suffix}. "
-                "They have no local price history and cannot meet the minimum-history rule."
+                f"Non-held constituents with missing or stale prices excluded from ranking: {sample}{suffix}. "
+                "They cannot meet the ranking engine's price-history or freshness rules."
             )
         if freshness.get("error") and (stale or excluded_unpriced):
             st.caption(f"Refresh detail: {freshness['error']}")

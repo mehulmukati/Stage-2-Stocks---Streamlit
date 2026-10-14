@@ -11,7 +11,12 @@ import data_backtest as db
 import market_data as md
 from backtest_engine import _precompute_all_metrics, rank_universe_at_date
 from momentum_ranking import rank_momentum_frame
-from scripts.refresh_market_data import merge_observations, refresh_prices, revision_needs_full_history
+from scripts.refresh_market_data import (
+    check_publication,
+    merge_observations,
+    refresh_prices,
+    revision_needs_full_history,
+)
 
 
 def test_screeners_portfolios_charts_share_prices_membership_and_revisions(market, monkeypatch):
@@ -245,6 +250,121 @@ def test_upstream_adapter_retries_old_session_and_keeps_both_observations(monkey
     result, error = publisher.download({"A.NS": ("A", "equity")}, "2026-10-01", "2026-10-06")
     assert error is None and len(calls) == 2
     assert set(result.date) == set(pd.to_datetime(["2026-10-05", "2026-10-06"]))
+
+
+@pytest.mark.parametrize("missing_volume", [0.0, 1000.0, np.nan])
+def test_rebuild_omitting_placeholder_repairs_prices_but_preserves_required_history(
+    market, monkeypatch, missing_volume
+):
+    from apps.dual_momentum import config
+
+    monkeypatch.setattr(config, "ETF_UNIVERSE", {})
+    frame, _, days = market
+    omitted = (frame.symbol == "A") & (frame.date == days[10])
+    frame.loc[omitted, "Volume"] = missing_volume
+    md.write_source(frame, md.PRICE_PATH, {"history_rebuild_required": ["A"]})
+    replacement = frame[(frame.symbol == "A") & ~omitted].copy()
+    replacement[["Open", "High", "Low", "Close"]] *= 0.5
+    b = frame[(frame.symbol == "B") & (frame.date == days[-1])].copy()
+
+    def fetch(requests, start, end):
+        if "A.NS" in requests:
+            return pd.concat([replacement, b], ignore_index=True), None
+        return pd.DataFrame(columns=md.PRICE_COLUMNS), "offline"
+
+    report = refresh_prices(target_date=str(days[-1].date()), fetch=fetch)
+    actual = md.load_snapshot().ohlcv()["A"].Close
+    expected = frame[frame.symbol == "A"].set_index("date").Close.copy()
+    if missing_volume == 0:
+        expected.loc[replacement.date] = replacement.Close.to_numpy()
+        assert "A" not in report["history_rebuild_required"]
+    else:
+        assert "A" in report["history_rebuild_required"]
+        assert "incomplete" in report["errors"]["A"]
+    pd.testing.assert_series_equal(actual, expected, check_names=False)
+
+
+def test_partial_download_records_lag_instead_of_silently_reporting_success(market, monkeypatch):
+    from apps.dual_momentum import config
+
+    monkeypatch.setattr(config, "ETF_UNIVERSE", {})
+    frame, _, days = market
+    target = str((days[-1] + pd.offsets.BDay()).date())
+
+    def fetch(requests, start, end):
+        if "A.NS" not in requests:
+            return pd.DataFrame(columns=md.PRICE_COLUMNS), "offline"
+        return frame[frame.symbol == "A"].tail(5), "target session unavailable"
+
+    report = refresh_prices(target_date=target, fetch=fetch)
+    assert report["publication_status"] == "partial"
+    assert report["target_session_symbol_count"] == 0
+    assert report["max_price_date"] == str(days[-1].date())
+    assert target in report["errors"]["A.NS"]
+    assert "latest returned" in report["errors"]["A.NS"]
+
+
+@pytest.mark.parametrize("neighbor_factor", [1.0, 0.5])
+def test_omitted_special_session_is_retained_only_with_unchanged_surrounding_prices(
+    market, monkeypatch, neighbor_factor
+):
+    from apps.dual_momentum import config
+
+    monkeypatch.setattr(config, "ETF_UNIVERSE", {})
+    frame, _, days = market
+    special = frame[(frame.symbol == "A") & (frame.date == pd.Timestamp("2025-01-31"))].copy()
+    special.date = pd.Timestamp("2025-02-01")
+    previous = pd.concat([frame, special], ignore_index=True)
+    md.write_source(previous, md.PRICE_PATH, {"history_rebuild_required": ["A"]})
+    replacement = frame[frame.symbol == "A"].copy()
+    replacement[["Open", "High", "Low", "Close"]] *= neighbor_factor
+    replacement.loc[replacement.date.ge(days[-5]), ["Open", "High", "Low", "Close"]] *= 0.5
+    b = frame[(frame.symbol == "B") & (frame.date == days[-1])].copy()
+
+    def fetch(requests, start, end):
+        if "A.NS" in requests:
+            return pd.concat([replacement, b], ignore_index=True), None
+        return pd.DataFrame(columns=md.PRICE_COLUMNS), "offline"
+
+    report = refresh_prices(target_date=str(days[-1].date()), fetch=fetch)
+    actual = md.load_snapshot().ohlcv()["A"].Close
+    expected = previous[previous.symbol == "A"].set_index("date").Close.sort_index()
+    if neighbor_factor == 1:
+        expected.loc[replacement.date] = replacement.Close.to_numpy()
+        assert "A" not in report["history_rebuild_required"]
+    else:
+        assert "A" in report["history_rebuild_required"]
+        assert "incomplete" in report["errors"]["A"]
+    pd.testing.assert_series_equal(actual, expected, check_names=False)
+
+
+def test_publication_check_fails_on_universe_lag_without_upstream_requests_or_writes(market, monkeypatch):
+    import yfinance as yf
+
+    monkeypatch.setattr(yf, "download", lambda *a, **kw: pytest.fail("Coverage check contacted upstream"))
+    _, _, days = market
+    revisions = md.source_revisions()
+    with pytest.raises(RuntimeError, match="no current constituents"):
+        check_publication(str((days[-1] + pd.offsets.BDay()).date()))
+    assert md.source_revisions() == revisions
+
+
+def test_publication_check_allows_isolated_gaps_but_requires_fresh_benchmarks(market):
+    frame, _, days = market
+    target = str((days[-1] + pd.offsets.BDay()).date())
+    quotes = []
+    for name in ["A", "Nifty 50", "Nifty 100", "Nifty 500"]:
+        row = frame.iloc[[-1]].copy().assign(symbol=name, date=pd.Timestamp(target))
+        row.series_type = "equity" if name == "A" else "index_price"
+        quotes.append(row)
+    md.write_source(merge_observations(frame, pd.concat(quotes, ignore_index=True)), md.PRICE_PATH)
+    coverage = check_publication(target)
+    assert coverage["target_session_symbol_count"] == 1
+    assert coverage["missing_target_symbols"] == ["B", "LOWVOL"]
+    assert coverage["missing_target_benchmarks"] == []
+    md.write_source(md.load_snapshot().prices.query("symbol != 'Nifty 100'"), md.PRICE_PATH)
+    with pytest.raises(RuntimeError, match="Nifty 100"):
+        check_publication(target)
 
 
 def test_quant_reports_missing_candles_without_inventing_values(market):
