@@ -564,7 +564,7 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
     )
     portfolio_start = history_col.date_input(
         "Portfolio start date" if portfolio_source == "replay" else "Strategy inception date",
-        value=date.today() + timedelta(days=1),
+        value=date(2025, 7, 2),
         key="ls_portfolio_start",
         help="Anchors the strategy path. Keep this date unchanged for subsequent signals.",
     )
@@ -709,12 +709,12 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
                 disabled=not s2_entry,
                 key="ls_s2_entry_threshold",
             )
-            s2_drop = exit_col.toggle("Exit on score drop", value=False, key="ls_s2_drop")
+            s2_drop = exit_col.toggle("Exit on score drop", value=True, key="ls_s2_drop")
             s2_threshold = exit_col.number_input(
                 "Drop threshold",
                 min_value=1,
                 max_value=4,
-                value=2,
+                value=3,
                 step=1,
                 disabled=not s2_drop,
                 key="ls_s2_threshold",
@@ -723,7 +723,7 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
         s2_entry = False
         s2_entry_threshold = st.session_state.get("ls_s2_entry_threshold", 2)
         s2_drop = False
-        s2_threshold = st.session_state.get("ls_s2_threshold", 2)
+        s2_threshold = st.session_state.get("ls_s2_threshold", 3)
 
     st.markdown("**Position cap & universe**")
     risk_col, universe_col = st.columns(2)
