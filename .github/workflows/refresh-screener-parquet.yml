@@ -3,11 +3,28 @@ name: Refresh Shared Market Data
 on:
   schedule:
     - cron: "15 14 * * *" # 7:45 PM IST
+    - cron: "15 15 * * *" # 8:45 PM IST retry
     - cron: "15 17 * * *" # 10:45 PM IST retry for delayed vendor prices
+    - cron: "15 3 * * *" # 8:45 AM IST final recovery of the prior session
   workflow_dispatch:
+    inputs:
+      target_date:
+        description: "Optional trading session (YYYY-MM-DD); defaults to the latest completed session"
+        required: false
+        type: string
+      force:
+        description: "Download even when accepted coverage already passes"
+        default: false
+        type: boolean
+      final_attempt:
+        description: "Raise a repository alert if this manual attempt fails"
+        default: false
+        type: boolean
 
 permissions:
+  actions: read
   contents: write
+  issues: write
 
 concurrency:
   group: shared-market-publisher
@@ -28,21 +45,28 @@ jobs:
           python-version: "3.11"
           cache: pip
 
+      - name: Pin recovery to workflow creation time
+        id: clock
+        uses: actions/github-script@v8
+        with:
+          result-encoding: string
+          script: |
+            const run = await github.rest.actions.getWorkflowRun({ ...context.repo, run_id: context.runId });
+            return run.data.created_at;
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Verify current constituents and preserve dated history
-        run: python scripts/refresh_constituents.py
-
-      - name: Refresh shared full-history pricing file
-        run: |
-          python scripts/refresh_market_data.py --require-coverage
-
-      - name: Verify target-session coverage before committing
-        run: python scripts/refresh_market_data.py --check-coverage
+      - name: Recover target session unless it is already accepted
+        id: recovery
+        continue-on-error: true
+        env:
+          RECOVERY_RUN_CREATED_AT: ${{ steps.clock.outputs.result }}
+        run: python scripts/recover_market_data.py
 
       - name: Commit refreshed parquet
+        if: steps.recovery.outcome == 'success'
         run: |
           if git diff --quiet -- data/screener_ohlcv.parquet data/constituents.parquet; then
             echo "No screener parquet changes to commit."
@@ -56,5 +80,21 @@ jobs:
             -m "Daily full-history publication for all app sections after market close."
           git push
 
-      - name: Verify accepted target-session coverage
-        run: python scripts/refresh_market_data.py --check-coverage
+      - name: Preserve recovery diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: market-refresh-${{ github.run_id }}
+          path: outputs/market_refresh_status.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Alert on final failure or close recovered alerts
+        if: always() && !cancelled()
+        uses: actions/github-script@v8
+        env:
+          REFRESH_JOB_STATUS: ${{ job.status }}
+        with:
+          script: |
+            const notify = require('./.github/scripts/market_refresh_alert.cjs');
+            await notify({ github, context, core });

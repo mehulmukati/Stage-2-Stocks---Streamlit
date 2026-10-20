@@ -34,7 +34,7 @@ load_ohlcv_for_backtest = backtest_data.load_ohlcv_for_backtest
 load_quant_ohlcv_snapshot = backtest_data.load_quant_ohlcv_snapshot
 sync_benchmark_data = backtest_data.sync_benchmark_data
 
-SCREENER_WORKER_VERSION = 8
+SCREENER_WORKER_VERSION = 9
 
 
 def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
@@ -281,5 +281,5 @@ def shared_market_refresh_worker(params, emit, cancel_evt):
     refresh()
     if cancel_evt.is_set():
         raise RuntimeError("Cancelled")
-    report = refresh_prices(emit=emit)
+    report = refresh_prices(emit=emit, require_coverage=True)
     return dict(report=report, source_revisions=shared_market.source_revisions())

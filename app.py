@@ -78,7 +78,7 @@ _data_access_reloaded = False
 if getattr(data_access, "CHART_DATA_VERSION", 0) < 3 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 5:
     data_access = importlib.reload(data_access)
     _data_access_reloaded = True
-if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 8:
+if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 9:
     worker_functions = importlib.reload(worker_functions)
 
 ichimoku_chart_figure = chart_builders.ichimoku_chart_figure
@@ -363,8 +363,25 @@ def _render_source_banner(source: str, cache_date: str, count: int = None, frame
         st.warning(f"⚠️ Fresh refresh unavailable. Showing the last verified cache from **{cache_date}**{suffix}.")
 
 
-def _invalidate_legacy_score_result(kind: str, cached: dict) -> bool:
-    """Discard pre-price-date results retained in Streamlit/process memory."""
+def _start_score_refresh(kind: str, target_date: str) -> None:
+    """Recalculate once per accepted revision/session; never download market prices."""
+    target_date = str(pd.Timestamp(target_date).date())
+    key = (target_date, shared_market.source_revisions(), data_access.SCREENER_DATA_VERSION)
+    if st.session_state.get(f"{kind}_auto_refresh_key") == key:
+        st.warning("Automatic recalculation could not finish. Click Run to retry.")
+        return
+    st.session_state[f"{kind}_auto_refresh_key"] = key
+    st.session_state[f"{kind}_run_triggered"] = True
+    worker = stage2_worker if kind == "stage2" else momentum_worker
+    params = {"as_of_date": target_date} if kind == "momentum" else None
+    st.info("Updating screener results from the latest shared prices…")
+    _poll_job(kind, worker, params)
+    st_autorefresh(interval=1500, key=f"{kind}_automatic_recalculation")
+
+
+def _invalidate_legacy_score_result(kind: str, cached: dict, target_date=None) -> bool:
+    """Automatically replace results from an older source revision, schema, or session."""
+    target_date = str(pd.Timestamp(target_date or cached["cache_date"]).date())
     frame = cached.get("df")
     required_columns = {"Price Date"}
     if kind == "stage2":
@@ -373,14 +390,12 @@ def _invalidate_legacy_score_result(kind: str, cached: dict) -> bool:
         isinstance(frame, pd.DataFrame)
         and required_columns.issubset(frame.columns)
         and frame.attrs.get("source_revisions") == shared_market.source_revisions()
+        and cached.get("cache_date") == target_date
     ):
         return False
     st.session_state.pop(f"{kind}_cached_result", None)
     _score_cache[kind] = {"date": None, "data": None}
-    st.warning(
-        "⚠️ An older unverifiable screener result was cleared. "
-        "The background worker binding has been refreshed; click **Run** once more to calculate a date-safe result."
-    )
+    _start_score_refresh(kind, target_date)
     return True
 
 
@@ -488,10 +503,10 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
             st.session_state["stage2_cached_result"] = cached
 
     if cached is None:
-        st.info("Set filters in the sidebar and click **Run**.")
+        _start_score_refresh("stage2", data_access._get_target_key())
         return
 
-    if _invalidate_legacy_score_result("stage2", cached):
+    if _invalidate_legacy_score_result("stage2", cached, data_access._get_target_key()):
         return
 
     df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
@@ -715,10 +730,10 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
             st.session_state["momentum_cached_result"] = cached
 
     if cached is None:
-        st.info("Set filters in the sidebar and click **Run**.")
+        _start_score_refresh("momentum", filters.get("as_of_date") or data_access._get_target_key())
         return
 
-    if _invalidate_legacy_score_result("momentum", cached):
+    if _invalidate_legacy_score_result("momentum", cached, filters.get("as_of_date") or data_access._get_target_key()):
         return
 
     full_df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
@@ -969,11 +984,20 @@ def _sidebar_momentum() -> dict:
                 "constituents lack target-session prices."
             )
         else:
-            st.success("Shared data refreshed. Run the screener again.")
+            st.success("Shared data refreshed. Screener results update automatically.")
+    latest_session = pd.Timestamp(data_access._get_target_key()).date()
+    previous_latest = st.session_state.get("mom_latest_session")
+    if (
+        previous_latest is not None
+        and previous_latest != latest_session
+        and st.session_state.get("mom_as_of_date") == previous_latest
+    ):
+        st.session_state["mom_as_of_date"] = latest_session
+    st.session_state["mom_latest_session"] = latest_session
     as_of_date = st.date_input(
         "As of date",
-        value=pd.Timestamp(data_access._get_target_key()).date(),
-        max_value=pd.Timestamp(data_access._get_target_key()).date(),
+        value=latest_session,
+        max_value=latest_session,
         key="mom_as_of_date",
     )
     st.markdown("**Filters**")
@@ -1200,7 +1224,7 @@ def main():
             st.markdown("### ⏱ Momentum Backtest")
             bt_params = _sidebar_backtest(idx_options)
 
-    # ── AUTOREFRESH — only while the active screener's job runs ──
+    # Poll active jobs quickly and check accepted screener source revisions every minute.
     _kind_for_screener = {
         "📊 Stage 2 Screener": "stage2",
         "🚀 Momentum Screener": "momentum",
@@ -1208,6 +1232,8 @@ def main():
     }
     _active_kind = _kind_for_screener.get(screener)
     if _active_kind:
+        if _active_kind in {"stage2", "momentum"}:
+            st_autorefresh(interval=60_000, key="shared_price_revision_watch")
         _active_job = registry.latest(user_token, _active_kind)
         _run_triggered = st.session_state.get(
             "backtest_run_triggered" if _active_kind == "backtest" else f"{_active_kind}_run_triggered",
