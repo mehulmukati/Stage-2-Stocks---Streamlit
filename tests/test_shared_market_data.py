@@ -16,6 +16,7 @@ from scripts.refresh_market_data import (
     merge_observations,
     refresh_prices,
     revision_needs_full_history,
+    validate_publication,
 )
 
 
@@ -349,22 +350,54 @@ def test_publication_check_fails_on_universe_lag_without_upstream_requests_or_wr
     assert md.source_revisions() == revisions
 
 
-def test_publication_check_allows_isolated_gaps_but_requires_fresh_benchmarks(market):
+def test_publication_check_requires_broad_coverage_and_fresh_benchmarks(market):
     frame, _, days = market
     target = str((days[-1] + pd.offsets.BDay()).date())
     quotes = []
-    for name in ["A", "Nifty 50", "Nifty 100", "Nifty 500"]:
+    for name in ["A", "B", "LOWVOL", "Nifty 50", "Nifty 100", "Nifty 500"]:
         row = frame.iloc[[-1]].copy().assign(symbol=name, date=pd.Timestamp(target))
-        row.series_type = "equity" if name == "A" else "index_price"
+        row.series_type = "equity" if name in {"A", "B", "LOWVOL"} else "index_price"
         quotes.append(row)
     md.write_source(merge_observations(frame, pd.concat(quotes, ignore_index=True)), md.PRICE_PATH)
     coverage = check_publication(target)
-    assert coverage["target_session_symbol_count"] == 1
-    assert coverage["missing_target_symbols"] == ["B", "LOWVOL"]
+    assert coverage["target_session_symbol_count"] == 3
+    assert coverage["missing_target_symbols"] == []
     assert coverage["missing_target_benchmarks"] == []
     md.write_source(md.load_snapshot().prices.query("symbol != 'Nifty 100'"), md.PRICE_PATH)
     with pytest.raises(RuntimeError, match="Nifty 100"):
         check_publication(target)
+
+
+@pytest.mark.parametrize("fresh_count", [0, 1])
+def test_guarded_refresh_rejects_market_wide_lag_before_writing(market, monkeypatch, fresh_count):
+    from apps.dual_momentum import config
+
+    monkeypatch.setattr(config, "ETF_UNIVERSE", {})
+    frame, _, days = market
+    target = str((days[-1] + pd.offsets.BDay()).date())
+    before = md.source_revisions()
+    before_bytes = md.PRICE_PATH.read_bytes()
+
+    def fetch(requests, start, end):
+        if "A.NS" not in requests:
+            return pd.DataFrame(columns=md.PRICE_COLUMNS), "offline"
+        rows = frame[frame.symbol.eq("A")].tail(5).copy()
+        if fresh_count:
+            rows.loc[rows.index[-1], "date"] = pd.Timestamp(target)
+        return rows, None
+
+    with pytest.raises(RuntimeError, match="Shared publication is incomplete"):
+        refresh_prices(target_date=target, fetch=fetch, require_coverage=True)
+    assert md.source_revisions() == before
+    assert md.PRICE_PATH.read_bytes() == before_bytes
+
+
+def test_publication_accepts_isolated_gaps_but_rejects_widespread_lag():
+    coverage = dict(current_symbol_count=100, target_session_symbol_count=96, missing_target_benchmarks=[])
+    validate_publication(coverage, "2026-10-19")
+    coverage["target_session_symbol_count"] = 94
+    with pytest.raises(RuntimeError, match="95% required"):
+        validate_publication(coverage, "2026-10-19")
 
 
 def test_quant_reports_missing_candles_without_inventing_values(market):

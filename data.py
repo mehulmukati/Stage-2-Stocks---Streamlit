@@ -13,7 +13,7 @@ import pandas as pd
 import streamlit as st
 
 CHART_DATA_VERSION = 3
-SCREENER_DATA_VERSION = 4
+SCREENER_DATA_VERSION = 5
 
 # Default no-op emit used when callers don't need progress reporting.
 # Signature: (level: str, message: str) -> None
@@ -456,6 +456,20 @@ def _get_target_key() -> str:
     now = datetime.now(IST)
     start = now.strftime("%Y-%m-%d") if now.hour >= 19 else (now - timedelta(days=1)).strftime("%Y-%m-%d")
     return get_last_valid_trading_date(start, load_nse_holidays())
+
+
+def screener_freshness(frame, target_date):
+    """Describe actual displayed price dates independently of cache/retrieval dates."""
+    dates = pd.to_datetime(frame.get("Price Date", pd.Series(index=frame.index, dtype=object)), errors="coerce")
+    target = pd.Timestamp(target_date).normalize()
+    current = dates.eq(target)
+    return {
+        "latest_price_date": str(dates.max().date()) if dates.notna().any() else None,
+        "oldest_price_date": str(dates.min().date()) if dates.notna().any() else None,
+        "current_count": int(current.sum()),
+        "total_count": len(frame),
+        "outdated_count": int((~current).sum()),
+    }
 
 
 def resolve_screener_data(for_momentum=False, emit=_NOOP_EMIT, as_of_date=None):

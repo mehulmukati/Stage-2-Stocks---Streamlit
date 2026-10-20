@@ -52,7 +52,7 @@ def test_equity_holiday_loader_uses_capital_market_segment_only():
 
 
 def test_screener_worker_is_bound_to_current_data_schema():
-    assert data.SCREENER_DATA_VERSION == 4
+    assert data.SCREENER_DATA_VERSION == 5
     assert workers.SCREENER_WORKER_VERSION == 8
     assert workers.resolve_screener_data is data.resolve_screener_data
 

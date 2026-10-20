@@ -197,23 +197,37 @@ def price_coverage(prices, current, target_date):
     }
 
 
+def validate_publication(coverage, target, min_coverage=0.95):
+    """Reject a market-wide lag before replacing the accepted price revision."""
+    failures = []
+    count = coverage["current_symbol_count"]
+    fresh = coverage["target_session_symbol_count"]
+    if not fresh:
+        failures.append(f"no current constituents have a tradable {target} price")
+    elif not count or fresh / count < min_coverage:
+        failures.append(f"only {fresh}/{count} constituents cover {target}; at least {min_coverage:.0%} required")
+    if coverage["missing_target_benchmarks"]:
+        failures.append("benchmarks lack target-session prices: " + ", ".join(coverage["missing_target_benchmarks"]))
+    if failures:
+        raise RuntimeError("Shared publication is incomplete: " + "; ".join(failures))
+
+
 def check_publication(target_date=None):
     """Check the accepted shared revision without downloading or writing data."""
     snapshot = md.load_snapshot()
     target = target_date or completed_session()
     coverage = price_coverage(snapshot.prices, snapshot.symbols(as_of=target), target)
-    failures = []
-    if not coverage["target_session_symbol_count"]:
-        failures.append(f"no current constituents have a tradable {target} price")
-    if coverage["missing_target_benchmarks"]:
-        failures.append("benchmarks lack target-session prices: " + ", ".join(coverage["missing_target_benchmarks"]))
-    if failures:
-        raise RuntimeError("Shared publication is incomplete: " + "; ".join(failures))
+    validate_publication(coverage, target)
     return coverage
 
 
 def refresh_prices(
-    target_date=None, force_full=False, emit=lambda level, msg: print(msg), fetch=download, only_series=None
+    target_date=None,
+    force_full=False,
+    emit=lambda level, msg: print(msg),
+    fetch=download,
+    only_series=None,
+    require_coverage=False,
 ):
     target = target_date or completed_session()
     target_ts = pd.Timestamp(target)
@@ -372,6 +386,8 @@ def refresh_prices(
             }
         # Embed actual coverage, not just the requested date, in this same file.
         coverage_report = price_coverage(merged, current, target)
+        if require_coverage:
+            validate_publication(coverage_report, target)
         missing = coverage_report["missing_target_symbols"]
         report = {
             "target_date": target,
@@ -401,9 +417,12 @@ if __name__ == "__main__":
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--target-date")
     parser.add_argument("--check-coverage", action="store_true", help="Check accepted publication without downloading")
+    parser.add_argument("--require-coverage", action="store_true", help="Validate target coverage before publishing")
     parser.add_argument("--series-type", action="append", choices=["equity", "index_price", "etf_adjusted"])
     args = parser.parse_args()
     if args.check_coverage:
         print(check_publication(args.target_date))
     else:
-        refresh_prices(args.target_date, args.full, only_series=args.series_type)
+        refresh_prices(
+            args.target_date, args.full, only_series=args.series_type, require_coverage=args.require_coverage
+        )

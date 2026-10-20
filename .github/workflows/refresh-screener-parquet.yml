@@ -3,6 +3,7 @@ name: Refresh Shared Market Data
 on:
   schedule:
     - cron: "15 14 * * *" # 7:45 PM IST
+    - cron: "15 17 * * *" # 10:45 PM IST retry for delayed vendor prices
   workflow_dispatch:
 
 permissions:
@@ -36,7 +37,10 @@ jobs:
 
       - name: Refresh shared full-history pricing file
         run: |
-          python scripts/refresh_market_data.py
+          python scripts/refresh_market_data.py --require-coverage
+
+      - name: Verify target-session coverage before committing
+        run: python scripts/refresh_market_data.py --check-coverage
 
       - name: Commit refreshed parquet
         run: |

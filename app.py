@@ -75,7 +75,7 @@ if (
 if getattr(ichimoku_descriptions, "ICHIMOKU_SUMMARY_VERSION", 0) < 2 or not hasattr(ichimoku_descriptions, "_periods"):
     ichimoku_descriptions = importlib.reload(ichimoku_descriptions)
 _data_access_reloaded = False
-if getattr(data_access, "CHART_DATA_VERSION", 0) < 3 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 4:
+if getattr(data_access, "CHART_DATA_VERSION", 0) < 3 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 5:
     data_access = importlib.reload(data_access)
     _data_access_reloaded = True
 if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 8:
@@ -330,8 +330,22 @@ def render_ichimoku_cheat_sheet() -> None:
     st.caption("Condensed from the comprehensive tutorial · Educational material, not investment advice.")
 
 
-def _render_source_banner(source: str, cache_date: str, count: int = None) -> None:
+def _render_source_banner(source: str, cache_date: str, count: int = None, frame=None, target_date=None) -> None:
     suffix = f" · {count} stocks" if count is not None else ""
+    if frame is not None:
+        target_date = str(pd.Timestamp(target_date or cache_date).date())
+        freshness = data_access.screener_freshness(frame, target_date)
+        latest = freshness["latest_price_date"] or "unavailable"
+        st.caption(f"Target trading session: {target_date} · Latest price date: {latest}{suffix}")
+        if freshness["outdated_count"]:
+            st.warning(
+                f"Price data is incomplete for {target_date}: "
+                f"{freshness['current_count']}/{freshness['total_count']} stocks in this result "
+                "have prices for that session. "
+                f"{freshness['outdated_count']} have older or missing prices. "
+                "Check each stock's Price Date; these results are not fully current."
+            )
+        return
     if source == "shared":
         st.caption(f"Shared market snapshot · as of {cache_date}{suffix}")
     elif source == "memory":
@@ -481,7 +495,8 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
         return
 
     df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
-    _render_source_banner(source, cache_date)
+    target_date = data_access._get_target_key()
+    _render_source_banner(source, cache_date, frame=df, target_date=target_date)
 
     display_df = df.copy()
     if selected_indices:
@@ -522,7 +537,14 @@ def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid:
     ]
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Cache Date", cache_date)
+    c1.metric(
+        "Latest Price Date",
+        data_access.screener_freshness(df, cache_date)["latest_price_date"] or "Unavailable",
+        help=(
+            f"Newest price in the scored universe. Target trading session: {target_date}. "
+            "Check Price Date for older rows."
+        ),
+    )
     c2.metric(
         "Total Universe",
         len(df),
@@ -700,7 +722,13 @@ def momentum_results(selected_indices: list[str], idx_options: list[str], filter
         return
 
     full_df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
-    _render_source_banner(source, cache_date, count=len(full_df))
+    _render_source_banner(
+        source,
+        cache_date,
+        count=len(full_df),
+        frame=full_df,
+        target_date=filters.get("as_of_date") or data_access._get_target_key(),
+    )
 
     if filters.get("as_of_date") and cache_date != str(filters["as_of_date"]):
         st.info("The selected date changed. Click Run to calculate that dated snapshot.")
