@@ -22,6 +22,8 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from equity_data import EQUITY_POLICY_VERSION, accepted_equity_rows, extend_sessions
+
 ROOT = Path(__file__).resolve().parent
 PRICE_PATH = ROOT / "data" / "screener_ohlcv.parquet"
 MEMBERSHIP_PATH = ROOT / "data" / "constituents.parquet"
@@ -120,7 +122,7 @@ class MarketSnapshot:
 
     def ohlcv(self, symbols=None, start=None, as_of=None) -> dict[str, pd.DataFrame]:
         date = pd.Timestamp(as_of) if as_of is not None else self.as_of
-        frame = self.prices[self.prices.series_type == "equity"]
+        frame = self.equity_prices(as_of=date)
         if symbols is not None:
             frame = frame[frame.symbol.isin(symbols)]
         if date is not None:
@@ -131,11 +133,26 @@ class MarketSnapshot:
         for symbol, group in frame.groupby("symbol", sort=True):
             sub = group.set_index("date")[["Open", "High", "Low", "Close", "Volume"]].sort_index()
             sub.attrs["source_revisions"] = self.revisions
+            sub.attrs["equity_policy_version"] = EQUITY_POLICY_VERSION
             result[symbol] = sub
         return result
 
+    def equity_prices(self, as_of=None) -> pd.DataFrame:
+        """Accepted equity observations; the raw prices frame remains untouched."""
+        date = pd.Timestamp(as_of) if as_of is not None else self.as_of
+        frame = self.prices[self.prices.series_type.eq("equity")]
+        if date is not None:
+            frame = frame[frame.date.le(date)]
+        return accepted_equity_rows(frame)
+
+    def trading_calendar(self, as_of=None) -> pd.DatetimeIndex:
+        """Sessions evidenced by positive-volume observations across the market."""
+        through = as_of if as_of is not None else self.as_of
+        observed = pd.DatetimeIndex(self.equity_prices(through).date.unique()).sort_values()
+        return extend_sessions(observed, through)
+
     def series(self, series_type: str, symbols=None) -> dict[str, pd.Series]:
-        frame = self.prices[self.prices.series_type == series_type]
+        frame = self.equity_prices() if series_type == "equity" else self.prices[self.prices.series_type == series_type]
         if symbols is not None:
             frame = frame[frame.symbol.isin(symbols)]
         if self.as_of is not None:

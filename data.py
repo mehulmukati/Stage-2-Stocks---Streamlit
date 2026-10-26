@@ -12,8 +12,10 @@ from typing import Callable
 import pandas as pd
 import streamlit as st
 
-CHART_DATA_VERSION = 3
-SCREENER_DATA_VERSION = 5
+from equity_data import EQUITY_POLICY_VERSION, MIN_RECENT_COVERAGE, recent_coverage
+
+CHART_DATA_VERSION = 4
+SCREENER_DATA_VERSION = 6
 
 # Default no-op emit used when callers don't need progress reporting.
 # Signature: (level: str, message: str) -> None
@@ -157,7 +159,7 @@ _screener_baseline: pd.DataFrame | None = None
 
 def _load_screener_baseline() -> pd.DataFrame:
     snapshot = shared_market.load_snapshot()
-    return snapshot.prices[snapshot.prices.series_type == "equity"].drop(columns="series_type")
+    return snapshot.equity_prices().drop(columns="series_type")
 
 
 def _long_to_symbol_dict(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
@@ -297,12 +299,10 @@ def _load_and_score(constituents, for_momentum, emit=_NOOP_EMIT, as_of_date=None
     target = pd.Timestamp(as_of_date or _get_target_key())
     all_symbols = {s for values in constituents.values() for s in values}
     data = snapshot.ohlcv(all_symbols, as_of=target)
-    # Exact NSE calendar used for the same three-session rule as the portfolio engine.
-    dates = pd.bdate_range(snapshot.prices.date.min(), target)
-    holidays = load_nse_holidays()
-    calendar = dates[~dates.strftime("%Y-%m-%d").isin(holidays)]
+    calendar = snapshot.trading_calendar(target)
     results = []
     for symbol, sub in data.items():
+        coverage = recent_coverage(sub.index, target, calendar)
         if not for_momentum and len(sub) < 250:
             continue
         if for_momentum:
@@ -312,18 +312,22 @@ def _load_and_score(constituents, for_momentum, emit=_NOOP_EMIT, as_of_date=None
             metrics["Tradable"] = last is not None
             metrics["Price Date"] = str(sub.index[-1].date())
         else:
+            if coverage < MIN_RECENT_COVERAGE or trading_session_age(sub.index[-1], target, calendar) > 3:
+                continue
             metrics = score_stage2(sub)
             if metrics is None:
                 continue
             metrics["Price Date"] = str(sub.index[-1].date())
             metrics["Retest"] = check_weinstein_retest(sub)
             metrics.update(current_stage2_run(sub))
+        metrics["Trading Coverage"] = coverage
         metrics["Symbol"] = symbol
         metrics["Index"] = next((i for i, syms in constituents.items() if symbol in syms), "Unknown")
         results.append(metrics)
     result = pd.DataFrame(results)
     result.attrs["source_revisions"] = snapshot.revisions
     result.attrs["as_of_date"] = str(target.date())
+    result.attrs["equity_policy_version"] = EQUITY_POLICY_VERSION
     return result
 
 
@@ -412,13 +416,15 @@ def _fetch_chart_data_for_target(symbol: str, target_date: str) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=3600)
-def _fetch_chart_data_cached(symbol: str, target_date: str, source_revisions=None) -> pd.DataFrame:
+def _fetch_chart_data_cached(
+    symbol: str, target_date: str, source_revisions=None, equity_policy_version=None
+) -> pd.DataFrame:
     return _fetch_chart_data_for_target(symbol, target_date)
 
 
 def fetch_chart_data(symbol: str) -> pd.DataFrame:
     """Return chart OHLCV through the latest completed NSE session."""
-    return _fetch_chart_data_cached(symbol, _get_target_key(), shared_market.source_revisions())
+    return _fetch_chart_data_cached(symbol, _get_target_key(), shared_market.source_revisions(), EQUITY_POLICY_VERSION)
 
 
 # ──────────────────────────────────────────────
@@ -476,7 +482,7 @@ def resolve_screener_data(for_momentum=False, emit=_NOOP_EMIT, as_of_date=None):
     target_key = str(pd.Timestamp(as_of_date).date()) if as_of_date is not None else _get_target_key()
     snapshot = shared_market.load_snapshot(target_key)
     kind = "momentum" if for_momentum else "stage2"
-    key = (target_key, snapshot.revisions)
+    key = (target_key, snapshot.revisions, EQUITY_POLICY_VERSION)
     with _cache_lock:
         hit = _score_cache[kind]
         if hit.get("key") == key and hit.get("data") is not None:

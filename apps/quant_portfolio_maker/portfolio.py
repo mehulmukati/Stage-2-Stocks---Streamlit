@@ -157,9 +157,12 @@ def render_portfolio_lab(params: dict) -> None:
     result = st.session_state.get("quant_portfolio_cached_result")
     import market_data as shared_market
 
-    if result is not None and result.get("source_revisions") != shared_market.source_revisions():
+    if result is not None and (
+        result.get("source_revisions") != shared_market.source_revisions()
+        or result.get("equity_policy_version") != shared_market.EQUITY_POLICY_VERSION
+    ):
         st.session_state.pop("quant_portfolio_cached_result", None)
-        st.info("Market sources changed. Run the portfolio again using the current revisions.")
+        st.info("Market data or calculation rules changed. Run the portfolio again.")
         return
 
     if result is None:

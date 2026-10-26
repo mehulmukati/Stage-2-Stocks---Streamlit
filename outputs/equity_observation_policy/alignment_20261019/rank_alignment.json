@@ -1,0 +1,45 @@
+{
+  "as_of": "2026-10-19",
+  "settings": {
+    "min_history_days": 252,
+    "minimum_median_volume": 100000,
+    "max_stale_sessions": 3,
+    "min_annual_return": 7,
+    "pct_from_52w_high": 25,
+    "max_circuits": 18,
+    "close_above_200dma": true,
+    "pos_days_3m_min": 45,
+    "pos_days_6m_min": 45,
+    "pos_days_12m_min": 45
+  },
+  "source_revisions": [
+    "cf07026396b14f6b8551998ea1748f06",
+    "9a1cda963fbe4573a2f66f7e8c88a6b2"
+  ],
+  "eligible_count": 141,
+  "universe_count": 751,
+  "passed": true,
+  "top15": [
+    "CUPID",
+    "LAURUSLABS",
+    "SHREEJISPG",
+    "SKYGOLD",
+    "WELCORP",
+    "HFCL",
+    "SHILPAMED",
+    "SANSERA",
+    "DIACABS",
+    "CPPLUS",
+    "DIVISLAB",
+    "WELSPUNLIV",
+    "KMEW",
+    "GLAND",
+    "LOTUSDEV"
+  ],
+  "selected": {
+    "LOTUSDEV": 15,
+    "UNIMECH": null,
+    "CPPLUS": 10,
+    "SHREEJISPG": 3
+  }
+}

@@ -17,6 +17,7 @@ import yfinance as yf
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import market_data as md  # noqa: E402 -- repo imports need the script's parent on sys.path
+from equity_data import observation_diagnostics  # noqa: E402
 
 INDEX_TICKERS = {
     "Nifty 50": "^NSEI",
@@ -401,6 +402,13 @@ def refresh_prices(
             "history_rebuild_required": sorted(pending_rebuild - rebuilt),
         }
         report.update(coverage_report)
+        report["equity_observation_policy"] = observation_diagnostics(merged)
+        diagnostics = report["equity_observation_policy"]
+        emit(
+            "info",
+            f"Equity calculation view excludes {diagnostics['excluded_rows']:,} raw rows; "
+            f"{diagnostics['nonflat_zero_volume_rows']:,} zero-volume candles are non-flat and need source review",
+        )
         report.update(cash_metadata)
         revision = md.write_source(merged, md.PRICE_PATH, report, expected_revision=snapshot.price_revision)
         emit(

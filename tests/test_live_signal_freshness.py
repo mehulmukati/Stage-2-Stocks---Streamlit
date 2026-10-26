@@ -61,6 +61,7 @@ def test_unpriced_broker_holding_still_blocks_signal(monkeypatch):
 def test_live_signal_reaches_engine_with_unpriced_nonholding(monkeypatch):
     _pin_live_snapshot(monkeypatch, ["A", "NEW"])
     prices = _long([("A", "2026-08-25", 101)])
+    monkeypatch.setattr("market_data.MarketSnapshot.trading_calendar", lambda self: pd.DatetimeIndex(prices.date))
     partial = db._assess_ohlcv_freshness(prices, "2026-08-25", ["A", "NEW"], "parquet")
     monkeypatch.setattr(db, "_load_constituents", lambda: {"Nifty 50": ["A", "NEW"]})
     monkeypatch.setattr(db, "load_compositions", lambda snapshot=None: pd.DataFrame())

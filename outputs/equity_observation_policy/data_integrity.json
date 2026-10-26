@@ -1,0 +1,60 @@
+{
+  "all_unchanged": true,
+  "files": [
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\backtest_delta.parquet",
+      "before_sha256": "350E4C328FA57354490C6B894A7E39BAA5369F4E79691841177E7C76E1BA4061",
+      "after_sha256": "350E4C328FA57354490C6B894A7E39BAA5369F4E79691841177E7C76E1BA4061"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\backtest_history.parquet",
+      "before_sha256": "9255DCF230C8517A0B09460EB90AC573C76E750781A3CEDB2BDB1FD99E8E0BC3",
+      "after_sha256": "9255DCF230C8517A0B09460EB90AC573C76E750781A3CEDB2BDB1FD99E8E0BC3"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\benchmarks_delta.parquet",
+      "before_sha256": "FC6E3E55B8CEC39B41A9E24A5E7BC042D933612BDFE6370E8846DAFEEB825DBD",
+      "after_sha256": "FC6E3E55B8CEC39B41A9E24A5E7BC042D933612BDFE6370E8846DAFEEB825DBD"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\benchmarks.parquet",
+      "before_sha256": "CDB78277C4DB6043F04A7669CB2413F879AEA8B6AAF785CCB28DB08F169D2D35",
+      "after_sha256": "CDB78277C4DB6043F04A7669CB2413F879AEA8B6AAF785CCB28DB08F169D2D35"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\compositions.parquet",
+      "before_sha256": "1BAE2F4E1392022A0819113FA78E79DDA7FB713758F9B91EBAC7290B34EBE326",
+      "after_sha256": "1BAE2F4E1392022A0819113FA78E79DDA7FB713758F9B91EBAC7290B34EBE326"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\constituents.parquet",
+      "before_sha256": "EA418F48C0F3467A6E90DD05EE37764E0358BA4F698A74C5797F5A9F0231406B",
+      "after_sha256": "EA418F48C0F3467A6E90DD05EE37764E0358BA4F698A74C5797F5A9F0231406B"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\index_overlay_prices.parquet",
+      "before_sha256": "9CF7B4192846F54AAD34A9F8D8914BB251856FE5D256DFA214B1467893326D42",
+      "after_sha256": "9CF7B4192846F54AAD34A9F8D8914BB251856FE5D256DFA214B1467893326D42"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\momentum_cache.parquet",
+      "before_sha256": "C268B72D4D836DEF3C1AF48D6967B384E6A47DDC3FA003D803AE70BED4210600",
+      "after_sha256": "C268B72D4D836DEF3C1AF48D6967B384E6A47DDC3FA003D803AE70BED4210600"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\screener_ohlcv.parquet",
+      "before_sha256": "D1CC339564B3D61B105B3821E3826ED5F5692F4FE4FEEAF9CD25442A07925B47",
+      "after_sha256": "D1CC339564B3D61B105B3821E3826ED5F5692F4FE4FEEAF9CD25442A07925B47"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\stage2_breadth_scores.parquet",
+      "before_sha256": "D5FA5A5061B1ACE96A1DBAB64B2EE65AB061E10433B5A1E985CFA3F64F1B96F2",
+      "after_sha256": "D5FA5A5061B1ACE96A1DBAB64B2EE65AB061E10433B5A1E985CFA3F64F1B96F2"
+    },
+    {
+      "path": "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\stage2_cache.parquet",
+      "before_sha256": "AA41091BDCE08198340CF948A44C7DDE8DBDF5C59D2BE960D78579850E532271",
+      "after_sha256": "AA41091BDCE08198340CF948A44C7DDE8DBDF5C59D2BE960D78579850E532271"
+    }
+  ]
+}

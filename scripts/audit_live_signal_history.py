@@ -39,7 +39,7 @@ def _load_prices(snapshot=None):
     import market_data as md
 
     snapshot = snapshot or md.load_snapshot()
-    frame = snapshot.prices[snapshot.prices.series_type == "equity"]
+    frame = snapshot.equity_prices()
     meta = dict(
         source_files=["screener_ohlcv.parquet", "constituents.parquet"],
         source_revisions=snapshot.revisions,

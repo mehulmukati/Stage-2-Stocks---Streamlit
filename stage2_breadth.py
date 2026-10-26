@@ -12,9 +12,10 @@ import pandas as pd
 
 import config
 import market_data as shared_market
+from equity_data import EQUITY_POLICY_VERSION, MIN_RECENT_COVERAGE, accepted_equity_rows, coverage_by_date
 from stage2_engine import compute_rolling_stage2
 
-BREADTH_CACHE_VERSION = 3
+BREADTH_CACHE_VERSION = 4
 _DATA_DIR = os.path.dirname(config.SCREENER_OHLCV_PARQUET)
 SCREENER_OHLCV_PARQUET = config.SCREENER_OHLCV_PARQUET
 BACKTEST_HISTORY_PARQUET = getattr(
@@ -43,7 +44,11 @@ def _available_ohlcv_sources():
 
 
 def _source_fingerprint():
-    return {"version": BREADTH_CACHE_VERSION, "revisions": list(shared_market.source_revisions())}
+    return {
+        "version": BREADTH_CACHE_VERSION,
+        "policy": EQUITY_POLICY_VERSION,
+        "revisions": list(shared_market.source_revisions()),
+    }
 
 
 def _atomic_write_parquet(df: pd.DataFrame, path: str) -> None:
@@ -87,7 +92,7 @@ def _read_valid_cache(fingerprint: dict) -> pd.DataFrame | None:
     return None
 
 
-def build_breadth_score_history(ohlcv: pd.DataFrame) -> pd.DataFrame:
+def build_breadth_score_history(ohlcv: pd.DataFrame, calendar=None) -> pd.DataFrame:
     """Return one mature Stage 2 classification per available stock/session.
 
     A classification begins only once 250 sessions are available, matching the
@@ -100,9 +105,13 @@ def build_breadth_score_history(ohlcv: pd.DataFrame) -> pd.DataFrame:
         raise ValueError(f"OHLCV is missing required breadth columns: {sorted(missing)}")
 
     pieces: list[pd.DataFrame] = []
+    if "series_type" in ohlcv:
+        ohlcv = ohlcv[ohlcv.series_type.eq("equity")]
     source = ohlcv[["symbol", "date", "Close", "Volume"]].copy()
     source["date"] = pd.to_datetime(source["date"])
     source = source.dropna(subset=["symbol", "date", "Close", "Volume"])
+    source = accepted_equity_rows(source)
+    calendar = pd.DatetimeIndex(source.date.unique()).sort_values() if calendar is None else calendar
     for symbol, stock in source.groupby("symbol", sort=False):
         stock = stock.sort_values("date").drop_duplicates("date", keep="last").set_index("date")
         if len(stock) < 250:
@@ -112,6 +121,8 @@ def build_breadth_score_history(ohlcv: pd.DataFrame) -> pd.DataFrame:
         # the vectorised representation.  Earlier rows must not be treated as
         # a valid "Not Stage 2" observation.
         rolled = rolled.iloc[250:].dropna(subset=["MA50", "MA150", "MA200"])
+        coverage = coverage_by_date(stock.index, calendar)
+        rolled = rolled.loc[coverage.reindex(rolled.index).ge(MIN_RECENT_COVERAGE)]
         if rolled.empty:
             continue
         piece = rolled[["Score", "Phase"]].reset_index(names="date")
@@ -129,12 +140,16 @@ def load_breadth_score_history(snapshot=None) -> tuple[pd.DataFrame, bool]:
     """Load scores from memory/disk, rebuilding only after OHLCV changes."""
     global _score_history_memory
     snapshot = snapshot or shared_market.load_snapshot()
-    fingerprint = {"version": BREADTH_CACHE_VERSION, "revisions": list(snapshot.revisions)}
+    fingerprint = {
+        "version": BREADTH_CACHE_VERSION,
+        "policy": EQUITY_POLICY_VERSION,
+        "revisions": list(snapshot.revisions),
+    }
     with _score_history_lock:
         if _score_history_memory is not None and _score_history_memory[0] == fingerprint:
             return _score_history_memory[1], True
-        ohlcv = snapshot.prices[snapshot.prices.series_type == "equity"]
-        scores = build_breadth_score_history(ohlcv)
+        ohlcv = snapshot.equity_prices()
+        scores = build_breadth_score_history(ohlcv, snapshot.trading_calendar())
         scores.attrs["source_revisions"] = snapshot.revisions
         _score_history_memory = (fingerprint, scores)
         return scores, False

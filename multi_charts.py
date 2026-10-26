@@ -83,6 +83,7 @@ def analyze(
     timeframe: str = "Daily",
     target_session: str | None = None,
     source_revisions=None,
+    equity_policy_version=None,
 ) -> dict:
     """Calculate against full history; the selected visible range is applied later."""
     if not _SYMBOL.fullmatch(ticker):
@@ -142,7 +143,7 @@ def analyze_current(ticker: str, analysis: str, timeframe: str = "Daily") -> dic
     """Include the completed market session in the analysis cache key."""
     from market_data import source_revisions
 
-    return analyze(ticker, analysis, timeframe, data._get_target_key(), source_revisions())
+    return analyze(ticker, analysis, timeframe, data._get_target_key(), source_revisions(), data.EQUITY_POLICY_VERSION)
 
 
 def _draw_candles(ax, frame: pd.DataFrame, prefix: str = "") -> None:

@@ -1,0 +1,23 @@
+{
+  "full_suite": {
+    "passed": 355,
+    "failed": 0
+  },
+  "final_affected_checks": {
+    "passed": 144,
+    "failed": 0
+  },
+  "real_data_alignment": {
+    "date": "2026-10-19",
+    "passed": true,
+    "eligible_count": 141,
+    "paths": [
+      "screener",
+      "scalar ranking",
+      "precomputed ranking"
+    ]
+  },
+  "formatting": "passed",
+  "lint": "passed",
+  "parquet_files_unchanged": 11
+}

@@ -80,12 +80,12 @@ def test_empty_signal_run_still_returns_nav_and_metrics(monkeypatch):
     assert result["nav"]["Quant Portfolio"].eq(100).all()
 
 
-def test_non_liquidity_strategy_does_not_require_or_gate_on_volume(monkeypatch):
+def test_non_liquidity_strategy_does_not_apply_median_volume_threshold(monkeypatch):
     monkeypatch.setattr(engine, "build_strategy", lambda *_args, **_kwargs: _FakeStrategy())
     monkeypatch.setattr(
         engine, "strategy_metadata", lambda strategy: {"definition": strategy.definition.__dict__, "config": {}}
     )
-    prices = _prices(1).drop(columns="Volume")
+    prices = _prices(1)
 
     result = run_quant_portfolio(
         {"NO_VOLUME": prices},
@@ -101,6 +101,14 @@ def test_non_liquidity_strategy_does_not_require_or_gate_on_volume(monkeypatch):
 
     buy = result["decision_log"].query("Event == 'BUY'").iloc[0]
     assert buy["Outcome"] == "EXECUTED"
+
+
+def test_equity_strategy_requires_observed_volume_even_without_liquidity_filter(monkeypatch):
+    monkeypatch.setattr(engine, "build_strategy", lambda *_args, **_kwargs: _FakeStrategy())
+    result = run_quant_portfolio(
+        {"NO_VOLUME": _prices(1).drop(columns="Volume")}, {}, QuantPortfolioConfig(strategy="fake")
+    )
+    assert result["error"] == "No OHLCV data is available."
 
 
 def test_exact_score_tie_is_resolved_by_symbol(monkeypatch):

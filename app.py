@@ -75,10 +75,10 @@ if (
 if getattr(ichimoku_descriptions, "ICHIMOKU_SUMMARY_VERSION", 0) < 2 or not hasattr(ichimoku_descriptions, "_periods"):
     ichimoku_descriptions = importlib.reload(ichimoku_descriptions)
 _data_access_reloaded = False
-if getattr(data_access, "CHART_DATA_VERSION", 0) < 3 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 5:
+if getattr(data_access, "CHART_DATA_VERSION", 0) < 4 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 6:
     data_access = importlib.reload(data_access)
     _data_access_reloaded = True
-if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 9:
+if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 10:
     worker_functions = importlib.reload(worker_functions)
 
 ichimoku_chart_figure = chart_builders.ichimoku_chart_figure
@@ -390,6 +390,7 @@ def _invalidate_legacy_score_result(kind: str, cached: dict, target_date=None) -
         isinstance(frame, pd.DataFrame)
         and required_columns.issubset(frame.columns)
         and frame.attrs.get("source_revisions") == shared_market.source_revisions()
+        and frame.attrs.get("equity_policy_version") == shared_market.EQUITY_POLICY_VERSION
         and cached.get("cache_date") == target_date
     ):
         return False
