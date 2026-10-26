@@ -2,30 +2,30 @@ import numpy as np
 import pandas as pd
 
 from config import CIRCUIT_LEVELS, CIRCUIT_TOLERANCE
-from equity_data import accepted_equity_rows
+from equity_data import session_frame
 
-_VOL_WINDOW = 252
+_VOL_WINDOW = 251
 _VOL_MIN_PERIODS = 63
 
 
 def _annualized_vol(returns: pd.Series) -> float | None:
-    """Annualized volatility using the trailing 252 trading days (min 63 non-NaN).
-
-    Scalar equivalent of the rolling(252, min_periods=63).std() used in precompute_metrics.
-    """
-    tail = returns.tail(_VOL_WINDOW).dropna()
-    if len(tail) < _VOL_MIN_PERIODS:
+    """Volatility over at most 251 consecutive session returns; never skip gaps."""
+    values = returns.iloc[1:] if len(returns) and pd.isna(returns.iloc[0]) else returns
+    tail = values.tail(_VOL_WINDOW)
+    if len(tail) < _VOL_MIN_PERIODS or tail.isna().any():
         return None
     s = tail.std()
     return float(s * np.sqrt(252)) if s > 0 else None
 
 
-def _count_circuits(df: pd.DataFrame) -> int:
+def _count_circuits(df: pd.DataFrame, calendar=None) -> int | None:
     """Count circuit-breaker closes (upper or lower) over the last 252 trading days (1 year)."""
-    subset = df.tail(252)
+    subset = session_frame(df, calendar).tail(252)
+    if subset.Close.isna().any():
+        return None
     if len(subset) < 2:
         return 0
-    pct_change = subset["Close"].pct_change() * 100
+    pct_change = subset["Close"].pct_change(fill_method=None) * 100
     circuit_count = 0
     for level in CIRCUIT_LEVELS:
         upper = (pct_change >= level - CIRCUIT_TOLERANCE) & (pct_change <= level + CIRCUIT_TOLERANCE)
@@ -34,23 +34,29 @@ def _count_circuits(df: pd.DataFrame) -> int:
     return int(circuit_count)
 
 
-def _calculate_sharpe(df: pd.DataFrame, period_days: int) -> float | None:
+def _calculate_sharpe(df: pd.DataFrame, period_days: int, calendar=None) -> float | None:
     """Return annualized Sharpe ratio (no risk-free rate) over the last period_days trading days."""
+    df = session_frame(df, calendar)
     if len(df) < period_days:
         return None
     subset = df.tail(period_days)
-    daily_returns = subset["Close"].pct_change().dropna()
+    if subset.Close.isna().any():
+        return None
+    daily_returns = subset["Close"].pct_change(fill_method=None).iloc[1:]
     if len(daily_returns) == 0 or daily_returns.std() == 0:
         return None
     return daily_returns.mean() / daily_returns.std() * np.sqrt(252)
 
 
-def _calculate_positive_days_pct(df: pd.DataFrame, months: int) -> float | None:
+def _calculate_positive_days_pct(df: pd.DataFrame, months: int, calendar=None) -> float | None:
     """Return the percentage of up-close days over the last N months (approx 21 trading days/month)."""
     days_approx = int(months * 21)
+    df = session_frame(df, calendar)
     if len(df) < days_approx:
         return None
     subset = df.tail(days_approx)
+    if subset.Close.isna().any():
+        return None
     positive_days = (subset["Close"].diff() > 0).sum()
     total_days = len(subset) - 1
     if total_days == 0:
@@ -58,59 +64,24 @@ def _calculate_positive_days_pct(df: pd.DataFrame, months: int) -> float | None:
     return (positive_days / total_days) * 100
 
 
-def score_momentum(df: pd.DataFrame) -> dict | None:
-    """Compute momentum metrics (Sharpe, volatility, 52w stats, circuit count) for a single stock."""
-    df = accepted_equity_rows(df)
-    if len(df) < 250:
+def score_momentum(df: pd.DataFrame, calendar=None) -> dict | None:
+    """Scalar public view of the same fixed-session metrics used by replay."""
+    metrics = precompute_metrics(df, calendar)
+    if metrics.empty or metrics.iloc[-1]["_count"] < 250:
         return None
-
-    c = df["Close"]
-    v = df["Volume"]
-    h = df["High"]
-
-    close = c.iloc[-1]
-    high_52w = h.rolling(252).max().iloc[-1]
-    dma100 = c.rolling(100).mean().iloc[-1]
-    dma200 = c.rolling(200).mean().iloc[-1]
-    vol_median = v.rolling(252).median().iloc[-1]
-
-    one_yr_change = ((c.iloc[-1] / c.iloc[-252]) - 1) * 100 if len(c) >= 252 else None
-    pct_from_52w_high = ((close - high_52w) / high_52w) * 100 if high_52w else None
-    circuit_count = _count_circuits(df)
-
-    sharpe_3m = _calculate_sharpe(df, 63)
-    sharpe_6m = _calculate_sharpe(df, 126)
-    sharpe_9m = _calculate_sharpe(df, 189)
-    sharpe_1y = _calculate_sharpe(df, 252)
-
-    daily_returns = c.pct_change().dropna()
-    volatility = _annualized_vol(daily_returns)
-
-    pos_days_3m = _calculate_positive_days_pct(df, 3)
-    pos_days_6m = _calculate_positive_days_pct(df, 6)
-    pos_days_12m = _calculate_positive_days_pct(df, 12)
-
-    return {
-        "Close": round(close, 2),
-        "52w_High": round(high_52w, 2) if high_52w else None,
-        "DMA100": round(dma100, 2),
-        "DMA200": round(dma200, 2),
-        "Vol_Median": int(vol_median) if vol_median is not None and not np.isnan(vol_median) else None,
-        "1Y_Change": round(one_yr_change, 2) if one_yr_change is not None else None,
-        "Pct_From_52W_High": round(pct_from_52w_high, 2) if pct_from_52w_high is not None else None,
-        "Circuit_Count": circuit_count,
-        "Sharpe_3M": round(sharpe_3m, 3) if sharpe_3m is not None else None,
-        "Sharpe_6M": round(sharpe_6m, 3) if sharpe_6m is not None else None,
-        "Sharpe_9M": round(sharpe_9m, 3) if sharpe_9m is not None else None,
-        "Sharpe_1Y": round(sharpe_1y, 3) if sharpe_1y is not None else None,
-        "Volatility": round(volatility * 100, 1) if volatility is not None else None,
-        "Pos_Days_3M": round(pos_days_3m, 0) if pos_days_3m is not None else None,
-        "Pos_Days_6M": round(pos_days_6m, 0) if pos_days_6m is not None else None,
-        "Pos_Days_12M": round(pos_days_12m, 0) if pos_days_12m is not None else None,
-    }
+    row = metrics.iloc[-1]
+    keys = [key for key in metrics if not key.startswith("_") and key != "Sharpe_1M"]
+    result = {key: (None if pd.isna(row[key]) else float(row[key])) for key in keys}
+    if result["Close"] is not None:
+        result["Close"] = round(result["Close"], 2)
+    if result["Vol_Median"] is not None:
+        result["Vol_Median"] = int(result["Vol_Median"])
+    if result["Circuit_Count"] is not None:
+        result["Circuit_Count"] = int(result["Circuit_Count"])
+    return result
 
 
-def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
+def precompute_metrics(df: pd.DataFrame, calendar=None) -> pd.DataFrame:
     """
     Vectorized equivalent of score_momentum for every date in df.
 
@@ -118,14 +89,14 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
     O(n) per symbol instead of O(n) per (rebalance × symbol). The backtest engine calls
     this once per symbol before the rebalance loop, then does O(log n) date lookups.
 
-    Internal columns _count and _missing_rate mirror the len(sub) and isna().mean()
-    filters that rank_universe_at_date applies on the sliced sub-DataFrame.
+    _count counts supported price sessions; _missing_rate measures unsupported
+    closes in the latest 252 exchange sessions, including absent source rows.
     """
-    df = accepted_equity_rows(df)
+    df = session_frame(df, calendar)
     c = df["Close"]
     v = df["Volume"]
     h = df["High"]
-    rets = c.pct_change()
+    rets = c.pct_change(fill_method=None)
 
     def _rolling_sharpe(window: int) -> pd.Series:
         # tail(window) → pct_change().dropna() gives window-1 returns → rolling(window-1)
@@ -135,16 +106,21 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
         return (r_mean / r_std * np.sqrt(252)).where(r_std > 0)
 
     # Circuit hits: tail(252) → 251 pct_changes → rolling(252) includes 251 valid diffs
-    pct_chg = c.pct_change() * 100
-    circuit_hits = pd.Series(0.0, index=c.index)
+    pct_chg = c.pct_change(fill_method=None) * 100
+    circuit_hits = pd.Series(0.0, index=c.index).where(pct_chg.notna())
     for level in CIRCUIT_LEVELS:
         upper = (pct_chg >= level - CIRCUIT_TOLERANCE) & (pct_chg <= level + CIRCUIT_TOLERANCE)
         lower = (pct_chg <= -level - CIRCUIT_TOLERANCE) & (pct_chg >= -level + CIRCUIT_TOLERANCE)
         circuit_hits += (upper | lower).astype(float)
 
     # Positive-days: tail(days_approx) → days_approx-1 diffs → rolling(days_approx) / (days_approx-1)
-    pos = (c.diff() > 0).astype(float)  # NaN at index 0 → False=0, so no NaN in series
-    high_52w = h.rolling(252, min_periods=252).max()
+    pos = (c.diff() > 0).astype(float).where(c.notna() & c.shift().notna())
+    high_52w = h.rolling(252, min_periods=1).max().where(pd.Series(range(1, len(c) + 1), index=c.index).ge(252))
+    incomplete_high = (df.is_tradable & h.isna()) | c.isna()
+    high_52w = high_52w.where(incomplete_high.rolling(252, min_periods=1).sum().eq(0))
+    positions = pd.Series(np.arange(len(c)), index=c.index)
+    last_trade = positions.where(df.is_tradable).ffill()
+    endpoints = c.where((positions - last_trade).le(3))
 
     # 1Y change: c.iloc[-1] / c.iloc[-252] − 1 = c / c.shift(251) − 1 = pct_change(251)
     return pd.DataFrame(
@@ -154,7 +130,7 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
             "DMA100": c.rolling(100, min_periods=100).mean().round(2),
             "DMA200": c.rolling(200, min_periods=200).mean().round(2),
             "Vol_Median": v.rolling(252, min_periods=252).median(),
-            "1Y_Change": (c.pct_change(251) * 100).round(2),
+            "1Y_Change": (endpoints.pct_change(251, fill_method=None) * 100).round(2),
             "Pct_From_52W_High": ((c - high_52w) / high_52w * 100).round(2),
             # tail(252) → pct_change → NaN at row 0, 251 real diffs → rolling(251)
             "Circuit_Count": circuit_hits.rolling(251, min_periods=251).sum(),
@@ -163,13 +139,15 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
             "Sharpe_6M": _rolling_sharpe(126).round(3),
             "Sharpe_9M": _rolling_sharpe(189).round(3),
             "Sharpe_1Y": _rolling_sharpe(252).round(3),
-            "Volatility": (rets.rolling(252, min_periods=63).std() * np.sqrt(252) * 100).round(1),
+            "Volatility": (rets.rolling(251, min_periods=63).std() * np.sqrt(252) * 100)
+            .where(rets.rolling(251, min_periods=1).count().eq(pd.Series(range(len(c)), index=c.index).clip(upper=251)))
+            .round(1),
             # tail(N).diff() skips row-0 NaN: N rows → N-1 real diffs → rolling(N-1) / (N-1)
             "Pos_Days_3M": (pos.rolling(62, min_periods=62).sum() / 62 * 100).round(0),
             "Pos_Days_6M": (pos.rolling(125, min_periods=125).sum() / 125 * 100).round(0),
             "Pos_Days_12M": (pos.rolling(251, min_periods=251).sum() / 251 * 100).round(0),
-            "_count": pd.Series(range(1, len(c) + 1), index=c.index, dtype=int),
-            "_missing_rate": c.isna().expanding().mean(),
+            "_count": c.notna().cumsum(),
+            "_missing_rate": c.isna().rolling(252, min_periods=1).mean(),
         }
     )
 
@@ -201,4 +179,4 @@ def _calculate_avg_sharpe(row, method: str) -> float | None:
     vals = [v for k in keys if (v := row.get(k)) is not None and not pd.isna(v)]
     import math
 
-    return math.fsum(float(value) for value in vals) / len(vals) if vals else None
+    return math.fsum(float(value) for value in vals) / len(vals) if len(vals) == len(keys) else None

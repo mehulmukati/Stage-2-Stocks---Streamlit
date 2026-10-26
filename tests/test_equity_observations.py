@@ -14,8 +14,10 @@ from equity_data import (
     coverage_by_date,
     observed_sessions,
     recent_coverage,
+    session_frame,
+    tradable_equity_rows,
 )
-from momentum_engine import precompute_metrics, score_momentum
+from momentum_engine import precompute_metrics
 from momentum_ranking import eligibility_reason, rank_momentum_frame
 from stage2_breadth import build_breadth_score_history
 
@@ -46,7 +48,10 @@ def test_raw_history_is_unchanged_and_indices_do_not_use_equity_volume_policy():
     raw = pd.concat([snapshot.prices, index], ignore_index=True)
     snapshot = md.MarketSnapshot(raw, snapshot.membership, "prices", "members")
     before = raw.copy(deep=True)
-    assert frame.index[100] not in snapshot.ohlcv()["A"].index
+    observations = snapshot.ohlcv()["A"]
+    assert frame.index[100] in observations.index
+    assert not observations.loc[frame.index[100], "is_tradable"]
+    assert pd.isna(session_frame(observations).loc[frame.index[100], "Close"])
     assert len(snapshot.series("index_price")["Nifty 50"]) == 1
     pd.testing.assert_frame_equal(raw, before)
 
@@ -55,18 +60,19 @@ def test_invalid_and_unknown_volume_cannot_establish_a_trading_observation():
     frame = rising(9)
     frame["Volume"] = [100, 0, -1, np.nan, np.inf, 100, 100, 100, 100]
     frame["Close"] = [100, 100, 100, 100, 100, 0, np.nan, np.inf, -1]
-    assert accepted_equity_rows(frame).index.tolist() == [frame.index[0]]
+    assert tradable_equity_rows(frame).index.tolist() == [frame.index[0]]
+    assert frame.index[1] in accepted_equity_rows(frame).index
+    assert frame.index[3] in accepted_equity_rows(frame).index
 
 
-def test_momentum_windows_count_real_observations_before_computing_returns():
+def test_momentum_windows_keep_missing_prices_in_the_fixed_session_positions():
     raw = rising(300)
     raw.loc[raw.index[[80, 110, 160, 190, 230, 280]], "Volume"] = 0
-    expected = raw[raw.Volume.gt(0)]
     metrics = precompute_metrics(raw)
-    assert metrics.index.equals(expected.index)
+    assert metrics.index.equals(raw.index)
     assert metrics.iloc[-1]["_count"] == 294
-    assert metrics.iloc[-1]["1Y_Change"] == round((expected.Close.iloc[-1] / expected.Close.iloc[-252] - 1) * 100, 2)
-    assert score_momentum(raw) == score_momentum(expected)
+    assert metrics.iloc[-1]["1Y_Change"] == round((raw.Close.iloc[-1] / raw.Close.iloc[-252] - 1) * 100, 2)
+    assert pd.isna(metrics.iloc[-1]["Sharpe_1Y"])
     assert (
         eligibility_reason(precompute_metrics(raw.tail(252)).iloc[-1], minimum_median_volume=0)
         == "insufficient_history"
@@ -83,7 +89,8 @@ def test_screener_replay_and_quant_readers_share_filtered_data_and_coverage(monk
     loaded = db.load_ohlcv_for_backtest(snapshot=snapshot)
     quant = db.load_quant_ohlcv_snapshot(snapshot=snapshot)
     pd.testing.assert_frame_equal(snapshot.ohlcv()["SPARSE"], quant.symbol_data["SPARSE"])
-    assert loaded.symbol_data["SPARSE"].Volume.gt(0).all()
+    assert loaded.symbol_data["SPARSE"].Volume.eq(0).sum() == 220
+    assert not loaded.symbol_data["SPARSE"].loc[sparse.Volume.eq(0), "is_tradable"].any()
     row = screen.set_index("Symbol").loc["SPARSE"]
     assert row["Stale Sessions"] == 0
     assert row["_count"] > 252

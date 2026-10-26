@@ -76,8 +76,9 @@ def _normalise_ohlcv(df: pd.DataFrame) -> pd.DataFrame:
     clean = clean[~clean.index.duplicated(keep="last")]
     for column in required:
         clean[column] = pd.to_numeric(clean[column], errors="coerce")
-    clean = clean.dropna(subset=["Open", "High", "Low", "Close"])
-    clean = clean[(clean[["Open", "High", "Low", "Close"]] > 0).all(axis=1)]
+    if not df.attrs.get("session_grid"):
+        clean = clean.dropna(subset=["Open", "High", "Low", "Close"])
+        clean = clean[(clean[["Open", "High", "Low", "Close"]] > 0).all(axis=1)]
     if clean.index.tz is not None:
         clean.index = clean.index.tz_localize(None)
     return clean[["Open", "High", "Low", "Close", "Volume"]]
@@ -151,7 +152,12 @@ def resample_weekly_ohlcv(
     daily = _normalise_ohlcv(df)
     if daily.empty:
         return pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume", "Execution_Date", "Decision_Eligible"])
-    source = daily.assign(_Period=daily.index.to_period("W-FRI"), _Observed_Date=daily.index)
+    actual_candle = daily[["Open", "High", "Low", "Close"]].notna().all(axis=1)
+    source = daily.assign(
+        _Period=daily.index.to_period("W-FRI"),
+        _Observed_Date=daily.index,
+        _Execution_Date=daily.index.where(actual_candle),
+    )
     grouped = source.groupby("_Period", sort=True, observed=True)
     result = grouped.agg(
         Open=("Open", "first"),
@@ -159,7 +165,7 @@ def resample_weekly_ohlcv(
         Low=("Low", "min"),
         Close=("Close", "last"),
         Volume=("Volume", "sum"),
-        Execution_Date=("_Observed_Date", "first"),
+        Execution_Date=("_Execution_Date", "first"),
         Decision_Date=("_Observed_Date", "last"),
     )
     result.index = pd.DatetimeIndex(result.pop("Decision_Date"))
@@ -199,17 +205,23 @@ def compute_ha_ema_signals(
     if result.empty:
         return pd.DataFrame(columns=_SIGNAL_COLUMNS)
 
-    ha_close = result[["Open", "High", "Low", "Close"]].mean(axis=1)
+    ha_close = result[["Open", "High", "Low", "Close"]].mean(axis=1, skipna=False)
     ha_open_values = np.empty(len(result), dtype=float)
     ha_open_values[0] = (float(result["Open"].iloc[0]) + float(result["Close"].iloc[0])) / 2.0
     for position in range(1, len(result)):
-        ha_open_values[position] = (ha_open_values[position - 1] + float(ha_close.iloc[position - 1])) / 2.0
+        if pd.isna(ha_close.iloc[position]):
+            ha_open_values[position] = np.nan
+            continue
+        if np.isfinite(ha_open_values[position - 1]) and pd.notna(ha_close.iloc[position - 1]):
+            ha_open_values[position] = (ha_open_values[position - 1] + float(ha_close.iloc[position - 1])) / 2.0
+        else:
+            ha_open_values[position] = (float(result.Open.iloc[position]) + float(result.Close.iloc[position])) / 2.0
     ha_open = pd.Series(ha_open_values, index=result.index)
 
     result["HA_Open"] = ha_open
     result["HA_Close"] = ha_close
-    result["HA_High"] = pd.concat([result["High"], ha_open, ha_close], axis=1).max(axis=1)
-    result["HA_Low"] = pd.concat([result["Low"], ha_open, ha_close], axis=1).min(axis=1)
+    result["HA_High"] = pd.concat([result["High"], ha_open, ha_close], axis=1).max(axis=1).where(ha_close.notna())
+    result["HA_Low"] = pd.concat([result["Low"], ha_open, ha_close], axis=1).min(axis=1).where(ha_close.notna())
     result["EMA_Fast"] = result["Close"].ewm(span=config.ema_fast, adjust=False).mean()
     result["EMA_Slow"] = result["Close"].ewm(span=config.ema_slow, adjust=False).mean()
     result["Average_Volume"] = (

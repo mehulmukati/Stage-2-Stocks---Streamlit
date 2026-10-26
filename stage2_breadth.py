@@ -12,10 +12,16 @@ import pandas as pd
 
 import config
 import market_data as shared_market
-from equity_data import EQUITY_POLICY_VERSION, MIN_RECENT_COVERAGE, accepted_equity_rows, coverage_by_date
+from equity_data import (
+    EQUITY_POLICY_VERSION,
+    MIN_RECENT_COVERAGE,
+    accepted_equity_rows,
+    session_frame,
+    trading_coverage_series,
+)
 from stage2_engine import compute_rolling_stage2
 
-BREADTH_CACHE_VERSION = 4
+BREADTH_CACHE_VERSION = 5
 _DATA_DIR = os.path.dirname(config.SCREENER_OHLCV_PARQUET)
 SCREENER_OHLCV_PARQUET = config.SCREENER_OHLCV_PARQUET
 BACKTEST_HISTORY_PARQUET = getattr(
@@ -107,21 +113,22 @@ def build_breadth_score_history(ohlcv: pd.DataFrame, calendar=None) -> pd.DataFr
     pieces: list[pd.DataFrame] = []
     if "series_type" in ohlcv:
         ohlcv = ohlcv[ohlcv.series_type.eq("equity")]
-    source = ohlcv[["symbol", "date", "Close", "Volume"]].copy()
+    source = ohlcv.copy()
     source["date"] = pd.to_datetime(source["date"])
-    source = source.dropna(subset=["symbol", "date", "Close", "Volume"])
+    source = source.dropna(subset=["symbol", "date", "Close"])
     source = accepted_equity_rows(source)
     calendar = pd.DatetimeIndex(source.date.unique()).sort_values() if calendar is None else calendar
     for symbol, stock in source.groupby("symbol", sort=False):
         stock = stock.sort_values("date").drop_duplicates("date", keep="last").set_index("date")
         if len(stock) < 250:
             continue
-        rolled = compute_rolling_stage2(stock)
+        aligned = session_frame(stock, calendar)
+        rolled = compute_rolling_stage2(aligned)
         # The 200-day MA's 50-session slope becomes available on row 251 in
         # the vectorised representation.  Earlier rows must not be treated as
         # a valid "Not Stage 2" observation.
         rolled = rolled.iloc[250:].dropna(subset=["MA50", "MA150", "MA200"])
-        coverage = coverage_by_date(stock.index, calendar)
+        coverage = trading_coverage_series(stock, calendar)
         rolled = rolled.loc[coverage.reindex(rolled.index).ge(MIN_RECENT_COVERAGE)]
         if rolled.empty:
             continue

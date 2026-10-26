@@ -15,16 +15,25 @@ import pandas as pd
 import quant_strategy_registry as strategy_registry
 from backtest_engine import _compute_fy_tax, _financial_year, _prepare_compositions, _valid_symbols_at_date
 from corporate_actions import load_corporate_actions
-from equity_data import EQUITY_POLICY_VERSION, MIN_RECENT_COVERAGE, accepted_equity_rows, recent_coverage
+from equity_data import (
+    EQUITY_POLICY_VERSION,
+    MIN_RECENT_COVERAGE,
+    accepted_equity_rows,
+    observed_sessions,
+    recent_coverage,
+    session_calendar,
+    session_frame,
+    tradable_equity_rows,
+)
 from quant_portfolio_metrics import build_quant_metrics
 
-if getattr(strategy_registry, "QUANT_STRATEGY_REGISTRY_VERSION", 0) < 3:
+if getattr(strategy_registry, "QUANT_STRATEGY_REGISTRY_VERSION", 0) < 4:
     strategy_registry = importlib.reload(strategy_registry)
 
 build_strategy = strategy_registry.build_strategy
 strategy_metadata = strategy_registry.strategy_metadata
 
-QUANT_PORTFOLIO_ENGINE_VERSION = 5
+QUANT_PORTFOLIO_ENGINE_VERSION = 6
 RANK_STRATEGY_SCORE = "strategy_score"
 RANK_RELATIVE_STRENGTH = "relative_strength"
 RANKING_LABELS = {
@@ -74,6 +83,10 @@ def _normalise_prices(data: pd.DataFrame) -> pd.DataFrame:
 def _price(frame: pd.DataFrame, date: pd.Timestamp, column: str) -> float | None:
     if date not in frame.index or column not in frame:
         return None
+    if "is_tradable" in frame and not bool(frame.at[date, "is_tradable"]):
+        return None
+    if "Volume" in frame and (pd.isna(frame.at[date, "Volume"]) or frame.at[date, "Volume"] <= 0):
+        return None
     value = frame.at[date, column]
     return float(value) if pd.notna(value) and float(value) > 0 else None
 
@@ -86,7 +99,7 @@ def _returns_over_sessions(close: pd.Series, lookback: int) -> pd.Series:
 
 
 def _value_at_or_before(series: pd.Series, date: pd.Timestamp) -> float | None:
-    eligible = series.loc[:date].dropna()
+    eligible = series.loc[:date]
     if eligible.empty:
         return None
     value = float(eligible.iloc[-1])
@@ -99,6 +112,7 @@ def _apply_entry_ranking(
     benchmarks: dict[str, pd.Series] | None,
     strategy,
     config: QuantPortfolioConfig,
+    calendar=None,
 ) -> tuple[dict[str, pd.DataFrame], str | None]:
     """Apply a portfolio-level ranking overlay without changing strategy signals."""
     if config.ranking_method == RANK_STRATEGY_SCORE:
@@ -113,7 +127,9 @@ def _apply_entry_ranking(
     if benchmark is None or benchmark.empty:
         return {}, f"{config.ranking_benchmark} history is unavailable for relative-strength ranking."
 
-    benchmark_returns = _returns_over_sessions(benchmark, config.ranking_lookback_sessions)
+    benchmark_returns = _returns_over_sessions(
+        benchmark.reindex(calendar) if calendar is not None else benchmark, config.ranking_lookback_sessions
+    )
     ranked_frames: dict[str, pd.DataFrame] = {}
     for symbol, signals in signal_frames.items():
         ranked = signals.copy()
@@ -228,6 +244,12 @@ def run_quant_portfolio(
     prices = {symbol: frame for symbol, frame in prices.items() if not frame.empty}
     if not prices:
         return {"error": "No OHLCV data is available."}
+    market_calendar = (
+        config.market_calendar
+        if config.market_calendar is not None
+        else session_calendar(observed_sessions(prices.values()))
+    )
+    prices = {symbol: session_frame(frame, market_calendar) for symbol, frame in prices.items()}
     emit("info", f"Computing {strategy.definition.label} signals for {len(prices):,} stocks…")
 
     signal_frames: dict[str, pd.DataFrame] = {}
@@ -261,7 +283,9 @@ def run_quant_portfolio(
                 if completed % progress_step == 0 or completed == len(futures):
                     emit("info", f"Signals ready for {completed:,}/{len(futures):,} stocks")
 
-    signal_frames, ranking_error = _apply_entry_ranking(signal_frames, prices, benchmarks, strategy, config)
+    signal_frames, ranking_error = _apply_entry_ranking(
+        signal_frames, prices, benchmarks, strategy, config, market_calendar
+    )
     if ranking_error:
         return {"error": ranking_error}
     if config.ranking_method == RANK_RELATIVE_STRENGTH:
@@ -271,11 +295,7 @@ def run_quant_portfolio(
             f"vs {config.ranking_benchmark}…",
         )
 
-    all_dates = (
-        config.market_calendar
-        if config.market_calendar is not None
-        else pd.DatetimeIndex(sorted(set().union(*(set(frame.index) for frame in prices.values()))))
-    )
+    all_dates = config.market_calendar if config.market_calendar is not None else market_calendar
     if all_dates.empty:
         return {"error": "No valid dated OHLCV rows are available."}
     start = pd.Timestamp(config.start_date) if config.start_date else all_dates.min()
@@ -468,10 +488,18 @@ def run_quant_portfolio(
                 event["Outcome"] = "SKIPPED_UNIVERSE"
                 continue
             history = prices[symbol].loc[: event["Decision_Date"]]
-            if len(history) < config.min_history_days:
+            if history.Close.notna().sum() < config.min_history_days:
                 event["Outcome"] = "SKIPPED_HISTORY"
                 continue
-            if recent_coverage(prices[symbol].index, decision_date, all_dates) < MIN_RECENT_COVERAGE:
+            if (
+                recent_coverage(
+                    tradable_equity_rows(prices[symbol]).index,
+                    decision_date,
+                    all_dates,
+                    first_observation=prices[symbol].index[0],
+                )
+                < MIN_RECENT_COVERAGE
+            ):
                 event["Outcome"] = "SKIPPED_COVERAGE"
                 continue
             if strategy.definition.uses_liquidity_filter:

@@ -22,7 +22,15 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from equity_data import EQUITY_POLICY_VERSION, accepted_equity_rows, extend_sessions
+from equity_data import (
+    EQUITY_POLICY_VERSION,
+    QUALITY_COLUMNS,
+    accepted_equity_rows,
+    calendar_provenance,
+    extend_sessions,
+    prepare_publication,
+    tradable_equity_rows,
+)
 
 ROOT = Path(__file__).resolve().parent
 PRICE_PATH = ROOT / "data" / "screener_ohlcv.parquet"
@@ -131,9 +139,9 @@ class MarketSnapshot:
             frame = frame[frame.date >= pd.Timestamp(start)]
         result = {}
         for symbol, group in frame.groupby("symbol", sort=True):
-            sub = group.set_index("date")[["Open", "High", "Low", "Close", "Volume"]].sort_index()
-            sub.attrs["source_revisions"] = self.revisions
-            sub.attrs["equity_policy_version"] = EQUITY_POLICY_VERSION
+            columns = ["Open", "High", "Low", "Close", "Volume"] + [c for c in QUALITY_COLUMNS if c in group]
+            sub = group.set_index("date")[columns].sort_index()
+            sub.attrs = {"source_revisions": self.revisions, "equity_policy_version": EQUITY_POLICY_VERSION}
             result[symbol] = sub
         return result
 
@@ -143,12 +151,17 @@ class MarketSnapshot:
         frame = self.prices[self.prices.series_type.eq("equity")]
         if date is not None:
             frame = frame[frame.date.le(date)]
-        return accepted_equity_rows(frame)
+        result = accepted_equity_rows(frame)
+        result.attrs = {"source_revisions": self.revisions, "equity_policy_version": EQUITY_POLICY_VERSION}
+        return result
 
     def trading_calendar(self, as_of=None) -> pd.DatetimeIndex:
         """Sessions evidenced by positive-volume observations across the market."""
         through = as_of if as_of is not None else self.as_of
-        observed = pd.DatetimeIndex(self.equity_prices(through).date.unique()).sort_values()
+        equities = self.prices[self.prices.series_type.eq("equity")]
+        observed = pd.DatetimeIndex(tradable_equity_rows(equities).date.unique()).sort_values()
+        if through is not None:
+            observed = observed[observed <= pd.Timestamp(through)]
         return extend_sessions(observed, through)
 
     def series(self, series_type: str, symbols=None) -> dict[str, pd.Series]:
@@ -203,7 +216,7 @@ def normalize_prices(frame: pd.DataFrame) -> pd.DataFrame:
     missing = set(PRICE_COLUMNS) - set(frame)
     if missing:
         raise ValueError(f"Missing price columns: {sorted(missing)}")
-    frame = frame[PRICE_COLUMNS]
+    frame = frame[PRICE_COLUMNS + [c for c in QUALITY_COLUMNS if c in frame]]
     frame["date"] = pd.to_datetime(frame.date, errors="raise").dt.normalize()
     for column in ("symbol", "series_type"):
         if frame[column].isna().any() or frame[column].astype(str).str.strip().eq("").any():
@@ -278,12 +291,21 @@ def write_source(frame: pd.DataFrame, path: Path | str, metadata=None, expected_
         accepted = json.loads(existing.get(b"market_data", b"{}")).get("revision")
         if accepted != expected_revision:
             raise RuntimeError(f"Concurrent update of {path.name}; reload before publishing")
-    frame = normalize_prices(frame) if path.name == PRICE_PATH.name else normalize_membership(frame)
+    if path.name == PRICE_PATH.name:
+        frame = normalize_prices(frame)
+        frame, removed, repairs = prepare_publication(frame)
+        frame = normalize_prices(frame)
+    else:
+        frame = normalize_membership(frame)
     revision = uuid.uuid4().hex
     meta = dict(metadata or {})
+    if path.name == PRICE_PATH.name:
+        meta.update(equity_policy_version=EQUITY_POLICY_VERSION, session_calendar=calendar_provenance())
+        meta["verified_repairs_applied"] = repairs
+        meta["removed_holiday_placeholders"] = len(removed)
     meta.update(
         revision=revision,
-        schema_version=1,
+        schema_version=2 if path.name == PRICE_PATH.name else 1,
         generated_at=datetime.now(timezone.utc).isoformat(),
         rows=len(frame),
     )

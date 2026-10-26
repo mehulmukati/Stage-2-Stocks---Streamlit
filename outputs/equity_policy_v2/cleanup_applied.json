@@ -1,0 +1,142 @@
+{
+  "policy_version": 2,
+  "input_revision": "b888e488d13b45b2b8f5dce2ad875eb4",
+  "input_sha256": "9cc2a9a83260591a8ea84cc1395d5e7930cfa332fb0b7f30a916bab57287027c",
+  "input_rows": 2242028,
+  "output_rows": 2236118,
+  "removed_holiday_rows": 5910,
+  "removed_by_date": {
+    "2026-01-15": 908,
+    "2026-05-01": 918,
+    "2026-05-28": 1110,
+    "2026-06-26": 1115,
+    "2026-09-14": 1022,
+    "2026-10-02": 837
+  },
+  "verified_repairs": [
+    {
+      "symbol": "3MINDIA",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 1337,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "ALKYLAMINE",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 13196,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "BAYERCROP",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 9825,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "CEATLTD",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 1292554,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "DALBHARAT",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 169120,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "FORTIS",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 2002607,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "POLYCAB",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 180173,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "SCHAEFFLER",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 103614,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "SHANKARA",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 80072,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "SPENCERS",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 86796,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "TIIL",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 49947,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "UBL",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 431508,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    },
+    {
+      "symbol": "WHIRLPOOL",
+      "date": "2023-05-24",
+      "old_volume": 0.0,
+      "new_volume": 99334,
+      "source": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2023/MAY/cm24MAY2023bhav.csv.zip"
+    }
+  ],
+  "retained_zero_volume_equity_rows": 7839,
+  "diagnostics": {
+    "policy_version": 2,
+    "raw_rows": 2198353,
+    "accepted_rows": 2190514,
+    "excluded_rows": 7839,
+    "zero_volume_rows": 7839,
+    "unknown_volume_rows": 0,
+    "nonflat_zero_volume_rows": 0,
+    "classifications": {
+      "traded": 2190514,
+      "unverified_zero_volume": 7839,
+      "calendar_conflict": 0
+    }
+  },
+  "calendar": {
+    "version": 1,
+    "sha256": "c4ea7ae1ee92037b632da7310a6069a91499a20137e5335ddfa9b3eaf5f05699",
+    "verified_years": [
+      2026
+    ],
+    "sources": [
+      "https://nsearchives.nseindia.com/content/circulars/CMTR71775.pdf",
+      "https://nsearchives.nseindia.com/content/circulars/CMTR72260.pdf",
+      "https://www.nseindia.com/resources/exchange-communication-holidays?apiversion=v2"
+    ],
+    "historical_fallback": "Before verified years, use market-wide positive-volume observations; do not infer closures or delete rows on unverified dates."
+  },
+  "applied": true,
+  "output_revision": "6c1170ccb9804a3f83152fc428311d46",
+  "output_sha256": "17b0b92a258a40e930cdd872b4bcb8ea13495c3c08d20452d015931bdbb34c0d",
+  "archive": "outputs\\equity_policy_v2\\archive\\screener_ohlcv.b888e488d13b45b2b8f5dce2ad875eb4.parquet.before",
+  "other_parquet_files_unchanged": true
+}

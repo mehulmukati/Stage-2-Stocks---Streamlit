@@ -15,9 +15,9 @@ import market_data as shared_market
 import quant_portfolio_engine as quant_portfolio
 from backtest_engine import BacktestConfig, run_backtest
 
-if getattr(backtest_data, "BACKTEST_DATA_VERSION", 0) < 6:
+if getattr(backtest_data, "BACKTEST_DATA_VERSION", 0) < 7:
     backtest_data = importlib.reload(backtest_data)
-if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 5:
+if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 6:
     quant_portfolio = importlib.reload(quant_portfolio)
 
 QuantPortfolioConfig = quant_portfolio.QuantPortfolioConfig
@@ -34,7 +34,7 @@ load_ohlcv_for_backtest = backtest_data.load_ohlcv_for_backtest
 load_quant_ohlcv_snapshot = backtest_data.load_quant_ohlcv_snapshot
 sync_benchmark_data = backtest_data.sync_benchmark_data
 
-SCREENER_WORKER_VERSION = 10
+SCREENER_WORKER_VERSION = 11
 
 
 def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:

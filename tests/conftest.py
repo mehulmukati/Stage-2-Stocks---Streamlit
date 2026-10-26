@@ -33,6 +33,8 @@ import market_data as md
 
 @pytest.fixture
 def market(tmp_path, monkeypatch):
+    # Synthetic weekday fixtures are not actual NSE calendar observations.
+    monkeypatch.setattr("equity_data._cash_holidays", lambda: frozenset())
     prices = tmp_path / "data" / "screener_ohlcv.parquet"
     membership = tmp_path / "data" / "constituents.parquet"
     monkeypatch.setattr(md, "PRICE_PATH", prices)

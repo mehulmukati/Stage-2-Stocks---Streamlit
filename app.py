@@ -75,10 +75,10 @@ if (
 if getattr(ichimoku_descriptions, "ICHIMOKU_SUMMARY_VERSION", 0) < 2 or not hasattr(ichimoku_descriptions, "_periods"):
     ichimoku_descriptions = importlib.reload(ichimoku_descriptions)
 _data_access_reloaded = False
-if getattr(data_access, "CHART_DATA_VERSION", 0) < 4 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 6:
+if getattr(data_access, "CHART_DATA_VERSION", 0) < 5 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 7:
     data_access = importlib.reload(data_access)
     _data_access_reloaded = True
-if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 10:
+if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 11:
     worker_functions = importlib.reload(worker_functions)
 
 ichimoku_chart_figure = chart_builders.ichimoku_chart_figure

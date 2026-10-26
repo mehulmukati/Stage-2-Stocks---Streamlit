@@ -1,0 +1,81 @@
+{
+  "as_of": "2026-10-23",
+  "policy_version": 2,
+  "previous_policy": "Merged PR #12: 252 positive-volume observations, allowing partial composite scores",
+  "new_policy": "252 fixed exchange-session positions; no unknown-price gap bridging; all composite periods required",
+  "source_revisions": [
+    "6c1170ccb9804a3f83152fc428311d46",
+    "46057b45016b46fca74ebd02430253f3"
+  ],
+  "ranking_settings": {
+    "min_history_days": 252,
+    "minimum_median_volume": 100000,
+    "max_stale_sessions": 3,
+    "min_annual_return": 7,
+    "pct_from_52w_high": 25,
+    "max_circuits": 18,
+    "close_above_200dma": true,
+    "pos_days_3m_min": 45,
+    "pos_days_6m_min": 45,
+    "pos_days_12m_min": 45
+  },
+  "ranking_method": "Average of 3/6/9/12 months",
+  "current_members": 751,
+  "previous_eligible": 89,
+  "new_eligible": 89,
+  "previous_top15": [
+    "SKYGOLD",
+    "CUPID",
+    "LAURUSLABS",
+    "SHREEJISPG",
+    "WELCORP",
+    "SHILPAMED",
+    "HFCL",
+    "SANSERA",
+    "DIVISLAB",
+    "ANANDRATHI",
+    "CPPLUS",
+    "NAZARA",
+    "WELSPUNLIV",
+    "SGMART",
+    "KMEW"
+  ],
+  "new_top15": [
+    "SKYGOLD",
+    "CUPID",
+    "LAURUSLABS",
+    "SHREEJISPG",
+    "WELCORP",
+    "SHILPAMED",
+    "HFCL",
+    "SANSERA",
+    "DIVISLAB",
+    "ANANDRATHI",
+    "CPPLUS",
+    "NAZARA",
+    "WELSPUNLIV",
+    "SGMART",
+    "KMEW"
+  ],
+  "common_missing_prices_among_mature_fresh_symbols": {
+    "2026-10-23": 3,
+    "2026-04-10": 1,
+    "2026-04-15": 1,
+    "2026-04-16": 1,
+    "2026-04-17": 1,
+    "2026-04-21": 1,
+    "2026-04-22": 1,
+    "2026-04-23": 1,
+    "2026-04-24": 1,
+    "2026-04-28": 1,
+    "2026-04-29": 1,
+    "2026-04-30": 1
+  },
+  "new_exclusion_reasons": {
+    "quality_filter": 542,
+    "eligible": 89,
+    "low_volume": 77,
+    "insufficient_history": 40,
+    "stale_price": 2
+  }
+}

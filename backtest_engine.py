@@ -30,7 +30,15 @@ from dateutil.relativedelta import relativedelta
 
 from config import MIN_VOLUME
 from corporate_actions import load_corporate_actions
-from equity_data import MIN_RECENT_COVERAGE, accepted_equity_rows, extend_sessions, observed_sessions, recent_coverage
+from equity_data import (
+    MIN_RECENT_COVERAGE,
+    accepted_equity_rows,
+    extend_sessions,
+    observed_sessions,
+    recent_coverage,
+    session_frame,
+    tradable_equity_rows,
+)
 from momentum_engine import _calculate_avg_sharpe, precompute_metrics
 from stage2_engine import compute_rolling_stage2
 
@@ -108,6 +116,15 @@ class BacktestConfig:
 
 def _close_price(all_ohlcv: dict, sym: str, date: pd.Timestamp) -> float | None:
     try:
+        frame = all_ohlcv[sym]
+        if "is_tradable" in frame and (date not in frame.index or not bool(frame.at[date, "is_tradable"])):
+            return None
+        if (
+            date in frame.index
+            and "Volume" in frame
+            and (pd.isna(frame.at[date, "Volume"]) or frame.at[date, "Volume"] <= 0)
+        ):
+            return None
         c = all_ohlcv[sym]["Close"]
         return float(c.at[date]) if date in c.index else None
     except (KeyError, TypeError):
@@ -121,7 +138,7 @@ def latest_tradable_date(df: pd.DataFrame, as_of: pd.Timestamp) -> pd.Timestamp 
     eligible = df.loc[df.index <= as_of]
     if eligible.empty:
         return None
-    valid = accepted_equity_rows(eligible).index
+    valid = tradable_equity_rows(eligible).index
     return pd.Timestamp(valid[-1]).normalize() if len(valid) else None
 
 
@@ -393,12 +410,13 @@ def _valid_symbols_at_date(
 # ──────────────────────────────────────────────────────────────
 
 
-def _precompute_all_metrics(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+def _precompute_all_metrics(all_ohlcv: dict[str, pd.DataFrame], calendar=None) -> dict[str, pd.DataFrame]:
     """Pre-compute scoring metrics for every symbol once before the rebalance loop."""
     result: dict[str, pd.DataFrame] = {}
+    calendar = extend_sessions(observed_sessions(all_ohlcv.values()), None) if calendar is None else calendar
     for sym, df in all_ohlcv.items():
         try:
-            result[sym] = precompute_metrics(df)
+            result[sym] = precompute_metrics(df, calendar)
         except Exception as exc:
             logging.warning("precompute_metrics failed for %s: %s", sym, exc)
     return result
@@ -408,16 +426,16 @@ def _precompute_tradable_dates(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, 
     """Index valid bars once for repeated rebalance-date freshness checks."""
     result: dict[str, pd.DatetimeIndex] = {}
     for sym, df in all_ohlcv.items():
-        result[sym] = pd.DatetimeIndex(accepted_equity_rows(df).index).normalize().sort_values().unique()
+        result[sym] = pd.DatetimeIndex(tradable_equity_rows(df).index).normalize().sort_values().unique()
     return result
 
 
-def _precompute_stage2_scores(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.Series]:
+def _precompute_stage2_scores(all_ohlcv: dict[str, pd.DataFrame], calendar=None) -> dict[str, pd.Series]:
     """Pre-compute Stage 2 score series per symbol for fast .asof() lookup."""
     result: dict[str, pd.Series] = {}
     for sym, df in all_ohlcv.items():
         try:
-            result[sym] = compute_rolling_stage2(accepted_equity_rows(df))["Score"]
+            result[sym] = compute_rolling_stage2(session_frame(df, calendar))["Score"]
         except Exception as exc:
             logging.warning("compute_rolling_stage2 failed for %s: %s", sym, exc)
     return result
@@ -494,7 +512,7 @@ def rank_universe_at_date(
         dates = (
             tradable_dates[sym]
             if tradable_dates is not None and sym in tradable_dates
-            else accepted_equity_rows(df).index
+            else tradable_equity_rows(df).index
         )
         if recent_coverage(dates, as_of, trading_calendar) < MIN_RECENT_COVERAGE:
             if excluded_reasons is not None:
@@ -550,17 +568,21 @@ def rank_universe_at_date(
                 continue
         else:
             # Original path: slice OHLCV and score on demand
-            sub = accepted_equity_rows(df[df.index <= as_of])
-            if len(sub) < min_history_days:
+            sub = session_frame(df[df.index <= as_of], trading_calendar, as_of)
+            if sub.Close.notna().sum() < min_history_days:
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "insufficient_history"
                 continue
             # Reject stocks with > 5% missing close prices (suspended / delisted mid-period)
-            if sub["Close"].isna().mean() > 0.05:
+            if sub["Close"].tail(252).isna().mean() > 0.05:
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "missing_data"
                 continue
-            metrics = precompute_metrics(sub).iloc[-1].to_dict() if len(sub) else None
+            metrics = (
+                precompute_metrics(sub, trading_calendar[trading_calendar <= as_of]).iloc[-1].to_dict()
+                if len(sub)
+                else None
+            )
             if metrics is None:
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "no_valid_score"
@@ -703,7 +725,7 @@ def _daily_returns(all_ohlcv: dict[str, pd.DataFrame], symbols: list[str], dates
     for sym in symbols:
         if sym in all_ohlcv:
             s = all_ohlcv[sym]["Close"].reindex(dates).ffill(limit=5)
-            frames[sym] = s.pct_change()
+            frames[sym] = s.pct_change(fill_method=None)
     if not frames:
         return pd.DataFrame(index=dates)
     return pd.DataFrame(frames, index=dates)
@@ -1150,6 +1172,7 @@ def run_backtest(
     ranking_calendar = (
         config.market_calendar if config.market_calendar is not None else observed_sessions(all_ohlcv.values())
     )
+    all_ohlcv = {symbol: session_frame(frame, ranking_calendar) for symbol, frame in all_ohlcv.items()}
 
     # Warn once if any requested index has no composition data before the start date.
     if compositions_df is not None and not compositions_df.empty and index_names:
@@ -1209,13 +1232,15 @@ def run_backtest(
     comp_prepared = _prepare_compositions(compositions_df, index_names or [])
 
     # Pre-compute rolling metrics once per symbol (O(symbols)) instead of per rebalance date
-    precomputed = _precompute_all_metrics(all_ohlcv)
+    precomputed = _precompute_all_metrics(all_ohlcv, ranking_calendar)
     metric_arrays = {
         sym: {name: column.to_numpy(copy=False) for name, column in metrics.items()}
         for sym, metrics in precomputed.items()
     }
     tradable_dates = _precompute_tradable_dates(all_ohlcv)
-    stage2_precomputed = _precompute_stage2_scores(all_ohlcv) if (stage2_drop_exit or stage2_entry_filter) else {}
+    stage2_precomputed = (
+        _precompute_stage2_scores(all_ohlcv, ranking_calendar) if (stage2_drop_exit or stage2_entry_filter) else {}
+    )
 
     # Pre-build returns matrix so daily NAV update uses O(1) row lookups instead of per-symbol index ops
     returns_matrix = _daily_returns(all_ohlcv, list(all_ohlcv.keys()), trading_days)

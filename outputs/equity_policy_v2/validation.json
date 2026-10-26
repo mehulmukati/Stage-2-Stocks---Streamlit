@@ -1,0 +1,28 @@
+{
+  "branch": "main",
+  "stage": "pre-commit validation",
+  "committed": false,
+  "pushed": false,
+  "pytest": {"passed": 367, "failed": 0, "seconds": 277.42},
+  "changed_python_files_checked": 24,
+  "black": "passed",
+  "isort": "passed",
+  "flake8": "passed",
+  "git_diff_check": "passed",
+  "publication_idempotence": {
+    "additional_removals": 0,
+    "additional_repairs": 0,
+    "retained_raw_price_fields_unchanged": true
+  },
+  "real_data_alignment": {
+    "as_of": "2026-10-23",
+    "universe": 751,
+    "eligible": 89,
+    "screener_scalar_and_precomputed_rankings_match": true
+  },
+  "parquet_integrity": {
+    "changed": ["screener_ohlcv.parquet"],
+    "other_files_unchanged": 10,
+    "recovery_archive_matches_original": true
+  }
+}

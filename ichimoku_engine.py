@@ -78,7 +78,8 @@ def _normalise_ohlc(df: pd.DataFrame) -> pd.DataFrame:
     for column in ("Open", "High", "Low", "Close", "Volume"):
         if column in clean:
             clean[column] = pd.to_numeric(clean[column], errors="coerce")
-    clean = clean.dropna(subset=["High", "Low", "Close"])
+    if not df.attrs.get("session_grid"):
+        clean = clean.dropna(subset=["High", "Low", "Close"])
     if clean.index.tz is not None:
         clean.index = clean.index.tz_localize(None)
     return clean
@@ -100,15 +101,20 @@ def resample_ohlcv(df: pd.DataFrame, timeframe: str = "Daily") -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     dates: list[pd.Timestamp] = []
     for _, group in weekly_groups:
+        actual = group.dropna(subset=["High", "Low", "Close"])
         row = {
-            "Open": float(group["Open"].iloc[0]) if "Open" in group else float(group["Close"].iloc[0]),
-            "High": float(group["High"].max()),
-            "Low": float(group["Low"].min()),
-            "Close": float(group["Close"].iloc[-1]),
+            "Open": (
+                (float(actual["Open"].iloc[0]) if "Open" in actual else float(actual["Close"].iloc[0]))
+                if not actual.empty
+                else np.nan
+            ),
+            "High": float(actual["High"].max()),
+            "Low": float(actual["Low"].min()),
+            "Close": float(actual["Close"].iloc[-1]) if not actual.empty else np.nan,
         }
         if "Volume" in group:
             row["Volume"] = float(group["Volume"].sum(min_count=1))
-        row["Execution_Date"] = pd.Timestamp(group.index[0])
+        row["Execution_Date"] = pd.Timestamp(actual.index[0]) if not actual.empty else pd.NaT
         rows.append(row)
         dates.append(pd.Timestamp(group.index[-1]))
     return pd.DataFrame(rows, index=pd.DatetimeIndex(dates))

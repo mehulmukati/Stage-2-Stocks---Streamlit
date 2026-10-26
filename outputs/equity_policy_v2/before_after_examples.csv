@@ -1,0 +1,8 @@
+Symbol,Previous_1Y_Return_Pct,New_1Y_Return_Pct,Previous_Sharpe_1Y,New_Sharpe_1Y,Previous_Window_Start,New_Window_Start,Trading_Coverage_Pct,Missing_Prices_In_Fixed_Window,Previous_Eligibility,New_Eligibility,Last_Actual_Trade,In_Current_Universe,Previous_Rank,New_Rank
+SKYGOLD,222.06,222.06,2.685,2.685,2025-10-15,2025-10-15,100.0,0,eligible,eligible,2026-10-23,True,1.0,1.0
+CUPID,512.34,512.34,3.388,3.388,2025-10-15,2025-10-15,100.0,0,eligible,eligible,2026-10-23,True,2.0,2.0
+RELIANCE,-13.01,-13.01,-0.543,-0.543,2025-10-15,2025-10-15,100.0,0,quality_filter,quality_filter,2026-10-23,True,,
+CONCOR,-21.3,-21.3,-0.722,-0.722,2025-10-15,2025-10-15,100.0,0,quality_filter,quality_filter,2026-10-23,True,,
+AUTOAXLES,-5.47,-5.47,-0.019,-0.019,2025-10-15,2025-10-15,100.0,0,low_volume,low_volume,2026-10-23,False,,
+GOODYEAR,-37.27,,-0.805,,2023-04-28,2025-10-15,51.19,123,incomplete_recent_coverage,incomplete_recent_coverage,2026-10-23,False,,
+FRETAIL,-34.86,,-0.41,,2022-09-07,2025-10-15,0.0,252,stale_price,stale_price,2024-08-01,False,,

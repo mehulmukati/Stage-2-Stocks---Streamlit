@@ -17,7 +17,7 @@ import yfinance as yf
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import market_data as md  # noqa: E402 -- repo imports need the script's parent on sys.path
-from equity_data import observation_diagnostics  # noqa: E402
+from equity_data import observation_diagnostics, prepare_publication, tradable_equity_rows  # noqa: E402
 
 INDEX_TICKERS = {
     "Nifty 50": "^NSEI",
@@ -68,7 +68,7 @@ def reshape(raw, requests):
                 sub[column] = float("nan")
         sub = sub.reset_index().assign(symbol=symbol, series_type=kind)
         sub = sub[md.PRICE_COLUMNS]
-        if kind in {"equity", "etf_adjusted"}:
+        if kind == "etf_adjusted":
             sub = sub.dropna(subset=["Open", "High", "Low", "Volume"])
         frames.append(sub)
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=md.PRICE_COLUMNS)
@@ -125,6 +125,24 @@ def merge_observations(existing, new):
     if new.empty:
         return existing
     new = md.normalize_prices(new)
+    if "price_status" in existing:
+        verified = existing[existing.price_status.eq("verified_mark")]
+        if not verified.empty:
+            keys = ["series_type", "symbol", "date"]
+            matched = new.merge(
+                verified[keys + ["Close", "verification_source", "verified_at"]],
+                on=keys,
+                how="left",
+                suffixes=("", "_verified"),
+            )
+            agrees = (matched.Close - matched.Close_verified).abs().le(0.01) & matched.Volume.eq(0)
+            for column in ("price_status", "verification_source", "verified_at"):
+                if column in new:
+                    new[column] = new[column].astype(object)
+            new.loc[agrees, "price_status"] = "verified_mark"
+            for column in ("verification_source", "verified_at"):
+                candidate = column + "_verified" if column + "_verified" in matched else column
+                new.loc[agrees, column] = matched.loc[agrees, candidate].to_numpy()
     return md.normalize_prices(
         pd.concat([existing, new], ignore_index=True).drop_duplicates(["series_type", "symbol", "date"], keep="last")
     )
@@ -179,7 +197,7 @@ def history_is_complete(previous, replacement):
 def price_coverage(prices, current, target_date):
     target = pd.Timestamp(target_date)
     eligible = prices[prices.date.le(target) & prices.Close.gt(0)]
-    equities = eligible[eligible.series_type.eq("equity") & eligible.Volume.gt(0)]
+    equities = tradable_equity_rows(eligible[eligible.series_type.eq("equity")])
     observed = equities.groupby("symbol").date.max()
     missing = sorted(s for s in current if s not in observed or observed[s] < target)
     dates = observed.reindex(sorted(current)).dropna()
@@ -385,6 +403,8 @@ def refresh_prices(
                     hashlib.sha256(rate_path.read_bytes()).hexdigest() if rate_path.exists() else None
                 ),
             }
+        merged, removed, repairs = prepare_publication(merged)
+        merged = md.normalize_prices(merged)
         # Embed actual coverage, not just the requested date, in this same file.
         coverage_report = price_coverage(merged, current, target)
         if require_coverage:
@@ -400,13 +420,15 @@ def refresh_prices(
             "source": "shared publisher",
             "constituent_revision": snapshot.constituent_revision,
             "history_rebuild_required": sorted(pending_rebuild - rebuilt),
+            "cleanup_removed_holiday_rows": len(removed),
+            "cleanup_verified_repairs": repairs,
         }
         report.update(coverage_report)
         report["equity_observation_policy"] = observation_diagnostics(merged)
         diagnostics = report["equity_observation_policy"]
         emit(
             "info",
-            f"Equity calculation view excludes {diagnostics['excluded_rows']:,} raw rows; "
+            f"Retained {diagnostics['excluded_rows']:,} uncertain equity prices for review; "
             f"{diagnostics['nonflat_zero_volume_rows']:,} zero-volume candles are non-flat and need source review",
         )
         report.update(cash_metadata)

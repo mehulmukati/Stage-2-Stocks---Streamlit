@@ -14,7 +14,7 @@ import market_data as shared_market
 from config import IST, SCREENER_OHLCV_PARQUET
 from data import _load_constituents, get_last_valid_trading_date, load_nse_holidays  # noqa: F401
 
-BACKTEST_DATA_VERSION = 6
+BACKTEST_DATA_VERSION = 7
 _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
 
@@ -143,11 +143,9 @@ def load_quant_ohlcv_snapshot(emit=_NOOP_EMIT, snapshot=None) -> OHLCVLoadResult
         valid = frame[["Open", "High", "Low", "Close", "Volume"]].notna().all(axis=1)
         if not valid.all():
             incomplete[symbol] = int((~valid).sum())
-            cleaned = frame.loc[valid].copy()
-            if cleaned.empty:
-                loaded.symbol_data.pop(symbol)
-            else:
-                loaded.symbol_data[symbol] = cleaned
+            # Retain dates and quality flags. Indicator grids must see the gaps;
+            # the simulator independently rejects missing execution candles.
+            loaded.symbol_data[symbol] = frame.copy()
     loaded.incomplete_candle_rows = incomplete
     if incomplete:
         emit(

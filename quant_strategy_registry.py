@@ -19,7 +19,7 @@ from quant_strategy import (
     validate_signal_frame,
 )
 
-QUANT_STRATEGY_REGISTRY_VERSION = 3
+QUANT_STRATEGY_REGISTRY_VERSION = 4
 
 
 def _clean_ohlcv(data: pd.DataFrame) -> pd.DataFrame:
@@ -125,7 +125,7 @@ class HAEMAAdapter:
             observed = pd.Timestamp(weekly.at[index, "Decision_Date"]).normalize()
             weekly.at[index, "Decision_Eligible"] = as_of >= expected and observed >= expected
 
-        weekly["HA_Close"] = weekly[["Open", "High", "Low", "Close"]].mean(axis=1)
+        weekly["HA_Close"] = weekly[["Open", "High", "Low", "Close"]].mean(axis=1, skipna=False)
         ha_open = np.empty(len(weekly), dtype=float)
         open_values = weekly["Open"].to_numpy(dtype=float)
         close_values = weekly["Close"].to_numpy(dtype=float)
@@ -135,10 +135,16 @@ class HAEMAAdapter:
             first = positions[0]
             ha_open[first] = (open_values[first] + close_values[first]) / 2.0
             for previous, current in zip(positions[:-1], positions[1:]):
-                ha_open[current] = (ha_open[previous] + ha_close_values[previous]) / 2.0
+                if not np.isfinite(ha_close_values[current]):
+                    ha_open[current] = np.nan
+                    continue
+                if np.isfinite(ha_open[previous]) and np.isfinite(ha_close_values[previous]):
+                    ha_open[current] = (ha_open[previous] + ha_close_values[previous]) / 2.0
+                else:
+                    ha_open[current] = (open_values[current] + close_values[current]) / 2.0
         weekly["HA_Open"] = ha_open
-        weekly["HA_High"] = weekly[["High", "HA_Open", "HA_Close"]].max(axis=1)
-        weekly["HA_Low"] = weekly[["Low", "HA_Open", "HA_Close"]].min(axis=1)
+        weekly["HA_High"] = weekly[["High", "HA_Open", "HA_Close"]].max(axis=1).where(weekly.HA_Close.notna())
+        weekly["HA_Low"] = weekly[["Low", "HA_Open", "HA_Close"]].min(axis=1).where(weekly.HA_Close.notna())
         weekly["EMA_Fast"] = grouped["Close"].transform(
             lambda series: series.ewm(span=self.config.ema_fast, adjust=False).mean()
         )

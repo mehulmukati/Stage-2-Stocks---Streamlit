@@ -39,7 +39,7 @@ def verify(as_of, output=None):
     ranked = rank_momentum_frame(screen, method, **settings)
     calendar = snapshot.trading_calendar(as_of)
     prices = {symbol: loaded.symbol_data[symbol] for symbol in snapshot.symbols() if symbol in loaded.symbol_data}
-    fast = _precompute_all_metrics(prices)
+    fast = _precompute_all_metrics(prices, calendar)
     fast_rank = rank_universe_at_date(
         prices,
         pd.Timestamp(as_of),

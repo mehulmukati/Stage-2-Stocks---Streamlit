@@ -94,18 +94,16 @@ def test_avg_sharpe_all_none_values():
     assert _calculate_avg_sharpe(row, "1 year") is None
 
 
-def test_avg_sharpe_partial_none():
+def test_avg_sharpe_requires_all_requested_periods():
     row = {"Sharpe_3M": 1.0, "Sharpe_6M": None}
     result = _calculate_avg_sharpe(row, "Average of 3/6 months")
-    assert result is not None
-    assert math.isclose(result, 1.0)
+    assert result is None
 
 
-def test_avg_sharpe_nan_excluded():
+def test_avg_sharpe_does_not_silently_drop_unavailable_periods():
     row = {"Sharpe_3M": 1.0, "Sharpe_6M": float("nan")}
     result = _calculate_avg_sharpe(row, "Average of 3/6 months")
-    assert result is not None
-    assert math.isclose(result, 1.0)
+    assert result is None
 
 
 @pytest.mark.parametrize(

@@ -78,10 +78,11 @@ def current_stage2_run(df: pd.DataFrame) -> dict[str, int | str]:
     that becomes Likely and then Strong remains one continuous Stage 2 run.
     """
     rolled = compute_rolling_stage2(df)
-    valid = rolled.iloc[250:].dropna(subset=["MA50", "MA150", "MA200"])
-    if valid.empty or int(valid["Score"].iloc[-1]) < 2:
+    valid = rolled.iloc[250:]
+    ready = valid[["Close", "MA50", "MA150", "MA200"]].notna().all(axis=1)
+    if valid.empty or not ready.iloc[-1] or int(valid["Score"].iloc[-1]) < 2:
         return {"Stage 2 Days": 0, "Stage 2 Since": ""}
-    in_stage2 = valid["Score"].ge(2).iloc[::-1]
+    in_stage2 = (valid["Score"].ge(2) & ready).iloc[::-1]
     days = int(in_stage2.cumprod().sum())
     return {"Stage 2 Days": days, "Stage 2 Since": str(pd.Timestamp(valid.index[-days]).date())}
 

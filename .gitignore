@@ -12,6 +12,7 @@ __pycache__/
 htmlcov/
 .pytest_cache/
 .codex-runtime/
+outputs/equity_policy_v2/archive/
 data/.market-publisher.lock
 data/*.parquet.tmp
 

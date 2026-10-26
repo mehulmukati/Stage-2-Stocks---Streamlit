@@ -43,12 +43,12 @@ def eligibility_reason(row, min_history_days=252, minimum_median_volume=MIN_VOLU
         return "no_tradable_data"
     if row.get("_count", 0) < min_history_days:
         return "insufficient_history"
-    if row.get("_missing_rate", 0) > 0.05:
-        return "missing_data"
     if row.get("Stale Sessions", 0) > max_stale_sessions >= 0:
         return "stale_price"
     if row.get("Trading Coverage", 1.0) < MIN_RECENT_COVERAGE:
         return "incomplete_recent_coverage"
+    if row.get("_missing_rate", 0) > 0.05:
+        return "missing_data"
     if minimum_median_volume > 0 and (pd.isna(row.get("Vol_Median")) or row["Vol_Median"] < minimum_median_volume):
         return "low_volume"
     if fails_quality_filters(row, **quality):

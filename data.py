@@ -12,10 +12,17 @@ from typing import Callable
 import pandas as pd
 import streamlit as st
 
-from equity_data import EQUITY_POLICY_VERSION, MIN_RECENT_COVERAGE, recent_coverage
+from equity_data import (
+    EQUITY_POLICY_VERSION,
+    MIN_RECENT_COVERAGE,
+    calendar_definition,
+    recent_coverage,
+    session_frame,
+    tradable_equity_rows,
+)
 
-CHART_DATA_VERSION = 4
-SCREENER_DATA_VERSION = 6
+CHART_DATA_VERSION = 5
+SCREENER_DATA_VERSION = 7
 
 # Default no-op emit used when callers don't need progress reporting.
 # Signature: (level: str, message: str) -> None
@@ -59,6 +66,8 @@ def get_last_valid_trading_date(start_date_str: str, holidays: frozenset) -> str
     """Walk backwards from start_date_str to find the nearest weekday that is not an NSE holiday."""
     dt = datetime.strptime(start_date_str, "%Y-%m-%d")
     for _ in range(10):
+        if dt.strftime("%Y-%m-%d") in calendar_definition()["special_sessions"]:
+            return dt.strftime("%Y-%m-%d")
         if dt.weekday() < 5 and dt.strftime("%Y-%m-%d") not in holidays:
             return dt.strftime("%Y-%m-%d")
         dt -= timedelta(days=1)
@@ -302,24 +311,33 @@ def _load_and_score(constituents, for_momentum, emit=_NOOP_EMIT, as_of_date=None
     calendar = snapshot.trading_calendar(target)
     results = []
     for symbol, sub in data.items():
-        coverage = recent_coverage(sub.index, target, calendar)
+        trades = tradable_equity_rows(sub)
+        coverage = recent_coverage(trades.index, target, calendar, first_observation=sub.index[0])
+        aligned = session_frame(sub, calendar, target)
+        if aligned.empty:
+            continue
         if not for_momentum and len(sub) < 250:
             continue
         if for_momentum:
-            metrics = precompute_metrics(sub).iloc[-1].to_dict()
+            metrics = precompute_metrics(sub, calendar).iloc[-1].to_dict()
             last = latest_tradable_date(sub, target)
             metrics["Stale Sessions"] = trading_session_age(last, target, calendar) if last is not None else 999
             metrics["Tradable"] = last is not None
-            metrics["Price Date"] = str(sub.index[-1].date())
+            trusted = aligned.Close.dropna()
+            metrics["Price Date"] = str(trusted.index[-1].date()) if not trusted.empty else None
         else:
-            if coverage < MIN_RECENT_COVERAGE or trading_session_age(sub.index[-1], target, calendar) > 3:
+            if (
+                coverage < MIN_RECENT_COVERAGE
+                or trades.empty
+                or trading_session_age(trades.index[-1], target, calendar) > 3
+            ):
                 continue
-            metrics = score_stage2(sub)
+            metrics = score_stage2(aligned)
             if metrics is None:
                 continue
-            metrics["Price Date"] = str(sub.index[-1].date())
-            metrics["Retest"] = check_weinstein_retest(sub)
-            metrics.update(current_stage2_run(sub))
+            metrics["Price Date"] = str(aligned.Close.dropna().index[-1].date())
+            metrics["Retest"] = check_weinstein_retest(aligned)
+            metrics.update(current_stage2_run(aligned))
         metrics["Trading Coverage"] = coverage
         metrics["Symbol"] = symbol
         metrics["Index"] = next((i for i, syms in constituents.items() if symbol in syms), "Unknown")
@@ -412,7 +430,13 @@ def _fetch_chart_data_for_target(symbol: str, target_date: str) -> pd.DataFrame:
     clean = symbol.strip().upper()
     if not _VALID_TICKER_RE.match(clean):
         return pd.DataFrame()
-    return shared_market.load_snapshot(target_date).ohlcv([clean]).get(clean, pd.DataFrame())
+    snapshot = shared_market.load_snapshot(target_date)
+    observations = snapshot.ohlcv([clean]).get(clean, pd.DataFrame())
+    return (
+        session_frame(observations, snapshot.trading_calendar(), target_date)
+        if not observations.empty
+        else observations
+    )
 
 
 @st.cache_data(ttl=3600)

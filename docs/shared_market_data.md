@@ -27,44 +27,74 @@ python scripts/verify_market_alignment.py --date 2026-10-06
 
 Portfolio holdings can differ from a fresh top-M list because of entry/hold bands, previous holdings, allocation caps and Stage 2 exits. These strategy rules do not alter the underlying eligible ranking. Quant candle strategies and Stage 2 classifications retain their own strategy definitions while sharing source prices and dated membership.
 
-Stale candidates are excluded consistently. Live Signal separately blocks a stale broker/model holding that needs a reliable trade price. Complete-candle strategies explicitly exclude and report missing OHLCV rows; the pricing store preserves valid historical closes without manufacturing candles.
+Stale candidates are excluded consistently. Live Signal separately blocks a stale broker/model holding that needs a reliable trade price. Complete-candle strategies report missing OHLCV and preserve their session positions without allowing execution; the pricing store preserves valid historical closes without manufacturing candles.
 
-## Equity observation policy
+## Equity observation policy (version 2)
 
-The source Parquet retains raw observations, including holiday placeholders,
-suspension quotes and legacy observations with unknown volume. Application
-readers build an in-memory equity view requiring finite, positive Close and
-Volume. Zero, missing, negative or infinite volume cannot count toward trading
-history or enter equity indicators. Indices, adjusted ETFs and the cash proxy
-keep their separate policies; index quotes do not require positive volume.
+The canonical price Parquet is selectively cleaned. Only equity placeholders on
+verified complete NSE CM closures are removed. All other zero-volume or
+unknown-volume observations remain stored with quality flags. Indices, ETFs and
+the cash proxy retain their separate policies.
 
-Screeners, equity charts, breadth, Momentum replay, Live Signal and Quant
-Portfolio use the accepted equity view. Indicators and weekly/monthly candles
-are calculated after filtering. A 252-observation return uses 252 accepted
-prices and 251 returns. Portfolio valuation can still carry an existing
-holding's last observed value; it cannot turn a missing bar into an execution
-price or a tradable observation.
+Stored rows carry `observation_status`, `price_status`, `volume_status`,
+`is_tradable`, `verification_source` and `verified_at`. A positive-volume,
+positive-close observation establishes trading. A zero-volume close is usable
+as a verified no-trade mark only when its verification source and timestamp
+are supplied explicitly; flatness alone is not proof. Uncertain quotes remain
+in the dataset and are masked in calculation views. Positive-volume quotes on
+a verified closure are retained as calendar conflicts for review.
 
-Eligibility requires the configured minimum accepted history, recent
-tradability (the existing three-session default), and at least 95% coverage of
-the latest 252 market sessions since the instrument's first accepted trade.
-The history gate remains independent: a newly listed stock is not penalized
-for sessions before listing, but must still meet the requested history length.
-An old stock resuming after a long gap cannot qualify using years-old history.
-Coverage decisions at historical dates use only observations through that date.
+`data/nse_session_calendar.json` records the verified 2026 calendar, official
+NSE circulars, complete closures and the Muhurat session. Before verified
+years, market-wide observed trading dates provide an explicitly documented
+fallback, including observed special weekend sessions. No historical row is
+deleted on an unverified date. Expected sessions through the requested cutoff
+still count when the whole market snapshot is stale.
 
-The historical session calendar is the union of positive-volume equity dates
-across the available market, which excludes all-zero holiday dates and retains
-observed special weekend sessions. Expected weekdays beyond the latest observed
-market session are added through the requested cutoff, excluding known CM
-holidays, so a stale whole-market snapshot cannot appear current. This observed
-calendar cannot detect a session missing from every source instrument.
+Calculations use a common exchange-session grid before selecting a universe.
+A 1Y window contains 252 fixed session positions and 251 daily-return intervals;
+it never extends backward to collect 252 trades. Return endpoints require a
+trusted close and trading evidence within three sessions of each boundary.
+Sharpe, positive-day percentages and moving averages do not silently skip
+unknown prices or bridge gaps. Composite Sharpe scores require all requested
+periods. The 52-week high uses actual trading highs in its fixed window and is
+unavailable when required data are missing. Verified no-trade marks can support
+Close-based indicators but do not manufacture OHLC candles or execution prices.
 
-The equity policy has a version independent of the source-file revisions.
-Score, chart, breadth, strategy-signal and portfolio result caches include or
-check that version, so a policy update recalculates results without changing
-the raw data files. Future publications report excluded equity rows and
-non-flat zero-volume candles for source review, while retaining those rows.
+History length counts supported price sessions, including verified no-trade
+marks. Eligibility separately requires recent actual trading (three-session
+default) and at least 95% actual trading coverage of the latest 252 market
+sessions since the first observation. A history with 240 recent trades and 12
+ancient trades can no longer report a years-long 1Y return. Historical
+calculations cut observations and calendar positions at their requested date.
+
+Charts and candle strategies preserve missing session positions. Weekly candles
+aggregate real trading candles; wholly missing weeks remain empty positions.
+Portfolio valuation may carry an existing holding's last known value, while
+execution requires trading evidence and an available execution price.
+
+`data/equity_observation_verifications.json` records narrowly scoped repairs
+with source hashes and verification times. The initial cleanup restores volume
+for 13 May 24, 2023 candles using NSE's official bhavcopy, after confirming that
+the raw and adjusted candle shapes agree. Adjusted OHLC prices are unchanged.
+Every subsequent publisher repeats the same idempotent cleanup and preserves
+matching verified marks, preventing rejected placeholders from accumulating.
+
+The cleanup is read-only by default, writes an audit of all removals and
+repairs, and archives the exact original before atomic publication:
+
+```sh
+python scripts/clean_equity_observations.py
+python scripts/clean_equity_observations.py --apply
+```
+
+Recovery copies in `outputs/equity_policy_v2/archive/` are not application
+fallbacks and are excluded from Git. The manifest records the original revision
+and SHA-256. Stop publishers and restore that archived source if rollback is
+needed. Other market files are not changed by cleanup. Source revisions and the
+independent equity policy version invalidate derived caches and portfolio
+results after publication or policy changes. Page reads never request vendor
+verification data.
 
 ## Publication and scheduling
 
@@ -81,7 +111,7 @@ python scripts/refresh_market_data.py --series-type etf_adjusted
 python scripts/refresh_market_data.py --full
 ```
 
-Pricing refreshes use each instrument's own coverage and overlapping sessions. A changed adjusted close requires full stored-history coverage for that instrument, except known zero-volume non-trading placeholders that Yahoo omits. An omitted weekend trading quote is retained only when overlapping observations on both sides (within seven calendar days) confirm the same adjustment basis. A changed basis, missing boundary, or omitted ordinary trading observation still rejects the rebuild. Legacy closes with unknown volume require the same coverage checks. Existing placeholder rows remain stored; they never establish tradable coverage. An incomplete correction response retains the prior history and records the failure; it cannot introduce an adjustment seam between accepted trading observations. Legacy adjustment conflicts stay in `history_rebuild_required` until the complete upstream history is accepted, so later scheduled runs retry them.
+Pricing refreshes use each instrument's own coverage and overlapping sessions. A changed adjusted close requires full stored-history coverage for that instrument, except known zero-volume non-trading placeholders that Yahoo omits. An omitted weekend trading quote is retained only when overlapping observations on both sides (within seven calendar days) confirm the same adjustment basis. A changed basis, missing boundary, or omitted ordinary trading observation still rejects the rebuild. Legacy closes with unknown volume require the same coverage checks. Only verified complete-closure equity placeholders are removed. Other uncertain observations remain stored with quality flags and do not establish tradable coverage. An incomplete correction response retains the prior history and records the failure; it cannot introduce an adjustment seam between accepted trading observations. Legacy adjustment conflicts stay in `history_rebuild_required` until the complete upstream history is accepted, so later scheduled runs retry them.
 
 Generate Signal reads the accepted shared revision. It does not fetch prices. To repair stale prices, run the shared publisher (locally) or the Refresh Shared Market Data workflow (for the hosted app), then generate the signal again.
 
