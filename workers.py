@@ -15,9 +15,9 @@ import market_data as shared_market
 import quant_portfolio_engine as quant_portfolio
 from backtest_engine import BacktestConfig, run_backtest
 
-if getattr(backtest_data, "BACKTEST_DATA_VERSION", 0) < 5:
+if getattr(backtest_data, "BACKTEST_DATA_VERSION", 0) < 6:
     backtest_data = importlib.reload(backtest_data)
-if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 4:
+if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 5:
     quant_portfolio = importlib.reload(quant_portfolio)
 
 QuantPortfolioConfig = quant_portfolio.QuantPortfolioConfig
@@ -34,7 +34,7 @@ load_ohlcv_for_backtest = backtest_data.load_ohlcv_for_backtest
 load_quant_ohlcv_snapshot = backtest_data.load_quant_ohlcv_snapshot
 sync_benchmark_data = backtest_data.sync_benchmark_data
 
-SCREENER_WORKER_VERSION = 9
+SCREENER_WORKER_VERSION = 10
 
 
 def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
@@ -75,6 +75,7 @@ def quant_portfolio_worker(params: dict, emit: Callable, cancel_evt: threading.E
         raise RuntimeError("Cancelled")
     emit("info", f"Preparing {len(loaded.symbol_data):,} symbol histories…")
     config = QuantPortfolioConfig(
+        market_calendar=snapshot.trading_calendar(),
         strategy=params["strategy"],
         strategy_settings=params.get("strategy_settings", {}),
         start_date=params.get("start_date"),
@@ -103,6 +104,7 @@ def quant_portfolio_worker(params: dict, emit: Callable, cancel_evt: threading.E
     if "error" in result:
         raise RuntimeError(result["error"])
     result["source_revisions"] = snapshot.revisions
+    result["equity_policy_version"] = shared_market.EQUITY_POLICY_VERSION
     result["ohlcv_date"] = loaded.max_price_date or loaded.actual_latest_date
     result["ohlcv_start_date"] = loaded.earliest_price_date
     result["ohlcv_source"] = loaded.source
@@ -139,6 +141,7 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
     benchmarks = load_benchmark_series(snapshot=snapshot)
 
     base_config = BacktestConfig(
+        market_calendar=snapshot.trading_calendar(),
         m=params["m"],
         n=params["n"],
         rebalance_freq=params["rebalance_freq"],
@@ -268,6 +271,7 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         "trading_days": result_classic["trading_days"],
         "ohlcv_date": ohlcv_date,
         "source_revisions": snapshot.revisions,
+        "equity_policy_version": shared_market.EQUITY_POLICY_VERSION,
         "ohlcv_source": ohlcv_source,
         "m": params["m"],
     }

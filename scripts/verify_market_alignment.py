@@ -37,8 +37,7 @@ def verify(as_of, output=None):
     )
     method = "Average of 3/6/9/12 months"
     ranked = rank_momentum_frame(screen, method, **settings)
-    calendar = pd.bdate_range(snapshot.prices.date.min(), as_of)
-    calendar = calendar[~calendar.strftime("%Y-%m-%d").isin(data.load_nse_holidays())]
+    calendar = snapshot.trading_calendar(as_of)
     prices = {symbol: loaded.symbol_data[symbol] for symbol in snapshot.symbols() if symbol in loaded.symbol_data}
     fast = _precompute_all_metrics(prices)
     fast_rank = rank_universe_at_date(

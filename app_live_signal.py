@@ -122,6 +122,7 @@ def _strategy_fingerprint(params: dict, ohlcv_date: object, ohlcv_source: object
         "pos_days_12m_min",
     )
     payload = {field: str(params.get(field)) for field in fields}
+    payload["equity_policy_version"] = shared_market.EQUITY_POLICY_VERSION
     payload["indices"] = sorted(params.get("indices", []))
     if params.get("freq") in {"weekly", "biweekly"}:
         payload["rebalance_weekday"] = params["signal_date"].strftime("%A")
@@ -921,6 +922,7 @@ def _run_signal(params: dict) -> dict:
     )
     freshness = {
         "source_revisions": shared_snapshot.revisions,
+        "equity_policy_version": shared_market.EQUITY_POLICY_VERSION,
         "target_date": ohlcv.target_date,
         "actual_latest_date": ohlcv.actual_latest_date,
         "max_price_date": ohlcv.max_price_date,
@@ -991,6 +993,7 @@ def _run_signal(params: dict) -> dict:
     start_date = _simulation_start_date(params)
 
     cfg = BacktestConfig(
+        market_calendar=shared_snapshot.trading_calendar(),
         m=params["m"],
         n=params["n"],
         rebalance_freq=params.get("freq", "weekly"),
@@ -1240,10 +1243,13 @@ def live_signal_results(params: dict) -> None:
 
     # Run only when button was clicked (ls_result cleared by button handler)
     result = st.session_state.get("ls_result")
-    if result and result.get("data_freshness", {}).get("source_revisions") != shared_market.source_revisions():
+    if result and (
+        result.get("data_freshness", {}).get("source_revisions") != shared_market.source_revisions()
+        or result.get("data_freshness", {}).get("equity_policy_version") != shared_market.EQUITY_POLICY_VERSION
+    ):
         result = None
         st.session_state["ls_result"] = None
-        st.info("Shared market data changed. Generate the signal again to use the accepted revisions.")
+        st.info("Market data or calculation rules changed. Generate the signal again.")
     if result is None:
         with st.spinner("Reading shared prices and replaying the strategy…"):
             result = _run_signal(params)

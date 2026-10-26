@@ -274,7 +274,8 @@ def test_rebuild_omitting_placeholder_repairs_prices_but_preserves_required_hist
         return pd.DataFrame(columns=md.PRICE_COLUMNS), "offline"
 
     report = refresh_prices(target_date=str(days[-1].date()), fetch=fetch)
-    actual = md.load_snapshot().ohlcv()["A"].Close
+    accepted = md.load_snapshot()
+    actual = accepted.prices.query("series_type == 'equity' and symbol == 'A'").set_index("date").Close
     expected = frame[frame.symbol == "A"].set_index("date").Close.copy()
     if missing_volume == 0:
         expected.loc[replacement.date] = replacement.Close.to_numpy()
@@ -283,6 +284,9 @@ def test_rebuild_omitting_placeholder_repairs_prices_but_preserves_required_hist
         assert "A" in report["history_rebuild_required"]
         assert "incomplete" in report["errors"]["A"]
     pd.testing.assert_series_equal(actual, expected, check_names=False)
+    # Raw source history survives; calculation views exclude zero/unknown volume.
+    calculation = accepted.ohlcv()["A"]
+    assert (days[10] in calculation.index) == (pd.notna(missing_volume) and missing_volume > 0)
 
 
 def test_partial_download_records_lag_instead_of_silently_reporting_success(market, monkeypatch):

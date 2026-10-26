@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from config import CIRCUIT_LEVELS, CIRCUIT_TOLERANCE
+from equity_data import accepted_equity_rows
 
 _VOL_WINDOW = 252
 _VOL_MIN_PERIODS = 63
@@ -59,6 +60,7 @@ def _calculate_positive_days_pct(df: pd.DataFrame, months: int) -> float | None:
 
 def score_momentum(df: pd.DataFrame) -> dict | None:
     """Compute momentum metrics (Sharpe, volatility, 52w stats, circuit count) for a single stock."""
+    df = accepted_equity_rows(df)
     if len(df) < 250:
         return None
 
@@ -119,6 +121,7 @@ def precompute_metrics(df: pd.DataFrame) -> pd.DataFrame:
     Internal columns _count and _missing_rate mirror the len(sub) and isna().mean()
     filters that rank_universe_at_date applies on the sliced sub-DataFrame.
     """
+    df = accepted_equity_rows(df)
     c = df["Close"]
     v = df["Volume"]
     h = df["High"]

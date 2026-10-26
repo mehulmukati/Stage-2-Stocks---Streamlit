@@ -29,6 +29,43 @@ Portfolio holdings can differ from a fresh top-M list because of entry/hold band
 
 Stale candidates are excluded consistently. Live Signal separately blocks a stale broker/model holding that needs a reliable trade price. Complete-candle strategies explicitly exclude and report missing OHLCV rows; the pricing store preserves valid historical closes without manufacturing candles.
 
+## Equity observation policy
+
+The source Parquet retains raw observations, including holiday placeholders,
+suspension quotes and legacy observations with unknown volume. Application
+readers build an in-memory equity view requiring finite, positive Close and
+Volume. Zero, missing, negative or infinite volume cannot count toward trading
+history or enter equity indicators. Indices, adjusted ETFs and the cash proxy
+keep their separate policies; index quotes do not require positive volume.
+
+Screeners, equity charts, breadth, Momentum replay, Live Signal and Quant
+Portfolio use the accepted equity view. Indicators and weekly/monthly candles
+are calculated after filtering. A 252-observation return uses 252 accepted
+prices and 251 returns. Portfolio valuation can still carry an existing
+holding's last observed value; it cannot turn a missing bar into an execution
+price or a tradable observation.
+
+Eligibility requires the configured minimum accepted history, recent
+tradability (the existing three-session default), and at least 95% coverage of
+the latest 252 market sessions since the instrument's first accepted trade.
+The history gate remains independent: a newly listed stock is not penalized
+for sessions before listing, but must still meet the requested history length.
+An old stock resuming after a long gap cannot qualify using years-old history.
+Coverage decisions at historical dates use only observations through that date.
+
+The historical session calendar is the union of positive-volume equity dates
+across the available market, which excludes all-zero holiday dates and retains
+observed special weekend sessions. Expected weekdays beyond the latest observed
+market session are added through the requested cutoff, excluding known CM
+holidays, so a stale whole-market snapshot cannot appear current. This observed
+calendar cannot detect a session missing from every source instrument.
+
+The equity policy has a version independent of the source-file revisions.
+Score, chart, breadth, strategy-signal and portfolio result caches include or
+check that version, so a policy update recalculates results without changing
+the raw data files. Future publications report excluded equity rows and
+non-flat zero-volume candles for source review, while retaining those rows.
+
 ## Publication and scheduling
 
 The existing GitHub Actions workflow remains scheduled for **19:45 IST daily**, with manual dispatch available; GitHub may start scheduled runs later. It first verifies current NSE constituents, then runs the shared pricing publisher, then commits the two files together. After committing accepted data, a read-only coverage check fails the workflow if no current constituents cover the target session or any of the three Live Signal benchmarks lack a target-session price. Useful partial observations remain published, while a green run cannot hide a universe-wide lag. GitHub concurrency and a local publisher lock serialize writers. Each file replacement validates data, checks the expected prior revision and publishes atomically. A failed download never erases accepted history. Partial failures and actual coverage are embedded in the file metadata and shown through the shared readers.

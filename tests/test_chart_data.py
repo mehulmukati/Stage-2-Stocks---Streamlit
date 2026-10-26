@@ -24,13 +24,15 @@ def test_missing_symbol_is_reported_without_private_download(market, monkeypatch
     assert data._fetch_chart_data_for_target("MISSING", "2026-08-25").empty
 
 
-def test_chart_cache_key_includes_date_and_both_revisions(market, monkeypatch):
+def test_chart_cache_key_includes_date_revisions_and_equity_policy(market, monkeypatch):
     captured = {}
 
-    def cached(symbol, target_date, source_revisions):
-        captured.update(symbol=symbol, date=target_date, revisions=source_revisions)
+    def cached(symbol, target_date, source_revisions, equity_policy_version):
+        captured.update(symbol=symbol, date=target_date, revisions=source_revisions, policy=equity_policy_version)
         return pd.DataFrame()
 
     monkeypatch.setattr(data, "_fetch_chart_data_cached", cached)
     data.fetch_chart_data("A")
-    assert captured == dict(symbol="A", date=data._get_target_key(), revisions=md.source_revisions())
+    assert captured == dict(
+        symbol="A", date=data._get_target_key(), revisions=md.source_revisions(), policy=md.EQUITY_POLICY_VERSION
+    )

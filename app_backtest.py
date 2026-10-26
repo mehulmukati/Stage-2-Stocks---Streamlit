@@ -111,9 +111,12 @@ def backtest_results(params: dict):
     result = st.session_state.get("backtest_cached_result")
     import market_data as shared_market
 
-    if result is not None and result.get("source_revisions") != shared_market.source_revisions():
+    if result is not None and (
+        result.get("source_revisions") != shared_market.source_revisions()
+        or result.get("equity_policy_version") != shared_market.EQUITY_POLICY_VERSION
+    ):
         st.session_state.pop("backtest_cached_result", None)
-        st.info("Market sources changed. Run the backtest again using the current revisions.")
+        st.info("Market data or calculation rules changed. Run the backtest again.")
         return
 
     if result is None:
@@ -837,6 +840,11 @@ def _render_debug_tab(result: dict | None) -> None:
             "insufficient_history": "Insufficient history — fewer than the configured minimum trading days"
             " before this date",
             "missing_data": "Missing data — >5% of close prices were missing",
+            "incomplete_recent_coverage": (
+                "Incomplete recent coverage — fewer than 95% of the latest 252 market sessions "
+                "have accepted trading observations"
+            ),
+            "no_tradable_data": "No positive-volume trading observations before this date",
             "low_volume": "Low volume — median daily volume below the minimum threshold",
             "no_valid_score": "No valid Sharpe score — could not compute a momentum score",
             "no_data": "No OHLCV data — symbol not found in the backtest dataset",

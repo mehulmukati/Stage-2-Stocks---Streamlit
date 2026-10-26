@@ -14,7 +14,7 @@ import market_data as shared_market
 from config import IST, SCREENER_OHLCV_PARQUET
 from data import _load_constituents, get_last_valid_trading_date, load_nse_holidays  # noqa: F401
 
-BACKTEST_DATA_VERSION = 5
+BACKTEST_DATA_VERSION = 6
 _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
 
@@ -162,7 +162,7 @@ def load_quant_ohlcv_snapshot(emit=_NOOP_EMIT, snapshot=None) -> OHLCVLoadResult
 
 def _ensure_baseline_ohlcv(emit=_NOOP_EMIT) -> pd.DataFrame:
     snapshot = shared_market.load_snapshot()
-    return snapshot.prices[snapshot.prices.series_type == "equity"].drop(columns="series_type")
+    return snapshot.equity_prices().drop(columns="series_type")
 
 
 def _ensure_baseline_bench(emit=_NOOP_EMIT) -> pd.DataFrame:
@@ -283,7 +283,7 @@ def load_ohlcv_for_backtest(emit=_NOOP_EMIT, required_symbols=None, refresh=Fals
     try:
         snapshot = snapshot or shared_market.load_snapshot()
         target_key = str(snapshot.as_of.date()) if snapshot.as_of is not None else _get_target_key()
-        base = snapshot.prices[snapshot.prices.series_type == "equity"].drop(columns="series_type")
+        base = snapshot.equity_prices(as_of=target_key).drop(columns="series_type")
         base = base[base.date <= pd.Timestamp(target_key)]
         required = sorted(set(required_symbols if required_symbols is not None else snapshot.symbols(as_of=target_key)))
         result = _assess_ohlcv_freshness(base, target_key, required, "shared")

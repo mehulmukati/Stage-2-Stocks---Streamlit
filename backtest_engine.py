@@ -30,6 +30,7 @@ from dateutil.relativedelta import relativedelta
 
 from config import MIN_VOLUME
 from corporate_actions import load_corporate_actions
+from equity_data import MIN_RECENT_COVERAGE, accepted_equity_rows, extend_sessions, observed_sessions, recent_coverage
 from momentum_engine import _calculate_avg_sharpe, precompute_metrics
 from stage2_engine import compute_rolling_stage2
 
@@ -57,6 +58,7 @@ class BacktestConfig:
     apply_volume_filter: bool = True
     minimum_median_volume: float = MIN_VOLUME
     max_stale_sessions: int = 3
+    market_calendar: pd.DatetimeIndex | None = field(default=None, compare=False, repr=False)
     max_position_pct: float | None = None
     corporate_actions: list[dict] = field(
         default_factory=lambda: [dict(action) for action in load_corporate_actions()],
@@ -119,9 +121,7 @@ def latest_tradable_date(df: pd.DataFrame, as_of: pd.Timestamp) -> pd.Timestamp 
     eligible = df.loc[df.index <= as_of]
     if eligible.empty:
         return None
-    close = pd.to_numeric(eligible["Close"], errors="coerce")
-    volume = pd.to_numeric(eligible["Volume"], errors="coerce")
-    valid = eligible.index[close.notna() & close.gt(0) & volume.notna() & volume.gt(0)]
+    valid = accepted_equity_rows(eligible).index
     return pd.Timestamp(valid[-1]).normalize() if len(valid) else None
 
 
@@ -408,10 +408,7 @@ def _precompute_tradable_dates(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, 
     """Index valid bars once for repeated rebalance-date freshness checks."""
     result: dict[str, pd.DatetimeIndex] = {}
     for sym, df in all_ohlcv.items():
-        close = pd.to_numeric(df["Close"], errors="coerce")
-        volume = pd.to_numeric(df["Volume"], errors="coerce")
-        valid = close.notna() & close.gt(0) & volume.notna() & volume.gt(0)
-        result[sym] = pd.DatetimeIndex(df.index[valid]).normalize().sort_values().unique()
+        result[sym] = pd.DatetimeIndex(accepted_equity_rows(df).index).normalize().sort_values().unique()
     return result
 
 
@@ -420,7 +417,7 @@ def _precompute_stage2_scores(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, p
     result: dict[str, pd.Series] = {}
     for sym, df in all_ohlcv.items():
         try:
-            result[sym] = compute_rolling_stage2(df)["Score"]
+            result[sym] = compute_rolling_stage2(accepted_equity_rows(df))["Score"]
         except Exception as exc:
             logging.warning("compute_rolling_stage2 failed for %s: %s", sym, exc)
     return result
@@ -471,6 +468,8 @@ def rank_universe_at_date(
     """
     ranked: list[tuple[str, float]] = []
     excluded_reasons: dict[str, str] = {} if return_excluded_reasons else None  # type: ignore[assignment]
+    if trading_calendar is None:
+        trading_calendar = extend_sessions(observed_sessions(all_ohlcv.values()), as_of)
 
     for sym, df in all_ohlcv.items():
         if valid_symbols is not None and sym not in valid_symbols:
@@ -490,6 +489,16 @@ def rank_universe_at_date(
         if max_stale_sessions >= 0 and stale_sessions > max_stale_sessions:
             if excluded_reasons is not None:
                 excluded_reasons[sym] = f"stale_price:{last_tradable.date()}:{stale_sessions}_sessions"
+            continue
+
+        dates = (
+            tradable_dates[sym]
+            if tradable_dates is not None and sym in tradable_dates
+            else accepted_equity_rows(df).index
+        )
+        if recent_coverage(dates, as_of, trading_calendar) < MIN_RECENT_COVERAGE:
+            if excluded_reasons is not None:
+                excluded_reasons[sym] = "incomplete_recent_coverage"
             continue
 
         if precomputed is not None:
@@ -541,7 +550,7 @@ def rank_universe_at_date(
                 continue
         else:
             # Original path: slice OHLCV and score on demand
-            sub = df[df.index <= as_of]
+            sub = accepted_equity_rows(df[df.index <= as_of])
             if len(sub) < min_history_days:
                 if excluded_reasons is not None:
                     excluded_reasons[sym] = "insufficient_history"
@@ -1136,6 +1145,12 @@ def run_backtest(
     if schema_errors:
         return {"error": "Invalid OHLCV input: " + "; ".join(schema_errors[:5])}
 
+    all_ohlcv = {symbol: accepted_equity_rows(frame) for symbol, frame in all_ohlcv.items()}
+    all_ohlcv = {symbol: frame for symbol, frame in all_ohlcv.items() if not frame.empty}
+    ranking_calendar = (
+        config.market_calendar if config.market_calendar is not None else observed_sessions(all_ohlcv.values())
+    )
+
     # Warn once if any requested index has no composition data before the start date.
     if compositions_df is not None and not compositions_df.empty and index_names:
         comp_check = compositions_df.copy()
@@ -1155,7 +1170,7 @@ def run_backtest(
                     t0.date(),
                 )
 
-    trading_days = _trading_days(all_ohlcv, t0, t1)
+    trading_days = ranking_calendar[(ranking_calendar >= t0) & (ranking_calendar <= t1)]
     if len(trading_days) < 20:
         return {"error": "Insufficient trading days in selected range (need at least one month of data)."}
 
@@ -1334,7 +1349,7 @@ def run_backtest(
                 pos_days_6m_min=pos_days_6m_min,
                 pos_days_12m_min=pos_days_12m_min,
                 max_stale_sessions=max_stale_sessions,
-                trading_calendar=trading_days,
+                trading_calendar=ranking_calendar,
                 tradable_dates=tradable_dates,
             )
             top_m = set(ranked[:m])

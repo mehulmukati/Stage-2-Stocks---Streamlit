@@ -15,6 +15,7 @@ import pandas as pd
 import quant_strategy_registry as strategy_registry
 from backtest_engine import _compute_fy_tax, _financial_year, _prepare_compositions, _valid_symbols_at_date
 from corporate_actions import load_corporate_actions
+from equity_data import EQUITY_POLICY_VERSION, MIN_RECENT_COVERAGE, accepted_equity_rows, recent_coverage
 from quant_portfolio_metrics import build_quant_metrics
 
 if getattr(strategy_registry, "QUANT_STRATEGY_REGISTRY_VERSION", 0) < 3:
@@ -23,7 +24,7 @@ if getattr(strategy_registry, "QUANT_STRATEGY_REGISTRY_VERSION", 0) < 3:
 build_strategy = strategy_registry.build_strategy
 strategy_metadata = strategy_registry.strategy_metadata
 
-QUANT_PORTFOLIO_ENGINE_VERSION = 4
+QUANT_PORTFOLIO_ENGINE_VERSION = 5
 RANK_STRATEGY_SCORE = "strategy_score"
 RANK_RELATIVE_STRENGTH = "relative_strength"
 RANKING_LABELS = {
@@ -51,6 +52,7 @@ class QuantPortfolioConfig:
     stcg_rate: float = 0.0
     ltcg_rate: float = 0.0
     min_history_days: int = 260
+    market_calendar: pd.DatetimeIndex | None = field(default=None, compare=False, repr=False)
     minimum_median_volume: float = 100_000.0
     ranking_method: str = RANK_STRATEGY_SCORE
     ranking_lookback_sessions: int = 55
@@ -147,6 +149,7 @@ def _cached_strategy_frame(symbol: str, frame: pd.DataFrame, strategy, settings:
     """Cache indicator/event work independently of capital, costs and portfolio rules."""
     final_close = float(frame["Close"].dropna().iloc[-1]) if "Close" in frame and frame["Close"].notna().any() else None
     key = (
+        EQUITY_POLICY_VERSION,
         symbol,
         strategy.definition.key,
         strategy.definition.timeframe,
@@ -172,6 +175,7 @@ def _cached_strategy_frame(symbol: str, frame: pd.DataFrame, strategy, settings:
 
 def _cached_strategy_frames(prices: dict[str, pd.DataFrame], strategy, settings: dict[str, Any]):
     key = (
+        EQUITY_POLICY_VERSION,
         strategy.definition.key,
         strategy.definition.timeframe,
         repr(sorted(settings.items())),
@@ -206,7 +210,7 @@ def run_quant_portfolio(
     if config.max_holdings <= 0 or config.initial_capital <= 0:
         return {"error": "Max holdings and initial capital must be positive."}
     strategy = build_strategy(config.strategy, config.strategy_settings)
-    required_price_columns = set(strategy.definition.required_price_columns)
+    required_price_columns = set(strategy.definition.required_price_columns) | {"Close", "Volume"}
     schema_failures = [
         {
             "Symbol": symbol,
@@ -220,6 +224,8 @@ def run_quant_portfolio(
         for symbol, frame in all_ohlcv.items()
         if not frame.empty and not required_price_columns.difference(frame.columns)
     }
+    prices = {symbol: accepted_equity_rows(frame) for symbol, frame in prices.items()}
+    prices = {symbol: frame for symbol, frame in prices.items() if not frame.empty}
     if not prices:
         return {"error": "No OHLCV data is available."}
     emit("info", f"Computing {strategy.definition.label} signals for {len(prices):,} stocks…")
@@ -265,7 +271,11 @@ def run_quant_portfolio(
             f"vs {config.ranking_benchmark}…",
         )
 
-    all_dates = pd.DatetimeIndex(sorted(set().union(*(set(frame.index) for frame in prices.values()))))
+    all_dates = (
+        config.market_calendar
+        if config.market_calendar is not None
+        else pd.DatetimeIndex(sorted(set().union(*(set(frame.index) for frame in prices.values()))))
+    )
     if all_dates.empty:
         return {"error": "No valid dated OHLCV rows are available."}
     start = pd.Timestamp(config.start_date) if config.start_date else all_dates.min()
@@ -460,6 +470,9 @@ def run_quant_portfolio(
             history = prices[symbol].loc[: event["Decision_Date"]]
             if len(history) < config.min_history_days:
                 event["Outcome"] = "SKIPPED_HISTORY"
+                continue
+            if recent_coverage(prices[symbol].index, decision_date, all_dates) < MIN_RECENT_COVERAGE:
+                event["Outcome"] = "SKIPPED_COVERAGE"
                 continue
             if strategy.definition.uses_liquidity_filter:
                 volume = history["Volume"].tail(20).median() if "Volume" in history else np.nan
