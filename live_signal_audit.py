@@ -38,6 +38,7 @@ _THIN_GRAY = Side(style="thin", color="D1D5DB")
 _CONFIGURATION_DATE_PARAMETERS = {
     "Signal date",
     "Portfolio start date",
+    "Fixed schedule anchor",
 }
 _CONFIGURATION_INTEGER_PARAMETERS = {
     "M (entry)",
@@ -252,6 +253,7 @@ def build_live_signal_audit_tables(
     configuration_rows = [
         {"Parameter": "Portfolio source", "Value": params.get("portfolio_source", "snapshot")},
         {"Parameter": "Signal date", "Value": params.get("signal_date")},
+        {"Parameter": "Fixed schedule anchor", "Value": params.get("rebalance_anchor")},
         {"Parameter": "Portfolio start date", "Value": params.get("portfolio_start")},
         {"Parameter": "Band rule", "Value": params.get("band")},
         {"Parameter": "Variant", "Value": params.get("variant")},

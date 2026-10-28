@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 import pandas as pd
+import pytest
 
 import app_live_signal as live
 import data_backtest as db
@@ -156,3 +157,57 @@ def test_stale_nonholding_is_excluded_consistently_without_blocking_fresh_candid
     result = db._assess_ohlcv_freshness(prices, "2026-08-25", ["A", "STALE"], "shared")
     excluded, blocking, coverage = live._signal_price_coverage(result, ["A", "STALE"], set())
     assert excluded == ["STALE"] and blocking == [] and coverage == "2026-08-25"
+
+
+@pytest.mark.parametrize("price_day", ["2026-08-24", "2026-08-20"])
+def test_missing_whole_signal_session_blocks_before_replay_even_with_stale_allowance(monkeypatch, price_day):
+    _pin_live_snapshot(monkeypatch, ["A"])
+    prices = _long([("A", price_day, 101)])
+    loaded = db._assess_ohlcv_freshness(prices, "2026-08-25", ["A"], "shared")
+    monkeypatch.setattr(live, "load_nse_holidays", lambda: frozenset())
+    monkeypatch.setattr(md.MarketSnapshot, "trading_calendar", lambda self: pd.bdate_range("2026-08-20", "2026-08-25"))
+    monkeypatch.setattr(db, "load_compositions", lambda **kwargs: pd.DataFrame())
+    monkeypatch.setattr(db, "sync_benchmark_data", lambda: None)
+    monkeypatch.setattr(db, "load_ohlcv_for_backtest", lambda **kwargs: loaded)
+    monkeypatch.setattr(
+        db, "load_benchmark_series", lambda **kwargs: db.BenchmarkLoadResult({}, "2026-08-25", price_day, "partial")
+    )
+
+    def should_not_run(*args, **kwargs):
+        raise AssertionError("Missing market data must not produce a liquidation target")
+
+    monkeypatch.setattr("backtest_engine.run_backtest", should_not_run)
+    result = live._run_signal({"indices": ["Nifty 50"], "signal_date": date(2026, 8, 25), "max_stale_sessions": 3})
+    assert "No tradable prices are available for the signal session 2026-08-25" in result["error"]
+    assert f"latest observed session is {price_day}" in result["error"]
+    assert "not a portfolio exit signal" in result["error"]
+    assert "holdings_log" not in result
+
+
+def test_signal_session_accepts_partial_quotes_but_ignores_unselected_symbols():
+    prices = _long([("A", "2026-08-25", 101), ("B", "2026-08-24", 200)])
+    frames = {symbol: frame.set_index("date") for symbol, frame in prices.groupby("symbol")}
+    calendar = pd.bdate_range("2026-08-20", "2026-08-25")
+    assert live._signal_session_coverage(frames, ["A", "B"], calendar, date(2026, 8, 25)) == (
+        pd.Timestamp("2026-08-25"),
+        pd.Timestamp("2026-08-25"),
+    )
+    assert live._signal_session_coverage(frames, ["B"], calendar, date(2026, 8, 25)) == (
+        pd.Timestamp("2026-08-25"),
+        pd.Timestamp("2026-08-24"),
+    )
+
+
+def test_signal_session_uses_last_exchange_session_on_holiday():
+    frame = _long([("A", "2026-10-19", 101)]).set_index("date")
+    assert live._signal_session_coverage(
+        {"A": frame}, ["A"], pd.DatetimeIndex(["2026-10-19", "2026-10-21"]), date(2026, 10, 20)
+    ) == (pd.Timestamp("2026-10-19"), pd.Timestamp("2026-10-19"))
+
+
+def test_zero_volume_placeholder_does_not_establish_signal_session():
+    prices = _long([("A", "2026-08-24", 101), ("A", "2026-08-25", 101)])
+    prices.loc[prices.date.eq("2026-08-25"), "Volume"] = 0
+    assert live._signal_session_coverage(
+        {"A": prices.set_index("date")}, ["A"], pd.bdate_range("2026-08-24", "2026-08-25"), date(2026, 8, 25)
+    ) == (pd.Timestamp("2026-08-25"), pd.Timestamp("2026-08-24"))

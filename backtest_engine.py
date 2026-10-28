@@ -684,8 +684,9 @@ def get_anchored_rebalance_dates(
     trading_days: pd.DatetimeIndex,
     freq: str,
     anchor_date: pd.Timestamp,
+    through: pd.Timestamp | None = None,
 ) -> list[pd.Timestamp]:
-    """Return live-signal rebalance dates on a fixed weekly/biweekly cadence.
+    """Return completed live decisions on a fixed cadence or calendar period end.
 
     ``get_rebalance_dates`` is intentionally calendar-period based for a
     backtest.  That makes the last available date look like a rebalance when a
@@ -694,22 +695,37 @@ def get_anchored_rebalance_dates(
     the selected weekday fixed and use the last available trading date on or
     before each scheduled day (for example, Monday when Tuesday is a holiday).
     """
-    if trading_days.empty or freq not in {"weekly", "biweekly"}:
-        return get_rebalance_dates(trading_days, freq)
+    if trading_days.empty:
+        return []
 
     anchor = pd.Timestamp(anchor_date).normalize()
-    period_days = 7 if freq == "weekly" else 14
     start = trading_days.min().normalize()
-    end = trading_days.max().normalize()
-    first_k = int(np.ceil((start - anchor).days / period_days))
-    last_k = int(np.floor((end - anchor).days / period_days))
+    # Include nominal dates just beyond the cutoff when the exchange calendar
+    # maps them back to an already-completed session (holiday/weekend close).
+    end = pd.Timestamp(through).normalize() if through is not None else trading_days.max().normalize()
+    trading_days = trading_days[trading_days <= end]
+    horizon = max(end + pd.Timedelta(days=14), end + pd.offsets.MonthEnd(0))
+    expected_sessions = extend_sessions(trading_days, horizon)
+    if freq in {"weekly", "biweekly"}:
+        period_days = 7 if freq == "weekly" else 14
+        first_k = int(np.ceil((start - anchor).days / period_days))
+        last_k = int(np.floor((horizon - anchor).days / period_days))
+        scheduled_dates = [anchor + pd.Timedelta(days=k * period_days) for k in range(first_k, last_k + 1)]
+    elif freq in {"monthly", "quarterly", "half-yearly"}:
+        months = {"monthly": 1, "quarterly": 3, "half-yearly": 6}[freq]
+        scheduled_dates = [
+            period.end_time.normalize()
+            for period in pd.period_range(start, end, freq="M")
+            if period.month % months == 0
+        ]
+    else:
+        raise ValueError(f"Unsupported live rebalance frequency: {freq}")
     dates: list[pd.Timestamp] = []
-    for k in range(first_k, last_k + 1):
-        scheduled = anchor + pd.Timedelta(days=k * period_days)
-        eligible = trading_days[(trading_days <= scheduled) & (trading_days >= start)]
+    for scheduled in scheduled_dates:
+        eligible = expected_sessions[(expected_sessions <= scheduled) & (expected_sessions >= start)]
         if not eligible.empty:
             candidate = eligible[-1]
-            if not dates or candidate != dates[-1]:
+            if candidate <= end and candidate in trading_days and (not dates or candidate != dates[-1]):
                 dates.append(candidate)
     return dates
 
@@ -1200,7 +1216,7 @@ def run_backtest(
     if rebalance_anchor_date:
         try:
             rebalance_dates = get_anchored_rebalance_dates(
-                trading_days, rebalance_freq, pd.Timestamp(rebalance_anchor_date)
+                trading_days, rebalance_freq, pd.Timestamp(rebalance_anchor_date), through=t1
             )
         except Exception:
             return {"error": f"Invalid rebalance_anchor_date={rebalance_anchor_date!r}. Use 'YYYY-MM-DD'."}
@@ -1400,6 +1416,9 @@ def run_backtest(
                 )
 
             new_holdings = (current_holdings - exits) | entries
+            for symbol in exits:
+                if symbol not in ranked and (valid_syms is None or symbol in valid_syms):
+                    exit_reasons[symbol] = "excluded: " + _excluded_reasons.get(symbol, "unrankable")
 
             if not new_holdings:
                 new_holdings = top_m if top_m else (set() if not ranked else current_holdings)

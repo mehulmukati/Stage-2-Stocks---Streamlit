@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""
-Live Signal tab — weekly trade instructions from a warm-up backtest snapshot.
+"""Live Signal: actual-portfolio continuation with explicit model research modes.
 
-Runs run_backtest over a short warm-up window (default 52 weeks) ending on the
-chosen signal date, then snapshots the last rebalance event for trade execution.
+Confirmed checkpoints preserve prior decisions and Stage 2 baselines. Replaying
+history is restricted to the separately selected research/model-alignment paths.
 """
 
 import hashlib
 import io
 import json
+import math
 import warnings
 from datetime import date, timedelta
 
@@ -53,6 +53,7 @@ _SORT_OPTIONS = [
 ]
 
 _REPLAY_BUFFER_WEEKS = 52
+_LIVE_SIGNAL_VERSION = 3
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -85,6 +86,22 @@ def _simulation_start_date(params: dict) -> date:
     portfolio_start = params.get("portfolio_start")
     anchor = _previous_business_day(portfolio_start) if portfolio_start else params["signal_date"]
     return anchor - timedelta(weeks=_REPLAY_BUFFER_WEEKS)
+
+
+def _rebalance_anchor(params: dict) -> date:
+    """A portfolio's schedule never derives from a changing signal cutoff."""
+    if params.get("rebalance_anchor"):
+        return pd.Timestamp(params["rebalance_anchor"]).date()
+    if params.get("portfolio_start"):
+        return _previous_business_day(pd.Timestamp(params["portfolio_start"]).date())
+    return date(2000, 1, 4)  # stable Tuesday fallback for legacy programmatic callers
+
+
+def _request_identity(params: dict) -> str:
+    def serialise(value):
+        return value.to_dict("records") if isinstance(value, pd.DataFrame) else str(value)
+
+    return hashlib.sha256(json.dumps(params, sort_keys=True, default=serialise).encode()).hexdigest()
 
 
 def _strategy_fingerprint(params: dict, ohlcv_date: object, ohlcv_source: object) -> str:
@@ -122,10 +139,11 @@ def _strategy_fingerprint(params: dict, ohlcv_date: object, ohlcv_source: object
         "pos_days_12m_min",
     )
     payload = {field: str(params.get(field)) for field in fields}
+    payload["portfolio_source"] = params.get("portfolio_source", "replay")
     payload["equity_policy_version"] = shared_market.EQUITY_POLICY_VERSION
     payload["indices"] = sorted(params.get("indices", []))
     if params.get("freq") in {"weekly", "biweekly"}:
-        payload["rebalance_weekday"] = params["signal_date"].strftime("%A")
+        payload["rebalance_anchor"] = str(_rebalance_anchor(params))
     payload["ohlcv_date"] = str(ohlcv_date)
     payload["ohlcv_source"] = str(ohlcv_source)
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -240,7 +258,7 @@ def _normalise_broker_snapshot(raw: pd.DataFrame) -> tuple[pd.DataFrame, list[st
 
     errors: list[str] = []
     numeric_qty = pd.to_numeric(frame["Quantity"], errors="coerce")
-    bad_qty = frame.loc[numeric_qty.isna(), "Ticker"].tolist()
+    bad_qty = frame.loc[~numeric_qty.map(lambda q: pd.notna(q) and math.isfinite(q)), "Ticker"].tolist()
     if bad_qty:
         errors.append("Non-numeric quantity for: " + ", ".join(bad_qty))
     fractional = frame.loc[numeric_qty.notna() & ((numeric_qty % 1).abs() > 1e-9), "Ticker"].tolist()
@@ -314,11 +332,13 @@ def _reconcile_actual_portfolio(
     positions, errors = _normalise_broker_snapshot(snapshot)
     cash = float(cash)
     reserve_cash = float(reserve_cash)
-    if cash < 0:
+    if not math.isfinite(cash) or cash < 0:
         errors.append("Available cash cannot be negative.")
 
     actual_qty = dict(zip(positions.get("Ticker", []), positions.get("Quantity", [])))
     positive_targets = {ticker: float(weight) for ticker, weight in target_weights.items() if float(weight) > 0}
+    if any(not math.isfinite(float(w)) or float(w) < 0 for w in target_weights.values()):
+        errors.append("Target weights must be finite and non-negative.")
     target_total = sum(positive_targets.values())
     normalised_targets = (
         {ticker: weight * 100.0 / target_total for ticker, weight in positive_targets.items()}
@@ -326,7 +346,9 @@ def _reconcile_actual_portfolio(
         else {}
     )
     required = set(actual_qty) | set(normalised_targets)
-    missing_prices = sorted(ticker for ticker in required if not prices.get(ticker, 0) > 0)
+    missing_prices = sorted(
+        ticker for ticker in required if not math.isfinite(prices.get(ticker, 0)) or not prices.get(ticker, 0) > 0
+    )
     if missing_prices:
         errors.append("No signal-date price for: " + ", ".join(missing_prices))
 
@@ -334,7 +356,7 @@ def _reconcile_actual_portfolio(
     gross_value = cash + securities_value
     if gross_value <= 0:
         errors.append("Broker snapshot plus cash must have a positive value.")
-    if reserve_cash < 0:
+    if not math.isfinite(reserve_cash) or reserve_cash < 0:
         errors.append("Minimum cash reserve cannot be negative.")
     if reserve_cash > gross_value:
         errors.append("Minimum cash reserve exceeds the marked-to-market portfolio value.")
@@ -354,7 +376,9 @@ def _reconcile_actual_portfolio(
         current_qty = int(actual_qty.get(ticker, 0))
         strategy_weight = normalised_targets.get(ticker, 0.0)
         target_value = investable_value * strategy_weight / 100.0
-        target_qty = int(target_value // price)
+        # Ratios made from actual position weights can be one ulp below an
+        # integer. Do not turn an unchanged marginal position into a one-share sell.
+        target_qty = math.floor(target_value / price + 1e-9)
         order_qty = target_qty - current_qty
         action = "BUY" if order_qty > 0 else "SELL" if order_qty < 0 else "HOLD"
         current_value = current_qty * price
@@ -434,6 +458,8 @@ def _explain_strategy_reason(reason: str, action: str, m: int, n: int) -> str:
         return f"Momentum rank #{rank} is outside the hold band (N={n})."
     if reason == "left universe":
         return "Stock is no longer in the selected index universe."
+    if reason.startswith("excluded: "):
+        return "Stock failed the eligibility filter: " + reason.removeprefix("excluded: ").replace("_", " ") + "."
     if reason.startswith("S2 +"):
         change = reason.removeprefix("S2 +")
         return f"Stage 2 score increased by {change}, triggering entry."
@@ -539,6 +565,30 @@ def _signal_price_coverage(ohlcv, required_symbols, broker_tickers, max_stale_se
     return excluded, blocking, coverage
 
 
+def _signal_session_coverage(symbol_data, required_symbols, calendar, signal_date):
+    """Separate a missing market session from a few stale individual quotes.
+
+    The calendar includes expected sessions beyond the source's last bar.
+    Those empty rows invalidate rolling metrics; the per-symbol stale limit
+    must not turn a missing whole-market session into an all-cash target.
+    """
+    from backtest_engine import latest_tradable_date
+
+    sessions = pd.DatetimeIndex(calendar)
+    sessions = sessions[sessions <= pd.Timestamp(signal_date)]
+    if sessions.empty:
+        return None, None
+    required_session = sessions[-1]
+    latest = [
+        last
+        for symbol in required_symbols
+        if symbol in symbol_data
+        for last in [latest_tradable_date(symbol_data[symbol], required_session)]
+        if last is not None
+    ]
+    return required_session, max(latest) if latest else None
+
+
 # ── inputs ───────────────────────────────────────────────────────────────────
 
 
@@ -546,13 +596,18 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
     st.markdown("### Portfolio basis")
     source_label = st.radio(
         "Choose how Live Signal determines your portfolio before this rebalance",
-        ["Replay from start date", "Use current portfolio snapshot"],
+        ["Continue actual portfolio", "Replay from start date (research)", "Align actual portfolio to replayed model"],
         horizontal=True,
-        key="ls_portfolio_source",
+        key="ls_portfolio_source_v3",
     )
-    portfolio_source = "replay" if source_label.startswith("Replay") else "snapshot"
+    portfolio_source = (
+        "continuation"
+        if source_label.startswith("Continue")
+        else "replay" if source_label.startswith("Replay") else "snapshot"
+    )
     st.caption(
-        "Replay reconstructs the model portfolio from inception. Snapshot reconciles the positions you actually own."
+        "Continuation applies one scheduled decision to your actual holdings. "
+        "Research replay and model alignment reconstruct history."
     )
 
     date_col, history_col = st.columns(2)
@@ -561,7 +616,8 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
         value=date.today(),
         max_value=date.today(),
         key="ls_signal_date",
-        help="Closing prices from this date are used for ranking. Trades execute on the next NSE session.",
+        help="Select the scheduled decision date. A holiday uses the preceding NSE session. "
+        "Changing this date does not change the schedule.",
     )
     portfolio_start = history_col.date_input(
         "Portfolio start date" if portfolio_source == "replay" else "Strategy inception date",
@@ -576,6 +632,23 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
     reserve_cash = 0.0
     expected_portfolio_value = 0.0
     portfolio_value = 0.0
+    continuation_action = "continue"
+    continuation_checkpoint = None
+    if portfolio_source == "continuation":
+        continuation_action = st.selectbox(
+            "Checkpoint action",
+            ["continue", "initialize"],
+            format_func=lambda x: (
+                "Continue from confirmed checkpoint"
+                if x == "continue"
+                else "Initialize or reset starting checkpoint (no trades)"
+            ),
+            key="ls_continuation_action",
+        )
+        st.caption(
+            "A starting checkpoint records existing holdings and score baselines without trading. "
+            "Save a new confirmed checkpoint only after executing a later decision."
+        )
 
     if portfolio_source == "replay":
         portfolio_value = st.number_input(
@@ -664,6 +737,52 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
             key="ls_expected_portfolio_value",
             help="Optional cross-check.",
         )
+    if portfolio_source == "snapshot":
+        st.warning(
+            "Model alignment can reverse past trades and resize every position. "
+            "It is not continuation of your actual marginal portfolio."
+        )
+    if portfolio_source == "continuation" and continuation_action == "continue":
+        checkpoint_upload = st.file_uploader(
+            "Last confirmed continuation checkpoint", type=["json"], key="ls_checkpoint_upload"
+        )
+        if checkpoint_upload is not None:
+            from live_signal_state import read_checkpoint
+
+            try:
+                continuation_checkpoint = read_checkpoint(checkpoint_upload.getvalue())
+                st.caption(
+                    f"Confirmed through {continuation_checkpoint['decision_date']}. "
+                    "Saved scores will not be recalculated."
+                )
+                # Restore saved settings once on upload, before these widgets
+                # are instantiated. Subsequent edits remain explicit and are validated.
+                checkpoint_id = continuation_checkpoint["checkpoint_id"]
+                if st.session_state.get("ls_loaded_checkpoint_id") != checkpoint_id:
+                    aliases = {
+                        "sort_method": "sort_method",
+                        "min_history": "min_history",
+                        "minimum_median_volume": "min_volume",
+                        "max_stale_sessions": "max_stale",
+                        "pos_days_3m_min": "pos_days_3m",
+                        "pos_days_6m_min": "pos_days_6m",
+                        "pos_days_12m_min": "pos_days_12m",
+                    }
+                    for field, value in continuation_checkpoint["strategy"].items():
+                        st.session_state["ls_" + aliases.get(field, field)] = (
+                            pd.Timestamp(value).date() if field == "rebalance_anchor" else value
+                        )
+                    st.session_state["ls_loaded_checkpoint_id"] = checkpoint_id
+            except ValueError as exc:
+                broker_errors.append(str(exc))
+                st.error(str(exc))
+    rebalance_anchor = st.date_input(
+        "Fixed schedule anchor",
+        value=_previous_business_day(portfolio_start),
+        key="ls_rebalance_anchor",
+        help="Keep this date fixed. Weekly uses its weekday; biweekly also uses its fortnight. "
+        "The signal date is only a cutoff.",
+    )
     st.divider()
 
     st.markdown("**Strategy**")
@@ -837,15 +956,24 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
         st.session_state["ls_result"] = None
     st.divider()
 
-    snapshot_missing = portfolio_source == "snapshot" and broker_snapshot.empty and cash_balance <= 0
+    snapshot_missing = portfolio_source != "replay" and broker_snapshot.empty and cash_balance <= 0
     if snapshot_missing:
         st.warning("Enter at least one broker position or a positive cash balance.")
     if st.button(
-        "📡 Generate Signal",
+        (
+            "Create starting checkpoint"
+            if portfolio_source == "continuation" and continuation_action == "initialize"
+            else "📡 Generate Signal"
+        ),
         type="primary",
         width="stretch",
         key="ls_run_btn",
-        disabled=live_data_blocked or bool(broker_errors) or snapshot_missing,
+        disabled=live_data_blocked
+        or bool(broker_errors)
+        or snapshot_missing
+        or (
+            portfolio_source == "continuation" and continuation_action == "continue" and continuation_checkpoint is None
+        ),
     ):
         st.session_state["ls_run_triggered"] = True
         st.session_state["ls_result"] = None  # invalidate cached result
@@ -866,6 +994,9 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
         "indices": list(indices),
         "portfolio_start": portfolio_start,
         "portfolio_source": portfolio_source,
+        "rebalance_anchor": rebalance_anchor,
+        "continuation_action": continuation_action,
+        "continuation_checkpoint": continuation_checkpoint,
         "portfolio_value": float(portfolio_value),
         "broker_snapshot": broker_snapshot,
         "cash_balance": float(cash_balance),
@@ -896,7 +1027,21 @@ def _run_signal(params: dict) -> dict:
 
     indices = params["indices"]
     shared_snapshot = shared_market.load_snapshot(params["signal_date"])
-    params = dict(params, source_revisions=shared_snapshot.revisions)
+    params = dict(params, source_revisions=shared_snapshot.revisions, rebalance_anchor=_rebalance_anchor(params))
+    if params.get("portfolio_source") == "continuation":
+        from live_signal_state import continue_portfolio
+
+        continued = continue_portfolio(params, shared_snapshot)
+        continued.update(
+            live_signal_version=_LIVE_SIGNAL_VERSION,
+            run_params=params,
+            strategy_fingerprint=_strategy_fingerprint(params, continued.get("ohlcv_date"), "continuation"),
+            data_freshness={
+                "source_revisions": shared_snapshot.revisions,
+                "equity_policy_version": shared_market.EQUITY_POLICY_VERSION,
+            },
+        )
+        return continued
     compositions_df = load_compositions(snapshot=shared_snapshot)
     constituents = shared_snapshot.constituents()
     selected_indices = indices or list(constituents)
@@ -976,6 +1121,24 @@ def _run_signal(params: dict) -> dict:
             "data_freshness": freshness,
         }
 
+    required_session, observed_session = _signal_session_coverage(
+        symbol_data_all, required_current_symbols, shared_snapshot.trading_calendar(), params["signal_date"]
+    )
+    freshness["signal_session"] = str(required_session.date()) if required_session is not None else None
+    freshness["latest_observed_session"] = str(observed_session.date()) if observed_session is not None else None
+    if required_session is None or observed_session is None or observed_session < required_session:
+        return {
+            "error": (
+                f"Signal not generated. No tradable prices are available for the signal session "
+                f"{freshness['signal_session'] or params['signal_date']}; latest observed session is "
+                f"{freshness['latest_observed_session'] or 'unavailable'}. The stale-session allowance "
+                "applies to individual securities, not a missing market-wide session. "
+                "An empty ranking from missing data is not a portfolio exit signal. "
+                "Run the Refresh Shared Market Data workflow, then Generate Signal."
+            ),
+            "data_freshness": freshness,
+        }
+
     ohlcv_date = signal_coverage_date
     src = ohlcv.source
     if indices:
@@ -1012,10 +1175,7 @@ def _run_signal(params: dict) -> dict:
         ltcg_rate=0.125,
         stcg_rate=0.20,
         band_rule=params["band"],
-        # Keep live rebalances on the selected weekday.  A later signal one
-        # week on must replay the same schedule, not insert Friday simply
-        # because a previous run ended on Tuesday.
-        rebalance_anchor_date=str(signal_date),
+        rebalance_anchor_date=str(_rebalance_anchor(params)),
         portfolio_start_date=str(params["portfolio_start"]) if params.get("portfolio_start") else None,
         rank_on_rebalance_date=True,
         stage2_drop_exit=params["s2_drop"],
@@ -1039,6 +1199,19 @@ def _run_signal(params: dict) -> dict:
 
     # Collect close prices for all tickers that appear in the last two rebalance events
     holdings_log = result["holdings_log"]
+    signal_sessions = shared_snapshot.trading_calendar()
+    signal_sessions = signal_sessions[signal_sessions <= pd.Timestamp(signal_date)]
+    if holdings_log and len(signal_sessions) and pd.Timestamp(holdings_log[-1]["date"]) != signal_sessions[-1]:
+        return {
+            "schedule_status": "not_due",
+            "message": (
+                f"No scheduled decision closes at the selected signal date. Last decision: {holdings_log[-1]['date']}. "
+                "Select its decision date to review historical orders; "
+                "changing the cutoff does not change the schedule."
+            ),
+            "run_params": params,
+            "data_freshness": freshness,
+        }
     tickers_needed: set[str] = set()
     tickers_needed.update(broker_tickers)
     if holdings_log:
@@ -1070,6 +1243,7 @@ def _run_signal(params: dict) -> dict:
         if last_tradable is None:
             tradability_status[ticker] = "NO TRADABLE PRICE"
             continue
+        close_prices[ticker] = float(frame.at[last_tradable, "Close"])
         latest_price_dates[ticker] = str(last_tradable.date())
         age = trading_session_age(last_tradable, target_date, trading_calendar)
         tradability_status[ticker] = (
@@ -1087,6 +1261,7 @@ def _run_signal(params: dict) -> dict:
 
     strategy_fingerprint = _strategy_fingerprint(params, ohlcv_date, src)
     return {
+        "live_signal_version": _LIVE_SIGNAL_VERSION,
         "run_params": params,
         "holdings_log": holdings_log,
         "ohlcv_date": ohlcv_date,
@@ -1243,8 +1418,12 @@ def live_signal_results(params: dict) -> None:
 
     # Run only when button was clicked (ls_result cleared by button handler)
     result = st.session_state.get("ls_result")
+    if result and result.get("request_identity") != _request_identity(params):
+        st.info("Inputs changed. Generate a new result before reviewing or confirming orders.")
+        return
     if result and (
-        result.get("data_freshness", {}).get("source_revisions") != shared_market.source_revisions()
+        result.get("live_signal_version") != _LIVE_SIGNAL_VERSION
+        or result.get("data_freshness", {}).get("source_revisions") != shared_market.source_revisions()
         or result.get("data_freshness", {}).get("equity_policy_version") != shared_market.EQUITY_POLICY_VERSION
     ):
         result = None
@@ -1253,6 +1432,8 @@ def live_signal_results(params: dict) -> None:
     if result is None:
         with st.spinner("Reading shared prices and replaying the strategy…"):
             result = _run_signal(params)
+        result["live_signal_version"] = _LIVE_SIGNAL_VERSION
+        result["request_identity"] = _request_identity(params)
         st.session_state["ls_result"] = result
 
     # Keep the rendered trade list and audit tied to the exact inputs used for
@@ -1263,7 +1444,7 @@ def live_signal_results(params: dict) -> None:
     freshness = result.get("data_freshness", {})
     if freshness.get("source_revisions"):
         st.caption(shared_market.revision_label(freshness["source_revisions"]))
-    if freshness:
+    if freshness.get("target_date"):
         target = freshness.get("target_date", "—")
         verified = freshness.get("actual_latest_date") or "not fully covered"
         max_available = freshness.get("max_price_date") or "—"
@@ -1322,6 +1503,19 @@ def live_signal_results(params: dict) -> None:
         st.error(f"Signal failed: {result['error']}")
         return
 
+    if result.get("continuation_status") in {"initialized", "not_due"} or result.get("schedule_status") == "not_due":
+        st.info(result["message"])
+        if result.get("checkpoint"):
+            st.download_button(
+                "Save starting checkpoint",
+                json.dumps(result["checkpoint"], indent=2).encode(),
+                file_name=f"live_checkpoint_{result['checkpoint']['decision_date']}.json",
+                mime="application/json",
+                width="stretch",
+                key="ls_initial_checkpoint_download",
+            )
+        return
+
     holdings_log = result["holdings_log"]
     ohlcv_date = result["ohlcv_date"]
 
@@ -1376,7 +1570,7 @@ def live_signal_results(params: dict) -> None:
         f"Portfolio start: **{port_lbl}**{fresh_lbl} "
         f"· Data as-of: **{ohlcv_date}** "
         f"· Replay ID: **{result.get('strategy_fingerprint', '—')}** "
-        f"· {params['freq'].capitalize()} schedule: **{params['signal_date'].strftime('%A')}** "
+        f"· {params['freq'].capitalize()} schedule anchor: **{_rebalance_anchor(params)}** "
         f"· Last rebalance: **{rebalance_date.strftime('%a %b %d, %Y')}** "
         f"· Execute on: **{exec_date.strftime('%a %b %d, %Y')}** at or after 09:15 IST"
     )
@@ -1469,7 +1663,7 @@ def live_signal_results(params: dict) -> None:
         return
 
     portfolio_value = float(reconciliation["gross_value"])
-    expected_value = float(params.get("expected_portfolio_value", 0.0)) if portfolio_source == "snapshot" else 0.0
+    expected_value = float(params.get("expected_portfolio_value", 0.0)) if portfolio_source != "replay" else 0.0
     if expected_value > 0:
         value_gap = portfolio_value - expected_value
         value_tolerance = max(1_000.0, expected_value * 0.005)
@@ -1508,7 +1702,7 @@ def live_signal_results(params: dict) -> None:
     c1.metric(portfolio_metric, f"₹{portfolio_value:,.0f}")
     c2.metric("Buys", len(buy_rows))
     c3.metric("Sells", len(sell_rows), delta=f"-{len(sell_rows)}" if sell_rows else None, delta_color="inverse")
-    c4.metric("Actual turnover", f"{reconciliation['turnover_pct']:.1f}%")
+    c4.metric("Gross turnover (buys + sells)", f"{reconciliation['turnover_pct']:.1f}%")
     st.caption(
         f"Securities ₹{reconciliation['securities_value']:,.0f} · cash ₹{reconciliation['cash']:,.0f} · "
         f"reserve ₹{reconciliation['reserve_cash']:,.0f} · projected residual cash "
@@ -1676,7 +1870,8 @@ def live_signal_results(params: dict) -> None:
                 "Trade Value (₹)": row["Trade value (₹)"],
                 "Actual Weight (%)": round(row["Actual weight (%)"], 4),
                 "Strategy Target (%)": round(row["Strategy target (%)"], 4),
-                "Signal Date": str(params["signal_date"]),
+                "Signal Date": str(rebalance_date),
+                "Requested Cutoff": str(params["signal_date"]),
                 "Execute Date": str(exec_date),
                 "Latest Price Date": latest_price_dates.get(row["Ticker"], ""),
                 "Tradability": tradability_status.get(row["Ticker"], "NO DATA"),
@@ -1707,6 +1902,39 @@ def live_signal_results(params: dict) -> None:
         )
 
     st.markdown("---")
+    if result.get("continuation_status") == "proposed":
+        from live_signal_state import confirm_checkpoint
+
+        st.info(
+            "This is a proposed decision. Generating or downloading it "
+            "does not advance your confirmed portfolio checkpoint."
+        )
+        proposal = result["proposal_checkpoint"]
+        st.download_button(
+            "Save decision audit (JSON)",
+            json.dumps(result, default=str, indent=2).encode(),
+            file_name=f"live_decision_{proposal['decision_date']}_{proposal['checkpoint_id'][:12]}.json",
+            mime="application/json",
+            width="stretch",
+        )
+        confirmed = st.checkbox(
+            "I executed all listed orders (or verified that no orders were needed)",
+            key=f"ls_confirm_executed_{result['request_identity']}",
+        )
+        if confirmed:
+            checkpoint = confirm_checkpoint(proposal)
+            st.download_button(
+                "Save confirmed checkpoint for next signal",
+                json.dumps(checkpoint, indent=2).encode(),
+                file_name=f"live_checkpoint_{checkpoint['decision_date']}.json",
+                mime="application/json",
+                width="stretch",
+            )
+        st.caption(
+            "For partial fills, use your actual broker positions and explicitly initialize a new baseline. "
+            "Keep each confirmed checkpoint and decision audit."
+        )
+        return
     with st.expander("Audit & reproducibility", expanded=False):
         audit_name = f"live_signal_audit_{params['signal_date']}_{result.get('strategy_fingerprint', 'unknown')}"
         st.caption(

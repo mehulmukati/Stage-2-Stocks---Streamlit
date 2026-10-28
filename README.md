@@ -24,7 +24,7 @@ Streamlit applications for systematic stock analysis on the NSE (National Stock 
 | | **📐 Walk-Forward tab** — split NAV into in-sample and out-of-sample windows for overfit detection |
 | | Tax modelling — LTCG (12.5%) / STCG (20%) applied per FY on each exit |
 | | Flat brokerage per sale (Rs) and max position size cap (%) |
-| | **📡 Live Signal tab** — weekly trade instructions (entries, exits, weights) from a warm-up backtest snapshot |
+| | **📡 Live Signal tab** — [continue actual holdings from confirmed checkpoints](docs/live_signal_continuation.md), with a fixed schedule and separate model research modes |
 
 ---
 
