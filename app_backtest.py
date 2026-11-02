@@ -110,10 +110,12 @@ def backtest_results(params: dict):
 
     result = st.session_state.get("backtest_cached_result")
     import market_data as shared_market
+    from backtest_accounting import ACCOUNTING_VERSION
 
     if result is not None and (
         result.get("source_revisions") != shared_market.source_revisions()
         or result.get("equity_policy_version") != shared_market.EQUITY_POLICY_VERSION
+        or result.get("accounting_version") != ACCOUNTING_VERSION
     ):
         st.session_state.pop("backtest_cached_result", None)
         st.info("Market data or calculation rules changed. Run the backtest again.")
@@ -127,6 +129,32 @@ def backtest_results(params: dict):
 
     if result.get("source_revisions"):
         st.caption(shared_market.revision_label(result["source_revisions"]))
+    st.warning(
+        "Research result with partial, unverified historical membership. Missing old identities and delisted prices "
+        "can affect results. This is not a certified continuous Nifty 750 history."
+    )
+    st.caption(
+        "CAGR uses elapsed calendar years. Drawdown covers the full run; risk-free return is zero. "
+        "Equities use vendor-adjusted prices; supplied index benchmarks may be price-only. "
+        "Taxes use a simplified adjusted-unit model, not historical statutory tax accounting. "
+        "Cash earns zero; unfilled orders wait for the next scheduled decision. Caps apply to rebalance targets."
+    )
+    if result.get("coverage_report"):
+        with st.expander("Historical membership and price coverage"):
+            st.dataframe(
+                pd.DataFrame(result["coverage_report"]),
+                width="stretch",
+                alt="Per-index recorded members, missing prices and historical source confidence",
+            )
+    if result.get("run_manifests"):
+        import json
+
+        st.download_button(
+            "Download run manifests",
+            json.dumps(result["run_manifests"], indent=2, default=str),
+            file_name="backtest_run_manifests.json",
+            mime="application/json",
+        )
     ohlcv_date = result.get("ohlcv_date")
     ohlcv_source = result.get("ohlcv_source")
     _source_icons = {
@@ -169,7 +197,7 @@ def backtest_results(params: dict):
 
     roll_days = _WINDOW_MAP.get(roll_label, 252)
     available_days = len(nav_df.dropna(how="all"))
-    st.subheader(f"Rolling {roll_label} CAGR (%)")
+    st.subheader(f"Rolling {roll_label} CAGR (252-session annualization, %)")
     if roll_days >= available_days:
         st.warning(
             f"⚠️ Rolling window ({roll_label} = {roll_days} trading days) exceeds available data "
@@ -221,9 +249,9 @@ def backtest_results(params: dict):
             "Sortino": st.column_config.NumberColumn("Sortino", format="%.3f"),
             "Avg Holdings": st.column_config.NumberColumn("Avg Holdings", format="%.1f"),
             "Avg Turnover (%)": st.column_config.NumberColumn("Avg Turnover (%)", format="%.1f"),
-            "Cost Drag (%)": st.column_config.NumberColumn("Cost Drag (%)", format="%.3f"),
-            "Tax Drag (%)": st.column_config.NumberColumn("Tax Drag (%)", format="%.3f"),
-            "Brokerage Drag (%)": st.column_config.NumberColumn("Brok Drag (%)", format="%.3f"),
+            "Cost Drag (%)": st.column_config.NumberColumn("Sum of cost/NAV ratios (%)", format="%.3f"),
+            "Tax Drag (%)": st.column_config.NumberColumn("Tax paid + liabilities / initial NAV (%)", format="%.3f"),
+            "Brokerage Drag (%)": st.column_config.NumberColumn("Sum of brokerage/NAV ratios (%)", format="%.3f"),
             "Final NAV": st.column_config.NumberColumn("Final NAV", format="%.2f"),
         },
     )

@@ -141,6 +141,7 @@ def _strategy_fingerprint(params: dict, ohlcv_date: object, ohlcv_source: object
     payload = {field: str(params.get(field)) for field in fields}
     payload["portfolio_source"] = params.get("portfolio_source", "replay")
     payload["equity_policy_version"] = shared_market.EQUITY_POLICY_VERSION
+    payload["accounting_version"] = __import__("backtest_accounting").ACCOUNTING_VERSION
     payload["indices"] = sorted(params.get("indices", []))
     if params.get("freq") in {"weekly", "biweekly"}:
         payload["rebalance_anchor"] = str(_rebalance_anchor(params))

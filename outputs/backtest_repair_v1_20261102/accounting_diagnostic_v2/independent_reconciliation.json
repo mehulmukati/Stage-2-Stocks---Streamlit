@@ -1,0 +1,32 @@
+{
+  "Full Rebalance": {
+    "closed_lots": 8180,
+    "daily_rows": 2302,
+    "fills": 9209,
+    "max_cash_error": 1.5631940186722204e-13,
+    "max_nav_error": 4.547473508864641e-13,
+    "max_quantity_error": 2.220446049250313e-16,
+    "max_tax_error": 1.4210854715202004e-13,
+    "passed": true
+  },
+  "Marginal Rebalance": {
+    "closed_lots": 7937,
+    "daily_rows": 2302,
+    "fills": 8996,
+    "max_cash_error": 1.1457501614131615e-13,
+    "max_nav_error": 2.2737367544323206e-13,
+    "max_quantity_error": 1.1102230246251565e-16,
+    "max_tax_error": 6.394884621840902e-14,
+    "passed": true
+  },
+  "Prop Rebalance": {
+    "closed_lots": 7974,
+    "daily_rows": 2302,
+    "fills": 8993,
+    "max_cash_error": 1.4210854715202004e-13,
+    "max_nav_error": 2.2737367544323206e-13,
+    "max_quantity_error": 1.1102230246251565e-16,
+    "max_tax_error": 6.970118926474811e-14,
+    "passed": true
+  }
+}

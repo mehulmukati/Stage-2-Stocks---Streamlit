@@ -1,0 +1,52 @@
+========================================================================
+  NSE Index Composition Reconstruction
+========================================================================
+[INFO] S1.F1: reading index_const.csv
+[INFO]        -> F1: 119,666 rows; 91 indices; 962 symbols; dates 2020-03-31 to 2024-03-28
+[INFO] S1.F2: reading IndexInclExcl - Upto 2020.xls
+[INFO]        -> F2: 9,179 events; 37 indices; 1,449 scrip names; INCL=4,906, EXCL=4,273; dates 1996-09-18 to 2020-11-02
+[INFO] S1.F3: reading N750 Historical Constituents - 202409 onwards.xlsx
+[INFO]        -> F3: 3,204 rows; 6 indices; dates 2024-09-30 to 2026-03-31
+[INFO] S2: building name-symbol map (1449 names vs 1144 symbols)
+[INFO]      manual overrides loaded: 0
+[INFO]      mapping breakdown: {'fuzzy_med': 723, 'fuzzy_high': 489, 'exact_canonical': 132, 'unresolved': 105}
+[INFO]      written: mapping_proposals.csv (1449 rows), identity_review.csv (1449 rows)
+[INFO] S4: reconstructing compositions per index
+[INFO]      skipping 1 orphan F2 indices (no F1/F3 anchor): ['NIFTY QUALITY 30']
+[INFO]      reconstructing 91 indices
+[INFO]      compositions: 417,190 rows
+[INFO]      events emitted: 16,867
+[INFO]      validation discrepancies: 1346
+[INFO]      wrote derived_events.csv (16,867 rows)
+[INFO] S5: writing validation report
+[INFO]      cardinality deviations: 908 (index,date) pairs differ from name-inferred size
+[INFO]      written: validation_report.csv (1346 rows)
+
+========================================================================
+  SUMMARY
+========================================================================
+  F1 snapshots:              119,666 rows, 91 indices
+  F2 events (raw):           9,179
+  F3 snapshots:              3,204 rows, 6 indices
+  Name-symbol map:           1,449 names (resolved=1,344, unresolved=105)
+  Compositions (final):      417,691 rows
+  Unique indices:            91
+  Unique symbols:            2,422
+  Date range:                1996-09-18 00:00:00 to 2026-07-17 00:00:00
+  Events emitted (unified):  16,867
+  Validation discrepancies:  1346
+    by type:                 {'snapshot_diff': 665, 'reverse_event_conflict': 664, 'forward_event_conflict': 11, 'gap_diff': 6}
+
+  Spot-checks:
+    NIFTY 50 @ 2024-09-30:   50 rows (expect 50)
+    NIFTY 50 @ 2020-03-31:   50 rows (expect 50)
+
+  Candidate outputs in: D:\Content\GoogleDrive\Github\Stage-2-Stocks---Streamlit\outputs\backtest_repair_v1_20261102\candidate_universe_v5
+    - constituents.parquet
+    - derived_events.csv
+    - mapping_proposals.csv
+    - identity_review.csv
+    - validation_report.csv
+    - manual_overrides.json (edit to fix mapping errors)
+    - data\constituents.parquet
+========================================================================

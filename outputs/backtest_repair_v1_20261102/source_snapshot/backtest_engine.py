@@ -1,0 +1,1659 @@
+"""
+Momentum portfolio backtester.
+
+Entry rule : stock enters portfolio if it ranks in top-M
+Exit rule  : stock leaves portfolio if it falls out of top-N  (N > M)
+Rebalance  : weekly | biweekly | monthly | quarterly | half-yearly
+
+Three portfolio variants are tracked simultaneously:
+  - Full rebalance   : every rebalance date all holdings reset to equal weight (1/size)
+  - Marginal rebalance: entrants are capped at neutral equal weight; incumbents keep relative weights
+  - Prop rebalance   : entrants are seeded at equal weight before the whole portfolio is normalized
+
+Survivorship-bias mitigations applied:
+  - Historical constituent filter via compositions.parquet (only stocks in-index at each date)
+  - Minimum history required before a stock can be ranked (configurable; default 252 trading days)
+  - Stocks with > 5% missing close prices excluded (suspended / bad data)
+  - Volume filter: median volume must meet MIN_VOLUME threshold
+  - Transaction costs deducted at each rebalance
+"""
+
+from __future__ import annotations
+
+import logging
+import re
+from dataclasses import dataclass, field
+
+import numpy as np
+import pandas as pd
+from dateutil.relativedelta import relativedelta
+
+from config import MIN_VOLUME
+from corporate_actions import load_corporate_actions
+from equity_data import (
+    MIN_RECENT_COVERAGE,
+    accepted_equity_rows,
+    extend_sessions,
+    observed_sessions,
+    recent_coverage,
+    session_frame,
+    tradable_equity_rows,
+)
+from momentum_engine import _calculate_avg_sharpe, precompute_metrics
+from stage2_engine import compute_rolling_stage2
+from backtest_accounting import ACCOUNTING_VERSION, POLICIES, QuantityLedger
+from backtest_provenance import run_manifest, coverage_at
+
+# ──────────────────────────────────────────────────────────────
+# CONFIG
+# ──────────────────────────────────────────────────────────────
+
+
+@dataclass
+class BacktestConfig:
+    """All strategy and cost parameters for run_backtest (excludes raw data inputs)."""
+
+    # Required strategy params
+    m: int
+    n: int
+    rebalance_freq: str
+    sort_method: str
+    start_date: str
+    end_date: str
+    # Optional data / filtering
+    compositions_df: pd.DataFrame | None = field(default=None, compare=False, repr=False)
+    index_names: list[str] | None = None
+    # Universe filtering
+    min_history_days: int = 750
+    apply_volume_filter: bool = True
+    minimum_median_volume: float = MIN_VOLUME
+    max_stale_sessions: int = 3
+    market_calendar: pd.DatetimeIndex | None = field(default=None, compare=False, repr=False)
+    max_position_pct: float | None = None
+    corporate_actions: list[dict] = field(
+        default_factory=lambda: [dict(action) for action in load_corporate_actions()],
+        compare=False,
+        repr=False,
+    )
+    # Portfolio mechanics
+    band_rule: str = "classic"
+    # Optional schedule anchor used by Live Signal.  It prevents a partial
+    # backtest end-date from changing historical weekly rebalance dates.
+    rebalance_anchor_date: str | None = None
+    # Optional live-signal boundary.  When set, the portfolio is started from
+    # scratch at the last rebalance before this execution/start date; data
+    # before it is retained only to calculate ranks and indicators.
+    portfolio_start_date: str | None = None
+    # Live Signal is generated after the selected session closes and executes
+    # on the following NSE session, so using that session's close for ranking
+    # is not look-ahead. Ordinary backtests keep the T-1 ranking convention.
+    rank_on_rebalance_date: bool = False
+    # Cost model
+    transaction_cost_pct: float = 0.001
+    brokerage_per_sale: float = 0.0
+    initial_capital: float = 1_000_000.0
+    # Tax
+    ltcg_rate: float = 0.0
+    stcg_rate: float = 0.0
+    # Stage 2 drop/entry filters
+    stage2_drop_exit: bool = False
+    stage2_drop_threshold: int = 2
+    stage2_entry_filter: bool = False
+    stage2_entry_threshold: int = 2
+    # Quality pre-filters (shared with momentum screener; 0/100/999/False = no filter)
+    min_annual_return: float = 0.0
+    pct_from_52w_high: float = 100.0
+    max_circuits: int = 999
+    close_above_100dma: bool = False
+    close_above_200dma: bool = False
+    pos_days_3m_min: float = 0.0
+    pos_days_6m_min: float = 0.0
+    pos_days_12m_min: float = 0.0
+    # Existing histories stay inspectable but cannot be certified implicitly.
+    universe_mode: str = "legacy_partial"
+
+
+# ──────────────────────────────────────────────────────────────
+# UTILITY
+# ──────────────────────────────────────────────────────────────
+
+
+def _close_price(all_ohlcv: dict, sym: str, date: pd.Timestamp) -> float | None:
+    try:
+        frame = all_ohlcv[sym]
+        if "is_tradable" in frame and (date not in frame.index or not bool(frame.at[date, "is_tradable"])):
+            return None
+        if (
+            date in frame.index
+            and "Volume" in frame
+            and (pd.isna(frame.at[date, "Volume"]) or frame.at[date, "Volume"] <= 0)
+        ):
+            return None
+        c = all_ohlcv[sym]["Close"]
+        value = float(c.at[date]) if date in c.index else None
+        return value if value is not None and np.isfinite(value) and value > 0 else None
+    except (KeyError, TypeError):
+        return None
+
+
+def latest_tradable_date(df: pd.DataFrame, as_of: pd.Timestamp) -> pd.Timestamp | None:
+    """Return the latest positive-volume, positive-close bar on or before *as_of*."""
+    if df.empty or "Close" not in df or "Volume" not in df:
+        return None
+    eligible = df.loc[df.index <= as_of]
+    if eligible.empty:
+        return None
+    valid = tradable_equity_rows(eligible).index
+    return pd.Timestamp(valid[-1]).normalize() if len(valid) else None
+
+
+def trading_session_age(
+    last_tradable: pd.Timestamp,
+    as_of: pd.Timestamp,
+    trading_calendar: pd.DatetimeIndex | None = None,
+) -> int:
+    """Count expected exchange sessions after *last_tradable* through *as_of*."""
+    last_tradable = pd.Timestamp(last_tradable).normalize()
+    as_of = pd.Timestamp(as_of).normalize()
+    if as_of <= last_tradable:
+        return 0
+    if trading_calendar is not None and len(trading_calendar):
+        # The replay passes a sorted, unique DatetimeIndex of NSE sessions.
+        # Binary search avoids normalizing and scanning it for every symbol
+        # at every rebalance.
+        calendar = (
+            trading_calendar if isinstance(trading_calendar, pd.DatetimeIndex) else pd.DatetimeIndex(trading_calendar)
+        )
+        if not calendar.is_monotonic_increasing or not calendar.is_unique:
+            calendar = calendar.normalize().sort_values().unique()
+        return int(calendar.searchsorted(as_of, side="right") - calendar.searchsorted(last_tradable, side="right"))
+    return int(np.busday_count(last_tradable.date(), as_of.date()))
+
+
+def _transfer_weight_symbol(weights: dict[str, float], old_symbol: str, successor_symbol: str) -> None:
+    """Move a portfolio weight to its successor without changing total value."""
+    if old_symbol not in weights:
+        return
+    weights[successor_symbol] = weights.get(successor_symbol, 0.0) + weights.pop(old_symbol)
+
+
+def _transfer_tax_lots(
+    lots: dict[str, list[dict]],
+    old_symbol: str,
+    successor_symbol: str,
+    share_ratio: float,
+) -> None:
+    """Move FIFO lots while preserving total cost and original acquisition dates."""
+    old_lots = lots.pop(old_symbol, [])
+    if not old_lots:
+        return
+    converted = [
+        {
+            **lot,
+            "shares": float(lot["shares"]) * share_ratio,
+            "price": float(lot["price"]) / share_ratio,
+        }
+        for lot in old_lots
+    ]
+    lots.setdefault(successor_symbol, []).extend(converted)
+    lots[successor_symbol].sort(key=lambda lot: lot["date"])
+
+
+def _apply_due_corporate_actions(
+    day: pd.Timestamp,
+    current_holdings: set[str],
+    weight_trackers: list[dict[str, float]],
+    lot_trackers: list[dict[str, list[dict]]],
+    actions: list[dict],
+) -> list[dict]:
+    """Apply identity-changing events to incumbents before portfolio selection."""
+    applied: list[dict] = []
+    for action in actions:
+        old_symbol = action["old_symbol"]
+        if pd.Timestamp(action["effective_date"]) > day or old_symbol not in current_holdings:
+            continue
+        successor_symbol = action["successor_symbol"]
+        share_ratio = float(action.get("share_ratio", 1.0))
+        current_holdings.remove(old_symbol)
+        current_holdings.add(successor_symbol)
+        for tracker in weight_trackers:
+            _transfer_weight_symbol(tracker, old_symbol, successor_symbol)
+        for tracker in lot_trackers:
+            _transfer_tax_lots(tracker, old_symbol, successor_symbol, share_ratio)
+        applied.append(
+            {
+                "event_type": action["event_type"],
+                "old_symbol": old_symbol,
+                "successor_symbol": successor_symbol,
+                "effective_date": str(pd.Timestamp(action["effective_date"]).date()),
+                "last_trading_date": str(pd.Timestamp(action["last_trading_date"]).date()),
+                "share_ratio": share_ratio,
+            }
+        )
+    return applied
+
+
+def _schema_error(symbol: str, missing: set[str]) -> str:
+    return f"{symbol}: missing required OHLCV columns {sorted(missing)}"
+
+
+def _validate_ohlcv_schema(all_ohlcv: dict[str, pd.DataFrame]) -> list[str]:
+    """Return schema validation errors for backtest OHLCV input."""
+    required = {"Close", "High", "Volume"}
+    errors: list[str] = []
+    for sym, df in all_ohlcv.items():
+        missing = required - set(df.columns)
+        if missing:
+            errors.append(_schema_error(sym, missing))
+        if not isinstance(df.index, pd.DatetimeIndex):
+            errors.append(f"{sym}: index must be a DatetimeIndex")
+    return errors
+
+
+def _financial_year(date: pd.Timestamp) -> int:
+    """India FY Apr–Mar. Returns start year: Apr 2021–Mar 2022 → 2021."""
+    return date.year if date.month >= 4 else date.year - 1
+
+
+def _canonical_index_name(name: str) -> str:
+    """Normalise display/canonical NSE index labels for composition matching."""
+    return re.sub(r"[^A-Z0-9]", "", str(name).upper())
+
+
+def _compute_fy_tax(
+    fy: int,
+    st_gains: float,
+    st_losses: float,
+    lt_gains: float,
+    lt_losses: float,
+    cf_st: list,
+    cf_lt: list,
+    stcg_rate: float,
+    ltcg_rate: float,
+) -> tuple[float, list, list]:
+    """
+    Compute India CGT for one financial year with carry-forward loss offset.
+
+    cf_st / cf_lt : list of (expiry_fy, amount) — ST / LT carry-forward loss buckets.
+    Returns       : (tax_amount_in_nav_units, updated_cf_st, updated_cf_lt).
+
+    Loss offset rules:
+      - Current-year ST losses  → offset ST gains first, then LT gains.
+      - Current-year LT losses  → offset LT gains only.
+      - Carry-forward ST losses → oldest first, offset remaining ST then LT gains.
+      - Carry-forward LT losses → oldest first, offset remaining LT gains only.
+      - Unabsorbed losses carried forward for 8 years (usable up to fy+8 inclusive).
+    """
+    # Expire buckets whose usability window has passed (expiry_fy < fy means already past)
+    cf_st = [(e, a) for e, a in cf_st if e >= fy]
+    cf_lt = [(e, a) for e, a in cf_lt if e >= fy]
+
+    # ── Step 1: net within current year ──
+    net_st = st_gains - st_losses
+    net_lt = lt_gains - lt_losses
+
+    # ── Step 2: excess current-year ST loss → offset LT gains ──
+    carry_st_new = 0.0
+    if net_st < 0:
+        st_excess = -net_st
+        net_st = 0.0
+        absorbed = min(st_excess, max(net_lt, 0.0))
+        net_lt -= absorbed
+        carry_st_new = st_excess - absorbed  # whatever couldn't be absorbed → CF
+
+    carry_lt_new = 0.0
+    if net_lt < 0:
+        carry_lt_new = -net_lt
+        net_lt = 0.0
+
+    # ── Step 3: apply carry-forward ST losses (oldest first) ──
+    new_cf_st = []
+    for exp, amt in sorted(cf_st):
+        if net_st > 0 and amt > 0:
+            used = min(amt, net_st)
+            net_st -= used
+            amt -= used
+        if net_lt > 0 and amt > 0:
+            used = min(amt, net_lt)
+            net_lt -= used
+            amt -= used
+        if amt > 0:
+            new_cf_st.append((exp, amt))
+
+    # ── Step 4: apply carry-forward LT losses (oldest first) ──
+    new_cf_lt = []
+    for exp, amt in sorted(cf_lt):
+        if net_lt > 0 and amt > 0:
+            used = min(amt, net_lt)
+            net_lt -= used
+            amt -= used
+        if amt > 0:
+            new_cf_lt.append((exp, amt))
+
+    # ── Step 5: add current year's new carry-forward entries ──
+    if carry_st_new > 0:
+        new_cf_st.append((fy + 8, carry_st_new))
+    if carry_lt_new > 0:
+        new_cf_lt.append((fy + 8, carry_lt_new))
+
+    tax = net_st * stcg_rate + net_lt * ltcg_rate
+    return tax, new_cf_st, new_cf_lt
+
+
+# ──────────────────────────────────────────────────────────────
+# HISTORICAL CONSTITUENT LOOKUP
+# ──────────────────────────────────────────────────────────────
+
+
+def _prepare_compositions(
+    comp_df: pd.DataFrame,
+    index_names: list[str],
+) -> pd.DataFrame | None:
+    """
+    Precompute the filtered/keyed compositions DataFrame for the requested indices.
+    Returns None only when the universe filter should be fully disabled (no data or
+    no index names). Returns a (possibly empty) DataFrame otherwise so the per-rebalance
+    call can apply the filter and correctly return set() when no symbols match.
+    Call once before the rebalance loop; pass the result to _valid_symbols_at_date.
+    """
+    if comp_df is None or not index_names:
+        return None
+    if comp_df.empty:
+        return pd.DataFrame(columns=["INDEX_NAME", "SYMBOL", "TIME_STAMP", "_INDEX_KEY"])
+
+    requested_keys = {_canonical_index_name(name) for name in index_names}
+    comp = comp_df.copy()
+    comp["TIME_STAMP"] = pd.to_datetime(comp.TIME_STAMP, errors="raise")
+    comp["_INDEX_KEY"] = comp["INDEX_NAME"].map(_canonical_index_name)
+    filtered = comp[comp["_INDEX_KEY"].isin(requested_keys)]
+
+    if filtered.empty:
+        logging.warning("None of the requested indices %r were found in compositions_df", index_names)
+
+    return filtered
+
+
+def _valid_symbols_at_date(
+    comp_prepared: pd.DataFrame | None,
+    index_names: list[str],
+    as_of: pd.Timestamp,
+) -> set[str] | None:
+    """
+    Return the set of symbols that were members of the given indices on or
+    before `as_of`, based on the most recent composition snapshot per index.
+    Returns None when comp_prepared is None (filter disabled).
+    comp_prepared must be the result of _prepare_compositions (precomputed once).
+    """
+    if comp_prepared is None:
+        return None
+
+    eligible = comp_prepared[comp_prepared["TIME_STAMP"] <= as_of]
+    if eligible.empty:
+        logging.warning(
+            "No composition snapshot exists on or before %s for requested indices %r; using empty universe",
+            as_of,
+            index_names,
+        )
+        return set()
+
+    valid: set[str] = set()
+    for idx_name in index_names:
+        idx_key = _canonical_index_name(idx_name)
+        idx_rows = eligible[eligible["_INDEX_KEY"] == idx_key]
+        if idx_rows.empty:
+            logging.debug(
+                "Index %r has no composition snapshot on or before %s — skipping for this rebalance",
+                idx_name,
+                as_of,
+            )
+            continue
+        latest_ts = idx_rows["TIME_STAMP"].max()
+        valid.update(idx_rows.loc[idx_rows["TIME_STAMP"] == latest_ts, "SYMBOL"])
+
+    return valid
+
+
+# ──────────────────────────────────────────────────────────────
+# RANKING
+# ──────────────────────────────────────────────────────────────
+
+
+def _precompute_all_metrics(all_ohlcv: dict[str, pd.DataFrame], calendar=None) -> dict[str, pd.DataFrame]:
+    """Pre-compute scoring metrics for every symbol once before the rebalance loop."""
+    result: dict[str, pd.DataFrame] = {}
+    calendar = extend_sessions(observed_sessions(all_ohlcv.values()), None) if calendar is None else calendar
+    for sym, df in all_ohlcv.items():
+        try:
+            result[sym] = precompute_metrics(df, calendar)
+        except Exception as exc:
+            logging.warning("precompute_metrics failed for %s: %s", sym, exc)
+    return result
+
+
+def _precompute_tradable_dates(all_ohlcv: dict[str, pd.DataFrame]) -> dict[str, pd.DatetimeIndex]:
+    """Index valid bars once for repeated rebalance-date freshness checks."""
+    result: dict[str, pd.DatetimeIndex] = {}
+    for sym, df in all_ohlcv.items():
+        result[sym] = pd.DatetimeIndex(tradable_equity_rows(df).index).normalize().sort_values().unique()
+    return result
+
+
+def _precompute_stage2_scores(all_ohlcv: dict[str, pd.DataFrame], calendar=None) -> dict[str, pd.Series]:
+    """Pre-compute Stage 2 score series per symbol for fast .asof() lookup."""
+    result: dict[str, pd.Series] = {}
+    for sym, df in all_ohlcv.items():
+        try:
+            result[sym] = compute_rolling_stage2(session_frame(df, calendar))["Score"]
+        except Exception as exc:
+            logging.warning("compute_rolling_stage2 failed for %s: %s", sym, exc)
+    return result
+
+
+from momentum_ranking import fails_quality_filters as _fails_quality_filters
+
+
+def rank_universe_at_date(
+    all_ohlcv: dict[str, pd.DataFrame],
+    as_of: pd.Timestamp,
+    sort_method: str,
+    valid_symbols: set[str] | None = None,
+    min_history_days: int = 750,
+    apply_volume_filter: bool = True,
+    minimum_median_volume: float = MIN_VOLUME,
+    precomputed: dict[str, pd.DataFrame] | None = None,
+    return_excluded_reasons: bool = False,
+    min_annual_return: float = 0.0,
+    pct_from_52w_high: float = 100.0,
+    max_circuits: int = 999,
+    close_above_100dma: bool = False,
+    close_above_200dma: bool = False,
+    pos_days_3m_min: float = 0.0,
+    pos_days_6m_min: float = 0.0,
+    pos_days_12m_min: float = 0.0,
+    max_stale_sessions: int = 3,
+    trading_calendar: pd.DatetimeIndex | None = None,
+    tradable_dates: dict[str, pd.DatetimeIndex] | None = None,
+    metric_arrays: dict[str, dict[str, np.ndarray]] | None = None,
+) -> "list[str] | tuple[list[str], dict[str, str]]":
+    """
+    Score every symbol using data up to `as_of` and return symbols ordered
+    best→worst by the chosen sort_method.
+
+    valid_symbols          : if provided, only these symbols are considered
+                             (historical constituent filter — prevents survivorship bias)
+    min_history_days       : minimum trading days of history required before as_of
+                             (default 750 ≈ 3 years; prevents ranking on thin data)
+    apply_volume_filter    : if True, exclude symbols whose median volume < MIN_VOLUME
+    precomputed            : pre-computed metric DataFrames from _precompute_all_metrics;
+                             when provided, uses O(log n) date lookup instead of slicing OHLCV
+    metric_arrays          : NumPy views of the pre-computed columns for cheap row access
+    tradable_dates          : pre-computed valid trading dates for fast freshness checks
+    return_excluded_reasons: if True, return (ranked_list, excluded_reasons_dict) where
+                             excluded_reasons maps symbol → reason string for every symbol
+                             in valid_symbols that failed a pre-ranking filter
+    """
+    ranked: list[tuple[str, float]] = []
+    excluded_reasons: dict[str, str] = {} if return_excluded_reasons else None  # type: ignore[assignment]
+    if trading_calendar is None:
+        trading_calendar = extend_sessions(observed_sessions(all_ohlcv.values()), as_of)
+
+    for sym, df in all_ohlcv.items():
+        if valid_symbols is not None and sym not in valid_symbols:
+            continue
+
+        if tradable_dates is not None and sym in tradable_dates:
+            dates = tradable_dates[sym]
+            position = dates.searchsorted(as_of, side="right") - 1
+            last_tradable = pd.Timestamp(dates[position]) if position >= 0 else None
+        else:
+            last_tradable = latest_tradable_date(df, as_of)
+        if last_tradable is None:
+            if excluded_reasons is not None:
+                excluded_reasons[sym] = "no_tradable_data"
+            continue
+        stale_sessions = trading_session_age(last_tradable, as_of, trading_calendar)
+        if max_stale_sessions >= 0 and stale_sessions > max_stale_sessions:
+            if excluded_reasons is not None:
+                excluded_reasons[sym] = f"stale_price:{last_tradable.date()}:{stale_sessions}_sessions"
+            continue
+
+        dates = (
+            tradable_dates[sym]
+            if tradable_dates is not None and sym in tradable_dates
+            else tradable_equity_rows(df).index
+        )
+        if recent_coverage(dates, as_of, trading_calendar) < MIN_RECENT_COVERAGE:
+            if excluded_reasons is not None:
+                excluded_reasons[sym] = "incomplete_recent_coverage"
+            continue
+
+        if precomputed is not None:
+            # Fast path: O(log n) binary-search lookup in pre-computed DataFrame
+            mdf = precomputed.get(sym)
+            if mdf is None or mdf.empty:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_data"
+                continue
+            idx = mdf.index.searchsorted(as_of, side="right") - 1
+            if idx < 0 or idx >= len(mdf):
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_data"
+                continue
+            arrays = metric_arrays.get(sym) if metric_arrays is not None else None
+            row = {name: values[idx] for name, values in arrays.items()} if arrays is not None else mdf.iloc[idx]
+            if row["_count"] < min_history_days:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "insufficient_history"
+                continue
+            if row["_missing_rate"] > 0.05:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "missing_data"
+                continue
+            if apply_volume_filter and minimum_median_volume > 0:
+                vol = row.get("Vol_Median")
+                if pd.isna(vol) or vol < minimum_median_volume:
+                    if excluded_reasons is not None:
+                        excluded_reasons[sym] = "low_volume"
+                    continue
+            if _fails_quality_filters(
+                row,
+                min_annual_return,
+                pct_from_52w_high,
+                max_circuits,
+                close_above_100dma,
+                close_above_200dma,
+                pos_days_3m_min,
+                pos_days_6m_min,
+                pos_days_12m_min,
+            ):
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "quality_filter"
+                continue
+            score = _calculate_avg_sharpe(row, sort_method)
+            if score is None or pd.isna(score):
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_valid_score"
+                continue
+        else:
+            # Original path: slice OHLCV and score on demand
+            sub = session_frame(df[df.index <= as_of], trading_calendar, as_of)
+            if sub.Close.notna().sum() < min_history_days:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "insufficient_history"
+                continue
+            # Reject stocks with > 5% missing close prices (suspended / delisted mid-period)
+            if sub["Close"].tail(252).isna().mean() > 0.05:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "missing_data"
+                continue
+            metrics = (
+                precompute_metrics(sub, trading_calendar[trading_calendar <= as_of]).iloc[-1].to_dict()
+                if len(sub)
+                else None
+            )
+            if metrics is None:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_valid_score"
+                continue
+            if apply_volume_filter and minimum_median_volume > 0:
+                vol = metrics.get("Vol_Median")
+                if pd.isna(vol) or vol < minimum_median_volume:
+                    if excluded_reasons is not None:
+                        excluded_reasons[sym] = "low_volume"
+                    continue
+            if _fails_quality_filters(
+                metrics,
+                min_annual_return,
+                pct_from_52w_high,
+                max_circuits,
+                close_above_100dma,
+                close_above_200dma,
+                pos_days_3m_min,
+                pos_days_6m_min,
+                pos_days_12m_min,
+            ):
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "quality_filter"
+                continue
+            score = _calculate_avg_sharpe(metrics, sort_method)
+            if score is None:
+                if excluded_reasons is not None:
+                    excluded_reasons[sym] = "no_valid_score"
+                continue
+
+        ranked.append((sym, score))
+
+    ranked.sort(key=lambda x: (-x[1], x[0]))
+    ranked_list = [sym for sym, _ in ranked]
+
+    if return_excluded_reasons:
+        return ranked_list, excluded_reasons
+    return ranked_list
+
+
+# ──────────────────────────────────────────────────────────────
+# REBALANCE DATE GENERATION
+# ──────────────────────────────────────────────────────────────
+
+
+def _trading_days(all_ohlcv: dict[str, pd.DataFrame], start: pd.Timestamp, end: pd.Timestamp) -> pd.DatetimeIndex:
+    """Union of all dates present in the OHLCV store within [start, end]."""
+    if not all_ohlcv:
+        return pd.DatetimeIndex([])
+    combined = pd.concat([df["Close"].loc[start:end] for df in all_ohlcv.values()], axis=1)
+    return combined.index
+
+
+def get_rebalance_dates(
+    trading_days: pd.DatetimeIndex,
+    freq: str,
+) -> list[pd.Timestamp]:
+    """
+    Return rebalance dates from trading_days based on freq:
+      'weekly'     – last trading day of each calendar week
+      'biweekly'   – last trading day of every other calendar week
+      'monthly'    – last trading day of each calendar month
+      'quarterly'  – last trading day of each calendar quarter
+      'half-yearly'– last trading day of each half-year (Jan–Jun, Jul–Dec)
+    """
+    if trading_days.empty:
+        return []
+
+    series = pd.Series(trading_days, index=trading_days)
+
+    if freq == "monthly":
+        grouped = series.groupby([series.dt.year, series.dt.month])
+        return [grp.iloc[-1] for _, grp in grouped]
+
+    if freq == "quarterly":
+        grouped = series.groupby([series.dt.year, series.dt.quarter])
+        return [grp.iloc[-1] for _, grp in grouped]
+
+    if freq == "half-yearly":
+        half = (series.dt.month - 1) // 6
+        grouped = series.groupby([series.dt.year, half])
+        return [grp.iloc[-1] for _, grp in grouped]
+
+    # weekly / biweekly
+    week_key = trading_days.isocalendar().week.values
+    year_key = trading_days.isocalendar().year.values
+
+    dates_df = pd.DataFrame({"date": trading_days, "year": year_key, "week": week_key})
+    last_per_week = dates_df.groupby(["year", "week"])["date"].last().reset_index()
+    last_per_week = last_per_week.sort_values("date").reset_index(drop=True)
+
+    if freq == "weekly":
+        return last_per_week["date"].tolist()
+    else:  # biweekly
+        epoch = pd.Timestamp("1970-01-05")
+        parity = ((last_per_week["date"] - epoch).dt.days // 7) % 2
+        return last_per_week.loc[parity.eq(0), "date"].tolist()
+
+
+def get_anchored_rebalance_dates(
+    trading_days: pd.DatetimeIndex,
+    freq: str,
+    anchor_date: pd.Timestamp,
+    through: pd.Timestamp | None = None,
+) -> list[pd.Timestamp]:
+    """Return completed live decisions on a fixed cadence or calendar period end.
+
+    ``get_rebalance_dates`` is intentionally calendar-period based for a
+    backtest.  That makes the last available date look like a rebalance when a
+    run ends mid-week, which is unsuitable for a live replay: a later run can
+    then replace Tuesday's event with Friday's.  For weekly live signals, keep
+    the selected weekday fixed and use the last available trading date on or
+    before each scheduled day (for example, Monday when Tuesday is a holiday).
+    """
+    if trading_days.empty:
+        return []
+
+    anchor = pd.Timestamp(anchor_date).normalize()
+    start = trading_days.min().normalize()
+    # Include nominal dates just beyond the cutoff when the exchange calendar
+    # maps them back to an already-completed session (holiday/weekend close).
+    end = pd.Timestamp(through).normalize() if through is not None else trading_days.max().normalize()
+    trading_days = trading_days[trading_days <= end]
+    horizon = max(end + pd.Timedelta(days=14), end + pd.offsets.MonthEnd(0))
+    expected_sessions = extend_sessions(trading_days, horizon)
+    if freq in {"weekly", "biweekly"}:
+        period_days = 7 if freq == "weekly" else 14
+        first_k = int(np.ceil((start - anchor).days / period_days))
+        last_k = int(np.floor((horizon - anchor).days / period_days))
+        scheduled_dates = [anchor + pd.Timedelta(days=k * period_days) for k in range(first_k, last_k + 1)]
+    elif freq in {"monthly", "quarterly", "half-yearly"}:
+        months = {"monthly": 1, "quarterly": 3, "half-yearly": 6}[freq]
+        scheduled_dates = [
+            period.end_time.normalize()
+            for period in pd.period_range(start, end, freq="M")
+            if period.month % months == 0
+        ]
+    else:
+        raise ValueError(f"Unsupported live rebalance frequency: {freq}")
+    dates: list[pd.Timestamp] = []
+    for scheduled in scheduled_dates:
+        eligible = expected_sessions[(expected_sessions <= scheduled) & (expected_sessions >= start)]
+        if not eligible.empty:
+            candidate = eligible[-1]
+            if candidate <= end and candidate in trading_days and (not dates or candidate != dates[-1]):
+                dates.append(candidate)
+    return dates
+
+
+# ──────────────────────────────────────────────────────────────
+# DAILY NAV HELPERS
+# ──────────────────────────────────────────────────────────────
+
+
+def _daily_returns(all_ohlcv: dict[str, pd.DataFrame], symbols: list[str], dates: pd.DatetimeIndex) -> pd.DataFrame:
+    """Return a DataFrame of daily close-to-close returns for given symbols over dates."""
+    frames = {}
+    for sym in symbols:
+        if sym in all_ohlcv:
+            s = all_ohlcv[sym]["Close"].reindex(dates).ffill()
+            frames[sym] = s.pct_change(fill_method=None)
+    if not frames:
+        return pd.DataFrame(index=dates)
+    return pd.DataFrame(frames, index=dates)
+
+
+# ──────────────────────────────────────────────────────────────
+# REBALANCE HELPERS
+# ──────────────────────────────────────────────────────────────
+
+
+def _drift_weights(
+    weights: dict[str, float],
+    all_ohlcv: dict[str, pd.DataFrame],
+    prev_day: pd.Timestamp,
+    curr_day: pd.Timestamp,
+) -> dict[str, float]:
+    """Adjust portfolio weights to reflect price drift between two rebalance dates."""
+    if not weights:
+        return weights
+    drifted: dict[str, float] = {}
+    for s, w in weights.items():
+        try:
+            closes = all_ohlcv[s]["Close"]
+            valid = closes.where(np.isfinite(closes) & closes.gt(0)).dropna()
+            p_prev = valid.asof(prev_day)
+            p_now = valid.asof(curr_day)
+            drifted[s] = (
+                w * (p_now / p_prev)
+                if (
+                    p_prev is not None
+                    and p_now is not None
+                    and np.isfinite(p_prev)
+                    and np.isfinite(p_now)
+                    and p_prev > 0
+                    and p_now > 0
+                )
+                else w
+            )
+        except (KeyError, TypeError, ZeroDivisionError):
+            drifted[s] = w
+    total_d = sum(drifted.values()) + max(0.0, 1.0 - sum(weights.values()))
+    return {s: w / total_d for s, w in drifted.items()} if total_d > 0 else drifted
+
+
+def _realise_weight_reductions(
+    lots: dict[str, list[dict]],
+    old_weights: dict[str, float],
+    new_weights: dict[str, float],
+    all_ohlcv: dict[str, pd.DataFrame],
+    day: pd.Timestamp,
+    nav: float,
+) -> tuple[float, float, float, float]:
+    """FIFO-tax every weight reduction, including partial trims and full exits."""
+    st_g = st_l = lt_g = lt_l = 0.0
+    for sym in set(old_weights) | set(new_weights):
+        sold_w = old_weights.get(sym, 0.0) - new_weights.get(sym, 0.0)
+        if sold_w <= 1e-12:
+            continue
+        price = _close_price(all_ohlcv, sym, day)
+        if price is None or price <= 0:
+            continue
+        sym_lots = lots.get(sym, [])
+        # Compatibility adapter: lot quantities are authoritative. The main
+        # engine uses the execution ledger, never post-fee NAV to infer shares.
+        fraction = min(1.0, sold_w / old_weights[sym])
+        shares_to_sell = sum(float(lot["shares"]) for lot in sym_lots) * fraction
+        while shares_to_sell > 1e-12 and sym_lots:
+            lot = sym_lots[0]
+            lot_shares = float(lot["shares"])
+            used = min(lot_shares, shares_to_sell)
+            gain = (price - float(lot["price"])) * used
+            is_long_term = day > lot["date"] + relativedelta(months=12)
+            if is_long_term:
+                if gain >= 0:
+                    lt_g += gain
+                else:
+                    lt_l += abs(gain)
+            else:
+                if gain >= 0:
+                    st_g += gain
+                else:
+                    st_l += abs(gain)
+            lot["shares"] = lot_shares - used
+            shares_to_sell -= used
+            if lot["shares"] <= 1e-12:
+                sym_lots.pop(0)
+        if sym_lots:
+            lots[sym] = sym_lots
+        else:
+            lots.pop(sym, None)
+    return st_g, st_l, lt_g, lt_l
+
+
+def _record_weight_increases(
+    lots: dict[str, list[dict]],
+    old_weights: dict[str, float],
+    new_weights: dict[str, float],
+    all_ohlcv: dict[str, pd.DataFrame],
+    day: pd.Timestamp,
+    nav: float,
+) -> None:
+    """Append FIFO lots for every weight increase at the rebalance close."""
+    for sym, new_w in new_weights.items():
+        bought_w = new_w - old_weights.get(sym, 0.0)
+        if bought_w <= 1e-12:
+            continue
+        price = _close_price(all_ohlcv, sym, day)
+        if price is None or price <= 0:
+            continue
+        lots.setdefault(sym, []).append({"date": day, "price": price, "shares": (nav * bought_w) / price})
+
+
+def _compute_holdings_classic(
+    current_holdings: set[str],
+    top_m: set[str],
+    top_n: set[str],
+    ranked: list[str],
+    stage2_precomputed: dict[str, pd.Series],
+    rank_as_of: pd.Timestamp,
+    prev_stage2_scores: dict[str, float],
+    stage2_entry_filter: bool,
+    stage2_drop_exit: bool,
+    stage2_entry_threshold: int,
+    stage2_drop_threshold: int,
+    rebalance_freq: str,
+) -> tuple[set[str], set[str], dict[str, str], dict[str, str]]:
+    """
+    Classic band rule: exit if rank > N, enter if rank ≤ M (may briefly exceed M).
+    Optional Stage 2 filters add/remove holdings on top of the momentum band rule.
+    Returns (entries, exits, entry_reasons, exit_reasons).
+    """
+    rank_pos = {s: rank_idx + 1 for rank_idx, s in enumerate(ranked)}
+
+    exits: set[str] = current_holdings - top_n
+    exit_reasons: dict[str, str] = {
+        sym: (f"rank #{rank_pos[sym]}" if sym in rank_pos else "left universe") for sym in exits
+    }
+
+    entries: set[str] = top_m - current_holdings
+    entry_reasons: dict[str, str] = {sym: f"rank #{rank_pos.get(sym, '?')}" for sym in entries}
+
+    if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
+        for sym in ranked:
+            if sym in current_holdings or sym in entries:
+                continue
+            s2 = stage2_precomputed.get(sym)
+            if s2 is None:
+                continue
+            curr_s2 = s2.asof(rank_as_of)
+            if pd.isna(curr_s2):
+                continue
+            prev_s2 = prev_stage2_scores.get(sym)
+            if prev_s2 is None:
+                continue
+            if curr_s2 - prev_s2 >= stage2_entry_threshold:
+                entries = entries | {sym}
+                entry_reasons[sym] = f"S2 +{int(curr_s2 - prev_s2)}"
+
+    if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
+        for sym in list(current_holdings - exits):
+            s2_series = stage2_precomputed.get(sym)
+            if s2_series is None:
+                continue
+            curr_score = s2_series.asof(rank_as_of)
+            prev_score = prev_stage2_scores.get(sym)
+            if (
+                prev_score is not None
+                and not pd.isna(curr_score)
+                and (prev_score - curr_score) >= stage2_drop_threshold
+            ):
+                exits.add(sym)
+                exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
+
+    return entries, exits, entry_reasons, exit_reasons
+
+
+def _compute_holdings_displacement(
+    current_holdings: set[str],
+    top_m: set[str],
+    top_n: set[str],
+    ranked: list[str],
+    m: int,
+    stage2_precomputed: dict[str, pd.Series],
+    rank_as_of: pd.Timestamp,
+    prev_stage2_scores: dict[str, float],
+    stage2_entry_filter: bool,
+    stage2_drop_exit: bool,
+    stage2_entry_threshold: int,
+    stage2_drop_threshold: int,
+    rebalance_freq: str,
+) -> tuple[set[str], set[str], dict[str, str], dict[str, str]]:
+    """
+    Displacement band rule: N is the Worst Rank Held (WRH).
+    Stocks ranked > N exit unconditionally; stocks ranked M+1..N sit in a buffer zone
+    and stay until their rank exceeds N. New entrants (top-M or S2 jumpers) fill freed
+    slots only — they never displace buffer-zone incumbents. Hard cap stays at M.
+    Returns (entries, exits, entry_reasons, exit_reasons).
+    """
+    # rank_of: O(1) lookup; stocks absent from `ranked` get rank = len(ranked) (worst).
+    rank_of = {s: rank_idx for rank_idx, s in enumerate(ranked)}
+    _worst = len(ranked)
+
+    # Step 1 — WRH exits: rank > N must leave unconditionally
+    wrh_exits: set[str] = current_holdings - top_n
+    exit_reasons: dict[str, str] = {
+        sym: (f"rank #{rank_of.get(sym, _worst) + 1}" if sym in rank_of else "left universe") for sym in wrh_exits
+    }
+    holdings_after_wrh = current_holdings - wrh_exits
+
+    # Step 2 — Stage 2 drop exits: free additional slots
+    s2_exits: set[str] = set()
+    if stage2_drop_exit and stage2_precomputed and rebalance_freq == "weekly":
+        for sym in list(holdings_after_wrh):
+            s2_series = stage2_precomputed.get(sym)
+            if s2_series is None:
+                continue
+            curr_score = s2_series.asof(rank_as_of)
+            prev_score = prev_stage2_scores.get(sym)
+            if (
+                prev_score is not None
+                and not pd.isna(curr_score)
+                and (prev_score - curr_score) >= stage2_drop_threshold
+            ):
+                s2_exits.add(sym)
+                exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
+
+    exits = wrh_exits | s2_exits
+    holdings_after_exits = current_holdings - exits
+
+    # Step 3 — build candidate pool: top-M new entrants + Stage 2 score jumpers
+    candidates: set[str] = top_m - holdings_after_exits
+    s2_jump_deltas: dict[str, int] = {}
+    if stage2_entry_filter and stage2_precomputed and rebalance_freq == "weekly":
+        for sym in ranked:
+            if sym in holdings_after_exits or sym in candidates:
+                continue
+            s2 = stage2_precomputed.get(sym)
+            if s2 is None:
+                continue
+            curr_s2 = s2.asof(rank_as_of)
+            if pd.isna(curr_s2):
+                continue
+            prev_s2 = prev_stage2_scores.get(sym)
+            if prev_s2 is None:
+                continue
+            delta = curr_s2 - prev_s2
+            if delta >= stage2_entry_threshold:
+                candidates.add(sym)
+                s2_jump_deltas[sym] = int(delta)
+
+    # Step 4 — fill freed slots from combined candidates, best rank first
+    entries_wanted = sorted(candidates, key=lambda s: rank_of.get(s, _worst))
+    free_slots = max(0, m - len(holdings_after_exits))
+    entries: set[str] = set(entries_wanted[:free_slots])
+    entry_reasons: dict[str, str] = {
+        sym: (f"S2 +{s2_jump_deltas[sym]}" if sym in s2_jump_deltas else f"rank #{rank_of.get(sym, _worst) + 1}")
+        for sym in entries
+    }
+
+    return entries, exits, entry_reasons, exit_reasons
+
+
+def _compute_weight_variants(
+    new_holdings: set[str],
+    entries: set[str],
+    exits: set[str],
+    marg_weights: dict[str, float],
+    prop_weights: dict[str, float],
+    size: int,
+) -> tuple[dict[str, float], dict[str, float], dict[str, float]]:
+    """
+    Compute the three weight vectors after a rebalance:
+      Full rebalance    : equal weight 1/size for all holdings.
+      Starter-cap marginal: entrants receive no more than 1/size; incumbents
+                            retain relative weights and absorb any surplus.
+      Prop-fill marginal: entrants seeded at 1/size; normalization redistributes surplus.
+    Returns (new_full, new_slot, new_prop).
+    """
+    if size <= 0 or not new_holdings:
+        return {}, {}, {}
+
+    new_full = {s: 1.0 / size for s in new_holdings}
+
+    survivors = new_holdings - entries
+    survivor_weights = {s: marg_weights[s] for s in survivors if s in marg_weights}
+    if entries and survivors:
+        freed_slot = sum(marg_weights.get(s, 0.0) for s in exits)
+        neutral_entry_weight = 1.0 / size
+        # When exits fund the entrants, never let a newcomer inherit more than
+        # a neutral equal-weight position. With entries but no exits, establish
+        # them at neutral weight by proportionally trimming incumbents.
+        per_entry_slot = (
+            min(freed_slot / len(entries), neutral_entry_weight) if freed_slot > 0 else neutral_entry_weight
+        )
+        survivor_target = max(0.0, 1.0 - per_entry_slot * len(entries))
+        survivor_total = sum(survivor_weights.values())
+        if survivor_total > 0:
+            new_slot = {s: w * survivor_target / survivor_total for s, w in survivor_weights.items()}
+        else:
+            new_slot = {s: survivor_target / len(survivors) for s in survivors}
+        new_slot.update({s: per_entry_slot for s in entries})
+    elif entries:
+        # Fresh portfolio: every holding is a newcomer.
+        new_slot = {s: 1.0 / len(entries) for s in entries}
+    else:
+        # Exit-only and no-change events preserve survivor proportions.
+        new_slot = survivor_weights
+        total_w = sum(new_slot.values())
+        if total_w > 0:
+            new_slot = {s: w / total_w for s, w in new_slot.items()}
+        elif survivors:
+            new_slot = {s: 1.0 / len(survivors) for s in survivors}
+
+    new_prop: dict[str, float] = {s: prop_weights[s] for s in new_holdings - entries if s in prop_weights}
+    if entries:
+        for s in entries:
+            new_prop[s] = 1.0 / size
+    if not new_prop:
+        new_prop = {s: 1.0 / size for s in new_holdings}
+    total_w = sum(new_prop.values())
+    if total_w > 0:
+        new_prop = {s: w / total_w for s, w in new_prop.items()}
+
+    return new_full, new_slot, new_prop
+
+
+def _compute_summary_stats(nav_df: pd.DataFrame) -> pd.DataFrame:
+    """Compute per-column CAGR / Sharpe / drawdown / Calmar / Sortino from a NAV DataFrame."""
+    stats = {}
+    for col in nav_df.columns:
+        s = nav_df[col].dropna()
+        if len(s) < 2:
+            continue
+        daily_ret = s.pct_change().dropna()
+        years = (s.index[-1] - s.index[0]).total_seconds() / (365.25 * 86400)
+        cagr = (s.iloc[-1] / s.iloc[0]) ** (1 / years) - 1 if years > 0 else np.nan
+        sharpe = (daily_ret.mean() / daily_ret.std() * np.sqrt(252)) if daily_ret.std() > 0 else np.nan
+        rolling_max = s.cummax()
+        drawdown = (s - rolling_max) / rolling_max
+        max_dd = drawdown.min()
+        calmar = cagr / abs(max_dd) if max_dd != 0 else np.nan
+        neg_ret = daily_ret[daily_ret < 0]
+        sortino = (
+            (daily_ret.mean() / neg_ret.std() * np.sqrt(252)) if len(neg_ret) > 1 and neg_ret.std() > 0 else np.nan
+        )
+        stats[col] = {
+            "CAGR (%)": round(cagr * 100, 2),
+            "Sharpe": round(float(sharpe), 3) if not np.isnan(sharpe) else np.nan,
+            "Max Drawdown (%)": round(max_dd * 100, 2),
+            "Calmar": round(float(calmar), 3) if not np.isnan(calmar) else np.nan,
+            "Sortino": round(float(sortino), 3) if not np.isnan(sortino) else np.nan,
+            "Final NAV": round(s.iloc[-1], 2),
+        }
+    return pd.DataFrame(stats).T
+
+
+# ──────────────────────────────────────────────────────────────
+# CORE BACKTEST
+# ──────────────────────────────────────────────────────────────
+
+
+def _apply_weight_cap(weights: dict[str, float], cap: float) -> dict[str, float]:
+    """Cap rebalance targets; retain cash when full investment is infeasible."""
+    if not weights or cap <= 0.0 or cap >= 1.0:
+        return weights
+    total = min(1.0, sum(weights.values()))
+    budget = min(total, len(weights) * cap)
+    remaining = dict(weights)
+    result = {}
+    while remaining:
+        denom = sum(remaining.values())
+        if denom <= 0:
+            break
+        scale = budget / denom
+        over = [s for s, w in remaining.items() if w * scale > cap + 1e-12]
+        if not over:
+            result.update({s: w * scale for s, w in remaining.items()})
+            break
+        for symbol in over:
+            result[symbol] = cap
+            budget -= cap
+            remaining.pop(symbol)
+    return result
+
+
+def run_backtest(
+    all_ohlcv: dict[str, pd.DataFrame],
+    benchmarks: dict[str, pd.Series],
+    config: BacktestConfig,
+) -> dict:
+    """Run both portfolio variants and return NAV series + summary stats."""
+    m = config.m
+    n = config.n
+    rebalance_freq = config.rebalance_freq
+    sort_method = config.sort_method
+    start_date = config.start_date
+    end_date = config.end_date
+    compositions_df = config.compositions_df
+    index_names = config.index_names
+    transaction_cost_pct = config.transaction_cost_pct
+    min_history_days = config.min_history_days
+    apply_volume_filter = config.apply_volume_filter
+    max_stale_sessions = config.max_stale_sessions
+    corporate_actions = config.corporate_actions
+    band_rule = config.band_rule
+    rebalance_anchor_date = config.rebalance_anchor_date
+    portfolio_start_date = config.portfolio_start_date
+    brokerage_per_sale = config.brokerage_per_sale
+    initial_capital = config.initial_capital
+    ltcg_rate = config.ltcg_rate
+    stcg_rate = config.stcg_rate
+    stage2_drop_exit = config.stage2_drop_exit
+    stage2_drop_threshold = config.stage2_drop_threshold
+    stage2_entry_filter = config.stage2_entry_filter
+    stage2_entry_threshold = config.stage2_entry_threshold
+    max_position_pct = config.max_position_pct
+    min_annual_return = config.min_annual_return
+    pct_from_52w_high = config.pct_from_52w_high
+    max_circuits = config.max_circuits
+    close_above_100dma = config.close_above_100dma
+    close_above_200dma = config.close_above_200dma
+    pos_days_3m_min = config.pos_days_3m_min
+    pos_days_6m_min = config.pos_days_6m_min
+    pos_days_12m_min = config.pos_days_12m_min
+
+    # ── input validation ──
+    if m < 1 or n < 1:
+        return {"error": f"M ({m}) and N ({n}) must both be ≥ 1."}
+    if m >= n:
+        return {"error": f"Entry band M ({m}) must be strictly less than exit band N ({n})."}
+    try:
+        t0 = pd.Timestamp(start_date)
+        t1 = pd.Timestamp(end_date)
+    except Exception:
+        return {"error": f"Invalid date format: start_date={start_date!r}, end_date={end_date!r}. Use 'YYYY-MM-DD'."}
+    if t0 >= t1:
+        return {"error": f"start_date ({start_date}) must be before end_date ({end_date})."}
+    if not (0.0 <= transaction_cost_pct <= 0.05):
+        return {"error": f"transaction_cost_pct ({transaction_cost_pct:.4f}) must be between 0 and 0.05 (5%)."}
+    if not (0.0 <= ltcg_rate <= 1.0):
+        return {"error": f"ltcg_rate ({ltcg_rate}) must be between 0 and 1."}
+    if not (0.0 <= stcg_rate <= 1.0):
+        return {"error": f"stcg_rate ({stcg_rate}) must be between 0 and 1."}
+    if max_position_pct is not None and not (0.0 < max_position_pct <= 100.0):
+        return {"error": f"max_position_pct ({max_position_pct}) must be between 0 (exclusive) and 100."}
+    if config.universe_mode != "legacy_partial":
+        return {
+            "error": "Certified historical universe is unavailable: resolve dated identities and coverage first. Use explicit legacy_partial research mode."
+        }
+    if initial_capital <= 0 or brokerage_per_sale < 0:
+        return {"error": "Initial capital must be positive and brokerage nonnegative."}
+    schema_errors = _validate_ohlcv_schema(all_ohlcv)
+    if schema_errors:
+        return {"error": "Invalid OHLCV input: " + "; ".join(schema_errors[:5])}
+
+    all_ohlcv = {symbol: accepted_equity_rows(frame) for symbol, frame in all_ohlcv.items()}
+    all_ohlcv = {symbol: frame for symbol, frame in all_ohlcv.items() if not frame.empty}
+    ranking_calendar = (
+        config.market_calendar if config.market_calendar is not None else observed_sessions(all_ohlcv.values())
+    )
+    manifest = run_manifest(config, all_ohlcv, benchmarks, ranking_calendar)
+    all_ohlcv = {symbol: session_frame(frame, ranking_calendar) for symbol, frame in all_ohlcv.items()}
+
+    # Warn once if any requested index has no composition data before the start date.
+    if compositions_df is not None and not compositions_df.empty and index_names:
+        comp_check = compositions_df.copy()
+        comp_check["TIME_STAMP"] = pd.to_datetime(comp_check.TIME_STAMP, errors="raise")
+        comp_check["_INDEX_KEY"] = comp_check["INDEX_NAME"].map(_canonical_index_name)
+        for idx_name in index_names:
+            idx_key = _canonical_index_name(idx_name)
+            idx_rows = comp_check[comp_check["_INDEX_KEY"] == idx_key]
+            if idx_rows.empty:
+                continue  # covered by the existing "None found" warning path
+            earliest = idx_rows["TIME_STAMP"].min()
+            if earliest > t0:
+                logging.warning(
+                    "Index %r composition data starts on %s, which is after the backtest start %s. "
+                    "This index will be excluded from the universe filter until its data begins.",
+                    idx_name,
+                    earliest.date(),
+                    t0.date(),
+                )
+
+    trading_days = ranking_calendar[(ranking_calendar >= t0) & (ranking_calendar <= t1)]
+    if len(trading_days) < 20:
+        return {"error": "Insufficient trading days in selected range (need at least one month of data)."}
+
+    if rebalance_anchor_date:
+        try:
+            rebalance_dates = get_anchored_rebalance_dates(
+                trading_days, rebalance_freq, pd.Timestamp(rebalance_anchor_date), through=t1
+            )
+        except Exception:
+            return {"error": f"Invalid rebalance_anchor_date={rebalance_anchor_date!r}. Use 'YYYY-MM-DD'."}
+    else:
+        schedule_grid = extend_sessions(ranking_calendar, t1 + pd.Timedelta(days=190))
+        rebalance_dates = [
+            d for d in get_rebalance_dates(schedule_grid, rebalance_freq) if trading_days[0] <= d <= trading_days[-1]
+        ]
+    # Exclude the first trading day: we need T-1 close to rank without look-ahead bias.
+    rebalance_set = set(rebalance_dates) - {trading_days[0]}
+
+    # Live Signal needs indicator/ranking history before a real portfolio is
+    # opened, but must not inherit simulated holdings from that warm-up.  Pick
+    # the final signal/rebalance close strictly before the execution date.
+    portfolio_reset_day = None
+    if portfolio_start_date:
+        try:
+            portfolio_start_ts = pd.Timestamp(portfolio_start_date)
+        except Exception:
+            return {"error": f"Invalid portfolio_start_date={portfolio_start_date!r}. Use 'YYYY-MM-DD'."}
+        prior_rebalances = [d for d in rebalance_dates if d < portfolio_start_ts and d in rebalance_set]
+        if not prior_rebalances:
+            return {
+                "error": (
+                    "Could not find a rebalance before portfolio_start_date "
+                    f"({portfolio_start_ts.date()}) within the simulation window."
+                )
+            }
+        portfolio_reset_day = prior_rebalances[-1]
+
+    # Pre-filter compositions once so the per-rebalance call is a cheap date slice
+    comp_prepared = _prepare_compositions(compositions_df, index_names or [])
+
+    # Pre-compute rolling metrics once per symbol (O(symbols)) instead of per rebalance date
+    precomputed = _precompute_all_metrics(all_ohlcv, ranking_calendar)
+    metric_arrays = {
+        sym: {name: column.to_numpy(copy=False) for name, column in metrics.items()}
+        for sym, metrics in precomputed.items()
+    }
+    tradable_dates = _precompute_tradable_dates(all_ohlcv)
+    stage2_precomputed = (
+        _precompute_stage2_scores(all_ohlcv, ranking_calendar) if (stage2_drop_exit or stage2_entry_filter) else {}
+    )
+
+    # ── initialise portfolios ──
+    full_weights: dict[str, float] = {}
+    full_weights_prev: dict[str, float] = {}  # drift-adjusted full weights from prior rebalance
+    marg_weights: dict[str, float] = {}  # starter-capped marginal weights
+    prop_weights: dict[str, float] = {}  # prop-fill marginal weights
+    current_holdings: set[str] = set()
+    prev_stage2_scores: dict[str, float] = {}  # Stage 2 score at previous rebalance per holding
+
+    nav_full = 100.0
+    nav_marg = 100.0
+    nav_prop = 100.0
+
+    nav_records: list[dict] = []
+    holdings_log: list[dict] = []
+    coverage_log: list[dict] = []
+    pending_corporate_actions: list[dict] = []
+    turnover_log_full: list[float] = []
+    turnover_log_marg: list[float] = []
+    turnover_log_prop: list[float] = []
+    cost_log_full: list[float] = []
+    cost_log_marg: list[float] = []
+    cost_log_prop: list[float] = []
+    holdings_sizes: list[int] = []
+
+    tax_log_full: list[float] = []
+    tax_log_marg: list[float] = []
+    tax_log_prop: list[float] = []
+    brok_log_full: list[float] = []
+    brok_log_marg: list[float] = []
+    brok_log_prop: list[float] = []
+
+    ledgers = [QuantityLedger(), QuantityLedger(), QuantityLedger()]
+    labels = ["Full Rebalance", "Marginal Rebalance", "Prop Rebalance"]
+    flat_fee = brokerage_per_sale * 100.0 / initial_capital if initial_capital > 0 else 0.0
+
+    for i, day in enumerate(trading_days):
+        for action in corporate_actions:
+            if pd.Timestamp(action["effective_date"]) <= day:
+                for ledger in ledgers:
+                    ledger.transfer(day, action)
+        held_symbols = set().union(*(ledger.quantities() for ledger in ledgers))
+        quotes = {symbol: _close_price(all_ohlcv, symbol, day) for symbol in held_symbols}
+        for ledger in ledgers:
+            ledger.mark(day, all_ohlcv)
+            ledger.accrue_tax(day, _compute_fy_tax, stcg_rate, ltcg_rate)
+            ledger.settle_tax(day, quotes, transaction_cost_pct, flat_fee)
+            ledger.accrue_tax(day, _compute_fy_tax, stcg_rate, ltcg_rate)
+        nav_full, nav_marg, nav_prop = [ledger.nav() for ledger in ledgers]
+        full_weights, marg_weights, prop_weights = [ledger.weights() for ledger in ledgers]
+        full_weights_prev = dict(full_weights)
+        current_holdings = set().union(*(ledger.quantities() for ledger in ledgers))
+
+        # ── rebalance ──
+        if day in rebalance_set:
+            if portfolio_reset_day is not None and day == portfolio_reset_day:
+                # Begin the real portfolio here.  Earlier events are only
+                # warm-up calculations and must not become live incumbents.
+                full_weights = {}
+                full_weights_prev = {}
+                marg_weights = {}
+                prop_weights = {}
+                current_holdings = set()
+                prev_stage2_scores.clear()
+                ledgers = [QuantityLedger(), QuantityLedger(), QuantityLedger()]
+                nav_full = nav_marg = nav_prop = 100.0
+                pending_corporate_actions = []
+
+            pending_corporate_actions = [dict(a) for a in corporate_actions if pd.Timestamp(a["effective_date"]) == day]
+
+            # Restrict universe to historically valid members on this date
+            valid_syms = _valid_symbols_at_date(comp_prepared, index_names or [], day)
+            coverage_log.extend(coverage_at(comp_prepared, index_names or [], day, all_ohlcv))
+
+            # Ordinary backtests rank on T-1 for a T-close rebalance. Live
+            # Signal ranks after the signal session closes and executes on the
+            # following NSE session, so it may use T without look-ahead.
+            rank_as_of = day if config.rank_on_rebalance_date else (trading_days[i - 1] if i > 0 else day)
+            ranked, _excluded_reasons = rank_universe_at_date(
+                all_ohlcv,
+                rank_as_of,
+                sort_method,
+                valid_symbols=valid_syms,
+                min_history_days=min_history_days,
+                apply_volume_filter=apply_volume_filter,
+                minimum_median_volume=config.minimum_median_volume,
+                precomputed=precomputed,
+                metric_arrays=metric_arrays,
+                return_excluded_reasons=True,
+                min_annual_return=min_annual_return,
+                pct_from_52w_high=pct_from_52w_high,
+                max_circuits=max_circuits,
+                close_above_100dma=close_above_100dma,
+                close_above_200dma=close_above_200dma,
+                pos_days_3m_min=pos_days_3m_min,
+                pos_days_6m_min=pos_days_6m_min,
+                pos_days_12m_min=pos_days_12m_min,
+                max_stale_sessions=max_stale_sessions,
+                trading_calendar=ranking_calendar,
+                tradable_dates=tradable_dates,
+            )
+            top_m = set(ranked[:m])
+            top_n = set(ranked[:n])
+
+            _s2_kwargs = dict(
+                stage2_precomputed=stage2_precomputed,
+                rank_as_of=rank_as_of,
+                prev_stage2_scores=prev_stage2_scores,
+                stage2_entry_filter=stage2_entry_filter,
+                stage2_drop_exit=stage2_drop_exit,
+                stage2_entry_threshold=stage2_entry_threshold,
+                stage2_drop_threshold=stage2_drop_threshold,
+                rebalance_freq=rebalance_freq,
+            )
+            if band_rule == "displacement":
+                entries, exits, entry_reasons, exit_reasons = _compute_holdings_displacement(
+                    current_holdings, top_m, top_n, ranked, m, **_s2_kwargs
+                )
+            else:
+                entries, exits, entry_reasons, exit_reasons = _compute_holdings_classic(
+                    current_holdings, top_m, top_n, ranked, **_s2_kwargs
+                )
+
+            new_holdings = (current_holdings - exits) | entries
+            for symbol in exits:
+                if symbol not in ranked and (valid_syms is None or symbol in valid_syms):
+                    exit_reasons[symbol] = "excluded: " + _excluded_reasons.get(symbol, "unrankable")
+
+            # Update Stage 2 score baseline for next rebalance.
+            # Track full ranked universe (not just holdings) so entry-jump signal
+            # can detect score rises on stocks we don't yet own.
+            if (stage2_drop_exit or stage2_entry_filter) and stage2_precomputed:
+                prev_stage2_scores.clear()
+                for sym in ranked:
+                    s2_series = stage2_precomputed.get(sym)
+                    if s2_series is not None:
+                        score = s2_series.asof(rank_as_of)
+                        if not pd.isna(score):
+                            prev_stage2_scores[sym] = float(score)
+
+            size = len(new_holdings)
+            holdings_sizes.append(size)
+            quotes.update({s: _close_price(all_ohlcv, s, day) for s in new_holdings if s not in quotes})
+
+            # ── save drift-adjusted weights before assignment (needed for turnover diff + CGT) ──
+            old_full_weights = dict(full_weights_prev)
+            old_marg_weights = dict(marg_weights)
+            old_prop_weights = dict(prop_weights)
+
+            # ── compute new weights for all three tracks ──
+            new_full, new_slot, new_prop = _compute_weight_variants(
+                new_holdings, entries, exits, marg_weights, prop_weights, size
+            )
+
+            # ── position cap: trim any overweight position, redistribute to smaller positions ──
+            pre_cap_full = {s: round(w * 100, 4) for s, w in new_full.items()}
+            pre_cap_slot = {s: round(w * 100, 4) for s, w in new_slot.items()}
+            pre_cap_prop = {s: round(w * 100, 4) for s, w in new_prop.items()}
+            if max_position_pct:
+                _cap = max_position_pct / 100.0
+                new_full = _apply_weight_cap(new_full, _cap)
+                new_slot = _apply_weight_cap(new_slot, _cap)
+                new_prop = _apply_weight_cap(new_prop, _cap)
+
+            turnovers = []
+            costs_before = [ledger.fees for ledger in ledgers]
+            brok_before = [ledger.brokerage for ledger in ledgers]
+            navs_before = [ledger.nav() for ledger in ledgers]
+            prior_actual = set(current_holdings)
+            for ledger, target in zip(ledgers, [new_full, new_slot, new_prop]):
+                turnovers.append(
+                    ledger.rebalance(
+                        day, target, quotes, transaction_cost_pct, flat_fee, _compute_fy_tax, stcg_rate, ltcg_rate
+                    )
+                )
+            nav_full, nav_marg, nav_prop = [ledger.nav() for ledger in ledgers]
+            full_weights, marg_weights, prop_weights = [ledger.weights() for ledger in ledgers]
+            full_weights_prev = dict(full_weights)
+            traded_w_full, traded_w_marg, traded_w_prop = turnovers
+            for log, value in zip([turnover_log_full, turnover_log_marg, turnover_log_prop], turnovers):
+                log.append(value)
+            for k, (clog, blog) in enumerate(
+                zip([cost_log_full, cost_log_marg, cost_log_prop], [brok_log_full, brok_log_marg, brok_log_prop])
+            ):
+                base = navs_before[k]
+                clog.append((ledgers[k].fees - costs_before[k]) / base if base > 0 else 0.0)
+                blog.append((ledgers[k].brokerage - brok_before[k]) / base if base > 0 else 0.0)
+            current_holdings = set().union(*(ledger.quantities() for ledger in ledgers))
+            entries = current_holdings - prior_actual
+            exits = prior_actual - current_holdings
+            holdings_log.append(
+                {
+                    "date": day,
+                    "holdings": sorted(current_holdings),
+                    "holdings_by_variant": {
+                        label: sorted(ledger.quantities()) for label, ledger in zip(labels, ledgers)
+                    },
+                    "entries": [f"{s} ({entry_reasons[s]})" if s in entry_reasons else s for s in sorted(entries)],
+                    "exits": [f"{s} ({exit_reasons[s]})" if s in exit_reasons else s for s in sorted(exits)],
+                    "full_ranking": ranked,
+                    "valid_universe_size": len(valid_syms) if valid_syms is not None else len(all_ohlcv),
+                    "index_universe": sorted(valid_syms) if valid_syms is not None else None,
+                    "excluded_reasons": _excluded_reasons,
+                    "corporate_actions": list(pending_corporate_actions),
+                    "full_turnover_pct": round(traded_w_full * 100, 2),
+                    "marg_turnover_pct": round(traded_w_marg * 100, 2),
+                    "prop_turnover_pct": round(traded_w_prop * 100, 2),
+                    # Actual portfolio state immediately before this event,
+                    # after price drift and corporate-action identity changes.
+                    # Live Signal must compare against these weights rather
+                    # than the prior event's target snapshot.
+                    "pre_rebalance_full_weights": {s: round(w * 100, 4) for s, w in old_full_weights.items()},
+                    "pre_rebalance_marg_weights": {s: round(w * 100, 4) for s, w in old_marg_weights.items()},
+                    "pre_rebalance_prop_weights": {s: round(w * 100, 4) for s, w in old_prop_weights.items()},
+                    "rank_as_of": rank_as_of,
+                    "fill_failures": [
+                        failure for ledger in ledgers for failure in ledger.failures if failure["date"] == day
+                    ],
+                    "cash_weights": {
+                        label: ledger.cash / ledger.nav() * 100 if ledger.nav() > 0 else 0.0
+                        for label, ledger in zip(labels, ledgers)
+                    },
+                    "cap_violations": {
+                        label: {
+                            s: w * 100
+                            for s, w in ledger.weights().items()
+                            if max_position_pct and w * 100 > max_position_pct + 1e-6
+                        }
+                        for label, ledger in zip(labels, ledgers)
+                    },
+                    # snapshot weights at this rebalance (copies — originals rebind next iteration)
+                    "full_weights": {s: round(w * 100, 4) for s, w in full_weights.items()},
+                    "marg_weights": {s: round(w * 100, 4) for s, w in marg_weights.items()},
+                    "prop_weights": {s: round(w * 100, 4) for s, w in prop_weights.items()},
+                    # pre-cap weights (same as above when max_position_pct is None)
+                    "pre_cap_full_weights": pre_cap_full,
+                    "pre_cap_marg_weights": pre_cap_slot,
+                    "pre_cap_prop_weights": pre_cap_prop,
+                }
+            )
+            pending_corporate_actions = []
+
+        for ledger in ledgers:
+            ledger.snapshot(day)
+        nav_full, nav_marg, nav_prop = [ledger.nav() for ledger in ledgers]
+        nav_records.append(
+            {
+                "Date": day,
+                "Full Rebalance": nav_full,
+                "Marginal Rebalance": nav_marg,
+                "Prop Rebalance": nav_prop,
+            }
+        )
+
+    nav_df = pd.DataFrame(nav_records).set_index("Date")
+
+    # Current FY taxes are accrued liabilities, not an implicit terminal
+    # liquidation. Actual settlement/funding appears separately in the ledger.
+    tax_log_full, tax_log_marg, tax_log_prop = [
+        [(ledger.tax_paid + ledger.payable + ledger.accrued) / 100.0] for ledger in ledgers
+    ]
+
+    # ── attach benchmarks ──
+    for label, series in benchmarks.items():
+        s = series.reindex(trading_days).ffill(limit=5).dropna()
+        if s.empty:
+            continue
+        nav_df[label] = (s / s.iloc[0]) * 100
+
+    # ── stats ──
+    stats_df = _compute_summary_stats(nav_df)
+
+    avg_turnover_full = round(np.mean(turnover_log_full) * 100, 1) if turnover_log_full else 0.0
+    avg_turnover_marg = round(np.mean(turnover_log_marg) * 100, 1) if turnover_log_marg else 0.0
+    avg_turnover_prop = round(np.mean(turnover_log_prop) * 100, 1) if turnover_log_prop else 0.0
+    total_cost_full = round(sum(cost_log_full) * 100, 3) if cost_log_full else 0.0
+    total_cost_marg = round(sum(cost_log_marg) * 100, 3) if cost_log_marg else 0.0
+    total_cost_prop = round(sum(cost_log_prop) * 100, 3) if cost_log_prop else 0.0
+    avg_holdings = round(float(np.mean(holdings_sizes)), 1) if holdings_sizes else 0.0
+    total_tax_full = round(sum(tax_log_full) * 100, 3) if tax_log_full else 0.0
+    total_tax_marg = round(sum(tax_log_marg) * 100, 3) if tax_log_marg else 0.0
+    total_tax_prop = round(sum(tax_log_prop) * 100, 3) if tax_log_prop else 0.0
+    total_brok_full = round(sum(brok_log_full) * 100, 3) if brok_log_full else 0.0
+    total_brok_marg = round(sum(brok_log_marg) * 100, 3) if brok_log_marg else 0.0
+    total_brok_prop = round(sum(brok_log_prop) * 100, 3) if brok_log_prop else 0.0
+
+    if "Full Rebalance" in stats_df.index:
+        stats_df.loc["Full Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Full Rebalance", "Avg Turnover (%)"] = avg_turnover_full
+        stats_df.loc["Full Rebalance", "Cost Drag (%)"] = total_cost_full
+        stats_df.loc["Full Rebalance", "Tax Drag (%)"] = total_tax_full
+        stats_df.loc["Full Rebalance", "Brokerage Drag (%)"] = total_brok_full
+    if "Marginal Rebalance" in stats_df.index:
+        stats_df.loc["Marginal Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Marginal Rebalance", "Avg Turnover (%)"] = avg_turnover_marg
+        stats_df.loc["Marginal Rebalance", "Cost Drag (%)"] = total_cost_marg
+        stats_df.loc["Marginal Rebalance", "Tax Drag (%)"] = total_tax_marg
+        stats_df.loc["Marginal Rebalance", "Brokerage Drag (%)"] = total_brok_marg
+    if "Prop Rebalance" in stats_df.index:
+        stats_df.loc["Prop Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Prop Rebalance", "Avg Turnover (%)"] = avg_turnover_prop
+        stats_df.loc["Prop Rebalance", "Cost Drag (%)"] = total_cost_prop
+        stats_df.loc["Prop Rebalance", "Tax Drag (%)"] = total_tax_prop
+        stats_df.loc["Prop Rebalance", "Brokerage Drag (%)"] = total_brok_prop
+
+    return {
+        "accounting_version": ACCOUNTING_VERSION,
+        "run_manifest": manifest,
+        "coverage_report": coverage_log,
+        "policies": dict(POLICIES),
+        "certification": "research only: historical identities/coverage and nominal tax basis unverified",
+        "execution_ledgers": {label: ledger.trades for label, ledger in zip(labels, ledgers)},
+        "daily_ledgers": {label: ledger.daily for label, ledger in zip(labels, ledgers)},
+        "closed_lots": {label: ledger.closed_lots for label, ledger in zip(labels, ledgers)},
+        "fill_failures": {label: ledger.failures for label, ledger in zip(labels, ledgers)},
+        "tax_events": {label: ledger.tax_events for label, ledger in zip(labels, ledgers)},
+        "accounting_totals": {
+            label: {
+                "fees_nav_units": ledger.fees,
+                "brokerage_nav_units": ledger.brokerage,
+                "tax_paid_nav_units": ledger.tax_paid,
+                "tax_payable_nav_units": ledger.payable,
+                "tax_accrued_nav_units": ledger.accrued,
+                "ending_cash_nav_units": ledger.cash,
+                "fill_failures": len(ledger.failures),
+                "peak_stock_weight_pct": max(
+                    (
+                        max(
+                            (q * record["marks"][s] / record["nav"] * 100 for s, q in record["quantities"].items()),
+                            default=0.0,
+                        )
+                        for record in ledger.daily
+                        if record["nav"] > 0
+                    ),
+                    default=0.0,
+                ),
+            }
+            for label, ledger in zip(labels, ledgers)
+        },
+        "nav": nav_df,
+        "stats": stats_df,
+        "holdings_log": holdings_log,
+        # The live-signal renderer uses this to identify the one event at
+        # which warm-up state was discarded and the real replay began.
+        "portfolio_reset_date": portfolio_reset_day,
+        "avg_turnover_pct": avg_turnover_full,
+        "avg_turnover_pct_marg": avg_turnover_marg,
+        "avg_turnover_pct_prop": avg_turnover_prop,
+        "total_cost_drag_pct": total_cost_full,
+        "total_cost_drag_pct_marg": total_cost_marg,
+        "total_cost_drag_pct_prop": total_cost_prop,
+        "total_tax_drag_pct": total_tax_full,
+        "total_tax_drag_pct_marg": total_tax_marg,
+        "total_tax_drag_pct_prop": total_tax_prop,
+        "total_brokerage_drag_pct": total_brok_full,
+        "total_brokerage_drag_pct_marg": total_brok_marg,
+        "total_brokerage_drag_pct_prop": total_brok_prop,
+        "rebalance_dates": rebalance_dates,
+        "trading_days": trading_days,
+    }
+
+
+# ──────────────────────────────────────────────────────────────
+# ROLLING RETURNS
+# ──────────────────────────────────────────────────────────────
+
+
+def rolling_returns(nav_df: pd.DataFrame, window_days: int) -> pd.DataFrame:
+    """Return explicitly 252-session annualized rolling CAGR (%), not calendar CAGR."""
+    simple = nav_df.pct_change(periods=window_days)
+    return ((1 + simple) ** (252 / window_days) - 1) * 100

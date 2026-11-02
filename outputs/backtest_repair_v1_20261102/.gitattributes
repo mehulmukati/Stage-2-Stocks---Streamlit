@@ -1,0 +1,2 @@
+# Preserve exact bytes recorded by the evidence manifests, including archived line endings.
+* -text -whitespace

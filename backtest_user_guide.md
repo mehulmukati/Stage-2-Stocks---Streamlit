@@ -1,5 +1,7 @@
 ## Overview
 
+**Accuracy update (2 November 2026):** Historical membership remains unverified/partial. New runs use a quantity/cash ledger, permitted contemporary fills and calendar-year headline CAGR. Taxes are a simplified adjusted-unit research model. See [the accuracy policy and recovery guide](doc/backtest_accuracy_repair.md); its accounting, execution, tax and coverage descriptions supersede older descriptions below. Prior saved results are preserved.
+
 #### What this app does
 Runs a momentum backtest on NSE stocks. At each rebalance, every stock in your chosen
 universe is scored by its Sharpe ratio, ranked best → worst, and a band rule decides

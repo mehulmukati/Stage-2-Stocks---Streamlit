@@ -1,3 +1,6 @@
+# Archived run evidence contains exact source bytes bound by SHA-256 manifests.
+exclude: ^outputs/backtest_repair_v1_20261102/
+
 repos:
   - repo: https://github.com/psf/black
     rev: 24.10.0

@@ -42,10 +42,6 @@ def _ensure(pkg, import_name=None):
             print(f"[WARN] Could not auto-install {pkg}; run: pip install {pkg}")
 
 
-_ensure("xlrd")
-_ensure("openpyxl")
-_ensure("rapidfuzz")
-
 # =============================================================================
 # 1. Imports
 # =============================================================================
@@ -70,6 +66,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from corporate_actions import load_index_replacements
+from security_identity import resolve_source_events, unresolved_id
 
 CSV_PATH = DATA_DIR / "index_const.csv"
 XLS_PATH = DATA_DIR / "IndexInclExcl - Upto 2020.xls"
@@ -115,7 +112,7 @@ NAME_STRIPS = [
 ]
 
 # Fuzzy-match thresholds
-THRESHOLD_HIGH = 90  # auto-accept
+THRESHOLD_HIGH = 90  # proposal tier only; never auto-accept
 THRESHOLD_MED = 70  # flag as needs_review
 
 
@@ -154,7 +151,12 @@ def canonicalize_index(s: str) -> str:
         return ""
     s = str(s).strip().upper()
     s = re.sub(r"\s+", " ", s)
-    return s
+    # NSE Indices 2018-01-05 release: renamed effective 2018-04-02.
+    # This joins the same index lineage; it does not equate 100 with 150/250.
+    return {
+        "NIFTY FREE FLOAT MIDCAP 100": "NIFTY MIDCAP 100",
+        "NIFTY FREE FLOAT SMALLCAP 100": "NIFTY SMALLCAP 100",
+    }.get(s, s)
 
 
 def normalize_description(s: str) -> str:
@@ -217,7 +219,7 @@ def parse_f1():
     return df
 
 
-def parse_f2():
+def parse_f2(rejected_path=None):
     """Parse IndexInclExcl xls. Returns DataFrame with INDEX_NAME, EVENT_DATE, SCRIP_NAME, EVENT_TYPE."""
     log(f"S1.F2: reading {XLS_PATH.name}")
     with warnings.catch_warnings():
@@ -225,6 +227,7 @@ def parse_f2():
         sheets = pd.read_excel(XLS_PATH, sheet_name=None, engine="xlrd", dtype=object)
 
     frames = []
+    rejected = []
     for sheet_name, sdf in sheets.items():
         if sdf.empty:
             continue
@@ -233,8 +236,18 @@ def parse_f2():
         if not required.issubset(set(sdf.columns)):
             log(f"       [WARN] sheet '{sheet_name}' missing required cols; skipping", "WARN")
             continue
-        sdf = sdf[["Index Name", "Event Date", "Scrip Name", "Description"]].copy()
+        raw_columns = ["Index Name", "Event Date", "Scrip Name", "Description"]
+        blank = sdf[["Event Date", "Scrip Name", "Description"]].isna().all(axis=1)
+        if blank.any():
+            rejected.extend(
+                {"SOURCE_ROW_ID": f"{XLS_PATH.name}:{sheet_name}:{i + 2}", "REASON": "empty_source_row"}
+                for i in sdf.index[blank]
+            )
+        sdf = sdf.loc[~blank, raw_columns].copy()
         sdf.columns = ["INDEX_NAME", "EVENT_DATE", "SCRIP_NAME", "_DESC"]
+        sdf["SOURCE_ROW_ID"] = [f"{XLS_PATH.name}:{sheet_name}:{i + 2}" for i in sdf.index]
+        sdf["RAW_EVENT_DATE"] = sdf["EVENT_DATE"].astype(str)
+        sdf["RAW_INDEX_NAME"] = sdf["INDEX_NAME"]
         sdf["INDEX_NAME"] = sdf["INDEX_NAME"].map(canonicalize_index)
         sdf["SCRIP_NAME"] = sdf["SCRIP_NAME"].astype(str).str.strip()
         sdf["EVENT_TYPE"] = sdf["_DESC"].map(normalize_description)
@@ -244,7 +257,9 @@ def parse_f2():
             if isinstance(v, datetime):
                 return v.strftime("%Y-%m-%d")
             try:
-                return pd.to_datetime(v, dayfirst=True, errors="coerce").strftime("%Y-%m-%d")
+                text = str(v).strip()
+                fmt = "%Y-%m-%d" if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text) else "%d-%m-%Y"
+                return datetime.strptime(text, fmt).strftime("%Y-%m-%d")
             except Exception:
                 return None
 
@@ -252,7 +267,8 @@ def parse_f2():
             warnings.simplefilter("ignore")
             sdf["EVENT_DATE"] = sdf["EVENT_DATE"].map(_parse_dt)
         sdf = sdf.drop(columns=["_DESC"])
-        sdf = sdf.dropna(subset=["INDEX_NAME", "EVENT_DATE", "SCRIP_NAME", "EVENT_TYPE"])
+        if sdf[["INDEX_NAME", "EVENT_DATE", "SCRIP_NAME", "EVENT_TYPE"]].isna().any().any():
+            raise ValueError(f"Malformed source events in {sheet_name}; inspect original rows")
         sdf = sdf[sdf["SCRIP_NAME"].str.len() > 0]
         frames.append(sdf)
 
@@ -261,7 +277,9 @@ def parse_f2():
         if frames
         else pd.DataFrame(columns=["INDEX_NAME", "EVENT_DATE", "SCRIP_NAME", "EVENT_TYPE"])
     )
-    df = df.drop_duplicates(subset=["INDEX_NAME", "EVENT_DATE", "SCRIP_NAME", "EVENT_TYPE"])
+    # Preserve duplicate records and their row IDs in the source evidence.
+    if rejected_path is not None:
+        pd.DataFrame(rejected, columns=["SOURCE_ROW_ID", "REASON"]).to_csv(rejected_path, index=False)
     log(
         f"       -> F2: {len(df):,} events; {df['INDEX_NAME'].nunique()} indices; "
         f"{df['SCRIP_NAME'].nunique():,} scrip names; "
@@ -334,28 +352,18 @@ def load_manual_overrides() -> dict:
         except Exception as e:
             log(f"[WARN] could not parse {OUT_OVERRIDES.name}: {e}", "WARN")
     else:
-        # Create empty stub so users know where to add overrides
-        OUT_OVERRIDES.write_text(
-            json.dumps(
-                {
-                    "_comment": "Hand-curated SCRIP_NAME -> SYMBOL overrides. "
-                    "Edit this file to fix mapping errors. Wins all automatic matches.",
-                    "_example": {"Some Company Ltd.": "SOMECO"},
-                },
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
+        # No writes to original inputs during candidate construction.
+        pass
     return {}
 
 
 def build_mapping(f2_scrip_names, symbol_universe):
     """
-    Build canonical scrip_name -> symbol mapping.
+    Build name -> symbol proposals, not trusted identity decisions.
     Pipeline:
-      1. Apply manual overrides (win all).
+      1. Apply undated manual proposals (still require reviewed aliases).
       2. Exact canonical-to-canonical match against symbol universe.
-      3. rapidfuzz WRatio >= 90 -> high confidence auto-match.
+      3. rapidfuzz WRatio >= 90 -> high score proposal.
       4. 70-89 -> flagged as medium.
       5. < 70 -> unresolved.
     """
@@ -449,7 +457,12 @@ def build_mapping(f2_scrip_names, symbol_universe):
 
     # Save outputs
     df_map.to_csv(OUT_MAP, index=False, encoding="utf-8")
-    df_unresolved = df_map[df_map["METHOD"].isin(["fuzzy_med", "unresolved"])].sort_values("SCORE", ascending=False)
+    # Every heuristic, including exact stripped names and manual undated
+    # overrides, remains a proposal until dated evidence is reviewed.
+    df_map["DECISION"] = "proposal_only"
+    df_map["CONFIDENCE"] = "unverified_proposal"
+    df_map.to_csv(OUT_MAP, index=False, encoding="utf-8")
+    df_unresolved = df_map.sort_values("SCORE", ascending=False)
     df_unresolved.to_csv(OUT_UNRESOLVED, index=False, encoding="utf-8")
 
     breakdown = df_map["METHOD"].value_counts().to_dict()
@@ -461,42 +474,16 @@ def build_mapping(f2_scrip_names, symbol_universe):
 # =============================================================================
 # 6. STAGE S3 — Resolve events (join mapping, normalize, discard inception EXCLs)
 # =============================================================================
-def resolve_events(df_f2, df_map):
+def resolve_events(df_f2, df_map, *, legacy_inception_rule=False):
+    """Retain every source record; promote only dated evidence-backed aliases.
+
+    The old earliest-date exclusion assumption is inspectable as an explicit
+    legacy rule, never silently presented as verified inception.
     """
-    Join mapping onto F2 events; discard inception-day Exclusions per user rule.
-    Returns events DataFrame with SYMBOL column.
-    """
-    log("S3: resolving events (joining mapping, inception rule)")
-    name_to_sym = dict(zip(df_map["SCRIP_NAME"], df_map["SYMBOL"]))
-    name_to_conf = dict(zip(df_map["SCRIP_NAME"], df_map["CONFIDENCE"]))
-    name_to_score = dict(zip(df_map["SCRIP_NAME"], df_map["SCORE"]))
-
-    df = df_f2.copy()
-    df["SYMBOL"] = df["SCRIP_NAME"].map(name_to_sym)
-    df["CONFIDENCE"] = df["SCRIP_NAME"].map(name_to_conf).fillna("none")
-    df["MATCH_SCORE"] = df["SCRIP_NAME"].map(name_to_score).fillna(0.0)
-    df["SOURCE"] = "F2"
-
-    # Inception-day Exclusion rule: on each index's earliest event date, drop EXCLs
-    earliest = df.groupby("INDEX_NAME")["EVENT_DATE"].min().to_dict()
-    inception_excl_mask = df.apply(
-        lambda r: r["EVENT_TYPE"] == "EXCL" and r["EVENT_DATE"] == earliest.get(r["INDEX_NAME"]),
-        axis=1,
-    )
-    n_dropped = int(inception_excl_mask.sum())
-    inception_dropped = df[inception_excl_mask].copy()
-    inception_dropped["REASON"] = "inception_artifact"
-    df = df[~inception_excl_mask].copy()
-    log(f"     inception-day Exclusions discarded: {n_dropped}")
-
-    # Dedupe
-    df = df.drop_duplicates(subset=["INDEX_NAME", "EVENT_DATE", "SYMBOL", "EVENT_TYPE"])
-
-    log(
-        f"     resolved events: {len(df):,}  "
-        f"(resolved_symbol={df['SYMBOL'].notna().sum():,}, unresolved={df['SYMBOL'].isna().sum():,})"
-    )
-    return df, inception_dropped
+    result = resolve_source_events(df_f2, df_map, legacy_inception_rule=legacy_inception_rule)
+    review = result[result.INCEPTION_REVIEW_REQUIRED].copy()
+    review["REASON"] = "first_available_event_not_verified_inception"
+    return result, review
 
 
 # =============================================================================
@@ -507,11 +494,22 @@ def _sym_set(series):
     return set(str(s).strip().upper() for s in series if s and not pd.isna(s))
 
 
-def reconstruct(df_f1, df_f3, df_events):
+def reconstruct(df_f1, df_f3, df_events, *, allow_partial=False):
     """
     Run per-index walker. Returns (df_compositions, df_events_unified, df_validation).
     """
     log("S4: reconstructing compositions per index")
+    df_events = df_events.copy()
+    unresolved = df_events.SYMBOL.isna()
+    if unresolved.any() and not allow_partial:
+        raise ValueError("Unresolved identities prevent trusted reconstruction; stage partial diagnostics explicitly")
+    if unresolved.any():
+        df_events.loc[unresolved, "SYMBOL"] = df_events.loc[unresolved].apply(unresolved_id, axis=1)
+    if "LEGACY_EXCLUDED" in df_events:
+        df_events = df_events.loc[~df_events.LEGACY_EXCLUDED]
+    conflicts = df_events.groupby(["INDEX_NAME", "EVENT_DATE", "SYMBOL"]).EVENT_TYPE.nunique()
+    if conflicts.gt(1).any():
+        raise ValueError("Conflicting same-day inclusion/exclusion; ordering requires source evidence")
 
     # Build snapshots: {index: {date: set(symbols)}}
     f1_snap = defaultdict(dict)
@@ -554,10 +552,7 @@ def reconstruct(df_f1, df_f3, df_events):
             f1_meta[key] = (d, r.get("INDUSTRY"), r.get("CAP_WEIGHT"))
 
     def meta_for(index, symbol):
-        rec = f1_meta.get((index, symbol))
-        if rec is None:
-            return (None, None)
-        return (rec[1], rec[2])
+        return (None, None)  # Later snapshot sector/weight is not a historical observation.
 
     composition_rows = []
     event_rows = []
@@ -577,8 +572,10 @@ def reconstruct(df_f1, df_f3, df_events):
             if d in snapshots and snapshots[d] != s:
                 # Conflict between F1 and F3 on same date (shouldn't happen given date ranges)
                 log(f"     [WARN] conflicting snapshots for {index} on {d}", "WARN")
+                if not allow_partial:
+                    raise ValueError(f"Conflicting source snapshots for {index} on {d}")
             snapshots[d] = s
-            source_of_snap[d] = source_of_snap.get(d, "F3_SNAPSHOT")
+            source_of_snap[d] = "F3_SNAPSHOT"
 
         events = f2_ev.get(index, {})
 
@@ -593,6 +590,19 @@ def reconstruct(df_f1, df_f3, df_events):
         pre_dates = sorted([d for d in events.keys() if d < anchor_date], reverse=True)
         state = set(anchor_state)
         for d in pre_dates:
+            incls, excls = events[d]
+            if not incls.issubset(state) or excls.intersection(state):
+                validation_rows.append(
+                    {
+                        "INDEX_NAME": index,
+                        "DATE": d,
+                        "TYPE": "reverse_event_conflict",
+                        "MISSING_FROM_RECON": ",".join(sorted(incls - state)),
+                        "EXTRA_IN_RECON": ",".join(sorted(excls & state)),
+                    }
+                )
+                if not allow_partial:
+                    raise ValueError(f"Invalid reverse event chain for {index} on {d}")
             # state currently represents composition at d (no events between d and next date change)
             # Emit rows for this date
             for sym in sorted(state):
@@ -606,7 +616,7 @@ def reconstruct(df_f1, df_f3, df_events):
                         "CAP_WEIGHT": capw,
                         "SOURCE": "RECONSTRUCTED",
                         "ANCHOR_DATE": anchor_date,
-                        "CONFIDENCE": "high" if sym in anchor_state else "medium",
+                        "CONFIDENCE": "unverified_chain" if allow_partial else "reviewed_chain",
                     }
                 )
             # Emit events for this date
@@ -667,6 +677,18 @@ def reconstruct(df_f1, df_f3, df_events):
             # Apply F2 events at this date
             if d in events:
                 incls, excls = events[d]
+                if not excls.issubset(state) or incls.intersection(state):
+                    validation_rows.append(
+                        {
+                            "INDEX_NAME": index,
+                            "DATE": d,
+                            "TYPE": "forward_event_conflict",
+                            "MISSING_FROM_RECON": ",".join(sorted(excls - state)),
+                            "EXTRA_IN_RECON": ",".join(sorted(incls & state)),
+                        }
+                    )
+                    if not allow_partial:
+                        raise ValueError(f"Invalid forward event chain for {index} on {d}")
                 for sym in excls:
                     state.discard(sym)
                 for sym in incls:
@@ -750,7 +772,7 @@ def reconstruct(df_f1, df_f3, df_events):
                 prev_snap_date = d
             else:
                 src = "RECONSTRUCTED"
-                conf = "high"
+                conf = "unverified_chain" if allow_partial else "reviewed_chain"
 
             # Emit composition rows
             for sym in sorted(state):
@@ -769,9 +791,9 @@ def reconstruct(df_f1, df_f3, df_events):
                 )
 
     df_comp = pd.DataFrame(composition_rows)
-    df_evt_unified = pd.DataFrame(event_rows).drop_duplicates(
-        subset=["INDEX_NAME", "EVENT_DATE", "SYMBOL", "EVENT_TYPE", "SOURCE"]
-    )
+    df_evt_unified = pd.DataFrame(
+        event_rows, columns=["INDEX_NAME", "EVENT_DATE", "SYMBOL", "EVENT_TYPE", "SOURCE"]
+    ).drop_duplicates(subset=["INDEX_NAME", "EVENT_DATE", "SYMBOL", "EVENT_TYPE", "SOURCE"])
     df_val = pd.DataFrame(validation_rows)
 
     log(f"     compositions: {len(df_comp):,} rows")
@@ -867,43 +889,43 @@ def validate_and_report(df_comp, df_f1, df_f3, df_val):
 # =============================================================================
 # 10. STAGE S6 — Refresh constituents.json (latest composition)
 # =============================================================================
-def refresh_constituents(df_comp):
-    """Publish missing historical snapshots; preserve accepted current membership."""
-    import sys
+def refresh_constituents(df_comp, *, candidate_path=None, certificate_path=None, backup_dir=None):
+    """Compatibility adapter: an in-memory frame is never publication authority."""
+    if candidate_path is None or certificate_path is None or backup_dir is None:
+        raise ValueError(
+            "Candidate requires reviewed identity/coverage validation and explicit certificate; "
+            "shared sources unchanged"
+        )
+    from backtest_provenance import frame_hash
+    from scripts.publish_reconstructed_membership import publish
 
-    sys.path.insert(0, str(PROJECT_ROOT))
-    import market_data as md
-
-    if df_comp.empty:
-        return
-    incoming = md.normalize_membership(df_comp)
-    with md.publisher_lock():
-        if md.MEMBERSHIP_PATH.exists():
-            history, metadata = md._read(md.MEMBERSHIP_PATH)
-            keys = pd.MultiIndex.from_frame(history[["INDEX_NAME", "TIME_STAMP"]])
-            missing = ~pd.MultiIndex.from_frame(incoming[["INDEX_NAME", "TIME_STAMP"]]).isin(keys)
-            combined = md.normalize_membership(pd.concat([history, incoming.loc[missing]], ignore_index=True))
-            md.write_source(combined, md.MEMBERSHIP_PATH, dict(metadata), expected_revision=metadata["revision"])
-        else:
-            md.write_source(
-                incoming,
-                md.MEMBERSHIP_PATH,
-                {"source": "NSE historical reconstruction", "membership_date_basis": "reconstructed"},
-            )
-    log("S6: published shared historical membership; current snapshots preserved")
+    if frame_hash(df_comp) != frame_hash(pd.read_parquet(candidate_path)):
+        raise ValueError("In-memory candidate differs from reviewed bytes")
+    return publish(candidate_path, certificate_path, backup_dir)
 
 
 # =============================================================================
 # 11. MAIN
 # =============================================================================
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Offline reconstruction candidates only; no publication")
+    parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--legacy-inception-rule", action="store_true")
+    args = parser.parse_args()
+    candidate = Path(args.output_dir).resolve()
+    candidate.mkdir(parents=True, exist_ok=False)
+    global OUT_MAP, OUT_EVENTS, OUT_UNRESOLVED, OUT_VALIDATION
+    OUT_MAP, OUT_EVENTS = candidate / "mapping_proposals.csv", candidate / "derived_events.csv"
+    OUT_UNRESOLVED, OUT_VALIDATION = candidate / "identity_review.csv", candidate / "validation_report.csv"
     print("=" * 72)
     print("  NSE Index Composition Reconstruction")
     print("=" * 72)
 
     # S1: Parse
     df_f1 = parse_f1()
-    df_f2 = parse_f2()
+    df_f2 = parse_f2(candidate / "parser_rejections.csv")
     df_f3 = parse_f3()
 
     # S2: Build mapping
@@ -912,10 +934,12 @@ def main():
     df_map = build_mapping(scrip_names, symbol_universe)
 
     # S3: Resolve events
-    df_events, _df_inception = resolve_events(df_f2, df_map)
+    df_events, _df_inception = resolve_events(df_f2, df_map, legacy_inception_rule=args.legacy_inception_rule)
+    df_events.to_csv(candidate / "source_events_with_decisions.csv", index=False)
+    _df_inception.to_csv(candidate / "inception_assumption_review.csv", index=False)
 
     # S4: Reconstruct
-    df_comp, df_evt_unified, df_val = reconstruct(df_f1, df_f3, df_events)
+    df_comp, df_evt_unified, df_val = reconstruct(df_f1, df_f3, df_events, allow_partial=True)
     df_comp = apply_index_replacements(df_comp)
 
     # Write outputs
@@ -929,8 +953,59 @@ def main():
     # S5: Validate
     validate_and_report(df_comp, df_f1, df_f3, df_val)
 
-    # S6: Refresh constituents.json
-    refresh_constituents(df_comp)
+    # Candidates are explicitly unaccepted; missing identities remain visible.
+    df_comp["TIME_STAMP"] = pd.to_datetime(df_comp.TIME_STAMP, errors="raise")
+    df_comp.to_parquet(candidate / "partial_compositions.parquet", index=False)
+    observed = pd.concat([df_f1.assign(SOURCE="F1_SNAPSHOT"), df_f3.assign(SOURCE="F3_SNAPSHOT")], ignore_index=True)
+    observed.to_parquet(candidate / "observed_snapshots.parquet", index=False)
+    df_comp.groupby(["INDEX_NAME", "TIME_STAMP", "SOURCE", "CONFIDENCE"]).SYMBOL.nunique().to_csv(
+        candidate / "coverage.csv"
+    )
+    (candidate / "validation.json").write_text(
+        json.dumps(
+            {
+                "accepted": False,
+                "reason": "unresolved identities and historical coverage require review",
+                "source_records": len(df_events),
+                "unresolved_records": int(df_events.SYMBOL.isna().sum()),
+                "legacy_inception_rule": args.legacy_inception_rule,
+                "microcap_before_2021_05_11": "unavailable; never backfilled",
+                "publication": "not attempted",
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    from backtest_provenance import sha256, write_manifest_exclusive
+
+    write_manifest_exclusive(
+        candidate / "manifest.json",
+        {
+            "candidate_only": True,
+            "identity_policy": "dated-evidence-only-v1",
+            "source_observation_date": "unknown unless recorded in input",
+            "retrieval_date": "unknown for supplied historical files",
+            "verification_date": "2026-11-02",
+            "lineage": (
+                "F1/F3 observed snapshots; F2 source row IDs and decisions retained; "
+                "unresolved synthetic identities are diagnostic only"
+            ),
+            "inputs_sha256": {
+                str(p): sha256(p)
+                for p in [
+                    CSV_PATH,
+                    XLS_PATH,
+                    XLSX_PATH,
+                    OUT_OVERRIDES,
+                    DATA_DIR / "security_aliases.json",
+                    Path(__file__),
+                ]
+                if p.exists()
+            },
+            "legacy_inception_rule": args.legacy_inception_rule,
+            "accepted": False,
+        },
+    )
 
     # Summary
     print("\n" + "=" * 72)
@@ -961,7 +1036,7 @@ def main():
     spot2 = df_comp[(df_comp["INDEX_NAME"] == "NIFTY 50") & (df_comp["TIME_STAMP"] == "2020-03-31")]
     print(f"    NIFTY 50 @ 2020-03-31:   {len(spot2)} rows (expect 50)")
 
-    print("\n  Outputs in:", DATA_DIR)
+    print("\n  Candidate outputs in:", candidate)
     print("    -", OUT_COMPOSITIONS.name)
     print("    -", OUT_EVENTS.name)
     print("    -", OUT_MAP.name)

@@ -1,0 +1,150 @@
+[
+  {
+    "unchanged": true,
+    "path": "constituents_extended.json"
+  },
+  {
+    "unchanged": true,
+    "path": "constituents.json"
+  },
+  {
+    "unchanged": true,
+    "path": "constituents.meta.json"
+  },
+  {
+    "unchanged": true,
+    "path": "nse_holidays.json"
+  },
+  {
+    "unchanged": true,
+    "path": "batch_11.xlsx"
+  },
+  {
+    "unchanged": true,
+    "path": "batch_v10.xlsx"
+  },
+  {
+    "unchanged": true,
+    "path": "batch_v7.xlsx"
+  },
+  {
+    "unchanged": true,
+    "path": "batch_v8.xlsx"
+  },
+  {
+    "unchanged": true,
+    "path": "batch_v9.xlsx"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\backtest_delta.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\backtest_history.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\benchmarks_delta.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\benchmarks.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\compositions.csv"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\compositions.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\compositions.zip"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\constituents.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\corporate_actions.json"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\equity_observation_verifications.json"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\events.csv"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\index_const.csv"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\index_overlay_prices.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\index_testing.ipynb"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\IndexInclExcl - Upto 2020.xls"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\manual_overrides.json"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\momentum_cache.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\N750 Historical Constituents - 202409 onwards.xlsx"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\nse_session_calendar.json"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\repo_rate.csv"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\screener_ohlcv.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\scrip_symbol_map.csv"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\scrip_symbol_unresolved.csv"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\stage2_breadth_scores.meta.json"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\stage2_breadth_scores.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\stage2_cache.parquet"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\unified_constituents.csv"
+  },
+  {
+    "unchanged": true,
+    "path": "data\\validation_report.csv"
+  }
+]

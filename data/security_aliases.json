@@ -1,0 +1,21 @@
+{
+  "version": "dated-evidence-only-v1",
+  "notes": "Point observations only. These do not authorize historical back-extrapolation. Historical aliases and corporate-action lineage require separate dated evidence. Vendor symbols are deliberately unverified.",
+  "lineage": [],
+  "aliases": [
+    {
+      "security_id": "ISIN:INE787D01026",
+      "issuer_id": "NSE-ISSUER:BALKRISHNA-INDUSTRIES",
+      "name": "Balkrishna Industries Ltd.",
+      "exchange_symbol": "BALKRISIND",
+      "vendor_symbol": null,
+      "valid_from": "2026-05-08",
+      "valid_to": "2026-05-08",
+      "source": "https://nsearchives.nseindia.com/corporate/ixbrl/INTEGRATED_FILING_INDAS_156432_08052026204412_iXBRL_WEB.html",
+      "observed_at": "2026-05-08",
+      "verified_at": "2026-11-02",
+      "confidence": "verified",
+      "decision": "reviewed"
+    }
+  ]
+}

@@ -274,6 +274,23 @@ def backtest_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -
         "equity_policy_version": shared_market.EQUITY_POLICY_VERSION,
         "ohlcv_source": ohlcv_source,
         "m": params["m"],
+        "accounting_version": result_classic["accounting_version"],
+        "policies": result_classic["policies"],
+        "certification": result_classic["certification"],
+        "coverage_report": result_classic["coverage_report"],
+        "run_manifests": {"Classic": result_classic["run_manifest"], "Displacement": result_disp["run_manifest"]},
+        "execution_ledgers": {
+            "Classic": result_classic["execution_ledgers"],
+            "Displacement": result_disp["execution_ledgers"],
+        },
+        "daily_ledgers": {"Classic": result_classic["daily_ledgers"], "Displacement": result_disp["daily_ledgers"]},
+        "closed_lots": {"Classic": result_classic["closed_lots"], "Displacement": result_disp["closed_lots"]},
+        "fill_failures": {"Classic": result_classic["fill_failures"], "Displacement": result_disp["fill_failures"]},
+        "tax_events": {"Classic": result_classic["tax_events"], "Displacement": result_disp["tax_events"]},
+        "accounting_totals": {
+            "Classic": result_classic["accounting_totals"],
+            "Displacement": result_disp["accounting_totals"],
+        },
     }
 
 

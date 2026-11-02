@@ -1,0 +1,18 @@
+{
+  "accepted": false,
+  "candidate_only": true,
+  "identity_policy": "dated-evidence-only-v1",
+  "inputs_sha256": {
+    "data\\IndexInclExcl - Upto 2020.xls": "f44874b643f69f9135d5a30aa8882274bb0bf752079853fda78a8d0462518d9f",
+    "data\\N750 Historical Constituents - 202409 onwards.xlsx": "ca0bd204b4f889dbcdbe837e1fa75630e7f8f1be463d510265169ed7869a5e2f",
+    "data\\index_const.csv": "70f7e8fcda361cadec7e599cffb2427d737826b664214a157a7cdeaaccf2e854",
+    "data\\manual_overrides.json": "93961621926b5f5766afecd59b00e409b429df5d9b5772bc6afb3dedda7dcbdd",
+    "data\\reconstruct_indices.py": "02aba2cb3e5ffa450e64e5d0702d12bfc0925c554b3cdca1d013110cefb794ea",
+    "data\\security_aliases.json": "140eac2e3bb94138e7809d84350cd1e0e1bf306aa827c9f0998174c00f50e095"
+  },
+  "legacy_inception_rule": false,
+  "lineage": "F1/F3 observed snapshots; F2 source row IDs and decisions retained; unresolved synthetic identities are diagnostic only",
+  "retrieval_date": "unknown for supplied historical files",
+  "source_observation_date": "unknown unless recorded in input",
+  "verification_date": "2026-11-02"
+}

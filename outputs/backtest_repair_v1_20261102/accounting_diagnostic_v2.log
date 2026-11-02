@@ -1,0 +1,44 @@
+RUN accounting diagnostic ('f7b7391fc10f41e29c49dec8a7274bd2', '5aeb0b0c826746dca63ada9272a9d94f')
+WARNING:root:Index 'Nifty Midcap 150' composition data starts on 2020-09-01, which is after the backtest start 2017-07-01. This index will be excluded from the universe filter until its data begins.
+WARNING:root:Index 'Nifty Smallcap 250' composition data starts on 2020-09-01, which is after the backtest start 2017-07-01. This index will be excluded from the universe filter until its data begins.
+WARNING:root:Index 'Nifty Microcap 250' composition data starts on 2021-05-11, which is after the backtest start 2017-07-01. This index will be excluded from the universe filter until its data begins.
+RECONCILE original accepted quotes and independently rebuilt FIFO/cash/tax
+{
+  "Full Rebalance": {
+    "passed": true,
+    "fills": 9209,
+    "closed_lots": 8180,
+    "daily_rows": 2302,
+    "max_cash_error": 1.5631940186722204e-13,
+    "max_nav_error": 4.547473508864641e-13,
+    "max_quantity_error": 2.220446049250313e-16,
+    "max_tax_error": 1.4210854715202004e-13
+  },
+  "Marginal Rebalance": {
+    "passed": true,
+    "fills": 8996,
+    "closed_lots": 7937,
+    "daily_rows": 2302,
+    "max_cash_error": 1.1457501614131615e-13,
+    "max_nav_error": 2.2737367544323206e-13,
+    "max_quantity_error": 1.1102230246251565e-16,
+    "max_tax_error": 6.394884621840902e-14
+  },
+  "Prop Rebalance": {
+    "passed": true,
+    "fills": 8993,
+    "closed_lots": 7974,
+    "daily_rows": 2302,
+    "max_cash_error": 1.4210854715202004e-13,
+    "max_nav_error": 2.2737367544323206e-13,
+    "max_quantity_error": 1.1102230246251565e-16,
+    "max_tax_error": 6.970118926474811e-14
+  }
+}
+                    CAGR (%)  Sharpe  Max Drawdown (%)  Calmar  Sortino  Final NAV  Avg Holdings  Avg Turnover (%)  Cost Drag (%)  Tax Drag (%)  Brokerage Drag (%)
+Full Rebalance         26.23   1.162            -28.31   0.927    1.344     876.15          17.1              26.8         13.028       173.223                 0.0
+Marginal Rebalance     26.51   1.126            -31.15   0.851    1.308     894.45          17.1              21.3         10.343       145.973                 0.0
+Prop Rebalance         26.55   1.162            -28.31   0.938    1.347     897.17          17.1              24.3         11.801       168.938                 0.0
+Nifty 100               9.77   0.661            -38.10   0.256    0.795     238.40           NaN               NaN            NaN           NaN                 NaN
+Nifty 50                9.68   0.654            -38.44   0.252    0.797     236.61           NaN               NaN            NaN           NaN                 NaN
+Nifty 500              10.72   0.714            -38.30   0.280    0.840     258.24           NaN               NaN            NaN           NaN                 NaN

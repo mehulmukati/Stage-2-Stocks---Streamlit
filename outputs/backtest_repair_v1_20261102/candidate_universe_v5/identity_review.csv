@@ -1,0 +1,1450 @@
+SCRIP_NAME,SYMBOL,METHOD,CONFIDENCE,SCORE,DECISION
+Axis Bank Ltd.,AXISBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+Subros Ltd.,SUBROS,exact_canonical,unverified_proposal,100.0,proposal_only
+Tata Elxsi Ltd.,TATAELXSI,exact_canonical,unverified_proposal,100.0,proposal_only
+Escorts Ltd.,ESCORTS,exact_canonical,unverified_proposal,100.0,proposal_only
+Aarti Drugs Ltd.,AARTIDRUGS,exact_canonical,unverified_proposal,100.0,proposal_only
+IDFC Ltd,IDFC,exact_canonical,unverified_proposal,100.0,proposal_only
+Spicejet Ltd.,SPICEJET,exact_canonical,unverified_proposal,100.0,proposal_only
+Nilkamal Ltd.,NILKAMAL,exact_canonical,unverified_proposal,100.0,proposal_only
+MindTree Ltd.,MINDTREE,exact_canonical,unverified_proposal,100.0,proposal_only
+Cyient Ltd.,CYIENT,exact_canonical,unverified_proposal,100.0,proposal_only
+NMDC Ltd.,NMDC,exact_canonical,unverified_proposal,100.0,proposal_only
+PTC India Ltd.,PTC,exact_canonical,unverified_proposal,100.0,proposal_only
+NOCIL Ltd.,NOCIL,exact_canonical,unverified_proposal,100.0,proposal_only
+I T C Ltd.,ITC,exact_canonical,unverified_proposal,100.0,proposal_only
+NTPC Ltd.,NTPC,exact_canonical,unverified_proposal,100.0,proposal_only
+Quess Corp Ltd.,QUESS,exact_canonical,unverified_proposal,100.0,proposal_only
+Thermax Ltd.,THERMAX,exact_canonical,unverified_proposal,100.0,proposal_only
+D B Realty Ltd.,DBREALTY,exact_canonical,unverified_proposal,100.0,proposal_only
+Atul Ltd.,ATUL,exact_canonical,unverified_proposal,100.0,proposal_only
+RBL Bank Ltd.,RBLBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+ITC Hotels Ltd.,ITCHOTELS,exact_canonical,unverified_proposal,100.0,proposal_only
+KSB Ltd.,KSB,exact_canonical,unverified_proposal,100.0,proposal_only
+ACC Ltd.,ACC,exact_canonical,unverified_proposal,100.0,proposal_only
+Adani Power Ltd.,ADANIPOWER,exact_canonical,unverified_proposal,100.0,proposal_only
+ICICI Bank Ltd,ICICIBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+D.B.Corp Ltd.,DBCORP,exact_canonical,unverified_proposal,100.0,proposal_only
+CESC Ltd.,CESC,exact_canonical,unverified_proposal,100.0,proposal_only
+Biocon Ltd.,BIOCON,exact_canonical,unverified_proposal,100.0,proposal_only
+Yes Bank Ltd.,YESBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+DCB Bank Ltd.,DCBBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+Anant Raj Ltd.,ANANTRAJ,exact_canonical,unverified_proposal,100.0,proposal_only
+ICICI Bank Ltd.,ICICIBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+Voltas Ltd.,VOLTAS,exact_canonical,unverified_proposal,100.0,proposal_only
+KRBL Ltd.,KRBL,exact_canonical,unverified_proposal,100.0,proposal_only
+PNB Gilts Ltd.,PNBGILTS,exact_canonical,unverified_proposal,100.0,proposal_only
+Bajaj Auto Ltd,BAJAJ-AUTO,exact_canonical,unverified_proposal,100.0,proposal_only
+Bajaj Auto Ltd.,BAJAJ-AUTO,exact_canonical,unverified_proposal,100.0,proposal_only
+DCM Shriram Ltd.,DCMSHRIRAM,exact_canonical,unverified_proposal,100.0,proposal_only
+CRISIL Ltd.,CRISIL,exact_canonical,unverified_proposal,100.0,proposal_only
+JSW Energy Ltd.,JSWENERGY,exact_canonical,unverified_proposal,100.0,proposal_only
+JSW Steel Ltd.,JSWSTEEL,exact_canonical,unverified_proposal,100.0,proposal_only
+CSB Bank Ltd.,CSBBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+IFCI Ltd.,IFCI,exact_canonical,unverified_proposal,100.0,proposal_only
+J.K. Cement Ltd.,JKCEMENT,exact_canonical,unverified_proposal,100.0,proposal_only
+NESCO Ltd.,NESCO,exact_canonical,unverified_proposal,100.0,proposal_only
+NBCC (India) Ltd.,NBCC,exact_canonical,unverified_proposal,100.0,proposal_only
+NHPC Ltd.,NHPC,exact_canonical,unverified_proposal,100.0,proposal_only
+Laurus Labs Ltd.,LAURUSLABS,exact_canonical,unverified_proposal,100.0,proposal_only
+Marico Ltd.,MARICO,exact_canonical,unverified_proposal,100.0,proposal_only
+ITI Ltd.,ITI,exact_canonical,unverified_proposal,100.0,proposal_only
+MMTC Ltd.,MMTC,exact_canonical,unverified_proposal,100.0,proposal_only
+MOIL Ltd.,MOIL,exact_canonical,unverified_proposal,100.0,proposal_only
+Mastek Ltd.,MASTEK,exact_canonical,unverified_proposal,100.0,proposal_only
+NCC Ltd.,NCC,exact_canonical,unverified_proposal,100.0,proposal_only
+NDTV Ltd.,NDTV,exact_canonical,unverified_proposal,100.0,proposal_only
+NELCO Ltd.,NELCO,exact_canonical,unverified_proposal,100.0,proposal_only
+DLF Ltd.,DLF,exact_canonical,unverified_proposal,100.0,proposal_only
+Tata Motors Ltd.,TATAMOTORS,exact_canonical,unverified_proposal,100.0,proposal_only
+Tata Power Co. Ltd.,TATAPOWER,exact_canonical,unverified_proposal,100.0,proposal_only
+Polycab India Ltd.,POLYCAB,exact_canonical,unverified_proposal,100.0,proposal_only
+MRF Ltd.,MRF,exact_canonical,unverified_proposal,100.0,proposal_only
+Dabur India Ltd.,DABUR,exact_canonical,unverified_proposal,100.0,proposal_only
+Lupin Ltd.,LUPIN,exact_canonical,unverified_proposal,100.0,proposal_only
+K.P.R. Mill Ltd.,KPRMILL,exact_canonical,unverified_proposal,100.0,proposal_only
+Star Cement Ltd.,STARCEMENT,exact_canonical,unverified_proposal,100.0,proposal_only
+Arvind Ltd,ARVIND,exact_canonical,unverified_proposal,100.0,proposal_only
+Arvind Ltd.,ARVIND,exact_canonical,unverified_proposal,100.0,proposal_only
+Affle (India) Ltd.,AFFLE,exact_canonical,unverified_proposal,100.0,proposal_only
+Siemens Ltd.,SIEMENS,exact_canonical,unverified_proposal,100.0,proposal_only
+UCO Bank,UCOBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+Swan Energy Ltd.,SWANENERGY,exact_canonical,unverified_proposal,100.0,proposal_only
+Symphony Ltd.,SYMPHONY,exact_canonical,unverified_proposal,100.0,proposal_only
+MphasiS Ltd.,MPHASIS,exact_canonical,unverified_proposal,100.0,proposal_only
+Wheels India Ltd.,WHEELS,exact_canonical,unverified_proposal,100.0,proposal_only
+Tata Steel Ltd.,TATASTEEL,exact_canonical,unverified_proposal,100.0,proposal_only
+Wipro Ltd.,WIPRO,exact_canonical,unverified_proposal,100.0,proposal_only
+ABB Ltd.,ABB,exact_canonical,unverified_proposal,100.0,proposal_only
+PC Jeweller Ltd.,PCJEWELLER,exact_canonical,unverified_proposal,100.0,proposal_only
+BASF India Ltd.,BASF,exact_canonical,unverified_proposal,100.0,proposal_only
+BEML Ltd.,BEML,exact_canonical,unverified_proposal,100.0,proposal_only
+ABB India Ltd.,ABB,exact_canonical,unverified_proposal,100.0,proposal_only
+Pfizer Ltd.,PFIZER,exact_canonical,unverified_proposal,100.0,proposal_only
+TVS Motor Co Ltd.,TVSMOTOR,exact_canonical,unverified_proposal,100.0,proposal_only
+TVS Motor Company Ltd.,TVSMOTOR,exact_canonical,unverified_proposal,100.0,proposal_only
+SRF Ltd.,SRF,exact_canonical,unverified_proposal,100.0,proposal_only
+Cipla Ltd.,CIPLA,exact_canonical,unverified_proposal,100.0,proposal_only
+Dish TV India Ltd.,DISHTV,exact_canonical,unverified_proposal,100.0,proposal_only
+UFLEX Ltd.,UFLEX,exact_canonical,unverified_proposal,100.0,proposal_only
+BSE Ltd.,BSE,exact_canonical,unverified_proposal,100.0,proposal_only
+UPL Ltd.,UPL,exact_canonical,unverified_proposal,100.0,proposal_only
+Sobha Ltd.,SOBHA,exact_canonical,unverified_proposal,100.0,proposal_only
+Sanofi India Ltd.,SANOFI,exact_canonical,unverified_proposal,100.0,proposal_only
+Saregama India Ltd,SAREGAMA,exact_canonical,unverified_proposal,100.0,proposal_only
+E.I.D. Parry (India) Ltd.,EIDPARRY,exact_canonical,unverified_proposal,100.0,proposal_only
+SJVN Ltd.,SJVN,exact_canonical,unverified_proposal,100.0,proposal_only
+Schaeffler India Ltd.,SCHAEFFLER,exact_canonical,unverified_proposal,100.0,proposal_only
+Justdial Ltd.,JUSTDIAL,exact_canonical,unverified_proposal,100.0,proposal_only
+KCP Ltd.,KCP,exact_canonical,unverified_proposal,100.0,proposal_only
+Vesuvius India Ltd.,VESUVIUS,exact_canonical,unverified_proposal,100.0,proposal_only
+FDC Ltd.,FDC,exact_canonical,unverified_proposal,100.0,proposal_only
+GAIL (India) Ltd.,GAIL,exact_canonical,unverified_proposal,100.0,proposal_only
+GHCL Ltd.,GHCL,exact_canonical,unverified_proposal,100.0,proposal_only
+Jindal Saw Ltd.,JINDALSAW,exact_canonical,unverified_proposal,100.0,proposal_only
+Gabriel India Ltd.,GABRIEL,exact_canonical,unverified_proposal,100.0,proposal_only
+Redington (India) Ltd.,REDINGTON,exact_canonical,unverified_proposal,100.0,proposal_only
+Gillette India Ltd.,GILLETTE,exact_canonical,unverified_proposal,100.0,proposal_only
+Glaxo (India) Ltd.,GLAXO,exact_canonical,unverified_proposal,100.0,proposal_only
+Goodyear India Ltd.,GOODYEAR,exact_canonical,unverified_proposal,100.0,proposal_only
+Granules India Ltd.,GRANULES,exact_canonical,unverified_proposal,100.0,proposal_only
+Graphite India Ltd.,GRAPHITE,exact_canonical,unverified_proposal,100.0,proposal_only
+HSIL Ltd.,HSIL,exact_canonical,unverified_proposal,100.0,proposal_only
+Timken India Ltd.,TIMKEN,exact_canonical,unverified_proposal,100.0,proposal_only
+Titan Company Ltd.,TITAN,exact_canonical,unverified_proposal,100.0,proposal_only
+Oil India Ltd.,OIL,exact_canonical,unverified_proposal,100.0,proposal_only
+Omaxe Ltd.,OMAXE,exact_canonical,unverified_proposal,100.0,proposal_only
+H.E.G. Ltd.,HEG,exact_canonical,unverified_proposal,100.0,proposal_only
+HDFC Bank Ltd.,HDFCBANK,exact_canonical,unverified_proposal,100.0,proposal_only
+Havell's India Ltd.,HAVELLS,exact_canonical,unverified_proposal,100.0,proposal_only
+Havells India Ltd.,HAVELLS,exact_canonical,unverified_proposal,100.0,proposal_only
+ITC Ltd.,ITC,exact_canonical,unverified_proposal,100.0,proposal_only
+Trent Ltd.,TRENT,exact_canonical,unverified_proposal,100.0,proposal_only
+Trident Ltd.,TRIDENT,exact_canonical,unverified_proposal,100.0,proposal_only
+JK Paper Ltd.,JKPAPER,exact_canonical,unverified_proposal,100.0,proposal_only
+V2 Retail Ltd.,V2RETAIL,exact_canonical,unverified_proposal,100.0,proposal_only
+Vakrangee Ltd.,VAKRANGEE,exact_canonical,unverified_proposal,100.0,proposal_only
+Raymond Ltd.,RAYMOND,exact_canonical,unverified_proposal,100.0,proposal_only
+RITES Ltd.,RITES,exact_canonical,unverified_proposal,100.0,proposal_only
+Inox Wind Ltd.,INOXWIND,exact_canonical,unverified_proposal,100.0,proposal_only
+Hikal Ltd.,HIKAL,exact_canonical,unverified_proposal,100.0,proposal_only
+Rallis India Ltd.,RALLIS,exact_canonical,unverified_proposal,100.0,proposal_only
+IDFC Ltd.,IDFC,exact_canonical,unverified_proposal,100.0,proposal_only
+ICRA Ltd.,ICRA,exact_canonical,unverified_proposal,100.0,proposal_only
+Bharat Forge Ltd.,BHARATFORG,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+NRB Bearings Ltd.,NRBBEARING,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Can Fin Homes Ltd.,CANFINHOME,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Avanti Feeds Ltd.,AVANTIFEED,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Surya Roshni Ltd.,SURYAROSNI,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+TTK Prestige Ltd.,TTKPRESTIG,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+CARE Ratings Ltd.,CARERATING,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Bandhan Bank Ltd.,BANDHANBNK,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Apollo Tyres Ltd.,APOLLOTYRE,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Bharat Forge Limited,BHARATFORG,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+NATCO Pharma Ltd.,NATCOPHARM,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+BF Utilities Ltd.,BFUTILITIE,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Asian Paints Ltd.,ASIANPAINT,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Federal Bank Ltd.,FEDERALBNK,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Inox Leisure Ltd.,INOXLEISUR,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Ion Exchange (India) Ltd.,IONEXCHANG,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+Asian Paints India Ltd.,ASIANPAINT,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+JM Financial Ltd.,JMFINANCIL,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+GMM Pfaudler Ltd.,GMMPFAUDLR,fuzzy_high,unverified_proposal,95.23809523809523,proposal_only
+ITC Hotel Ltd.,ITCHOTELS,fuzzy_high,unverified_proposal,94.11764705882352,proposal_only
+Venky's (India) Ltd.,VENKEYS,fuzzy_high,unverified_proposal,92.3076923076923,proposal_only
+Bharti Airtel Ltd.,BHARTIARTL,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Bajaj Finance Ltd.,BAJFINANCE,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Shoppers Stop Ltd.,SHOPERSTOP,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Bajaj Finserv Ltd.,BAJAJFINSV,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Orissa Min Dev Co Ltd.,ORISSAMINE,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Tata Metaliks Ltd.,TATAMETALI,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Shanthi Gears Ltd.,SHANTIGEAR,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+IndusInd Bank Ltd.,INDUSINDBK,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Tata Steel BSL Ltd.,TATASTLBSL,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+TVS Srichakra Ltd.,TVSSRICHAK,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Hero MotoCorp Ltd.,HEROMOTOCO,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Berger Paints India Ltd.,BERGEPAINT,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Oberoi Realty Ltd.,OBEROIRLTY,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Orchid Pharma Ltd.,ORCHPHARMA,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Bank of Baroda,BANKBARODA,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Andhra Sugars Ltd.,ANDHRSUGAR,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+Torrent Power Ltd.,TORNTPOWER,fuzzy_high,unverified_proposal,90.9090909090909,proposal_only
+BSL Ltd.,ABSLAMC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bajaj Corp Ltd.,BAJAJ-AUTO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bajaj Electricals Ltd,BAJAJELEC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bajaj Hindusthan Ltd.,BAJAJHIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ujjivan Small Finance Bank Ltd.,UJJIVAN,fuzzy_high,unverified_proposal,90.0,proposal_only
+NIIT Ltd.,NIITLTD,fuzzy_high,unverified_proposal,90.0,proposal_only
+MAS Financial Services Ltd.,MASFIN,fuzzy_high,unverified_proposal,90.0,proposal_only
+MPS Ltd.,OSWALPUMPS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Syngene International Ltd.,SYNGENE,fuzzy_high,unverified_proposal,90.0,proposal_only
+TCI Express Ltd.,IEX,fuzzy_high,unverified_proposal,90.0,proposal_only
+TCI Industries Ltd.,TCI,fuzzy_high,unverified_proposal,90.0,proposal_only
+TD Power Systems Ltd.,RSYSTEMS,fuzzy_high,unverified_proposal,90.0,proposal_only
+TV Today Network Ltd.,TVTODAY,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bharti Infratel Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bell Ceramics Ltd.,BEL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sunteck Realty Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Suprajit Engineering Ltd.,SUPRAJIT,fuzzy_high,unverified_proposal,90.0,proposal_only
+UTI Bank Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+UTV Software Communication Ltd.,ARE&M,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ujjivan Financial Services Ltd.,UJJIVAN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Summit Securities Ltd.- Old,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sun Earth Ceramics Ltd.,CERA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Cadila Healthcare Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Camlin Fine Sciences Ltd.,CAMLINFINE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Supreme Industries Ltd.,SUPREMEIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+CCL Products (I) Ltd.,CCL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Birla Corporation Ltd.,BIRLACORPN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bliss GVS Pharma Ltd.,BLISSGVS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Blue Dart Express Ltd.,BLUEDART,fuzzy_high,unverified_proposal,90.0,proposal_only
+Suven Life Sciences Ltd.,SCI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Suzlon Energy Ltd.,SUZLON,fuzzy_high,unverified_proposal,90.0,proposal_only
+Linde India Ltd.,LINDEINDIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Lloyds Metals & Engineers Ltd.,LLOYDSME,fuzzy_high,unverified_proposal,90.0,proposal_only
+Lumax Industries Ltd.,LUMAXIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Lupin Chemicals Ltd.  (Erstwhile),LUPIN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Lupin Laboratories Ltd,LUPIN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Lupin Laboratories Ltd.  (Erstwhile),LUPIN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Lux Industries Ltd.,LUXIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Triveni Engineering & Industries Ltd. (Old),TRIVENI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Triveni Turbine Ltd.,TRIVENI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Strides Pharma Science Ltd.,SCI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Styrolution ABS (India) Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Subex Ltd.,SUBEXLTD,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bombay Dyeing & Manufacturing Co. Ltd.,FACT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bosch Chassis Systems India Ltd.,SIS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bosch Ltd.,BOSCH-HCIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Brigade Enterprises Ltd.,BRIGADE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Britannia Industries Ltd.,BRITANNIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+CARE Ltd.,CARERATING,fuzzy_high,unverified_proposal,90.0,proposal_only
+Vishal Exports Overseas Ltd.,HAL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Vodafone Idea Ltd.,IDEA,fuzzy_high,unverified_proposal,90.0,proposal_only
+WABCO India Ltd.,WABCOINDIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+CG Power and Industrial Solutions Ltd.,CGPOWER,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kinetic Motor Co. Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Lemon Tree Hotels Ltd.,LEMONTREE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Nava Bharat Ventures Ltd.,NAVA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Navin Fluorine International Ltd.,NAVINFLUOR,fuzzy_high,unverified_proposal,90.0,proposal_only
+Navneet Education Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Navneet Publications (India) Ltd.,UBL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Nestle India Limited,NESTLEIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Triveni Engineering & Industries Ltd.,TRIVENI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Krebs Biochemicals Ltd.,IOC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Krishna Lifestyle Technologies Ltd.,STYL,fuzzy_high,unverified_proposal,90.0,proposal_only
+L&T Finance Holdings Ltd.,LTF,fuzzy_high,unverified_proposal,90.0,proposal_only
+LML Ltd.,BALMLAWRIE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ceat Ltd.,CEATLTD,fuzzy_high,unverified_proposal,90.0,proposal_only
+Vindhya Telelinks Ltd.,VINDHYATEL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sun Pharma Advanced Research Company Ltd.,SUNPHARMA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sun Pharmaceutical Industries Ltd.,SUNPHARMA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sun TV Network Ltd.,SUNTV,fuzzy_high,unverified_proposal,90.0,proposal_only
+Chalet Hotels Ltd.,CHALET,fuzzy_high,unverified_proposal,90.0,proposal_only
+Core Healthcare Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Corporation Bank,AUBANK,fuzzy_high,unverified_proposal,90.0,proposal_only
+Century Plyboards (India) Ltd.,CENTURYPLY,fuzzy_high,unverified_proposal,90.0,proposal_only
+Cera Sanitaryware Ltd,CERA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Siti Cable Network Ltd.,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Siti Networks Ltd.,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Chemplast Sanmar Ltd.,CHEMPLASTS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Chettinad Cement Corporation Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Chicago Pneumatic India Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Capri Global Capital Ltd.,IGL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Carrier Aircon Ltd.,IRCON,fuzzy_high,unverified_proposal,90.0,proposal_only
+South Indian Bank Ltd.,INDIANB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Spandana Sphoorty Financial Ltd.,SPANDANA,fuzzy_high,unverified_proposal,90.0,proposal_only
+National Peroxide Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+DCM Shriram Consolidated Ltd.,DCMSHRIRAM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kirloskar Oil Eng Ltd.,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kitex Garments Ltd.,KITEX,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kolte-Patil Developers Ltd.,KOLTEPATIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kajaria Ceramics Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+National Aluminium Co. Ltd. (Old),MOL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Star Ferro & Cement Ltd.,STAR,fuzzy_high,unverified_proposal,90.0,proposal_only
+Coal India Ltd.,ABCAPITAL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Colgate Palmolive (I) Ltd,MOL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Colgate Palmolive (India) Ltd.,MOL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kansai Nerolac Paints Ltd.,KANSAINER,fuzzy_high,unverified_proposal,90.0,proposal_only
+Karuturi Global Ltd.,IGL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kaveri Seed Company Ltd.,ERIS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kec International Ltd.,KEC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Kesoram Industries Ltd.,KESORAMIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jyothy Laboratories Ltd.,JYOTHYLAB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jyoti Structures Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Snowman Logistics Ltd.,SNOWMAN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sobha Developers Ltd.,SOBHA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Somany Ceramics Ltd.,CERA,fuzzy_high,unverified_proposal,90.0,proposal_only
+CreditAccess Grameen Ltd.,ACC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Crompton Greaves Consumer Electricals Ltd.,CROMPTON,fuzzy_high,unverified_proposal,90.0,proposal_only
+Crompton Greaves Ltd.,CROMPTON,fuzzy_high,unverified_proposal,90.0,proposal_only
+Cummins India Ltd.,M&M,fuzzy_high,unverified_proposal,90.0,proposal_only
+DIC India Ltd.,RADICO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Deepak Fertilisers & Petrochemicals Corp. Ltd.,DEEPAKFERT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Delta Corp Ltd.,DELTACORP,fuzzy_high,unverified_proposal,90.0,proposal_only
+Den Networks Ltd.,DEN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Dena Bank,DEN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Denso India Ltd.,DEN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Creative Eye Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Shree Renuka Sugars Ltd.,RENUKA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Shriram City Union Finance Ltd.,SHRIRAMCIT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Novartis India Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+OCL India Ltd.,GOCLCORP,fuzzy_high,unverified_proposal,90.0,proposal_only
+OTIS Elevator Company (India) Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Oil & Natural Gas Corporation Ltd.,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+KSB Pumps Ltd.,KSB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jindal Poly Films Ltd.,JINDALPOLY,fuzzy_high,unverified_proposal,90.0,proposal_only
+Nestle India Ltd.,NESTLEIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Network18 Media & Investments Ltd.,NETWORK18,fuzzy_high,unverified_proposal,90.0,proposal_only
+Novartis India Ltd,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sequent Scientific Ltd.,SCI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Dhampur Sugar Mills Ltd.,DHAMPURSUG,fuzzy_high,unverified_proposal,90.0,proposal_only
+Dhanuka Agritech Ltd.,DHANUKA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Divi's Laboratories Ltd.,DIVISLAB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Dixon Technologies (India) Ltd.,DIXON,fuzzy_high,unverified_proposal,90.0,proposal_only
+EIH Ltd.,EIHOTEL,fuzzy_high,unverified_proposal,90.0,proposal_only
+ESAB India Ltd.,ESABINDIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Edelweiss Capital Ltd.,EDELWEISS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Edelweiss Financial Services Ltd.,EDELWEISS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Educomp Solutions Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Eicher Ltd.,EICHERMOT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Shankara Building Products Ltd.,SHANKARA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Shasun Pharmaceuticals Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+ADC India Communications Ltd.,M&M,fuzzy_high,unverified_proposal,90.0,proposal_only
+Shilpa Medicare Ltd.,SHILPAMED,fuzzy_high,unverified_proposal,90.0,proposal_only
+AIA Engineering Ltd.,AIAENG,fuzzy_high,unverified_proposal,90.0,proposal_only
+KEI Industries Ltd.,KEI,fuzzy_high,unverified_proposal,90.0,proposal_only
+KIOCL Ltd.,IOC,fuzzy_high,unverified_proposal,90.0,proposal_only
+KNR Constructions Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+KPIT Technologies Ltd.,KPITTECH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sadbhav Infrastructure Project Ltd.,SADBHAV,fuzzy_high,unverified_proposal,90.0,proposal_only
+Exide Industries Ltd.,EXIDEIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+FCL Technologies & Products Ltd.,FCL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Elder Pharmaceuticals Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Elecon Engineering Co. Ltd.,ELECON,fuzzy_high,unverified_proposal,90.0,proposal_only
+Elgi Equipments Ltd.,ELGIEQUIP,fuzzy_high,unverified_proposal,90.0,proposal_only
+Emami Ltd.,EMAMILTD,fuzzy_high,unverified_proposal,90.0,proposal_only
+Endurance Technologies Ltd.,ENDURANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Equitas Holdings Ltd.,EQUITAS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Era Infra Engineering Ltd.,RAIN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Eris Lifesciences Ltd.,ERIS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Salora International Ltd.,RAIN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Zensar Technolgies Ltd.,ZENSARTECH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Zodiac Clothing Co. Ltd.,ACC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Dr. Reddy's Laboratories Ltd.,DRREDDY,fuzzy_high,unverified_proposal,90.0,proposal_only
+APR Ltd.,WSTCSTPAPR,fuzzy_high,unverified_proposal,90.0,proposal_only
+SEAMEC Ltd.,SEAMECLTD,fuzzy_high,unverified_proposal,90.0,proposal_only
+APL Apollo Tubes Ltd.,APLAPOLLO,fuzzy_high,unverified_proposal,90.0,proposal_only
+SKF India Ltd.,SKFINDIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+SOL Pharmaceuticals Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+SPIC Ltd.,SPICEJET,fuzzy_high,unverified_proposal,90.0,proposal_only
+Saurashtra Cement Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Minda Corporation Ltd.,MINDACORP,fuzzy_high,unverified_proposal,90.0,proposal_only
+Schneider Electric Infrastructure Ltd.,SCHNEIDER,fuzzy_high,unverified_proposal,90.0,proposal_only
+SBI Cards and Payment Services Ltd.,SBICARD,fuzzy_high,unverified_proposal,90.0,proposal_only
+SBI Life Insurance Company Ltd.,SBILIFE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Fine Organic Industries Ltd.,FINEORG,fuzzy_high,unverified_proposal,90.0,proposal_only
+Essar Oil Ltd.,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Eveready Industries India Ltd.,EVEREADY,fuzzy_high,unverified_proposal,90.0,proposal_only
+Everonn Education Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Excel Industries Ltd.- Arrangement,EXCELINDUS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Varroc Engineering Ltd.,VARROC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jubilant Foodworks Ltd.,JUBILANT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jubilant Life Sciences Ltd.,JUBILANT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Metropolis Healthcare Ltd.,METROPOLIS,fuzzy_high,unverified_proposal,90.0,proposal_only
+UltraTech Cement Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Unichem Laboratories Ltd.,UNICHEMLAB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Union Bank of India,UNIONBANK,fuzzy_high,unverified_proposal,90.0,proposal_only
+Union Bank of India Ltd.,UNIONBANK,fuzzy_high,unverified_proposal,90.0,proposal_only
+K.S. Oils Ltd.,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Melstar Information Technologies Ltd.,STAR,fuzzy_high,unverified_proposal,90.0,proposal_only
+Adlabs Entertainment Ltd.,BSE,fuzzy_high,unverified_proposal,90.0,proposal_only
+3M India Ltd.,3MINDIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Vijaya Bank,VIJAYA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Vinati Organics Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Techno Elt & Eng Co. Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+The Ramco Cements Ltd.,RAMCOCEM,fuzzy_high,unverified_proposal,90.0,proposal_only
+SCICI Ltd.,SCI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Alkyl Amines Chemicals Ltd.,ALKYLAMINE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sadbhav Engineering Ltd,SADBHAV,fuzzy_high,unverified_proposal,90.0,proposal_only
+Sadbhav Engineering Ltd.,SADBHAV,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Petroleum Ltd.- Merge,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Power Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Religare Enterprises Ltd.,RELIGARE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Repco Home Finance Ltd.,REPCOHOME,fuzzy_high,unverified_proposal,90.0,proposal_only
+Future Lifestyle Fashions Ltd.,STYL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Accelya Kale Solutions Ltd.,ACC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ackruti City Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Vardhman Holdings Ltd.,NH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Vardhman Textiles Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Adani Enterprises Ltd.,ADANIENT,fuzzy_high,unverified_proposal,90.0,proposal_only
+GTL Infrastructure Ltd.,GTLINFRA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Adani Green Energy Ltd.,ADANIGREEN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jindal Vijayanagar Steel Ltd.,VIJAYA,fuzzy_high,unverified_proposal,90.0,proposal_only
+GlaxoSmithkline Consumer Healthcare Ltd.,GLAXO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Defence and Engineering Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Home Finance Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Industrial Infrastructure Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Industries Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Infrastructure Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+GTL Ltd.,GTLINFRA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Adani Ports and Special Economic Zone Ltd.,ADANIPORTS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Galaxy Surfactants Ltd.,FACT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Gammon India Ltd.,M&M,fuzzy_high,unverified_proposal,90.0,proposal_only
+Garden Silk Mills Ltd.,DEN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Fortis Healthcare Ltd.,FORTIS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Rolta India Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Roofit Industries Ltd.,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+S H Kelkar and Company Ltd.,SHK,fuzzy_high,unverified_proposal,90.0,proposal_only
+Adani Transmission Ltd.,ADANITRANS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Todays Writing Instruments Ltd.,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Grindwell Norton Ltd.,GRINDWELL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Gujarat Fluorochemicals Ltd.,FLUOROCHEM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Glaxosmithkline Pharmaceuticals Ltd.,GLAXO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Glenmark Pharmaceuticals Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Global Trust Bank Ltd,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Regency Ceramics Ltd.,CERA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Relaxo Footwears Ltd.,RELAXO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Capital Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Communications Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Godrej Properties Ltd.,GODREJPROP,fuzzy_high,unverified_proposal,90.0,proposal_only
+Golden Tobacco Ltd.,ACC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Gateway Distriparks Ltd.,GATEWAY,fuzzy_high,unverified_proposal,90.0,proposal_only
+Gati Ltd.,ACLGATI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Adhunik Metaliks Ltd.,IKS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Aarti Industries Ltd.,AARTIIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Aavas Financiers Ltd.,AAVAS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Anant Raj Industries Ltd.,ANANTRAJ,fuzzy_high,unverified_proposal,90.0,proposal_only
+Apollo Hospitals Enterprise Ltd.,APOLLO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Grasim Industries Ltd.,GRASIM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Greenply Industries Ltd.,GREENPLY,fuzzy_high,unverified_proposal,90.0,proposal_only
+Apollo Hospitals Enterprises Ltd.,APOLLO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance MediaWorks Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Natural Resources Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Naval and Engineering Ltd.,NAVA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Nippon Life Asset Management Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Reliance Petroleum Ltd.,RELIANCE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Altos India Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Tinplate Company of India Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Tips Industries Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Amber Enterprises India Ltd.,AMBER,fuzzy_high,unverified_proposal,90.0,proposal_only
+Titan Industries Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Usha (India) Ltd.,USHAMART,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jagatjit Industries Ltd. -Sus,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jagran Prakashan Ltd.,JAGRAN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jagsonpal Pharmaceuticals Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jai Balaji Industries Ltd.,JAIBALAJI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jai Corp Ltd.,JAIBALAJI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Oil Country Tubular Ltd.,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ambuja Cements Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Thyrocare Technologies Ltd.,THYROCARE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Tide Water Oil (India) Ltd.,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Global Trust Bank Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Godrej Industries Ltd.,GODREJIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Godrej Industries Ltd.-Old,GODREJIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Gulf Oil Lubricants India Ltd.,GULFOILLUB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Time Technoplast Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+HCL Technologies Ltd.,HCLTECH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Timex Watches Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+HDFC Life Insurance Company Ltd.,FCL,fuzzy_high,unverified_proposal,90.0,proposal_only
+HDFC Standard Life Insurance Company Ltd.,HDFC,fuzzy_high,unverified_proposal,90.0,proposal_only
+HIL Ltd.,PHILIPCARB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Hathway Cable & Datacom Ltd.,HATHWAY,fuzzy_high,unverified_proposal,90.0,proposal_only
+Hatsun Agro Product Ltd.,HATSUN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Tata Infotech Ltd.-Merged,TECHM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Aditya Birla Nuvo Ltd.,BIRLANU,fuzzy_high,unverified_proposal,90.0,proposal_only
+HeidelbergCement India Ltd.,HEIDELBERG,fuzzy_high,unverified_proposal,90.0,proposal_only
+Gujarat State Petronet Ltd.,PETRONET,fuzzy_high,unverified_proposal,90.0,proposal_only
+Gulf Oil India Ltd.-Old,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Torrent Pharmaceuticals Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Mirza International Ltd.,MIRZAINT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Manappuram Finance Ltd.,MANAPPURAM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Marksans Pharma Ltd.,MARKSANS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ramco Systems Ltd.,RAMCOSYS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jaiprakash Industries Ltd.- Suspended,PRAKASH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jaiprakash Power Ventures Ltd.,PRAKASH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jammu & Kashmir Bank Ltd.,IRB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jamna Auto Industries Ltd.,JAMNAAUTO,fuzzy_high,unverified_proposal,90.0,proposal_only
+JK Lakshmi Cement Ltd.,JKLAKSHMI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Maruti Suzuki India Ltd.,MARUTI,fuzzy_high,unverified_proposal,90.0,proposal_only
+JK Tyre & Industries Ltd.,JKTYRE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ramky Infra Ltd.,RAMKY,fuzzy_high,unverified_proposal,90.0,proposal_only
+V.I.P. Industries Ltd.,VIPIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Maruti Udyog Limited,MARUTI,fuzzy_high,unverified_proposal,90.0,proposal_only
+VRL Logistics Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+VST Industries Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Va Tech Wabag Ltd.,WABAG,fuzzy_high,unverified_proposal,90.0,proposal_only
+Modern Denim Ltd.,DEN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Vakrangee Software Ltd.,VAKRANGEE,fuzzy_high,unverified_proposal,90.0,proposal_only
+HDFC Asset Management Company Ltd.,HDFC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Usha Martin Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+V-Guard Industries Ltd.,VGUARD,fuzzy_high,unverified_proposal,90.0,proposal_only
+V-Mart Retail Ltd.,VMART,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ratnamani Metals & Tubes Ltd.,RATNAMANI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Rayban Sun Optics India Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Asian Hotels (North) Ltd.,NH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Recron Synthetics Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+REC Ltd.,JAINREC,fuzzy_high,unverified_proposal,90.0,proposal_only
+AstraZenca Pharma India Ltd.,ASTRAZEN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Radico Khaitan Ltd,RADICO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Rain Calcining Ltd.,RAIN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Innoventive Industries Ltd.,VENTIVE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Astral Poly Technik Ltd.,ASTRAL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Automotive Axles Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Intellect Design Arena Ltd.,INTELLECT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Jaiprakash Associates Ltd.,PRAKASH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Pricol Ltd.,PRICOLLTD,fuzzy_high,unverified_proposal,90.0,proposal_only
+Prime Securities Ltd.,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+ICI India Ltd.,ICICIAMC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Hindustan Oil Exploration Co. Ltd.,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Arvind Fashions Ltd.,ARVIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Hexaware Technologies Ltd.,HEXAWARE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Arvind Mills Ltd,ARVIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Rain Industries Ltd,RAIN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Arvind Polycot Ltd.,ARVIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ramco Industries Ltd.,RAMCOIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Punjab Chemicals & Crop Protection Ltd.,PUNJABCHEM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Asahi India Glass Ltd.,IGL,fuzzy_high,unverified_proposal,90.0,proposal_only
+IDI Ltd.,PIDILITIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Himachal Fut Com Ltd.,HAL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Himachal Fut Com Ltd.- Old,HAL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Hindalco Industries Ltd.,HINDALCO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ashiana Housing Ltd.,ASHIANA,fuzzy_high,unverified_proposal,90.0,proposal_only
+IDBI Bank Ltd.,IDBI,fuzzy_high,unverified_proposal,90.0,proposal_only
+IDBI Bank Ltd.-OLD,IDBI,fuzzy_high,unverified_proposal,90.0,proposal_only
+IDFC Bank Ltd.,IDFC,fuzzy_high,unverified_proposal,90.0,proposal_only
+IDFC First Bank Ltd.,IDFC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ashok Leyland Finance Ltd.,ASHOKLEY,fuzzy_high,unverified_proposal,90.0,proposal_only
+IFB Industries Ltd.,IFBIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Housing & Urban Development Corporation Ltd.,RBA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ashok Leyland Ltd.,ASHOKLEY,fuzzy_high,unverified_proposal,90.0,proposal_only
+I-Flex Sloution Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ashoka Buildcon Ltd.,ASHOKA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Teamlease Services Ltd.,TEAMLEASE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Power Grid Corporation of India Ltd.,POWERGRID,fuzzy_high,unverified_proposal,90.0,proposal_only
+Praj Industries Ltd.,PRAJIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Prakash Industries Ltd.,PRAKASH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Prestige Estates Projects Ltd.,PRESTIGE,fuzzy_high,unverified_proposal,90.0,proposal_only
+IIFL Holdings Ltd.,IIFL,fuzzy_high,unverified_proposal,90.0,proposal_only
+IIFL Wealth Management Ltd.,IIFL,fuzzy_high,unverified_proposal,90.0,proposal_only
+INEOS Styrolution India Ltd.,INEOSSTYRO,fuzzy_high,unverified_proposal,90.0,proposal_only
+IRCON International Ltd.,IRCON,fuzzy_high,unverified_proposal,90.0,proposal_only
+Tech Mahindra Ltd.,TECHM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Poly Medicure Ltd.,POLYMED,fuzzy_high,unverified_proposal,90.0,proposal_only
+Pritish Nandy Communications Ltd.,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Techno Electric & Engineering Company Ltd.,TECHNOE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Taj GVK Hotels & Resorts Ltd.,TAJGVK,fuzzy_high,unverified_proposal,90.0,proposal_only
+ITD Cementation India Ltd.,ITDC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Take Solutions Ltd.,TAKE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Tasty Bite Eatables Ltd.,TASTYBITE,fuzzy_high,unverified_proposal,90.0,proposal_only
+ICICI Lombard General Insurance Company Ltd.,ICIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+ICICI Ltd.,ICICIAMC,fuzzy_high,unverified_proposal,90.0,proposal_only
+ICICI Prudential Life Insurance Company Ltd.,PRUDENT,fuzzy_high,unverified_proposal,90.0,proposal_only
+ICICI Securities Ltd.,ISEC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Patni Computer Systems Ltd,RSYSTEMS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Patni Computer Systems Ltd.,RSYSTEMS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Shaw Wallace & Co. Ltd.-Sus,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+PHIL Corporation Ltd.,PHILIPCARB,fuzzy_high,unverified_proposal,90.0,proposal_only
+PI Industries Ltd.,PIIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Tata Chemicals Ltd.,TATACHEM,fuzzy_high,unverified_proposal,90.0,proposal_only
+PNB Housing Finance Ltd.,PNB,fuzzy_high,unverified_proposal,90.0,proposal_only
+PNC Infratech Ltd.,PNCINFRA,fuzzy_high,unverified_proposal,90.0,proposal_only
+JK Tyre & Industries Ltd..,JKTYRE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Tata Communications Ltd.,M&M,fuzzy_high,unverified_proposal,90.0,proposal_only
+Aster DM Healthcare Ltd.,ASTERDM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Astra Microwave Products Ltd.,ASTRAMICRO,fuzzy_high,unverified_proposal,90.0,proposal_only
+JTEKT India Ltd.,JTEKTINDIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+India Securities Ltd.,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bajaj Hindusthan Sugar Ltd.,BAJAJHIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+IIFL Finance Ltd.,IIFL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Max India Ltd.,LUMAXIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Infibeam Avenues Ltd.,INFIBEAM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Infibeam Incorporation Ltd.,INFIBEAM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Patel Engineering Ltd.,PATELENG,fuzzy_high,unverified_proposal,90.0,proposal_only
+Orient Refractories Ltd.,ORIENTREF,fuzzy_high,unverified_proposal,90.0,proposal_only
+Origin Agrostar Ltd.,STAR,fuzzy_high,unverified_proposal,90.0,proposal_only
+Magma Fincorp Ltd.,MAGMA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Indian Hotels Co. Ltd.,NH,fuzzy_high,unverified_proposal,90.0,proposal_only
+Indian Metals & Ferro Alloys Ltd.,OAL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Indian Oil Corporation Ltd.,OIL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Mahindra CIE Automotive Ltd.,ACI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Idea Cellular Ltd,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Idea Cellular Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Igarashi Motors India Ltd.,IGARASHI,fuzzy_high,unverified_proposal,90.0,proposal_only
+India Cement Ltd.,JSWCEMENT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Man Infraconstruction Ltd.,MANINFRA,fuzzy_high,unverified_proposal,90.0,proposal_only
+PVR Ltd.,PVRINOX,fuzzy_high,unverified_proposal,90.0,proposal_only
+Page Industries Ltd.,PAGEIND,fuzzy_high,unverified_proposal,90.0,proposal_only
+Peninsula Land Ltd.,SULA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Persistent Systems Ltd.,PERSISTENT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Indo Rama Synthetics Ltd.,INDORAMA,fuzzy_high,unverified_proposal,90.0,proposal_only
+IndoStar Capital Finance Ltd.,INDOSTAR,fuzzy_high,unverified_proposal,90.0,proposal_only
+Indoco Remedies Ltd.,INDOCO,fuzzy_high,unverified_proposal,90.0,proposal_only
+NLC India Ltd.,NLCINDIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Indiabulls Securities Ltd.,ITI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Indiamart Intermesh Ltd.,INDIAMART,fuzzy_high,unverified_proposal,90.0,proposal_only
+Panacea Biotec Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Parag Milk Foods Ltd.,PARAGMILK,fuzzy_high,unverified_proposal,90.0,proposal_only
+Parekh Platinum Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Mphasis BFL Ltd.,SIS,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ipca Laboratories Ltd.,IPCALAB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ispat Industries Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Abbott India Ltd.,ABB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Advanced Enzyme Tech Ltd.,DEN,fuzzy_high,unverified_proposal,90.0,proposal_only
+Amrut Industries Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Aegis Logistics Ltd.,AEGISLOG,fuzzy_high,unverified_proposal,90.0,proposal_only
+Multi Commodity Exchange of India Ltd.,LTIM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Ajanta Pharmaceuticals Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Aksh Optifibre Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Akzo Nobel India Ltd.,BEL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Alembic Pharmaceuticals Ltd.,ACE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Alkem Laboratories Ltd.,ALKEM,fuzzy_high,unverified_proposal,90.0,proposal_only
+Allcargo Logistics Ltd.,ALLCARGO,fuzzy_high,unverified_proposal,90.0,proposal_only
+Morepen Laboratories Ltd.,MOREPENLAB,fuzzy_high,unverified_proposal,90.0,proposal_only
+Moser Baer India Ltd.,RBA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Motherson Sumi Systems Ltd.,MOTHERSON,fuzzy_high,unverified_proposal,90.0,proposal_only
+Aventis Pharma Ltd.,TI,fuzzy_high,unverified_proposal,90.0,proposal_only
+eClerx Services Ltd.,ECLERX,fuzzy_high,unverified_proposal,90.0,proposal_only
+Mayur Uniquoters Ltd.,MAYURUNIQ,fuzzy_high,unverified_proposal,90.0,proposal_only
+Zandu Realty Ltd.,LT,fuzzy_high,unverified_proposal,90.0,proposal_only
+Zee Learn Ltd.,ZEEL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Westlife Development Ltd.,WESTLIFE,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bata India Ltd.,BATAINDIA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Whirlpool of India Ltd.,WHIRLPOOL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bayer Corpscience Ltd.,SCI,fuzzy_high,unverified_proposal,90.0,proposal_only
+Wonderla Holidays Ltd.,WONDERLA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Blue Star Infotech Ltd.,STAR,fuzzy_high,unverified_proposal,90.0,proposal_only
+Blue Star Ltd.,STAR,fuzzy_high,unverified_proposal,90.0,proposal_only
+Zuari Global Ltd.,IGL,fuzzy_high,unverified_proposal,90.0,proposal_only
+Indo Rama Synthetics (India) Ltd. - Old,INDORAMA,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bayer Cropscience India Ltd. -Erstwhile,BAYERCROP,fuzzy_high,unverified_proposal,90.0,proposal_only
+Pharmacia Healthcare Ltd.,ACI,fuzzy_high,unverified_proposal,90.0,proposal_only
+PTC India Fin Serv Ltd.,PTC,fuzzy_high,unverified_proposal,90.0,proposal_only
+Bayer Cropscience Ltd.,BAYERCROP,fuzzy_high,unverified_proposal,90.0,proposal_only
+Rupa & Company Ltd.,RUPA,fuzzy_med,unverified_proposal,88.88888888888889,proposal_only
+Thomas Cook (India) Ltd.,THOMASCOOK,fuzzy_med,unverified_proposal,88.88888888888889,proposal_only
+Tata Coffee Ltd.,TATACOFFEE,fuzzy_med,unverified_proposal,88.88888888888889,proposal_only
+Kennametal India Ltd.,KENNAMET,fuzzy_med,unverified_proposal,88.88888888888889,proposal_only
+La Opala RG Ltd.,LAOPALA,fuzzy_med,unverified_proposal,87.5,proposal_only
+Heritage Foods Ltd.,HERITGFOOD,fuzzy_med,unverified_proposal,86.95652173913044,proposal_only
+Godrej Agrovet Ltd.,GODREJAGRO,fuzzy_med,unverified_proposal,86.95652173913044,proposal_only
+Rajesh Exports Ltd.,RAJESHEXPO,fuzzy_med,unverified_proposal,86.95652173913044,proposal_only
+Vaibhav Global Ltd.,VAIBHAVGBL,fuzzy_med,unverified_proposal,86.95652173913044,proposal_only
+Tata Motors Ltd DVR,TATAMOTORS,fuzzy_med,unverified_proposal,86.95652173913044,proposal_only
+Dr. Lal Path Labs Ltd.,LALPATHLAB,fuzzy_med,unverified_proposal,86.95652173913044,proposal_only
+TV18 Broadcast Ltd.,TV18BRDCST,fuzzy_med,unverified_proposal,86.95652173913044,proposal_only
+Balmer Lawrie & Co. Ltd.,BALMLAWRIE,fuzzy_med,unverified_proposal,86.95652173913044,proposal_only
+Orient Cement Ltd.,ORIENTCEM,fuzzy_med,unverified_proposal,85.71428571428572,proposal_only
+BPL Ltd.,BEPL,fuzzy_med,unverified_proposal,85.71428571428572,proposal_only
+Dalmia Bharat Ltd.,DALBHARAT,fuzzy_med,unverified_proposal,85.71428571428572,proposal_only
+Eicher Motors Ltd.,EICHERMOT,fuzzy_med,unverified_proposal,85.71428571428572,proposal_only
+Vedanta Ltd.,MEDANTA,fuzzy_med,unverified_proposal,85.71428571428572,proposal_only
+GE Power India Ltd.,CGPOWER,fuzzy_med,unverified_proposal,85.71428571428572,proposal_only
+Unitech Ltd.,UNIMECH,fuzzy_med,unverified_proposal,85.71428571428572,proposal_only
+PSL Ltd.,PDSL,fuzzy_med,unverified_proposal,85.71428571428572,proposal_only
+Manali Petrochemicals Ltd.,MANALIPETC,fuzzy_med,unverified_proposal,85.26315789473685,proposal_only
+Jindal Steel & Power Ltd.,JINDALSTEL,fuzzy_med,unverified_proposal,85.26315789473685,proposal_only
+Shriram Investments Ltd.-Merged,SHRIRAMFIN,fuzzy_med,unverified_proposal,85.26315789473685,proposal_only
+Supreme Infrastructure India Ltd.,SUPREMEIND,fuzzy_med,unverified_proposal,85.26315789473685,proposal_only
+Motilal Oswal Financial Services Ltd.,MOTILALOFS,fuzzy_med,unverified_proposal,85.26315789473685,proposal_only
+Aditya Birla Capital Ltd.,ABCAPITAL,fuzzy_med,unverified_proposal,84.70588235294117,proposal_only
+Solar Industries India Ltd.,SOLARINDS,fuzzy_med,unverified_proposal,84.70588235294117,proposal_only
+Muthoot Finance Ltd.,MUTHOOTMF,fuzzy_med,unverified_proposal,84.70588235294117,proposal_only
+Engineers India Ltd.,ENGINERSIN,fuzzy_med,unverified_proposal,84.21052631578947,proposal_only
+Petronet LNG Ltd.,PETRONET,fuzzy_med,unverified_proposal,84.21052631578947,proposal_only
+Shree Cement Ltd.,SHREECEM,fuzzy_med,unverified_proposal,84.21052631578947,proposal_only
+Jain Irrigation Systems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+Punjab Wireless Systems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+Flextronics Software Systems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+HCL Infosystems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+BGR Energy Systems Ltd,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+Apar Industries Ltd.,APARINDS,fuzzy_med,unverified_proposal,84.0,proposal_only
+UCAL Fuel Systems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+HCL Infosystems Ltd,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+PSI Data Systems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+Compudyne Winfosystems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+Alok Industries Ltd.,ALOKINDS,fuzzy_med,unverified_proposal,84.0,proposal_only
+Sona Koyo Steering Systems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+Smartlink Network Systems Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,84.0,proposal_only
+Sonata Software Ltd.,SONATSOFTW,fuzzy_med,unverified_proposal,83.33333333333334,proposal_only
+Karur Vysya Bank Ltd.,KARURVYSYA,fuzzy_med,unverified_proposal,83.33333333333334,proposal_only
+Tata Investment Corporation Ltd.,TATAINVEST,fuzzy_med,unverified_proposal,83.33333333333334,proposal_only
+Orient Electric Ltd.,ORIENTELEC,fuzzy_med,unverified_proposal,83.33333333333334,proposal_only
+Sharda Cropchem Ltd.,SHARDACROP,fuzzy_med,unverified_proposal,83.33333333333334,proposal_only
+Man Industries (India) Ltd.,MANKIND,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Koutons Retail India Ltd.,FRETAIL,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Mahindra Holidays & Resorts India Ltd.,ESCORTS,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+REI Six Ten Retail Ltd.,FRETAIL,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indian Card Clothing Co. Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Future Retail Ltd.,FRETAIL,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Rajinder Steels Ltd.,PRAJIND,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indiabulls Ventures Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Pantaloon Retail (India) Ltd.,FRETAIL,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indiabulls Power Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indiabulls Real Estate Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+JSW ISPAT Steel Limited,JSWISPL,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+JSW ISPAT Steel Ltd.,JSWISPL,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indiabulls Integrated Services Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indiabulls Housing Finance Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indian Energy Exchange Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indian Overseas Bank,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indian Aluminium Co. Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indiabulls Financial Services Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indian Railway Catering And Tourism Corporation Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indian Petrochemicals Corporation Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indian Rayon & Industries Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Indian Organic Chemicals Ltd.,INDIANB,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Aditya Birla Fashion and Retail Ltd.,FRETAIL,fuzzy_med,unverified_proposal,83.07692307692308,proposal_only
+Premier Ltd.,PREMIERENE,fuzzy_med,unverified_proposal,82.35294117647058,proposal_only
+Indian Bank,INDIANB,fuzzy_med,unverified_proposal,82.35294117647058,proposal_only
+Tata SSL Ltd.,TATASTLBSL,fuzzy_med,unverified_proposal,82.35294117647058,proposal_only
+Welspun Corp Ltd.,WELSPUNLIV,fuzzy_med,unverified_proposal,82.35294117647058,proposal_only
+Castrol India Ltd.,CASTROLIND,fuzzy_med,unverified_proposal,82.35294117647058,proposal_only
+Castrol (India) Ltd.,CASTROLIND,fuzzy_med,unverified_proposal,82.35294117647058,proposal_only
+Welspun India Ltd.,WELSPUNLIV,fuzzy_med,unverified_proposal,82.35294117647058,proposal_only
+Alembic Ltd.,ALEMBICLTD,fuzzy_med,unverified_proposal,82.35294117647058,proposal_only
+Gujarat Industries Power Co. Ltd.,QPOWER,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Finolex Cables Ltd.,FINCABLES,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Power Finance Corporation Ltd.,QPOWER,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Paper Products Ltd.,PAPERPROD,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Ingersoll Rand (India) Ltd.,INGERRAND,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+ING Vysya Bank Ltd.,AUBANK,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Zydus Wellness Ltd.,ZYDUSWELL,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Bharat Rasayan Ltd.,BHARATRAS,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Strides Shasun Ltd.,HATSUN,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Sterling And Wilson Solar Ltd.,SOLARA,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Swaraj Engines Ltd.,SWARAJENG,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Andhra Bank,AUBANK,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Aptech Ltd.,DYNAMATECH,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Bharat Financial Inclusion Ltd.,FUSION,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Canara Bank,AUBANK,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Kotak Mahindra Bank Ltd.,AUBANK,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Karnataka Bank Ltd.,AUBANK,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Prime Focus Ltd,PFOCUS,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Entertainment Network India Ltd.,ENTERO,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+RattanIndia Power Ltd.,QPOWER,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Central Bank of India,CENTRALBK,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Deepak Nitrite Ltd.,DEEPAKNTR,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+City Union Bank Ltd.,UNIONBANK,fuzzy_med,unverified_proposal,81.81818181818181,proposal_only
+Pipavav Defence and Offshore Engineering Company Ltd.,ENGINERSIN,fuzzy_med,unverified_proposal,81.0,proposal_only
+Pidilite Industries Ltd.,PIDILITIND,fuzzy_med,unverified_proposal,81.0,proposal_only
+IL&FS Engineering and Construction Company Ltd.,ENGINERSIN,fuzzy_med,unverified_proposal,81.0,proposal_only
+Sundaram Finance Ltd.,SUNDARMFIN,fuzzy_med,unverified_proposal,81.0,proposal_only
+Caplin Point Laboratories Ltd.,CAPLIPOINT,fuzzy_med,unverified_proposal,81.0,proposal_only
+Birla Global Finance Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,81.0,proposal_only
+Sundram Fasteners Ltd.,SUNDRMFAST,fuzzy_med,unverified_proposal,81.0,proposal_only
+Bhansali Engineering Polymers Ltd.,ENGINERSIN,fuzzy_med,unverified_proposal,81.0,proposal_only
+National Buildings Construction Corp. Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,81.0,proposal_only
+Amara Raja Batteries Ltd.,AMARAJABAT,fuzzy_med,unverified_proposal,81.0,proposal_only
+Kinetic Engineering Ltd.,ENGINERSIN,fuzzy_med,unverified_proposal,81.0,proposal_only
+Chambal Fertilizers & Chemicals Ltd.,CHAMBLFERT,fuzzy_med,unverified_proposal,81.0,proposal_only
+National Buildings Construction Corporation Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,81.0,proposal_only
+Jindal Stainless (Hisar) Ltd.,JINDALSAW,fuzzy_med,unverified_proposal,80.0,proposal_only
+Jindal Strips Ltd.- Merged,JINDALSTEL,fuzzy_med,unverified_proposal,80.0,proposal_only
+Videocon Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Nitin Fire Protection Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Nippo Batteries Co. Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Orient Paper & Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+KDL Biotech Ltd.,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Shilpi Cable Tech Ltd.,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+SIV Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Flexituff International Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Everest Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Videocon International Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Finolex Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Responsive Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Rico Auto Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Jindal Stainless Ltd.,JINDALSAW,fuzzy_med,unverified_proposal,80.0,proposal_only
+United Spirits Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+United Breweries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Godfrey Phillips India Ltd.,GODFRYPHLP,fuzzy_med,unverified_proposal,80.0,proposal_only
+Jaypee Infratech Ltd.,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+JBF Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+3i Infotech Ltd.,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Zuari Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Western India Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+e-Serve International Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Indo Count Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Pennar Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Parsvnath Developer Ltd.,PARAS,fuzzy_med,unverified_proposal,80.0,proposal_only
+JSW Holdings Ltd.,JSWHL,fuzzy_med,unverified_proposal,80.0,proposal_only
+Pearl Global Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+India Cements Ltd.,JKCEMENT,fuzzy_med,unverified_proposal,80.0,proposal_only
+Ind-Swift Laboratories Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Orkay Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Phoenix International Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Piramal Healthcare Ltd.,MAXHEALTH,fuzzy_med,unverified_proposal,80.0,proposal_only
+GTN Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+S.B.& T. International Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Ruchi Soya Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Punjab Anand Lamp Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Puravankara Projects Ltd.,PURVA,fuzzy_med,unverified_proposal,80.0,proposal_only
+Puravankara Ltd.,PURVA,fuzzy_med,unverified_proposal,80.0,proposal_only
+Jay Shree Tea & Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Ranbaxy Laboratories Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Ramkrishna Forgings Ltd.,RAMKY,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tree House Education & Accessories Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Torrent Power AEC Ltd.,TORNTPOWER,fuzzy_med,unverified_proposal,80.0,proposal_only
+Value Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Omax Autos Ltd.,OMAXE,fuzzy_med,unverified_proposal,80.0,proposal_only
+Sintex Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Dalmia Bharat Sugar and Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Digital Globalsoft Ltd.,BSOFT,fuzzy_med,unverified_proposal,80.0,proposal_only
+Sumitomo Chemical India Ltd.,MSUMI,fuzzy_med,unverified_proposal,80.0,proposal_only
+Sudarshan Chemical Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Larsen & Toubro Infotech Ltd.,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Centurion Bank of Punjab Ltd.,UNIONBANK,fuzzy_med,unverified_proposal,80.0,proposal_only
+Sterling Biotech Limited,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Sterling Biotech Ltd,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Sterlite Industries (India) Ltd,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Sterlite Industries (India) Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Visaka Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Soundcraft Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Cholamandalam Investment and Finance Company Ltd.,BALAMINES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Carborundum Universal Ltd.,CARBORUNIV,fuzzy_med,unverified_proposal,80.0,proposal_only
+Lanco Infratech Ltd.,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Navkar Corporation Ltd.,NAVA,fuzzy_med,unverified_proposal,80.0,proposal_only
+National Fertilizers Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Castrol (India) Ltd.-Old,CASTROLIND,fuzzy_med,unverified_proposal,80.0,proposal_only
+Southern Petrochemicals Industries Corporation Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Shree Rama Multi Tech Ltd.,TECHM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Donear Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Shriram Transport Finance Co. Ltd.,SHRIRAMCIT,fuzzy_med,unverified_proposal,80.0,proposal_only
+Dhanlaxmi Bank Ltd.,DHANI,fuzzy_med,unverified_proposal,80.0,proposal_only
+Dewan Rubber Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Kochi Refineries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Kirloskar Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Kakatiya Cement Sugar & Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Kotak Mahindra Finance Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,80.0,proposal_only
+Kitply Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+National Aluminium Company Limited,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+National Aluminium Co. Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Coromandel International Ltd.,COROMANDEL,fuzzy_med,unverified_proposal,80.0,proposal_only
+Century Textile & Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Birlasoft Ltd.,BSOFT,fuzzy_med,unverified_proposal,80.0,proposal_only
+Aztecsoft Ltd.,BSOFT,fuzzy_med,unverified_proposal,80.0,proposal_only
+Avery India Ltd.,DELHIVERY,fuzzy_med,unverified_proposal,80.0,proposal_only
+Ballarpur Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Autoline Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Munjal Auto Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Aurobindo Pharma Ltd.,AUROPHARMA,fuzzy_med,unverified_proposal,80.0,proposal_only
+Madras Refineries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Mafatlal Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Balaji Distilleries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Balkrishna Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Consumer Products Ltd.,TATACONSUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Consultancy Services Ltd.,TATVA,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Hydro-Electric Power Supply Co. Ltd.,TATVA,fuzzy_med,unverified_proposal,80.0,proposal_only
+Maars Software International Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Finance Ltd.,TATVA,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Global Beverages Ltd.,TATVA,fuzzy_med,unverified_proposal,80.0,proposal_only
+Binani Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Matrix Laboratories Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Mandhana Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+BIL Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+BPL Engineering Ltd.,HBLENGINE,fuzzy_med,unverified_proposal,80.0,proposal_only
+Arshiya International Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Tea Limited,TATATECH,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Teleservices (Maharashtra) Ltd.,TATVA,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Sponge Iron Ltd.,IRCON,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tata Infotech Ltd.,TATATECH,fuzzy_med,unverified_proposal,80.0,proposal_only
+Alpine Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Tilaknagar Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Agro Dutch Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Motor Industries Co. Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Motor Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Minda Industries Ltd.,RITES,fuzzy_med,unverified_proposal,80.0,proposal_only
+Central Depository Services (India) Ltd.,CENTRALBK,fuzzy_med,unverified_proposal,78.75,proposal_only
+Central India Polyesters Ltd.,CENTRALBK,fuzzy_med,unverified_proposal,78.75,proposal_only
+Mahindra & Mahindra Financial Services Ltd.,INDORAMA,fuzzy_med,unverified_proposal,78.75,proposal_only
+Bajaj Holdings & Investment Ltd.,BAJAJHFL,fuzzy_med,unverified_proposal,78.75,proposal_only
+Asian Hotels Ltd. - Hotels,INDHOTEL,fuzzy_med,unverified_proposal,78.75,proposal_only
+Mahindra & Mahindra Ltd.,INDORAMA,fuzzy_med,unverified_proposal,78.75,proposal_only
+Mahindra Logistics Ltd.,HINDALCO,fuzzy_med,unverified_proposal,78.75,proposal_only
+HSBC InvestDirect (India) Ltd.,BFINVEST,fuzzy_med,unverified_proposal,78.75,proposal_only
+Jindal SouthWest Hold Ltd.,JINDALSAW,fuzzy_med,unverified_proposal,78.75,proposal_only
+Dwarikesh Sugar Industrial Ltd.,DWARKESH,fuzzy_med,unverified_proposal,78.75,proposal_only
+Gammon Infrastructure Projects Ltd.,MANINFRA,fuzzy_med,unverified_proposal,78.75,proposal_only
+SREI Infrastructure Finance Ltd.,RELINFRA,fuzzy_med,unverified_proposal,78.75,proposal_only
+Cybertech Systems & Software Ltd.,RSYSTEMS,fuzzy_med,unverified_proposal,78.75,proposal_only
+Lakshmi Energy & Foods Ltd.,JKLAKSHMI,fuzzy_med,unverified_proposal,78.75,proposal_only
+Hotel Leelaventure Ltd.,THELEELA,fuzzy_med,unverified_proposal,78.75,proposal_only
+Windsor Machines Ltd.,INDORAMA,fuzzy_med,unverified_proposal,78.75,proposal_only
+J.Kumar Infraprojects Ltd.,MANINFRA,fuzzy_med,unverified_proposal,78.75,proposal_only
+Raj Television Network Ltd.,NETWORK18,fuzzy_med,unverified_proposal,78.75,proposal_only
+Hotel Leela Venture Ltd.,THELEELA,fuzzy_med,unverified_proposal,78.75,proposal_only
+Hindustan Powerplus Ltd.,RTNPOWER,fuzzy_med,unverified_proposal,78.75,proposal_only
+IVRCL Infrastructures & Projects Ltd.,RELINFRA,fuzzy_med,unverified_proposal,78.75,proposal_only
+Jain Irrigation Systems Ltd. (Old),RSYSTEMS,fuzzy_med,unverified_proposal,78.75,proposal_only
+Godrej Consumer Products Ltd.,GODREJIND,fuzzy_med,unverified_proposal,78.75,proposal_only
+Lakshmi Auto Components Ltd.- Delisted,JKLAKSHMI,fuzzy_med,unverified_proposal,78.75,proposal_only
+Lakshmi Vilas Bank Ltd.,JKLAKSHMI,fuzzy_med,unverified_proposal,78.75,proposal_only
+Consolidated Finvest & Holdings Ltd.,BFINVEST,fuzzy_med,unverified_proposal,78.75,proposal_only
+Sri Adhikari Brothers Television Network Ltd.,NETWORK18,fuzzy_med,unverified_proposal,78.75,proposal_only
+Tube Investments of India Ltd.,BFINVEST,fuzzy_med,unverified_proposal,78.75,proposal_only
+Tube Investments of India Ltd.-Old,BFINVEST,fuzzy_med,unverified_proposal,78.75,proposal_only
+Lakshmi Machine Works Ltd.,JKLAKSHMI,fuzzy_med,unverified_proposal,78.75,proposal_only
+Oriental Hotels Ltd.,ORIENTHOT,fuzzy_med,unverified_proposal,78.26086956521739,proposal_only
+Adani Gas Ltd.,ADANITRANS,fuzzy_med,unverified_proposal,77.77777777777779,proposal_only
+NEPC India Ltd,MAHEPC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Archies Ltd.,TARC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Max Financial Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Mangalore Chemicals & Fertilizers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Allied Digital Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+State Bank of Mysore,STAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+State Bank of India,STAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+State Bank of Bikaner & Jaipur Ltd.,STAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Castex Technologies Ltd.,CAMS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Mangalam Cement Ltd.,JKCEMENT,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+CORE Education & Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Mahindra Ugine Steel Co. Ltd.,EIEL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+NIIT Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Maharashtra Scooters Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+CFL Capital Financial Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Mahindra Lifespace Developers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Birla Ericsson Optical Ltd.,DCAL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Strides Arcolab Ltd.,STAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Sujana Towers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Visualsoft Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Warren Tea Ltd.,TEGA,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Tamil Nadu Newsprint & Papers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Atlas Cycle (Haryana) Ltd.,ATGL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Atlas Copco (India) Ltd.,ATGL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Atcom Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Areva T&D India Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Binani Cement Ltd.,JKCEMENT,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Bhushan Steel Ltd.,EIEL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Avenue Supermarts Ltd.,CCAVENUE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Ashima Ltd.,IMFA,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Srikalahasthi Pipes Ltd.,SRIPIPES,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Sterlite Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Carol Info Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Standard Industries Ltd.- Delisted,SANDHAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Madras Cement Ltd,JKCEMENT,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+MT Educare Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+State Bank of Travancore,STAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Jindal Vijaynagar Steel Ltd.,EIEL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+DCL Polyesters Ltd.,DCAL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+D.S. Kulkarni Developers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Sirpur Paper Mills Ltd.,KPRMILL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Silverline Technologies Ltd,HSIL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Jindal Iron & Steel Co. Ltd.,EIEL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Siltap Chemicals Ltd.- Merged,HSIL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+DSQ Software Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Dynamatic Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+FCI OEN Connectors Ltd.,IFCI,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Sanghi Polysters Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Satyam Computer Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Security and Intelligence Services (India) Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Silverline Technologies Ltd. -Sus,HSIL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Dharamsi Morarji Chemical Co. Ltd.,DCAL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Digital Equipment (India) Ltd. - Computers - Software,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Oracle Financial Services Software Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Onward Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Essar Steel Ltd.,EIEL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Excel Crop Care Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Madras Fertilizers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Cinevista Ltd.,STAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+L&T Technology Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Kirloskar Brothers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+LIC Housing Finance Ltd.,LICI,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Kopran Ltd.,RAIN,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Trigyn Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Sintex Plastics Technology Ltd.,SBIN,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Lloyds Finance Ltd.,LLOYDSME,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Sterling Holiday Resorts (India) Ltd.-Delisted,ESCORTS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Tulip Telecom Ltd.,ATUL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+State Trading Corporation of India Ltd.,STAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Info Edge (India) Ltd.,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Infinite Computer Solutions (India) Ltd,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+S. Kumars Nationwide Ltd.,IDEA,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+GVK Power & Infrastructures Ltd.,GRINFRA,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+GSL Nova Petrochemicals Ltd.,GSPL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+GTL Ltd (Global Telesytems Ltd),GTPL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+GMR Infrastructure Ltd.,GRINFRA,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Future Consumer Enterprise Ltd.,ISEC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Orient Information Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Financial Technologies (India) Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Federal-Mogul Goetze (India) Ltd.,FMGOETZE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Videsh Sanchar Nigam Ltd.,SANDHAR,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Glodyne Technoserve Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Oswal Chemicals & Fertilizers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Global Offshore Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+General Insurance Corporation of India,URBANCO,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Rane Engine Valves Ltd. -old,RAIN,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Infosys Technologies Limited,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Infrastructure Development Finance Co. Ltd.,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Infotech Enterprises Ltd.,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Infrastructure Development Finance Company Limited,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Indo Gulf Fertilisers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Padmini Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Himachal Futuristic Communication Ltd.,RHIM,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Himachal Futuristic Communications Ltd,RHIM,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Great Eastern Shipping Co. Ltd.,GRSE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Great Offshore Ltd.,GRSE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Great Eastern Shipping Company Limited.,GRSE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Greaves Cotton Ltd.,GRSE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Tribhovandas Bhimji Zaveri Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Rane Brake Linings Ltd. -old,RAIN,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Infomedia Press Ltd.,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Rail Vikas Nigam Ltd.,RAIN,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Raasi Cement Ltd.- Sus,SIEMENS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Ravalgaon Sugar Farm Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Rashtriya Chemicals & Fertilizers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Himatsingka Seide Ltd.,IDEA,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Himadri Speciality Chemical Ltd.,DCAL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Himachal Futuristic Communications Ltd.,RHIM,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Indraprastha Medical Corporation Ltd.,DCAL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Hitech Drilling Services India Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Infosys Ltd.,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Information Technologies India Ltd.,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Hughes Software Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+I G Petrochemicals Ltd.,IGPL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+I T C Bhadrachalam Paper Boards Ltd.,ITDC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Pentasoft Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+India Cements Ltd. - Cement & Cement Products,JKCEMENT,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Precision Fasteners Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+R. S. Software (India) Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+ICSA (India) Ltd.,DATAMATICS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+India Infoline Ltd.,INFY,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Pudumjee Pulp & Paper Mills Ltd.,KPRMILL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Polaris Consulting & Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+IRB Infrastructure Developers Ltd.,ERIS,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Procter & Gamble Hygiene & Health Care Ltd.,ARE&M,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Zee Telefilms Ltd,ZEEL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Polaris Financial Technology Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+AP Paper Mills Ltd.,KPRMILL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+West Coast Paper Mills Ltd.,KPRMILL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Zee Entertainment Enterprises Ltd.,ZEEL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Zee Media Corporation Ltd.,ZEEL,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+8K Miles Soft Services Ltd.,CESC,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+63 Moons Technologies Ltd.,TECHNOE,fuzzy_med,unverified_proposal,77.14285714285715,proposal_only
+Chennai Petroleum Corporation Ltd.,CHENNPETRO,fuzzy_med,unverified_proposal,76.92307692307692,proposal_only
+Hindustan Zinc Ltd.,HINDZINC,fuzzy_med,unverified_proposal,76.19047619047619,proposal_only
+Jindal Photo Ltd.,JINDALPOLY,fuzzy_med,unverified_proposal,76.19047619047619,proposal_only
+Bharat Heavy Electricals Ltd.,BHARTIHEXA,fuzzy_med,unverified_proposal,75.78947368421052,proposal_only
+Maharashtra Seamless Ltd.,MAHSEAMLES,fuzzy_med,unverified_proposal,75.78947368421052,proposal_only
+Hindustan Motors Ltd.,TATAMOTORS,fuzzy_med,unverified_proposal,75.78947368421052,proposal_only
+Bharti Telecom Ltd.-Suspended,BHARTIARTL,fuzzy_med,unverified_proposal,75.78947368421052,proposal_only
+Bharti Tele-Ventures Ltd.,BHARTIARTL,fuzzy_med,unverified_proposal,75.78947368421052,proposal_only
+Winsome Diamonds and Jewellery Ltd.,PCJEWELLER,fuzzy_med,unverified_proposal,75.78947368421052,proposal_only
+Garden Reach Shipbuilders & Engineers Ltd.,ENGINERSIN,fuzzy_med,unverified_proposal,75.78947368421052,proposal_only
+Piramal Enterprises Ltd.,PIRAMALFIN,fuzzy_med,unverified_proposal,75.78947368421052,proposal_only
+Bank of Maharashtra,ASTRAL,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Allahabad Bank,AUBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+IL&FS Transportation Networks Ltd.,WEWORK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+NEPC Agro Foods Ltd.,LTFOODS,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Modern Terry Towels Ltd.,ENTERO,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Honeywell Automation India Ltd.,ZOMATO,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Honda SIEL Power Products Ltd.,HONASA,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Birla Power Solutions Ltd.,BIRLANU,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Suryalakshmi Cotton Mills Ltd.,SUPRIYA,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Brabourne Enterprises Ltd.,ENTERO,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Herbertsons Ltd.,TARSONS,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Punjab & Sind Bank,DCBBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Punjab & National Bank,AUBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Punjab National Bank,AUBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Ambalal Sarabhai Enterprises Ltd.,ENTERO,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Banco Products (India) Ltd.,URBANCO,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Asian Electronics Ltd.,ASHIANA,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Baroda Rayon Corporation Ltd.,RAYMOND,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Bank of Maharashtra.,ASTRAL,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Agro Tech Foods Ltd.,LTFOODS,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Syndicate Bank,YESBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+AU Small Finance Bank Ltd.,YESBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+ABG Shipyard Ltd.,GESHIP,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+AGC Networks Ltd.,WEWORK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Gujarat Lease Financing Ltd.,MASFIN,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Finolex Cables Ltd. - Cables - Telecom,ELECON,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Orchid Chemicals & Pharmaceuticals Ltd.,ITDCEM,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Punjab National Bank Ltd.,AUBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Mishra Dhatu Nigam Ltd.,HATSUN,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Hindustan Aeronautics Ltd.,HONAUT,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Sri Vishnu Cement Ltd.- Merged,ENTERO,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Larsen & Toubro Ltd.-Sus,SUBROS,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Vinyl Chemicals (India) Ltd.,LXCHEM,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Clariant Chemicals (India) Ltd.,ANTHEM,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Centurion Bank Ltd.,CENTRUM,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Mundra Port and Special Economic Zone Ltd.,ELECON,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Hughes Tele.com Ltd.,ELECON,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Industrial Development Bank,ASTRAL,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Industrial Development Bank of India Limited,ASTRAL,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Shree Ashtavinayak Cine Vision Ltd.,VIJAYA,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Century Enka Ltd.,CENTRUM,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Jump Networks Ltd.,WEWORK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Kalpataru Power Transmission Ltd.,QPOWER,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Kerala Chemicals & Proteins Ltd.,LXCHEM,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Panasonic AVC Networks India Co. Ltd.,WEWORK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Development Credit Bank Ltd,KTKBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Shyam Telecom Ltd.,ELECON,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Industrial Finance Corporation Of India Ltd.,ASTRAL,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Industrial Oxygen Co. Ltd. -Sus,ASTRAL,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Digital Equipment (india) Ltd.,GODIGIT,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Kohinoor Foods Ltd.,LTFOODS,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Coffee Day Enterprises Ltd.,ENTERO,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Nahar Industrial Enterprises Ltd.,ARVIND,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Andhra Valley Power Supply Co. Ltd.,QPOWER,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Oriental Bank of Commerce,AUBANK,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Future Enterprises Ltd.,ENTERO,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Tamilnadu Telecommunications Ltd.,ELECON,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Royal Cushion Vinyl Products Ltd.,FUSION,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Geojit BNP Paribas Financial Services Ltd.,MASFIN,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Gujarat Narmada Valley Fertilizers and Chemicals Ltd.,JAGRAN,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Sesa Sterlite Ltd.,ASTRAL,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Ganesh Benzoplast Ltd.,GANECOS,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Fresenius Kabi Oncology Ltd.,BIOCON,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Fertilisers and Chemicals Travancore Ltd.,ASTRAL,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+Gujarat NRE Coke Ltd.,JAGRAN,fuzzy_med,unverified_proposal,75.00000000000001,proposal_only
+JMT Auto Ltd.,JAMNAAUTO,fuzzy_med,unverified_proposal,75.0,proposal_only
+GE T&D India Ltd.,GVT&D,fuzzy_med,unverified_proposal,75.0,proposal_only
+CMC Ltd.,CRAMC,fuzzy_med,unverified_proposal,75.0,proposal_only
+Punjab Communications Ltd.,PUNJABCHEM,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Autoriders Finance Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Piramal Holdings Ltd.-Delisted,PIRAMALFIN,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Hero Honda Motors Limited,TATAMOTORS,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Housing Development Finance Corporation Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Supreme Petrochem Ltd.,SUPREMEIND,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Housing Development and Infrastructure Ltd.,PNBHOUSING,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Dewan Housing Finance Corporation Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+SKS Microfinance Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+20th Century Finance Corporation Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Garware Technical Fibres Ltd.,GARFIBRES,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+GIC Housing Finance Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,74.11764705882352,proposal_only
+Hindustan Unilever Ltd.,HINDUNILVR,fuzzy_med,unverified_proposal,74.07407407407408,proposal_only
+Bajaj Tempo Ltd.,BAJAJ-AUTO,fuzzy_med,unverified_proposal,73.6842105263158,proposal_only
+East India Hotels Ltd,ITCHOTELS,fuzzy_med,unverified_proposal,73.6842105263158,proposal_only
+Dredging Corporation of India Ltd.,REDINGTON,fuzzy_med,unverified_proposal,73.6842105263158,proposal_only
+Wockhardt Ltd.,WOCKPHARMA,fuzzy_med,unverified_proposal,73.6842105263158,proposal_only
+Amtek India Ltd.,MASTEK,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+Apple Finance Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+Phoenix Mills Ltd.,PHOENIXLTD,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+Foseco India Ltd.,SENCO,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+Infar (India) Ltd.,KINGFA,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+Cochin Shipyard Ltd.,COCHINSHIP,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+MRO-TEK Ltd.,ROUTE,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+Aftek Ltd.,MASTEK,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+Alpic Finance Ltd.,BAJFINANCE,fuzzy_med,unverified_proposal,72.72727272727273,proposal_only
+ATV Projects India Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Aban Offshore Ltd.,ABB,fuzzy_med,unverified_proposal,72.0,proposal_only
+Ansal Properties & Infrastructure Ltd.,RITES,fuzzy_med,unverified_proposal,72.0,proposal_only
+Television Eighteen India Ltd.,DEN,fuzzy_med,unverified_proposal,72.0,proposal_only
+20 Microns Ltd,IRCON,fuzzy_med,unverified_proposal,72.0,proposal_only
+iGate Global Solutions Ltd.,IGL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Phillips Carbon Black Ltd.,PHILIPCARB,fuzzy_med,unverified_proposal,72.0,proposal_only
+Tamilnadu Petroproducts Ltd.,TARIL,fuzzy_med,unverified_proposal,72.0,proposal_only
+TVS Suzuki Ltd. (old),TVSSCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Asian Coffee Ltd.,AFFLE,fuzzy_med,unverified_proposal,72.0,proposal_only
+McLeod Russel India Ltd.,BEL,fuzzy_med,unverified_proposal,72.0,proposal_only
+McDowell & Co. Ltd. (Old),CELLO,fuzzy_med,unverified_proposal,72.0,proposal_only
+Geodesic Ltd.,IOC,fuzzy_med,unverified_proposal,72.0,proposal_only
+JD Orgochem Ltd.,LXCHEM,fuzzy_med,unverified_proposal,72.0,proposal_only
+Mangalore Refinery & Petrochemicals Ltd.,MAGMA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Mardia Chemicals Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Micro Inks Ltd.,IKS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Metalyst Forgings Ltd.,HGS,fuzzy_med,unverified_proposal,72.0,proposal_only
+International Paper APPM Ltd.,NATIONALUM,fuzzy_med,unverified_proposal,72.0,proposal_only
+International Travel House Ltd.,BSE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Oswal Agro Mills Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Oudh Sugar Mills Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Good Value Marketing Co. Ltd.,ALKEM,fuzzy_med,unverified_proposal,72.0,proposal_only
+Gokaldas Exports Ltd.,FORTIS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Rhone-Poulenc (India) Ltd.,NCC,fuzzy_med,unverified_proposal,72.0,proposal_only
+Gayatri Projects Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Vardhman Polytex Ltd.,DHANI,fuzzy_med,unverified_proposal,72.0,proposal_only
+GKN Driveshafts Ltd. -Delisted,RITES,fuzzy_med,unverified_proposal,72.0,proposal_only
+Future Consumer Ltd.,TRENT,fuzzy_med,unverified_proposal,72.0,proposal_only
+Fag Bearings India Ltd.,ENRIN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Vashisti Detergents Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Orbit Corporation Ltd.,CONCORDBIO,fuzzy_med,unverified_proposal,72.0,proposal_only
+Opto Circuits (I) Ltd.,PTCIL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Onelife Capital Advisors Ltd.,TANLA,fuzzy_med,unverified_proposal,72.0,proposal_only
+OnMobile Global Ltd.,AVL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Unity Infraprojects Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+United Western Bank Ltd.,AUBANK,fuzzy_med,unverified_proposal,72.0,proposal_only
+United Phosphorus Ltd.,UNITDSPR,fuzzy_med,unverified_proposal,72.0,proposal_only
+United Phosphorous Ltd. -Sus,UNITDSPR,fuzzy_med,unverified_proposal,72.0,proposal_only
+United Phosphorous Ltd.,UNITDSPR,fuzzy_med,unverified_proposal,72.0,proposal_only
+United Breweries Ltd.-Old,RITES,fuzzy_med,unverified_proposal,72.0,proposal_only
+United Breweries (Holdings) Ltd.,HGS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Essar Ports Ltd.,FORTIS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Ess Dee Aluminium Ltd.,LUPIN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Flat Products Equipments (India) Ltd.,FCL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Transport Corporation of India Ltd.,TRF,fuzzy_med,unverified_proposal,72.0,proposal_only
+Transpek Industry Ltd.,TRF,fuzzy_med,unverified_proposal,72.0,proposal_only
+Tourism Finance Corporation of India Ltd.,M&MFIN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Gujarat State Fertilizers & Chemicals Ltd.,PARAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Henkel SPIC India Ltd.,HEG,fuzzy_med,unverified_proposal,72.0,proposal_only
+Harrisons Malayalam Ltd.,HAL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Goodricke Group Ltd.,UPL,fuzzy_med,unverified_proposal,72.0,proposal_only
+HAMCO Mining & Smelting Ltd.,HAL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Gujarat Ambuja Exports Ltd.,FORTIS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Gujarat Alkalies & Chemicals Ltd.,TANLA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Gruh Finance Ltd.,ACE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Gitanjali Gems Ltd.,AGI,fuzzy_med,unverified_proposal,72.0,proposal_only
+Geometric Ltd.,IOC,fuzzy_med,unverified_proposal,72.0,proposal_only
+S.E. Investments Ltd.,BSE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Search Chem. Industries Ltd. - Sus,BSE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Schenectady Beck India Ltd.,SCI,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sandesh Ltd.,SHK,fuzzy_med,unverified_proposal,72.0,proposal_only
+Samtel Color Ltd.,CELLO,fuzzy_med,unverified_proposal,72.0,proposal_only
+Elgi Rubber Company Ltd.,BEL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Electrosteel Castings Ltd.,BEL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Electrex (India) Ltd.,BEL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Shirpur Gold Refinery Ltd.,SHK,fuzzy_med,unverified_proposal,72.0,proposal_only
+Shipping Corporation of India Ltd.,GESHIP,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sheela Foam Ltd.,SHK,fuzzy_med,unverified_proposal,72.0,proposal_only
+Seshasayee Paper & Boards Ltd.,BSE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sesa Goa Ltd.,BSE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sesa Goa Limited,BSE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Dr. Datsons Labs Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Eskay K'n'IT (India) Ltd.,ITC,fuzzy_med,unverified_proposal,72.0,proposal_only
+Dishman Pharmaceuticals & Chemicals Ltd.,DISHTV,fuzzy_med,unverified_proposal,72.0,proposal_only
+Dishman Carbogen Amcis Ltd.,DISHTV,fuzzy_med,unverified_proposal,72.0,proposal_only
+Digjam Ltd.,DIAMONDYD,fuzzy_med,unverified_proposal,72.0,proposal_only
+Shri Lakshmi Cotsyn Ltd.,MHRIL,fuzzy_med,unverified_proposal,72.0,proposal_only
+JCT Ltd.,INTELLECT,fuzzy_med,unverified_proposal,72.0,proposal_only
+JCT Electronics Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Apple Credit Corporation Ltd.,ITC,fuzzy_med,unverified_proposal,72.0,proposal_only
+Widia (India) Ltd.,ABBOTINDIA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Deccan Chronicle Holdings Ltd.,DEN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Shree Precoated Steels Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Shree Rama Newsprint Ltd.,SHK,fuzzy_med,unverified_proposal,72.0,proposal_only
+Shrenuj & Co. Ltd.,SHK,fuzzy_med,unverified_proposal,72.0,proposal_only
+Hind Syntex Ltd.,IEX,fuzzy_med,unverified_proposal,72.0,proposal_only
+Hind Lever Chemicals Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Kewal Kiran Clothing Ltd.,KEC,fuzzy_med,unverified_proposal,72.0,proposal_only
+Uttam Value Steels Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Indo Gulf Corporation Ltd.,DLF,fuzzy_med,unverified_proposal,72.0,proposal_only
+Indo Gulf Corporation Ltd,DLF,fuzzy_med,unverified_proposal,72.0,proposal_only
+HMT Ltd.,MTARTECH,fuzzy_med,unverified_proposal,72.0,proposal_only
+VLS Finance Ltd.,ACE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Kemrock Industries and Exports Ltd.,FORTIS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Kalyani Steels Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Uttam Sugar Mills Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Uttam Galva Steels Ltd.,AAVAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Nippon Life India Asset Management Ltd.,INDNIPPON,fuzzy_med,unverified_proposal,72.0,proposal_only
+Next Mediaworks Ltd.,IKS,fuzzy_med,unverified_proposal,72.0,proposal_only
+KSK Energy Ventures Ltd.,IKS,fuzzy_med,unverified_proposal,72.0,proposal_only
+KSK Energy Ventures Ltd,IKS,fuzzy_med,unverified_proposal,72.0,proposal_only
+KRONE Communications Ltd.,KNRCON,fuzzy_med,unverified_proposal,72.0,proposal_only
+Clariant (India) Ltd.,CCL,fuzzy_med,unverified_proposal,72.0,proposal_only
+DCW Ltd.,DCBBANK,fuzzy_med,unverified_proposal,72.0,proposal_only
+Smithkline Beecham Pharmaceuticals Ltd.,ORCHPHARMA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Smithkline Beecham Pharmaceuticals (I) Ltd.-Merged,ORCHPHARMA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Smithkline Beecham Consumer Healthcare Ltd.,MSUMI,fuzzy_med,unverified_proposal,72.0,proposal_only
+Simplex Infrastructures Ltd.,SCI,fuzzy_med,unverified_proposal,72.0,proposal_only
+Cox & Kings Ltd.,HGS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Larsen & Toubro Ltd.,SUBROS,fuzzy_med,unverified_proposal,72.0,proposal_only
+LG Balakrishnan & Bros Ltd.,BALKRISIND,fuzzy_med,unverified_proposal,72.0,proposal_only
+Ispat Alloys Ltd.,IKS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Parke-Davis (India) Ltd.,IKS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Narayana Hrudayalaya Ltd.,NAZARA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Krishna Filaments Ltd.,KRN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Kothari Products Ltd.,TARIL,fuzzy_med,unverified_proposal,72.0,proposal_only
+KSS Ltd.,DREAMFOLKS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sterlite Industries (India) Ltd. -Sus,RITES,fuzzy_med,unverified_proposal,72.0,proposal_only
+Ciba Speciality Chemicals (India) Ltd.,ACI,fuzzy_med,unverified_proposal,72.0,proposal_only
+Chowgule Steamships Ltd.,PFS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Spectacle Infotek Ltd.,CLEAN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Cheminor Drugs Ltd.,HGS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sterlite Industries (India) Ltd (Erstwhile),RITES,fuzzy_med,unverified_proposal,72.0,proposal_only
+Mahanagar Gas Ltd.,PARAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Mahanagar Telephone Nigam Ltd.,ABREL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Madura Coats Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Madras Cements Ltd.,JKCEMENT,fuzzy_med,unverified_proposal,72.0,proposal_only
+MBL Infrastructures Ltd.,TMB,fuzzy_med,unverified_proposal,72.0,proposal_only
+Lovable Lingerie Ltd.,ABLBL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Lok Housing & Constructions Ltd.,INDGN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Hindustan Organic Chemicals Ltd.,INDUSTOWER,fuzzy_med,unverified_proposal,72.0,proposal_only
+IBP Co. Ltd.,COCHINSHIP,fuzzy_med,unverified_proposal,72.0,proposal_only
+Indraprastha Gas Ltd.,PARAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Pentamedia Graphics Ltd.,PEL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Pentamedia Graphic Ltd,GRAPHITE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Pentafour Products Ltd.,PEL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Peacock Industries Ltd.-old,PEL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Patheja Forgings & Auto Parts Manufacturers Ltd.,PARAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Ponds (India) Ltd.,RAYMONDLSL,fuzzy_med,unverified_proposal,72.0,proposal_only
+IVRCL Ltd.,CCL,fuzzy_med,unverified_proposal,72.0,proposal_only
+ITW Signode India Ltd.- Sus,ITC,fuzzy_med,unverified_proposal,72.0,proposal_only
+Polaris Software Lab Ltd.,ABB,fuzzy_med,unverified_proposal,72.0,proposal_only
+RPG Transmission Ltd.,FUSION,fuzzy_med,unverified_proposal,72.0,proposal_only
+Nalco Chemicals India Ltd. - Sus,NELCO,fuzzy_med,unverified_proposal,72.0,proposal_only
+Nirma Ltd.,ADANITRANS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sundaram Brake Linings Ltd.,AMBER,fuzzy_med,unverified_proposal,72.0,proposal_only
+Rasoya Proteins Ltd.,RBA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Visagar Polytex Ltd.,IEX,fuzzy_med,unverified_proposal,72.0,proposal_only
+Viral Filaments Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Mukta Arts Ltd,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Nahar Spinning Mills Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Centak Chemicals Ltd.,ACE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Mirc Electronics Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Punj Lloyd Ltd.,PNGJL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Wellwin Industry Ltd.,PIIND,fuzzy_med,unverified_proposal,72.0,proposal_only
+Vision Organics Ltd,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Burroughs Wellcome (India) Ltd.,CELLO,fuzzy_med,unverified_proposal,72.0,proposal_only
+Burroughs Welcome (India) Ltd.,NELCO,fuzzy_med,unverified_proposal,72.0,proposal_only
+Cairn India Ltd.,KRN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Malwa Cotton Spinning Mills Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Punjab Alkalies & Chemicals Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sundaram Clayton Ltd.- OLD,CRAMC,fuzzy_med,unverified_proposal,72.0,proposal_only
+Sundaram Clayton Ltd.,CRAMC,fuzzy_med,unverified_proposal,72.0,proposal_only
+TVS Suzuki Ltd.,KEI,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bharat Petroleum Corporation Ltd.,BHARATRAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bharat Hotels Ltd. - Delisted,BHARATRAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bharat Electronics Ltd.,BHARATRAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bharat Dynamics Ltd.,BHARATRAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bombay Burmah Trading Corporation Ltd.,DABUR,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bannari Amman Sugars Ltd.,RBA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bank of Rajasthan Ltd.,AUBANK,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bank of Punjab Ltd.,ABB,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bank of India,BANKBARODA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Bank Of India,BANKBARODA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Balrampur Chini Mills Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Cabot India Ltd.,ABBOTINDIA,fuzzy_med,unverified_proposal,72.0,proposal_only
+Blow Plast Ltd.,BBL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Alstom Projects India Ltd.,AVL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Alstom T&D India Ltd.,AVL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Aptech Ltd. (Erstwhile),ASTEC,fuzzy_med,unverified_proposal,72.0,proposal_only
+Alstom India Ltd.,AVL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Philips India Ltd.,PFS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Procter & Gamble India Ltd.,AMBER,fuzzy_med,unverified_proposal,72.0,proposal_only
+IP Rings Ltd.,HGS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Ahmednagar Forgings Ltd.,HGS,fuzzy_med,unverified_proposal,72.0,proposal_only
+India Glycols Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Procter & Gamble Health Ltd.,AMBER,fuzzy_med,unverified_proposal,72.0,proposal_only
+TI Financial Holdings Ltd.,HGS,fuzzy_med,unverified_proposal,72.0,proposal_only
+TCNS Clothing Co. Ltd.,ITC,fuzzy_med,unverified_proposal,72.0,proposal_only
+Synthetics & Chemicals Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Balaji Telefilms Ltd.,JAIBALAJI,fuzzy_med,unverified_proposal,72.0,proposal_only
+BOC India Ltd.,BODALCHEM,fuzzy_med,unverified_proposal,72.0,proposal_only
+India Nippon Electricals Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+B L Kashyap & Sons Ltd.,BBL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Assam Company India Ltd.,ORISSAMINE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Merind Ltd.-Merged,ENRIN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Agrevo India Ltd.(old),AGI,fuzzy_med,unverified_proposal,72.0,proposal_only
+Thirumalai Chemicals Ltd.,BLS,fuzzy_med,unverified_proposal,72.0,proposal_only
+The New India Assurance Company Ltd.,ACE,fuzzy_med,unverified_proposal,72.0,proposal_only
+Texmaco Infrastructure & Holdings Ltd.,RANEHOLDIN,fuzzy_med,unverified_proposal,72.0,proposal_only
+Monsanto India Ltd.,MOL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Monnet Ispat and Energy Ltd.,JSWENERGY,fuzzy_med,unverified_proposal,72.0,proposal_only
+Modiluft Ltd.,MOL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Modi Xerox Ltd.- Sus,MOL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Modi Rubber Ltd.,MOL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Modern Threads (India) Ltd.,MOL,fuzzy_med,unverified_proposal,72.0,proposal_only
+Alfa Laval (India) Ltd.,AAVAS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Modern Syntex (India) Ltd.,IEX,fuzzy_med,unverified_proposal,72.0,proposal_only
+Ahluwalia Contracts (India) Ltd.,TCS,fuzzy_med,unverified_proposal,72.0,proposal_only
+Snowcem India Ltd.,SNOWMAN,fuzzy_med,unverified_proposal,71.42857142857143,proposal_only
+NIIT Ltd.-Sus,NIITMTS,fuzzy_med,unverified_proposal,71.42857142857143,proposal_only
+Advanta Ltd.,MEDANTA,fuzzy_med,unverified_proposal,71.42857142857143,proposal_only
+Caprihans India Ltd.,APARINDS,fuzzy_med,unverified_proposal,70.58823529411764,proposal_only
+Rei Agro Ltd.,GODREJAGRO,fuzzy_med,unverified_proposal,70.58823529411764,proposal_only
+Thiru Arooran Sugars Ltd.,ANDHRSUGAR,fuzzy_med,unverified_proposal,70.00000000000001,proposal_only
+ARSS Infrastructure Projects Ltd.,JMCPROJECT,fuzzy_med,unverified_proposal,70.00000000000001,proposal_only
+Bombay Dyeing & Mnfg Co. Ltd.,BOMDYEING,fuzzy_med,unverified_proposal,70.00000000000001,proposal_only
+J.B. Chemicals & Pharmaceuticals Ltd.,PPLPHARMA,fuzzy_med,unverified_proposal,70.00000000000001,proposal_only
+Prism Cement Ltd.,JSWCEMENT,fuzzy_med,unverified_proposal,70.0,proposal_only
+AXIS IT&T Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Steel Authority of India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Steel Authority of India Ltd,,unresolved,unverified_proposal,0.0,proposal_only
+Sree Rayalaseema Alkalies & Allied Chemicals Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Spice Communications Ltd,,unresolved,unverified_proposal,0.0,proposal_only
+TVS Electronics Ltd. - Merge,,unresolved,unverified_proposal,0.0,proposal_only
+Sujana Towers Ltd.-old,,unresolved,unverified_proposal,0.0,proposal_only
+Yokogawa Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Zenith Computer Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Rural Electrification Corporation Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+SML Isuzu Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+RPG Cables Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Reckitt & Colman India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+RSWM Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Punjab Tractors Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Provogue (India) Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Reckitt Benckiser (India) Ltd,,unresolved,unverified_proposal,0.0,proposal_only
+Patspin India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+PVP Ventures Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Noida-Toll Bridge Co. Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Neyveli Lignite Corporation Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Narmada Chematur Petrochemicals Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+UFO Moviez India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Nagarjuna Construction Co. Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Nagarjuna Fertilisers & Chemicals Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Nagarjuna Fertilizers & Chemicals Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Nahar Poly Films Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Mukand Ltd.- Old,,unresolved,unverified_proposal,0.0,proposal_only
+Munjal Showa Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Music Broadcast Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Mercator Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Merck Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Manpasand Beverages Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Maral Overseas Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+MVL Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Kwality Dairy (India) Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Kwality Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Sakthi Sugars Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Sandvik Asia Ltd. - Delisted,,unresolved,unverified_proposal,0.0,proposal_only
+Texmaco Rail & Eng. Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Textool Co. Ltd.- Merger,,unresolved,unverified_proposal,0.0,proposal_only
+Jain Studios Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+United Bank of India,,unresolved,unverified_proposal,0.0,proposal_only
+Johnson Controls - Hitachi Air Conditioning India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Kodak India Ltd. - Delisted,,unresolved,unverified_proposal,0.0,proposal_only
+India Tourism Development Corporation Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Jet Airways (India) Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Insilco Ltd. - Sus,,unresolved,unverified_proposal,0.0,proposal_only
+InterGlobe Aviation Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hinduja Ventures Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hindustan Construction Co. Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hindustan Copper Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hindustan Development Corporation Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hindustan Media Vent Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+India Gypsum Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+ISMT Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hubtown Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+HT Media Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Gujarat Gas Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Gujarat Mineral Development Corporation Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Gujarat Pipavav Port Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Gujarat Gas Co. Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Godavari Fertilisers & Chemicals Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Garware Polyester Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Garware-Wall Ropes Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Gas Authority of India Limited,,unresolved,unverified_proposal,0.0,proposal_only
+German Remedies Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+GOL Offshore Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Forbes Gokak Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Fulford (India) Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hindustan Petroleum Corporation Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hitachi Home & Life Solutions (India) Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Hoganas India Ltd.- Sus,,unresolved,unverified_proposal,0.0,proposal_only
+Vikas WSP Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Varun Shipping Co. Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Varun Beverages Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+FGP Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Essar Shipping Ports & Logistics Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Essel Propack Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Firstsource Solutions Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+First Leasing Co. of India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Eros Intl Media Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+E.Merck (India) Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Daewoo Motors India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Dilip Buildcon Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Crest Animation Studios Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Container Corporation of India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Everest Kanto Cylinder Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Essar Gujarat Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Wartsila India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Cosmo Films Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Cadbury India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Cable Corporation of India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Bombay Rayon Fashions Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Bongaigaon Refinery & Petrochemicals Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Brooke Bond Lipton India Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Capital First Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Bharat Bijlee Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Amtek Auto Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Ador Welding Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Williamson Tea Assam Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Wimco Ltd.-Delisted,,unresolved,unverified_proposal,0.0,proposal_only
+Wockhardt Ltd. (old),,unresolved,unverified_proposal,0.0,proposal_only
+Woolworth (India) Ltd.,,unresolved,unverified_proposal,0.0,proposal_only
+Wyeth Ltd.,,unresolved,unverified_proposal,0.0,proposal_only

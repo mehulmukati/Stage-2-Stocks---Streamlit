@@ -1,0 +1,9 @@
+{
+  "accepted": false,
+  "reason": "unresolved identities and historical coverage require review",
+  "source_records": 9179,
+  "unresolved_records": 9179,
+  "legacy_inception_rule": false,
+  "microcap_before_2021_05_11": "unavailable; never backfilled",
+  "publication": "not attempted"
+}

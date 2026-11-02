@@ -1,0 +1,49 @@
+{
+  "legacy_index_aliases": {
+    "effective_date": "2018-04-02",
+    "source": "https://www.niftyindices.com/Press_Release/ind_prs05012018.pdf",
+    "renames": {
+      "Nifty Free Float Midcap 100": "Nifty Midcap 100",
+      "Nifty Free Float Smallcap 100": "Nifty Smallcap 100"
+    },
+    "membership_rule_change": true,
+    "not_equivalent_to": [
+      "Midcap 150",
+      "Smallcap 250"
+    ]
+  },
+  "largemidcap_relationship": {
+    "launch": "2017-11-30",
+    "base_date": "2005-04-01",
+    "source": "https://www.niftyindices.com/Press_Release/ind_prs30112017.pdf",
+    "recovery": "not accepted: pre-launch backcalculation and underlying identities need evidence"
+  },
+  "microcap": {
+    "launch": "2021-05-10",
+    "first_local_snapshot": "2021-05-11",
+    "source": "https://www.niftyindices.com/Press_Release/ind_prs10052021.pdf",
+    "pre_launch_members": "not obtained; base date supplies no members"
+  },
+  "validated_complete_universe_intervals": [],
+  "comparison_gate": "closed: historical identities and complete coverage unverified",
+  "source_records": 9179,
+  "unresolved_records": 9179,
+  "proposal_methods": {
+    "fuzzy_med": 723,
+    "fuzzy_high": 489,
+    "exact_canonical": 132,
+    "unresolved": 105
+  },
+  "source_revisions": [
+    "f7b7391fc10f41e29c49dec8a7274bd2",
+    "5aeb0b0c826746dca63ada9272a9d94f"
+  ],
+  "inputs_sha256": {
+    "outputs\\backtest_repair_v1_20261102\\candidate_universe_v5\\source_events_with_decisions.csv": "0a42a34476cf571d408e351544a0d06e03a1d38916e6ed51f8fef8a7ae05d3f6",
+    "outputs\\backtest_repair_v1_20261102\\candidate_universe_v5\\mapping_proposals.csv": "33fa9036c5cca3bf8a2c6a4b8774d171ff46c7645829ce9ece3853d6217ce1ed",
+    "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\screener_ohlcv.parquet": "ea3ef11f354179bdb2e5f426fd8fc411bef22848ee72b9d47ea4fe9811588598",
+    "D:\\Content\\GoogleDrive\\Github\\Stage-2-Stocks---Streamlit\\data\\constituents.parquet": "4f0a8ea3c64785a596bd486080085afa0150363f4d231fe360cdfa25d4bd5df6"
+  },
+  "upstream_requests": 0,
+  "shared_writes": 0
+}

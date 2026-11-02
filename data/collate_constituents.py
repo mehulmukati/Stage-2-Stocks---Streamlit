@@ -32,9 +32,6 @@ def _ensure(pkg, import_name=None):
             print(f"[WARN] Could not auto-install {pkg}. " f"Please run:  pip install {pkg}")
 
 
-_ensure("xlrd")
-_ensure("openpyxl")
-
 # ---------------------------------------------------------------------------
 # 1. Imports
 # ---------------------------------------------------------------------------

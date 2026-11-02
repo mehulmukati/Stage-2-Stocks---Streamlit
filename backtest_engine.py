@@ -28,6 +28,8 @@ import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
+from backtest_accounting import ACCOUNTING_VERSION, POLICIES, QuantityLedger
+from backtest_provenance import coverage_at, run_manifest
 from config import MIN_VOLUME
 from corporate_actions import load_corporate_actions
 from equity_data import (
@@ -107,6 +109,8 @@ class BacktestConfig:
     pos_days_3m_min: float = 0.0
     pos_days_6m_min: float = 0.0
     pos_days_12m_min: float = 0.0
+    # Existing histories stay inspectable but cannot be certified implicitly.
+    universe_mode: str = "legacy_partial"
 
 
 # ──────────────────────────────────────────────────────────────
@@ -126,7 +130,8 @@ def _close_price(all_ohlcv: dict, sym: str, date: pd.Timestamp) -> float | None:
         ):
             return None
         c = all_ohlcv[sym]["Close"]
-        return float(c.at[date]) if date in c.index else None
+        value = float(c.at[date]) if date in c.index else None
+        return value if value is not None and np.isfinite(value) and value > 0 else None
     except (KeyError, TypeError):
         return None
 
@@ -351,11 +356,14 @@ def _prepare_compositions(
     call can apply the filter and correctly return set() when no symbols match.
     Call once before the rebalance loop; pass the result to _valid_symbols_at_date.
     """
-    if comp_df is None or comp_df.empty or not index_names:
+    if comp_df is None or not index_names:
         return None
+    if comp_df.empty:
+        return pd.DataFrame(columns=["INDEX_NAME", "SYMBOL", "TIME_STAMP", "_INDEX_KEY"])
 
     requested_keys = {_canonical_index_name(name) for name in index_names}
     comp = comp_df.copy()
+    comp["TIME_STAMP"] = pd.to_datetime(comp.TIME_STAMP, errors="raise")
     comp["_INDEX_KEY"] = comp["INDEX_NAME"].map(_canonical_index_name)
     filtered = comp[comp["_INDEX_KEY"].isin(requested_keys)]
 
@@ -677,7 +685,9 @@ def get_rebalance_dates(
     if freq == "weekly":
         return last_per_week["date"].tolist()
     else:  # biweekly
-        return last_per_week["date"].iloc[::2].tolist()
+        epoch = pd.Timestamp("1970-01-05")
+        parity = ((last_per_week["date"] - epoch).dt.days // 7) % 2
+        return last_per_week.loc[parity.eq(0), "date"].tolist()
 
 
 def get_anchored_rebalance_dates(
@@ -740,7 +750,7 @@ def _daily_returns(all_ohlcv: dict[str, pd.DataFrame], symbols: list[str], dates
     frames = {}
     for sym in symbols:
         if sym in all_ohlcv:
-            s = all_ohlcv[sym]["Close"].reindex(dates).ffill(limit=5)
+            s = all_ohlcv[sym]["Close"].reindex(dates).ffill()
             frames[sym] = s.pct_change(fill_method=None)
     if not frames:
         return pd.DataFrame(index=dates)
@@ -765,8 +775,9 @@ def _drift_weights(
     for s, w in weights.items():
         try:
             closes = all_ohlcv[s]["Close"]
-            p_prev = float(closes.at[prev_day]) if prev_day in closes.index else None
-            p_now = float(closes.at[curr_day]) if curr_day in closes.index else None
+            valid = closes.where(np.isfinite(closes) & closes.gt(0)).dropna()
+            p_prev = valid.asof(prev_day)
+            p_now = valid.asof(curr_day)
             drifted[s] = (
                 w * (p_now / p_prev)
                 if (
@@ -781,7 +792,7 @@ def _drift_weights(
             )
         except (KeyError, TypeError, ZeroDivisionError):
             drifted[s] = w
-    total_d = sum(drifted.values())
+    total_d = sum(drifted.values()) + max(0.0, 1.0 - sum(weights.values()))
     return {s: w / total_d for s, w in drifted.items()} if total_d > 0 else drifted
 
 
@@ -802,8 +813,11 @@ def _realise_weight_reductions(
         price = _close_price(all_ohlcv, sym, day)
         if price is None or price <= 0:
             continue
-        shares_to_sell = (nav * sold_w) / price
         sym_lots = lots.get(sym, [])
+        # Compatibility adapter: lot quantities are authoritative. The main
+        # engine uses the execution ledger, never post-fee NAV to infer shares.
+        fraction = min(1.0, sold_w / old_weights[sym])
+        shares_to_sell = sum(float(lot["shares"]) for lot in sym_lots) * fraction
         while shares_to_sell > 1e-12 and sym_lots:
             lot = sym_lots[0]
             lot_shares = float(lot["shares"])
@@ -1072,8 +1086,8 @@ def _compute_summary_stats(nav_df: pd.DataFrame) -> pd.DataFrame:
         if len(s) < 2:
             continue
         daily_ret = s.pct_change().dropna()
-        n_days = len(s)
-        cagr = (s.iloc[-1] / s.iloc[0]) ** (252 / (n_days - 1)) - 1
+        years = (s.index[-1] - s.index[0]).total_seconds() / (365.25 * 86400)
+        cagr = (s.iloc[-1] / s.iloc[0]) ** (1 / years) - 1 if years > 0 else np.nan
         sharpe = (daily_ret.mean() / daily_ret.std() * np.sqrt(252)) if daily_ret.std() > 0 else np.nan
         rolling_max = s.cummax()
         drawdown = (s - rolling_max) / rolling_max
@@ -1100,34 +1114,27 @@ def _compute_summary_stats(nav_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _apply_weight_cap(weights: dict[str, float], cap: float) -> dict[str, float]:
-    """Trim positions exceeding cap using water-filling: cap top-k positions and scale the rest.
-
-    If cap < 1/n (infeasible), falls back to equal weights.
-    """
+    """Cap rebalance targets; retain cash when full investment is infeasible."""
     if not weights or cap <= 0.0 or cap >= 1.0:
         return weights
-    n = len(weights)
-    total = sum(weights.values())
-    if total <= 0:
-        return weights
-    # Sort descending by normalised weight
-    ordered = sorted(((s, v / total) for s, v in weights.items()), key=lambda x: -x[1])
-    for k in range(n + 1):
-        if k == n or (1.0 - k * cap) <= 0:
-            # Infeasible: cap too tight — return equal weights
-            return {s: 1.0 / n for s, _ in ordered}
-        remaining = 1.0 - k * cap
-        free = ordered[k:]
-        free_total = sum(v for _, v in free)
-        if free_total <= 0:
-            return {s: 1.0 / n for s, _ in ordered}
-        scale = remaining / free_total
-        if ordered[k][1] * scale <= cap + 1e-9:
-            result = {s: cap for s, _ in ordered[:k]}
-            for s, v in free:
-                result[s] = v * scale
-            return result
-    return {s: 1.0 / n for s, _ in ordered}
+    total = min(1.0, sum(weights.values()))
+    budget = min(total, len(weights) * cap)
+    remaining = dict(weights)
+    result = {}
+    while remaining:
+        denom = sum(remaining.values())
+        if denom <= 0:
+            break
+        scale = budget / denom
+        over = [s for s, w in remaining.items() if w * scale > cap + 1e-12]
+        if not over:
+            result.update({s: w * scale for s, w in remaining.items()})
+            break
+        for symbol in over:
+            result[symbol] = cap
+            budget -= cap
+            remaining.pop(symbol)
+    return result
 
 
 def run_backtest(
@@ -1190,6 +1197,15 @@ def run_backtest(
         return {"error": f"stcg_rate ({stcg_rate}) must be between 0 and 1."}
     if max_position_pct is not None and not (0.0 < max_position_pct <= 100.0):
         return {"error": f"max_position_pct ({max_position_pct}) must be between 0 (exclusive) and 100."}
+    if config.universe_mode != "legacy_partial":
+        return {
+            "error": (
+                "Certified historical universe is unavailable: resolve dated identities and coverage first. "
+                "Use explicit legacy_partial research mode."
+            )
+        }
+    if initial_capital <= 0 or brokerage_per_sale < 0:
+        return {"error": "Initial capital must be positive and brokerage nonnegative."}
     schema_errors = _validate_ohlcv_schema(all_ohlcv)
     if schema_errors:
         return {"error": "Invalid OHLCV input: " + "; ".join(schema_errors[:5])}
@@ -1199,11 +1215,13 @@ def run_backtest(
     ranking_calendar = (
         config.market_calendar if config.market_calendar is not None else observed_sessions(all_ohlcv.values())
     )
+    manifest = run_manifest(config, all_ohlcv, benchmarks, ranking_calendar)
     all_ohlcv = {symbol: session_frame(frame, ranking_calendar) for symbol, frame in all_ohlcv.items()}
 
     # Warn once if any requested index has no composition data before the start date.
     if compositions_df is not None and not compositions_df.empty and index_names:
         comp_check = compositions_df.copy()
+        comp_check["TIME_STAMP"] = pd.to_datetime(comp_check.TIME_STAMP, errors="raise")
         comp_check["_INDEX_KEY"] = comp_check["INDEX_NAME"].map(_canonical_index_name)
         for idx_name in index_names:
             idx_key = _canonical_index_name(idx_name)
@@ -1232,7 +1250,10 @@ def run_backtest(
         except Exception:
             return {"error": f"Invalid rebalance_anchor_date={rebalance_anchor_date!r}. Use 'YYYY-MM-DD'."}
     else:
-        rebalance_dates = get_rebalance_dates(trading_days, rebalance_freq)
+        schedule_grid = extend_sessions(ranking_calendar, t1 + pd.Timedelta(days=190))
+        rebalance_dates = [
+            d for d in get_rebalance_dates(schedule_grid, rebalance_freq) if trading_days[0] <= d <= trading_days[-1]
+        ]
     # Exclude the first trading day: we need T-1 close to rank without look-ahead bias.
     rebalance_set = set(rebalance_dates) - {trading_days[0]}
 
@@ -1269,9 +1290,6 @@ def run_backtest(
         _precompute_stage2_scores(all_ohlcv, ranking_calendar) if (stage2_drop_exit or stage2_entry_filter) else {}
     )
 
-    # Pre-build returns matrix so daily NAV update uses O(1) row lookups instead of per-symbol index ops
-    returns_matrix = _daily_returns(all_ohlcv, list(all_ohlcv.keys()), trading_days)
-
     # ── initialise portfolios ──
     full_weights: dict[str, float] = {}
     full_weights_prev: dict[str, float] = {}  # drift-adjusted full weights from prior rebalance
@@ -1286,6 +1304,7 @@ def run_backtest(
 
     nav_records: list[dict] = []
     holdings_log: list[dict] = []
+    coverage_log: list[dict] = []
     pending_corporate_actions: list[dict] = []
     turnover_log_full: list[float] = []
     turnover_log_marg: list[float] = []
@@ -1295,9 +1314,6 @@ def run_backtest(
     cost_log_prop: list[float] = []
     holdings_sizes: list[int] = []
 
-    lots_full: dict[str, list[dict]] = {}
-    lots_marg: dict[str, list[dict]] = {}
-    lots_prop: dict[str, list[dict]] = {}
     tax_log_full: list[float] = []
     tax_log_marg: list[float] = []
     tax_log_prop: list[float] = []
@@ -1305,47 +1321,26 @@ def run_backtest(
     brok_log_marg: list[float] = []
     brok_log_prop: list[float] = []
 
-    # FY-level CGT accumulators (reset each new FY)
-    current_fy: int | None = None
-    fy_st_g_full = fy_st_l_full = fy_lt_g_full = fy_lt_l_full = 0.0
-    fy_st_g_marg = fy_st_l_marg = fy_lt_g_marg = fy_lt_l_marg = 0.0
-    fy_st_g_prop = fy_st_l_prop = fy_lt_g_prop = fy_lt_l_prop = 0.0
-    # Carry-forward loss buckets: list of (expiry_fy, amount)
-    cf_st_full: list[tuple[int, float]] = []
-    cf_lt_full: list[tuple[int, float]] = []
-    cf_st_marg: list[tuple[int, float]] = []
-    cf_lt_marg: list[tuple[int, float]] = []
-    cf_st_prop: list[tuple[int, float]] = []
-    cf_lt_prop: list[tuple[int, float]] = []
+    ledgers = [QuantityLedger(), QuantityLedger(), QuantityLedger()]
+    labels = ["Full Rebalance", "Marginal Rebalance", "Prop Rebalance"]
+    flat_fee = brokerage_per_sale * 100.0 / initial_capital if initial_capital > 0 else 0.0
 
     for i, day in enumerate(trading_days):
-        # Earn the current session's close-to-close return with the portfolio
-        # that was actually held at the previous close. Then drift weights to
-        # the current close. A rebalance at this close therefore affects only
-        # subsequent sessions, avoiding use of post-trade holdings for a return
-        # that occurred before the trade.
-        if i > 0 and current_holdings:
-            port_ret_full = 0.0
-            port_ret_marg = 0.0
-            port_ret_prop = 0.0
-            if day in returns_matrix.index:
-                row = returns_matrix.loc[day]
-                for sym in current_holdings:
-                    r = row.get(sym, np.nan)
-                    if pd.isna(r):
-                        continue
-                    port_ret_full += full_weights.get(sym, 0.0) * r
-                    port_ret_marg += marg_weights.get(sym, 0.0) * r
-                    port_ret_prop += prop_weights.get(sym, 0.0) * r
-            nav_full *= 1 + port_ret_full
-            nav_marg *= 1 + port_ret_marg
-            nav_prop *= 1 + port_ret_prop
-
-            previous_day = trading_days[i - 1]
-            full_weights = _drift_weights(full_weights, all_ohlcv, previous_day, day)
-            full_weights_prev = dict(full_weights)
-            marg_weights = _drift_weights(marg_weights, all_ohlcv, previous_day, day)
-            prop_weights = _drift_weights(prop_weights, all_ohlcv, previous_day, day)
+        for action in corporate_actions:
+            if pd.Timestamp(action["effective_date"]) <= day:
+                for ledger in ledgers:
+                    ledger.transfer(day, action)
+        held_symbols = set().union(*(ledger.quantities() for ledger in ledgers))
+        quotes = {symbol: _close_price(all_ohlcv, symbol, day) for symbol in held_symbols}
+        for ledger in ledgers:
+            ledger.mark(day, all_ohlcv)
+            ledger.accrue_tax(day, _compute_fy_tax, stcg_rate, ltcg_rate)
+            ledger.settle_tax(day, quotes, transaction_cost_pct, flat_fee)
+            ledger.accrue_tax(day, _compute_fy_tax, stcg_rate, ltcg_rate)
+        nav_full, nav_marg, nav_prop = [ledger.nav() for ledger in ledgers]
+        full_weights, marg_weights, prop_weights = [ledger.weights() for ledger in ledgers]
+        full_weights_prev = dict(full_weights)
+        current_holdings = set().union(*(ledger.quantities() for ledger in ledgers))
 
         # ── rebalance ──
         if day in rebalance_set:
@@ -1358,24 +1353,15 @@ def run_backtest(
                 prop_weights = {}
                 current_holdings = set()
                 prev_stage2_scores.clear()
-                lots_full = {}
-                lots_marg = {}
-                lots_prop = {}
+                ledgers = [QuantityLedger(), QuantityLedger(), QuantityLedger()]
                 nav_full = nav_marg = nav_prop = 100.0
                 pending_corporate_actions = []
 
-            pending_corporate_actions.extend(
-                _apply_due_corporate_actions(
-                    day,
-                    current_holdings,
-                    [full_weights, full_weights_prev, marg_weights, prop_weights],
-                    [lots_full, lots_marg, lots_prop],
-                    corporate_actions,
-                )
-            )
+            pending_corporate_actions = [dict(a) for a in corporate_actions if pd.Timestamp(a["effective_date"]) == day]
 
             # Restrict universe to historically valid members on this date
             valid_syms = _valid_symbols_at_date(comp_prepared, index_names or [], day)
+            coverage_log.extend(coverage_at(comp_prepared, index_names or [], day, all_ohlcv))
 
             # Ordinary backtests rank on T-1 for a T-close rebalance. Live
             # Signal ranks after the signal session closes and executes on the
@@ -1431,9 +1417,6 @@ def run_backtest(
                 if symbol not in ranked and (valid_syms is None or symbol in valid_syms):
                     exit_reasons[symbol] = "excluded: " + _excluded_reasons.get(symbol, "unrankable")
 
-            if not new_holdings:
-                new_holdings = top_m if top_m else (set() if not ranked else current_holdings)
-
             # Update Stage 2 score baseline for next rebalance.
             # Track full ranked universe (not just holdings) so entry-jump signal
             # can detect score rises on stocks we don't yet own.
@@ -1448,6 +1431,7 @@ def run_backtest(
 
             size = len(new_holdings)
             holdings_sizes.append(size)
+            quotes.update({s: _close_price(all_ohlcv, s, day) for s in new_holdings if s not in quotes})
 
             # ── save drift-adjusted weights before assignment (needed for turnover diff + CGT) ──
             old_full_weights = dict(full_weights_prev)
@@ -1469,152 +1453,39 @@ def run_backtest(
                 new_slot = _apply_weight_cap(new_slot, _cap)
                 new_prop = _apply_weight_cap(new_prop, _cap)
 
-            # ── weight-based turnover: abs-diff formula captures all implicit weight changes ──
-            # For each variant: traded = Σ|old_w(s) - new_w(s)| over all affected stocks.
-            # This counts exits (old→0), entries (0→new), incumbent rebalances, and implicit
-            # sells/buys caused by normalization when freed capital != entrant allocation.
-            universe = new_holdings | exits
-
-            traded_w_full = (
-                sum(full_weights_prev.get(s, 0.0) for s in exits)
-                + sum(1.0 / size for s in entries)
-                + sum(abs(full_weights_prev.get(s, 0.0) - 1.0 / size) for s in (new_holdings - entries))
-            )
-            turnover_log_full.append(traded_w_full)
-
-            traded_w_marg = sum(abs(old_marg_weights.get(s, 0.0) - new_slot.get(s, 0.0)) for s in universe)
-            turnover_log_marg.append(traded_w_marg)
-
-            traded_w_prop = sum(abs(old_prop_weights.get(s, 0.0) - new_prop.get(s, 0.0)) for s in universe)
-            turnover_log_prop.append(traded_w_prop)
-
-            # ── transaction cost drag — separate for full, marginal, and prop ──
-            if i > 0 and transaction_cost_pct > 0 and size > 0:
-                cost_drag_full = traded_w_full * transaction_cost_pct
-                cost_drag_marg = traded_w_marg * transaction_cost_pct
-                cost_drag_prop = traded_w_prop * transaction_cost_pct
-                nav_full *= 1.0 - cost_drag_full
-                nav_marg *= 1.0 - cost_drag_marg
-                nav_prop *= 1.0 - cost_drag_prop
-                cost_log_full.append(cost_drag_full)
-                cost_log_marg.append(cost_drag_marg)
-                cost_log_prop.append(cost_drag_prop)
-
-            # ── flat brokerage per sale (exits only, no charge on buys) ──
-            if i > 0 and brokerage_per_sale > 0 and initial_capital > 0 and exits:
-                n_exits = len(exits)
-                brok_drag_full = (brokerage_per_sale * n_exits) / (initial_capital * nav_full / 100.0)
-                brok_drag_marg = (brokerage_per_sale * n_exits) / (initial_capital * nav_marg / 100.0)
-                brok_drag_prop = (brokerage_per_sale * n_exits) / (initial_capital * nav_prop / 100.0)
-                nav_full *= 1.0 - brok_drag_full
-                nav_marg *= 1.0 - brok_drag_marg
-                nav_prop *= 1.0 - brok_drag_prop
-                brok_log_full.append(brok_drag_full)
-                brok_log_marg.append(brok_drag_marg)
-                brok_log_prop.append(brok_drag_prop)
-            else:
-                brok_log_full.append(0.0)
-                brok_log_marg.append(0.0)
-                brok_log_prop.append(0.0)
-
-            # ── capital gains tax (India LTCG / STCG, FY-level with carry-forward) ──
-            if ltcg_rate > 0 or stcg_rate > 0:
-                day_fy = _financial_year(day)
-
-                # ── FY boundary: close out prior FY and apply its tax ──
-                if current_fy is not None and day_fy != current_fy:
-                    tax_full, cf_st_full, cf_lt_full = _compute_fy_tax(
-                        current_fy,
-                        fy_st_g_full,
-                        fy_st_l_full,
-                        fy_lt_g_full,
-                        fy_lt_l_full,
-                        cf_st_full,
-                        cf_lt_full,
-                        stcg_rate,
-                        ltcg_rate,
+            turnovers = []
+            costs_before = [ledger.fees for ledger in ledgers]
+            brok_before = [ledger.brokerage for ledger in ledgers]
+            navs_before = [ledger.nav() for ledger in ledgers]
+            prior_actual = set(current_holdings)
+            for ledger, target in zip(ledgers, [new_full, new_slot, new_prop]):
+                turnovers.append(
+                    ledger.rebalance(
+                        day, target, quotes, transaction_cost_pct, flat_fee, _compute_fy_tax, stcg_rate, ltcg_rate
                     )
-                    tax_marg, cf_st_marg, cf_lt_marg = _compute_fy_tax(
-                        current_fy,
-                        fy_st_g_marg,
-                        fy_st_l_marg,
-                        fy_lt_g_marg,
-                        fy_lt_l_marg,
-                        cf_st_marg,
-                        cf_lt_marg,
-                        stcg_rate,
-                        ltcg_rate,
-                    )
-                    tax_prop, cf_st_prop, cf_lt_prop = _compute_fy_tax(
-                        current_fy,
-                        fy_st_g_prop,
-                        fy_st_l_prop,
-                        fy_lt_g_prop,
-                        fy_lt_l_prop,
-                        cf_st_prop,
-                        cf_lt_prop,
-                        stcg_rate,
-                        ltcg_rate,
-                    )
-                    drag_full = tax_full / nav_full if nav_full > 0 else 0.0
-                    drag_marg = tax_marg / nav_marg if nav_marg > 0 else 0.0
-                    drag_prop = tax_prop / nav_prop if nav_prop > 0 else 0.0
-                    nav_full *= 1.0 - drag_full
-                    nav_marg *= 1.0 - drag_marg
-                    nav_prop *= 1.0 - drag_prop
-                    tax_log_full.append(drag_full)
-                    tax_log_marg.append(drag_marg)
-                    tax_log_prop.append(drag_prop)
-                    # Reset FY accumulators
-                    fy_st_g_full = fy_st_l_full = fy_lt_g_full = fy_lt_l_full = 0.0
-                    fy_st_g_marg = fy_st_l_marg = fy_lt_g_marg = fy_lt_l_marg = 0.0
-                    fy_st_g_prop = fy_st_l_prop = fy_lt_g_prop = fy_lt_l_prop = 0.0
-                    current_fy = day_fy
-                elif current_fy is None:
-                    current_fy = day_fy
-
-                # Accumulate realised gains/losses from every weight reduction.
-                if i > 0:
-                    s_g, s_l, l_g, l_l = _realise_weight_reductions(
-                        lots_full, old_full_weights, new_full, all_ohlcv, day, nav_full
-                    )
-                    fy_st_g_full += s_g
-                    fy_st_l_full += s_l
-                    fy_lt_g_full += l_g
-                    fy_lt_l_full += l_l
-
-                    s_g, s_l, l_g, l_l = _realise_weight_reductions(
-                        lots_marg, old_marg_weights, new_slot, all_ohlcv, day, nav_marg
-                    )
-                    fy_st_g_marg += s_g
-                    fy_st_l_marg += s_l
-                    fy_lt_g_marg += l_g
-                    fy_lt_l_marg += l_l
-
-                    s_g, s_l, l_g, l_l = _realise_weight_reductions(
-                        lots_prop, old_prop_weights, new_prop, all_ohlcv, day, nav_prop
-                    )
-                    fy_st_g_prop += s_g
-                    fy_st_l_prop += s_l
-                    fy_lt_g_prop += l_g
-                    fy_lt_l_prop += l_l
-
-            # Record new FIFO lots for every weight increase.
-            _record_weight_increases(lots_full, old_full_weights, new_full, all_ohlcv, day, nav_full)
-            _record_weight_increases(lots_marg, old_marg_weights, new_slot, all_ohlcv, day, nav_marg)
-            _record_weight_increases(lots_prop, old_prop_weights, new_prop, all_ohlcv, day, nav_prop)
-
-            # ── store pre-computed weights (calculated above before turnover/costs) ──
-            full_weights = new_full
-            full_weights_prev = dict(new_full)  # store for next rebalance's drift-adjust & turnover
-            marg_weights = new_slot
-            prop_weights = new_prop
-
-            current_holdings = new_holdings
+                )
+            nav_full, nav_marg, nav_prop = [ledger.nav() for ledger in ledgers]
+            full_weights, marg_weights, prop_weights = [ledger.weights() for ledger in ledgers]
+            full_weights_prev = dict(full_weights)
+            traded_w_full, traded_w_marg, traded_w_prop = turnovers
+            for log, value in zip([turnover_log_full, turnover_log_marg, turnover_log_prop], turnovers):
+                log.append(value)
+            for k, (clog, blog) in enumerate(
+                zip([cost_log_full, cost_log_marg, cost_log_prop], [brok_log_full, brok_log_marg, brok_log_prop])
+            ):
+                base = navs_before[k]
+                clog.append((ledgers[k].fees - costs_before[k]) / base if base > 0 else 0.0)
+                blog.append((ledgers[k].brokerage - brok_before[k]) / base if base > 0 else 0.0)
+            current_holdings = set().union(*(ledger.quantities() for ledger in ledgers))
+            entries = current_holdings - prior_actual
+            exits = prior_actual - current_holdings
             holdings_log.append(
                 {
                     "date": day,
                     "holdings": sorted(current_holdings),
+                    "holdings_by_variant": {
+                        label: sorted(ledger.quantities()) for label, ledger in zip(labels, ledgers)
+                    },
                     "entries": [f"{s} ({entry_reasons[s]})" if s in entry_reasons else s for s in sorted(entries)],
                     "exits": [f"{s} ({exit_reasons[s]})" if s in exit_reasons else s for s in sorted(exits)],
                     "full_ranking": ranked,
@@ -1633,6 +1504,21 @@ def run_backtest(
                     "pre_rebalance_marg_weights": {s: round(w * 100, 4) for s, w in old_marg_weights.items()},
                     "pre_rebalance_prop_weights": {s: round(w * 100, 4) for s, w in old_prop_weights.items()},
                     "rank_as_of": rank_as_of,
+                    "fill_failures": [
+                        failure for ledger in ledgers for failure in ledger.failures if failure["date"] == day
+                    ],
+                    "cash_weights": {
+                        label: ledger.cash / ledger.nav() * 100 if ledger.nav() > 0 else 0.0
+                        for label, ledger in zip(labels, ledgers)
+                    },
+                    "cap_violations": {
+                        label: {
+                            s: w * 100
+                            for s, w in ledger.weights().items()
+                            if max_position_pct and w * 100 > max_position_pct + 1e-6
+                        }
+                        for label, ledger in zip(labels, ledgers)
+                    },
                     # snapshot weights at this rebalance (copies — originals rebind next iteration)
                     "full_weights": {s: round(w * 100, 4) for s, w in full_weights.items()},
                     "marg_weights": {s: round(w * 100, 4) for s, w in marg_weights.items()},
@@ -1645,6 +1531,9 @@ def run_backtest(
             )
             pending_corporate_actions = []
 
+        for ledger in ledgers:
+            ledger.snapshot(day)
+        nav_full, nav_marg, nav_prop = [ledger.nav() for ledger in ledgers]
         nav_records.append(
             {
                 "Date": day,
@@ -1656,56 +1545,11 @@ def run_backtest(
 
     nav_df = pd.DataFrame(nav_records).set_index("Date")
 
-    # ── apply CGT for the final (possibly partial) financial year ──
-    if (ltcg_rate > 0 or stcg_rate > 0) and current_fy is not None:
-        tax_full, cf_st_full, cf_lt_full = _compute_fy_tax(
-            current_fy,
-            fy_st_g_full,
-            fy_st_l_full,
-            fy_lt_g_full,
-            fy_lt_l_full,
-            cf_st_full,
-            cf_lt_full,
-            stcg_rate,
-            ltcg_rate,
-        )
-        tax_marg, cf_st_marg, cf_lt_marg = _compute_fy_tax(
-            current_fy,
-            fy_st_g_marg,
-            fy_st_l_marg,
-            fy_lt_g_marg,
-            fy_lt_l_marg,
-            cf_st_marg,
-            cf_lt_marg,
-            stcg_rate,
-            ltcg_rate,
-        )
-        tax_prop, cf_st_prop, cf_lt_prop = _compute_fy_tax(
-            current_fy,
-            fy_st_g_prop,
-            fy_st_l_prop,
-            fy_lt_g_prop,
-            fy_lt_l_prop,
-            cf_st_prop,
-            cf_lt_prop,
-            stcg_rate,
-            ltcg_rate,
-        )
-        drag_full = tax_full / nav_full if nav_full > 0 else 0.0
-        drag_marg = tax_marg / nav_marg if nav_marg > 0 else 0.0
-        drag_prop = tax_prop / nav_prop if nav_prop > 0 else 0.0
-        nav_full *= 1.0 - drag_full
-        nav_marg *= 1.0 - drag_marg
-        nav_prop *= 1.0 - drag_prop
-        tax_log_full.append(drag_full)
-        tax_log_marg.append(drag_marg)
-        tax_log_prop.append(drag_prop)
-        # Update final row in nav_records to reflect post-tax NAV
-        if nav_records:
-            nav_records[-1]["Full Rebalance"] = nav_full
-            nav_records[-1]["Marginal Rebalance"] = nav_marg
-            nav_records[-1]["Prop Rebalance"] = nav_prop
-        nav_df = pd.DataFrame(nav_records).set_index("Date")
+    # Current FY taxes are accrued liabilities, not an implicit terminal
+    # liquidation. Actual settlement/funding appears separately in the ledger.
+    tax_log_full, tax_log_marg, tax_log_prop = [
+        [(ledger.tax_paid + ledger.payable + ledger.accrued) / 100.0] for ledger in ledgers
+    ]
 
     # ── attach benchmarks ──
     for label, series in benchmarks.items():
@@ -1751,6 +1595,39 @@ def run_backtest(
         stats_df.loc["Prop Rebalance", "Brokerage Drag (%)"] = total_brok_prop
 
     return {
+        "accounting_version": ACCOUNTING_VERSION,
+        "run_manifest": manifest,
+        "coverage_report": coverage_log,
+        "policies": dict(POLICIES),
+        "certification": "research only: historical identities/coverage and nominal tax basis unverified",
+        "execution_ledgers": {label: ledger.trades for label, ledger in zip(labels, ledgers)},
+        "daily_ledgers": {label: ledger.daily for label, ledger in zip(labels, ledgers)},
+        "closed_lots": {label: ledger.closed_lots for label, ledger in zip(labels, ledgers)},
+        "fill_failures": {label: ledger.failures for label, ledger in zip(labels, ledgers)},
+        "tax_events": {label: ledger.tax_events for label, ledger in zip(labels, ledgers)},
+        "accounting_totals": {
+            label: {
+                "fees_nav_units": ledger.fees,
+                "brokerage_nav_units": ledger.brokerage,
+                "tax_paid_nav_units": ledger.tax_paid,
+                "tax_payable_nav_units": ledger.payable,
+                "tax_accrued_nav_units": ledger.accrued,
+                "ending_cash_nav_units": ledger.cash,
+                "fill_failures": len(ledger.failures),
+                "peak_stock_weight_pct": max(
+                    (
+                        max(
+                            (q * record["marks"][s] / record["nav"] * 100 for s, q in record["quantities"].items()),
+                            default=0.0,
+                        )
+                        for record in ledger.daily
+                        if record["nav"] > 0
+                    ),
+                    default=0.0,
+                ),
+            }
+            for label, ledger in zip(labels, ledgers)
+        },
         "nav": nav_df,
         "stats": stats_df,
         "holdings_log": holdings_log,
@@ -1780,6 +1657,6 @@ def run_backtest(
 
 
 def rolling_returns(nav_df: pd.DataFrame, window_days: int) -> pd.DataFrame:
-    """Return rolling annualised return / CAGR (%) for all columns in nav_df."""
+    """Return explicitly 252-session annualized rolling CAGR (%), not calendar CAGR."""
     simple = nav_df.pct_change(periods=window_days)
     return ((1 + simple) ** (252 / window_days) - 1) * 100

@@ -1,0 +1,23 @@
+LOAD APP SNAPSHOT
+RUN APP 1120 ('f7b7391fc10f41e29c49dec8a7274bd2', '5aeb0b0c826746dca63ada9272a9d94f')
+WARNING:root:Index 'Nifty Midcap 150' composition data starts on 2020-09-01, which is after the backtest start 2017-07-01. This index will be excluded from the universe filter until its data begins.
+WARNING:root:Index 'Nifty Smallcap 250' composition data starts on 2020-09-01, which is after the backtest start 2017-07-01. This index will be excluded from the universe filter until its data begins.
+WARNING:root:Index 'Nifty Microcap 250' composition data starts on 2021-05-11, which is after the backtest start 2017-07-01. This index will be excluded from the universe filter until its data begins.
+RESULT                     CAGR (%)  Sharpe  Max Drawdown (%)  Calmar  Sortino  Final NAV  Avg Holdings  Avg Turnover (%)  Cost Drag (%)  Tax Drag (%)  Brokerage Drag (%)
+Full Rebalance         27.01   1.146            -27.52   0.982    1.276     887.36          17.1              26.9         12.718        41.939                 0.0
+Marginal Rebalance     27.25   1.116            -33.10   0.823    1.257     902.83          17.1              21.4         10.018        35.795                 0.0
+Prop Rebalance         27.34   1.148            -27.95   0.978    1.284     908.47          17.1              24.4         11.491        40.187                 0.0
+Nifty 100               9.98   0.661            -38.10   0.262    0.795     238.40           NaN               NaN            NaN           NaN                 NaN
+Nifty 50                9.89   0.654            -38.44   0.257    0.797     236.61           NaN               NaN            NaN           NaN                 NaN
+Nifty 500              10.95   0.714            -38.30   0.286    0.840     258.24           NaN               NaN            NaN           NaN                 NaN
+SAVED                 SortMethod  M  N   Freq    Band            Variant  Stage2DropThreshold  MaxPositionPct  CAGR (%)  Sharpe  Max Drawdown (%)  Calmar  Sortino  Final NAV  Avg Holdings  Avg Turnover (%)  Cost Drag (%)  Tax Drag (%)  Brokerage Drag (%)    Status Start Date   End Date  Unnamed: 22                                                                                   Source data coverage
+Average of 3/6/9/12 months 15 30 weekly classic     Full Rebalance                    0               0     27.01   1.146            -27.52   0.982    1.276     887.36          17.1              26.9         12.718        41.939                 0.0 Completed 2017-07-01 2026-10-27          NaN         NAV is indexed to 100, matching v8. Percentage columns use numeric values: 27.01 means 27.01%.
+Average of 3/6/9/12 months 15 30 weekly classic Marginal Rebalance                    0               0     27.25   1.116            -33.10   0.823    1.257     902.83          17.1              21.4         10.018        35.795                 0.0 Completed 2017-07-01 2026-10-27          NaN       Midcap 150 and Smallcap 250 membership starts Sep 2020; Microcap 250 membership starts May 2021.
+Average of 3/6/9/12 months 15 30 weekly classic     Prop Rebalance                    0               0     27.34   1.148            -27.95   0.978    1.284     908.47          17.1              24.4         11.491        40.187                 0.0 Completed 2017-07-01 2026-10-27          NaN Source flags histories for rebuild: ABLBL, CIGNITITEC, GSPL, HEG, IGIL, JAINREC, JBCHEPHARM, SKFINDUS.
+CAGR delta Full Rebalance 0.0
+NAV delta Full Rebalance 0.0
+CAGR delta Marginal Rebalance 0.0
+NAV delta Marginal Rebalance 0.0
+CAGR delta Prop Rebalance 0.0
+NAV delta Prop Rebalance 0.0
+BATCH REPRODUCED

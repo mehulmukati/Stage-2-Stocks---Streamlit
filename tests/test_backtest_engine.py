@@ -216,7 +216,7 @@ def _valid(df, index_names, as_of_str):
 
 
 def test_valid_empty_comp_df():
-    assert _valid(pd.DataFrame(), ["NIFTY50"], "2023-01-01") is None
+    assert _valid(pd.DataFrame(), ["NIFTY50"], "2023-01-01") == set()
 
 
 def test_valid_single_index_single_snapshot():
@@ -505,13 +505,13 @@ def test_apply_weight_cap_trims_one_overweight():
     assert math.isclose(sum(result.values()), 1.0, rel_tol=1e-6)
 
 
-def test_apply_weight_cap_infeasible_returns_equal():
-    # cap = 0.1 with 5 symbols — exactly feasible (0.1 * 5 = 1.0), but with unequal weights
-    # cap = 0.05 with 5 symbols — infeasible (0.05 * 5 = 0.25 < 1.0)
+def test_apply_weight_cap_infeasible_retains_cash():
+    # Five holdings at 5% leave 75% cash; no holding violates the maximum.
     w = {"A": 0.5, "B": 0.2, "C": 0.1, "D": 0.1, "E": 0.1}
     result = _apply_weight_cap(w, 0.05)
     for v in result.values():
-        assert math.isclose(v, 0.2, rel_tol=1e-6)
+        assert math.isclose(v, 0.05, rel_tol=1e-6)
+    assert math.isclose(1 - sum(result.values()), 0.75)
 
 
 def test_apply_weight_cap_result_sums_to_one():

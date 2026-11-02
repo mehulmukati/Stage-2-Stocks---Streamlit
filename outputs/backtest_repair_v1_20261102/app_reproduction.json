@@ -1,0 +1,27 @@
+{
+  "source_revisions": [
+    "f7b7391fc10f41e29c49dec8a7274bd2",
+    "5aeb0b0c826746dca63ada9272a9d94f"
+  ],
+  "engine_sha256": "da7d8d0b5472e3e5b0124846d5901169cd848b342e28e7cf02e7eac37c150949",
+  "return_keys": [
+    "nav",
+    "stats",
+    "holdings_log",
+    "portfolio_reset_date",
+    "avg_turnover_pct",
+    "avg_turnover_pct_marg",
+    "avg_turnover_pct_prop",
+    "total_cost_drag_pct",
+    "total_cost_drag_pct_marg",
+    "total_cost_drag_pct_prop",
+    "total_tax_drag_pct",
+    "total_tax_drag_pct_marg",
+    "total_tax_drag_pct_prop",
+    "total_brokerage_drag_pct",
+    "total_brokerage_drag_pct_marg",
+    "total_brokerage_drag_pct_prop",
+    "rebalance_dates",
+    "trading_days"
+  ]
+}

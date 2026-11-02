@@ -1,0 +1,33 @@
+{
+  "baseline_revision": "32c1d08",
+  "tests": "425 passed; recovery restoration 3 passed",
+  "accounting_reconciliation": "passed; max NAV error <5e-13",
+  "trusted_historical_universe_gate": "closed; identity and coverage unresolved",
+  "strategy_comparison_matrix": "not run; coverage correctness gate closed",
+  "accepted_shared_files_changed": false,
+  "live_checkpoints_advanced": false,
+  "final_diagnostic": "accounting_diagnostic_v2",
+  "sha256": {
+    "implementation_report.md": "4f4f6eb4dd21b072e79b1e8c6418ed2413b1d57236fe65f3fdfbbe741392f7d2",
+    "before_after_legacy_accounting.csv": "a38dabba67987f43fa4bb9312805b45c1dda85d61cd14f5bb583514f85071d62",
+    "baseline_manifest.json": "fb6017ac71a9e7462d12194ae1ac796a7bb350c4bb84b193fd9a7c245499a98b",
+    "baseline_replay.log": "79e7f1988486ab2960de4b0957b83365f04ccd7d8a2d93e84e9edde466fb6c06",
+    "protected_inputs_check_final.json": "a6dc2811efe0d3df53975757b98a8f237ae4073823ccaadc6fd071ff80e73979",
+    "full_tests.log": "012396fb2e2e9f12d857a23340fc63a1df871abae270996bf72dcab49881a40a",
+    "recovery_tests.log": "5147aa727fba58746e8d64b9a1b888adc059c3daf922a4d8bb1919f908f41e70",
+    "lint_verified_final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "accounting_diagnostic_v2/manifest.json": "2d02eb1e6600d930f475ba0a8f32d4b27e154e1e5b3c6191c17328c72cbc3aeb",
+    "accounting_diagnostic_v2/independent_reconciliation.json": "41437ed3fe7fef2bd841f7757ea603c83ba6bbb1ec865b918b0af3dc4fc6a65d",
+    "accounting_diagnostic_v2/nav.csv": "8e57cbbebd91424e6e6849e957f208da07140691adc7e0d4863a522ae2937678",
+    "accounting_diagnostic_v2/stats.csv": "31ec5e0ffda8f3c09a50c34d92827449c05074b609977dc1506fdcf64d27751f",
+    "accounting_diagnostic_v2/accounting_totals.json": "2f682d58866f95cc6c1cfcaede89a3361132ee210420ecad514684b1f0af9c6e",
+    "candidate_universe_v5/manifest.json": "a87740ca302dba6bccb97686556f9d708f9bda5c15caa80aa8f1a09b10b9ffbc",
+    "candidate_universe_v5/validation.json": "c0f548f24e5a5d1856e35fc027cab5ebaa3b1ee44fc0dfc7e60de3d2f418d899",
+    "universe_audit_v2/coverage_gate.json": "9f1bea3d6777f40c4cabf6e996d4a0a7e66f090b5c31b873155096cfe802bf86",
+    "universe_audit_v2/unanchored_source_events.csv": "34adcf14e54380a9b04b888291db5e1aa2cf95207d647ccd1f08995e4d706a57",
+    "universe_audit_v2/unresolved_impact_register.csv": "d5d6b26eb4081a62a0b34f1e3802406c7c8dc0d591f2aa5d3ae9ad6c327097bd",
+    "universe_audit_v2/all_historical_price_coverage.csv": "1543fad3fd6daad192676e94dcbb9c6c6a0e65712dd20538716fa7854fd0f118",
+    "universe_audit_v2/per_index_date_coverage.csv": "df844f5be04c0407809147b1afd2fa7a954b8d727de3012ee31885516f1979e3",
+    "universe_audit_v2/parent_component_discrepancies.csv": "c44a27e7af5532eed3cb932b0bba62ff7931b3f443f9457cd396d8a053d873d9"
+  }
+}
