@@ -18,8 +18,8 @@ from scripts.refresh_market_data import (  # noqa: E402
     refresh_prices,
 )
 
-SCHEDULES = {"15 14 * * *", "15 15 * * *", "15 17 * * *", "15 3 * * *"}
-FINAL_SCHEDULE = "15 3 * * *"
+SCHEDULES = {"15 14 * * *", "15 15 * * *", "15 17 * * *", "15 3 * * *", "15 9 * * *"}
+FINAL_SCHEDULE = "15 9 * * *"
 
 
 def recovery_plan(schedule="", now=None, target_date=None):
@@ -37,7 +37,7 @@ def recovery_plan(schedule="", now=None, target_date=None):
     target = target_date or completed_session(nominal.astimezone(IST))
     # Also validates explicit workflow inputs before they enter logs or outputs.
     target = datetime.strptime(target, "%Y-%m-%d").strftime("%Y-%m-%d")
-    deadline = (datetime.strptime(target, "%Y-%m-%d") + timedelta(days=1)).replace(hour=8, minute=45, tzinfo=IST)
+    deadline = (datetime.strptime(target, "%Y-%m-%d") + timedelta(days=1)).replace(hour=14, minute=45, tzinfo=IST)
     return dict(
         target_date=target,
         final_attempt=schedule == FINAL_SCHEDULE,
@@ -69,6 +69,11 @@ def run_attempt(plan, force=False):
         return report | {"status": "recovered"}
     except Exception as exc:
         report["error"] = str(exc)
+        # Keep attempted coverage separate: accepted coverage below still describes
+        # the unchanged file, rather than erasing the evidence of a partial response.
+        if hasattr(exc, "candidate_coverage"):
+            report["candidate_coverage"] = exc.candidate_coverage
+            report["provider_errors"] = exc.provider_errors
         try:
             snapshot = md.load_snapshot()
             report.update(price_coverage(snapshot.prices, snapshot.symbols(as_of=target), target))
@@ -80,16 +85,35 @@ def run_attempt(plan, force=False):
 def describe_report(report):
     target = report["target_date"]
     missing = report.get("missing_target_symbols", [])
+    candidate = report.get("candidate_coverage")
+    attempted = (
+        f"Rejected candidate coverage: {candidate['target_session_symbol_count']}/"
+        f"{candidate['current_symbol_count']} current stocks; missing benchmarks: "
+        f"{', '.join(candidate['missing_target_benchmarks']) or 'none'}\n\n"
+        if candidate
+        else ""
+    )
+    errors = report.get("provider_errors", {})
+    details = "".join(f"- {symbol}: {reason}\n" for symbol, reason in sorted(errors.items())[:20])
+    diagnostics = (
+        f"\nProvider/symbol diagnostics ({len(errors)}; full list in artifact):\n\n{details}" if errors else ""
+    )
+    retry = (
+        "This attempt failed; later scheduled recovery slots may retry through 2:45 PM IST the next day.\n\n"
+        if report["status"] == "failed" and not report.get("final_attempt") and report.get("attempt_allowed", True)
+        else ""
+    )
     return (
         f"## Market data recovery: {target}\n\n"
         f"Status: **{report['status']}**\n\n"
         f"Latest accepted price date: {report.get('max_price_date') or 'unavailable'}\n\n"
-        f"Target coverage: {report.get('target_session_symbol_count', 0)}/"
+        f"Accepted target coverage: {report.get('target_session_symbol_count', 0)}/"
         f"{report.get('current_symbol_count', 0)} current stocks\n\n"
         f"Missing benchmarks: {', '.join(report.get('missing_target_benchmarks', [])) or 'none'}\n\n"
         f"Missing stocks ({len(missing)}): {', '.join(missing[:40]) or 'none'}"
         f"{' (full list in recovery artifact)' if len(missing) > 40 else ''}\n\n"
-        f"Failure reason: {report.get('error', 'none')}\n"
+        f"{attempted}{retry}"
+        f"Failure reason: {report.get('error', 'none')}\n{diagnostics}"
     )
 
 

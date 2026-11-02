@@ -5,7 +5,8 @@ on:
     - cron: "15 14 * * *" # 7:45 PM IST
     - cron: "15 15 * * *" # 8:45 PM IST retry
     - cron: "15 17 * * *" # 10:45 PM IST retry for delayed vendor prices
-    - cron: "15 3 * * *" # 8:45 AM IST final recovery of the prior session
+    - cron: "15 3 * * *" # 8:45 AM IST recovery of the prior session
+    - cron: "15 9 * * *" # 2:45 PM IST final recovery for delayed prior-session prices
   workflow_dispatch:
     inputs:
       target_date:
@@ -60,7 +61,6 @@ jobs:
 
       - name: Recover target session unless it is already accepted
         id: recovery
-        continue-on-error: true
         env:
           RECOVERY_RUN_CREATED_AT: ${{ steps.clock.outputs.result }}
         run: python scripts/recover_market_data.py

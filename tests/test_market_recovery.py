@@ -15,8 +15,11 @@ from scripts.refresh_market_data import merge_observations, refresh_prices
         ("15 14 * * *", "2026-10-19T14:20:00+00:00", "2026-10-19", False),
         ("15 15 * * *", "2026-10-19T15:20:00+00:00", "2026-10-19", False),
         ("15 17 * * *", "2026-10-20T00:30:00+00:00", "2026-10-19", False),
-        ("15 3 * * *", "2026-10-20T03:20:00+00:00", "2026-10-19", True),
-        ("15 3 * * *", "2026-10-21T03:20:00+00:00", "2026-10-19", True),
+        ("15 3 * * *", "2026-10-20T03:20:00+00:00", "2026-10-19", False),
+        ("15 3 * * *", "2026-10-21T03:20:00+00:00", "2026-10-19", False),
+        ("15 9 * * *", "2026-10-20T09:20:00+00:00", "2026-10-19", True),
+        ("15 9 * * *", "2026-10-21T12:00:00+00:00", "2026-10-19", True),
+        ("15 9 * * *", "2026-10-20T20:00:00+00:00", "2026-10-19", True),
         ("15 14 * * *", "2026-10-17T14:20:00+00:00", "2026-10-16", False),
         ("15 17 * * *", "2026-10-22T02:30:00+00:00", "2026-10-21", False),
     ],
@@ -34,8 +37,8 @@ def test_recovery_rejects_unrecognized_schedule_and_invalid_explicit_date():
         recovery.recovery_plan(target_date="2026-10-19\nforged=value")
 
 
-def test_automatic_attempts_stop_after_next_morning_even_across_weekend():
-    final = recovery.recovery_plan("15 3 * * *", now=datetime.fromisoformat("2026-10-17T03:20:00+00:00"))
+def test_automatic_attempts_stop_after_next_afternoon_even_across_weekend():
+    final = recovery.recovery_plan("15 9 * * *", now=datetime.fromisoformat("2026-10-17T09:20:00+00:00"))
     assert final["target_date"] == "2026-10-16"
     assert final["attempt_allowed"] is True
     later = recovery.recovery_plan("15 14 * * *", now=datetime.fromisoformat("2026-10-17T14:20:00+00:00"))
@@ -99,6 +102,37 @@ def test_outage_then_recovery_then_skip_without_repeated_source_requests(market,
     assert md.source_revisions() == revision
 
 
+def test_rejected_candidate_keeps_partial_download_evidence_and_accepted_prices(market, monkeypatch):
+    from apps.dual_momentum import config
+
+    monkeypatch.setattr(config, "ETF_UNIVERSE", {})
+    monkeypatch.setattr(refresh_constituents, "refresh", lambda: None)
+    frame, _, days = market
+    target = str((days[-1] + pd.offsets.BDay()).date())
+    baseline = md.PRICE_PATH.read_bytes()
+    # One stock is fresh, while another has no provider response at all.
+    fresh = frame[frame.symbol.eq("A")].tail(1).assign(date=pd.Timestamp(target))
+    response = pd.concat([frame[~frame.symbol.eq("B")], fresh], ignore_index=True)
+
+    def fetch(requests, start, end):
+        identities = set(requests.values())
+        selected = response.apply(lambda row: (row.symbol, row.series_type) in identities, axis=1)
+        return response[selected].copy(), "target session unavailable"
+
+    monkeypatch.setattr(recovery, "refresh_prices", lambda **kwargs: refresh_prices(fetch=fetch, **kwargs))
+    report = recovery.run_attempt(dict(target_date=target, final_attempt=True))
+    assert report["status"] == "failed"
+    assert report["target_session_symbol_count"] == 0
+    assert report["candidate_coverage"]["target_session_symbol_count"] == 1
+    assert "B.NS" in report["provider_errors"]
+    assert "latest returned" in report["provider_errors"]["LOWVOL.NS"]
+    assert md.PRICE_PATH.read_bytes() == baseline
+    summary = recovery.describe_report(report)
+    assert "Accepted target coverage: 0/3" in summary
+    assert "Rejected candidate coverage: 1/3" in summary
+    assert "B.NS" in summary
+
+
 def test_final_report_keeps_reason_dates_and_missing_coverage(market, monkeypatch):
     _, _, days = market
     target = str((days[-1] + pd.offsets.BDay()).date())
@@ -115,3 +149,26 @@ def test_final_report_keeps_reason_dates_and_missing_coverage(market, monkeypatc
     assert report["max_price_date"] == str(days[-1].date())
     assert report["target_session_symbol_count"] == 0
     assert "provider unavailable" in recovery.describe_report(report)
+
+
+def test_empty_provider_response_keeps_symbol_errors_without_writing(market, monkeypatch):
+    from apps.dual_momentum import config
+
+    monkeypatch.setattr(config, "ETF_UNIVERSE", {})
+    monkeypatch.setattr(refresh_constituents, "refresh", lambda: None)
+    _, _, days = market
+    target = str((days[-1] + pd.offsets.BDay()).date())
+    baseline = md.PRICE_PATH.read_bytes()
+    monkeypatch.setattr(
+        recovery,
+        "refresh_prices",
+        lambda **kwargs: refresh_prices(
+            fetch=lambda *args: (pd.DataFrame(columns=md.PRICE_COLUMNS), "provider timed out"), **kwargs
+        ),
+    )
+    report = recovery.run_attempt(dict(target_date=target, final_attempt=False))
+    assert report["status"] == "failed"
+    assert report["candidate_coverage"]["target_session_symbol_count"] == 0
+    assert report["provider_errors"]["A.NS"] == "provider timed out"
+    assert md.PRICE_PATH.read_bytes() == baseline
+    assert "later scheduled recovery" in recovery.describe_report(report)

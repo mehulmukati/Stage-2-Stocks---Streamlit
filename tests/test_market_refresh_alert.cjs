@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const notify = require('../.github/scripts/market_refresh_alert.cjs');
 
-function setup(t, { report, status = 'failure', issues = [], schedule = '15 3 * * *' } = {}) {
+function setup(t, { report, status = 'failure', issues = [], schedule = '15 9 * * *' } = {}) {
   t.mock.method(fs, 'existsSync', () => Boolean(report));
   t.mock.method(fs, 'readFileSync', () => JSON.stringify(report));
   const oldStatus = process.env.REFRESH_JOB_STATUS;
@@ -77,4 +77,18 @@ test('setup failure without a report still alerts at the final slot', async t =>
   await notify(fixture.args);
   assert.equal(fixture.created.length, 1);
   assert.ok(fixture.created[0].body.includes('before a recovery report was produced'));
+});
+
+test('morning setup failure waits for the afternoon final slot before opening an issue', async t => {
+  const fixture = setup(t, { schedule: '15 3 * * *' });
+  await notify(fixture.args);
+  assert.equal(fixture.created.length, 0);
+});
+
+test('final alert distinguishes rejected candidate coverage from accepted coverage', async t => {
+  const fixture = setup(t, { report: { ...failed,
+    candidate_coverage: { target_session_symbol_count: 366, current_symbol_count: 751 } } });
+  await notify(fixture.args);
+  assert.ok(fixture.created[0].body.includes('Rejected candidate coverage: 366/751'));
+  assert.ok(fixture.created[0].body.includes('Current stocks covering target: 0/751'));
 });

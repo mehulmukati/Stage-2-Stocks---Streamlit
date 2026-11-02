@@ -30,6 +30,15 @@ INDEX_TICKERS = {
 }
 
 
+class PublicationRejected(RuntimeError):
+    """Carry rejected candidate diagnostics without publishing its prices."""
+
+    def __init__(self, message, coverage, errors):
+        super().__init__(message)
+        self.candidate_coverage = coverage
+        self.provider_errors = errors
+
+
 def completed_session(now=None):
     from config import IST
     from data import get_last_valid_trading_date, load_nse_holidays
@@ -375,7 +384,11 @@ def refresh_prices(
                     additions.append(new)
         new = pd.concat(additions, ignore_index=True) if additions else pd.DataFrame(columns=md.PRICE_COLUMNS)
         if new.empty:
-            raise RuntimeError("Shared refresh returned no accepted observations; prior files retained")
+            raise PublicationRejected(
+                "Shared refresh returned no accepted observations; prior files retained",
+                price_coverage(existing, current, target),
+                errors,
+            )
         merged = merge_observations(existing, new)
         from apps.dual_momentum.config import CASH_TICKER
 
@@ -408,7 +421,10 @@ def refresh_prices(
         # Embed actual coverage, not just the requested date, in this same file.
         coverage_report = price_coverage(merged, current, target)
         if require_coverage:
-            validate_publication(coverage_report, target)
+            try:
+                validate_publication(coverage_report, target)
+            except RuntimeError as exc:
+                raise PublicationRejected(str(exc), coverage_report, errors) from exc
         missing = coverage_report["missing_target_symbols"]
         report = {
             "target_date": target,

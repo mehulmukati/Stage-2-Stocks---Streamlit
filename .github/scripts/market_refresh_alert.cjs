@@ -6,7 +6,7 @@ module.exports = async ({ github, context, core }) => {
   let report = {};
   const path = 'outputs/market_refresh_status.json';
   if (fs.existsSync(path)) report = JSON.parse(fs.readFileSync(path, 'utf8'));
-  const finalAttempt = report.final_attempt || context.payload.schedule === '15 3 * * *' ||
+  const finalAttempt = report.final_attempt || context.payload.schedule === '15 9 * * *' ||
     String(context.payload.inputs?.final_attempt) === 'true';
   const healthy = process.env.REFRESH_JOB_STATUS === 'success' &&
     ['already_current', 'recovered'].includes(report.status);
@@ -41,6 +41,7 @@ module.exports = async ({ github, context, core }) => {
     `- Current stocks covering target: ${report.target_session_symbol_count || 0}/${report.current_symbol_count || 'unknown'}\n` +
     `- Missing benchmarks: ${(report.missing_target_benchmarks || []).join(', ') || 'see run log'}\n` +
     `- Missing stocks (${missing.length}): ${missing.slice(0, 40).join(', ') || 'see run log'}\n` +
+    (report.candidate_coverage ? `- Rejected candidate coverage: ${report.candidate_coverage.target_session_symbol_count}/${report.candidate_coverage.current_symbol_count} stocks\n` : '') +
     `- Failure: ${report.error || 'Workflow failed before a recovery report was produced; see failed step.'}\n\n` +
     `[Run log and full recovery artifact](${runUrl}).\n\n` +
     'This issue closes automatically after a successful publication covers this session or a newer one.';

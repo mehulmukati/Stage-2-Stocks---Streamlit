@@ -11,12 +11,17 @@ downloads prices from the vendor.
 | 7:45 PM | Latest completed NSE cash-equity session |
 | 8:45 PM | Same session, if coverage still fails |
 | 10:45 PM | Same session, if coverage still fails |
-| 8:45 AM next morning | Prior completed session; final recovery attempt |
+| 8:45 AM next morning | Prior completed session, if coverage still fails |
+| 2:45 PM next afternoon | Prior completed session; final recovery attempt |
+
+The afternoon slot allows for the provider delay observed on October 27, 2026:
+the October 26 session recovered at approximately 2:32 PM IST. This is an extra
+recovery opportunity, not a guarantee that Yahoo prices will be complete by then.
 
 Each run uses its workflow creation time and triggering cron slot to determine the
 target. Queue delays across midnight cannot silently advance an evening retry to a
 different session. Holidays and weekends use the existing NSE cash-equity calendar.
-Automatic vendor attempts stop after the session's next-morning slot, even when later
+Automatic vendor attempts stop after the session's next-afternoon slot, even when later
 holiday/weekend runs still resolve to that old session. Those runs may check coverage
 and maintain the existing alert, but do not restart an exhausted retry window.
 GitHub schedules can be delayed or dropped; these are independent recovery chances,
@@ -43,9 +48,17 @@ missing stocks/benchmarks, and failure reason in a JSON report and workflow summ
 The report is retained as a workflow artifact for 14 days, independently of the
 accepted price file.
 
-Intermediate provider failures leave a warning in the run report without opening an
-issue or failing the overall workflow. The final morning failure marks the workflow
-failed and opens one dated GitHub issue. Repeated failures for the same target do not
+Rejected publications also retain candidate coverage and per-symbol provider or
+history-rebuild errors in the artifact. The summary shows accepted and rejected
+candidate coverage separately and includes up to 20 symbol diagnostics. Accepted
+coverage describes the file still serving the app; candidate coverage describes
+the merged response rejected by validation.
+
+Every failed recovery marks its workflow run failed, so a green run means recovery
+succeeded or accepted coverage already passed (and any required commit succeeded).
+Intermediate failures do not open repository issues; Actions notifications still
+follow the user's GitHub settings. The final afternoon failure opens one dated
+GitHub issue. Repeated failures for the same target do not
 create additional issues. A successful publication or accepted-coverage check closes
 previous recovery issues through that target. Only issues created by the Actions bot
 with the recovery marker are managed. Final setup failures also raise an alert, with
