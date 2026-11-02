@@ -448,6 +448,19 @@ def test_drift_weights_missing_date_uses_original():
     assert math.isclose(result["B"], 0.4, rel_tol=1e-6)
 
 
+def test_drift_weights_nonfinite_or_nonpositive_prices_preserve_weight():
+    dates = pd.bdate_range("2022-01-03", periods=2)
+    for invalid in (float("nan"), float("inf"), 0.0, -1.0):
+        for prices in ([100.0, invalid], [invalid, 100.0]):
+            frames = {
+                "A": pd.DataFrame({"Close": prices}, index=dates),
+                "B": pd.DataFrame({"Close": [100.0, 100.0]}, index=dates),
+            }
+            result = _drift_weights({"A": 0.6, "B": 0.4}, frames, *dates)
+            assert result == {"A": 0.6, "B": 0.4}
+            assert all(math.isfinite(w) for w in result.values())
+
+
 def test_drift_weights_normalises_to_one():
     df_a = make_ohlcv(5, close=[100.0, 200.0, 200.0, 200.0, 200.0])
     df_b = make_ohlcv(5, close=[100.0, 50.0, 50.0, 50.0, 50.0])

@@ -767,7 +767,18 @@ def _drift_weights(
             closes = all_ohlcv[s]["Close"]
             p_prev = float(closes.at[prev_day]) if prev_day in closes.index else None
             p_now = float(closes.at[curr_day]) if curr_day in closes.index else None
-            drifted[s] = w * (p_now / p_prev) if (p_prev and p_now and p_prev > 0) else w
+            drifted[s] = (
+                w * (p_now / p_prev)
+                if (
+                    p_prev is not None
+                    and p_now is not None
+                    and np.isfinite(p_prev)
+                    and np.isfinite(p_now)
+                    and p_prev > 0
+                    and p_now > 0
+                )
+                else w
+            )
         except (KeyError, TypeError, ZeroDivisionError):
             drifted[s] = w
     total_d = sum(drifted.values())
