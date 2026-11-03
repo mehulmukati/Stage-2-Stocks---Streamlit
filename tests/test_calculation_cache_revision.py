@@ -34,7 +34,7 @@ def test_momentum_memory_cache_is_rebuilt_when_calculation_changes(monkeypatch):
 @pytest.mark.parametrize("paired", [False, True])
 def test_backtest_result_rejects_old_calculation_with_unchanged_prices(tmp_path, monkeypatch, paired):
     monkeypatch.setattr(provenance, "ROOT", tmp_path)
-    names = ["backtest_engine.py", "backtest_accounting.py", "momentum_engine.py"]
+    names = ["backtest_engine.py", "backtest_accounting.py", "momentum_engine.py", "research_acceptance.py"]
     for name in names:
         (tmp_path / name).write_text("before")
     manifest = {"code_and_registry_sha256": {name: provenance.sha256(tmp_path / name) for name in names}}

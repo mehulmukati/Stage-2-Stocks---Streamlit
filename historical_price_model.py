@@ -129,7 +129,7 @@ def parse_primary_action(subject):
             return dict(kind="bonus_terms_unresolved", supported=False, reason=text)
         return dict(kind="bonus", supported=True, share_ratio=1 + int(match[1]) / int(match[2]), cash=0.0)
     if cash:
-        amounts = re.findall(r"(?:rs\.?|re\.?|inr)\s*[-:]*\s*(\d+(?:\.\d+)?)", low)
+        amounts = re.findall(r"\b(?:rs\.?|re\.?|inr)\s*[-:]*\s*(\d+(?:\.\d+)?)", low)
         if not amounts:
             amounts = re.findall(r"\bdiv(?:idend)?\s*[-:]*\s*(\d+(?:\.\d+)?)\s*(?:/-)?\s*(?:per\s+share|/share)", low)
         amount_values = [float(a[0] if isinstance(a, tuple) else a) for a in amounts]

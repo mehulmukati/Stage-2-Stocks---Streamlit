@@ -1,0 +1,78 @@
+{
+  "price_sha256": "eb77f7123b165f18fa2a4a62807c5b6b8fb2231b1805428256a057e3ce8bdecb",
+  "events": [
+    {
+      "name": "TECHNO",
+      "old": "INE286K01024",
+      "successor": "INE285K01026",
+      "effective_date": "2018-07-24",
+      "last_old_close": "2018-08-07",
+      "suspension": "2018-08-08",
+      "record": "2018-08-09",
+      "allotment": null,
+      "first_newly_allotted_tradable": "2018-12-04",
+      "nominal_share_ratio": 1,
+      "old_quote_source": "cm07AUG2018bhav.csv.zip:cm07AUG2018bhav.csv:1711",
+      "listing_quote_source": "cm04DEC2018bhav.csv.zip:cm04DEC2018bhav.csv:1706",
+      "pending_marks": 0,
+      "actions": [
+        {
+          "effective_date": "2018-08-08",
+          "old_symbol": "INE286K01024",
+          "successor_symbol": "CLAIM:INE286K01024",
+          "share_ratio": 1.0
+        },
+        {
+          "effective_date": "2018-12-04",
+          "old_symbol": "CLAIM:INE286K01024",
+          "successor_symbol": "INE285K01026",
+          "share_ratio": 1.0
+        }
+      ],
+      "pending_policy": "carry last actual old mark and timestamp; receipt locked",
+      "fractions": "one successor share per old share",
+      "evidence": {
+        "outputs\\backtest_repair_v5_20261103\\evidence\\TECHNO_ownership_announcements.json": "9d722806d6c506cf160bf67a758a1c94677575507c5daa4e6b40bfdd80ae96c7",
+        "outputs\\backtest_repair_v5_20261103\\evidence\\TECHNO_ratio_record_NSE.zip": "08d3d09169300c4b237b263e84cfd6b3f91c97eb37a45f06009ec3bb57c0db7b",
+        "outputs\\backtest_repair_v5_20261103\\evidence\\TECHNO_buyback_native_SEBI.pdf": "8c75bc7c6939ca07ad1f5784cdc6d11be92771ea5a61ab044a6ebabfb3246e9a"
+      }
+    },
+    {
+      "name": "CAPF",
+      "old": "INE688I01017",
+      "successor": "INE092T01019",
+      "effective_date": "2018-12-18",
+      "last_old_close": "2018-12-27",
+      "suspension": "2018-12-28",
+      "record": "2018-12-31",
+      "allotment": "2019-01-05",
+      "first_newly_allotted_tradable": "2019-01-16",
+      "nominal_share_ratio": 13.9,
+      "old_quote_source": "cm27DEC2018bhav.csv.zip:cm27DEC2018bhav.csv:271",
+      "listing_quote_source": "cm16JAN2019bhav.csv.zip:cm16JAN2019bhav.csv:712",
+      "pending_marks": 13,
+      "actions": [
+        {
+          "effective_date": "2018-12-28",
+          "old_symbol": "INE688I01017",
+          "successor_symbol": "CLAIM:INE688I01017",
+          "share_ratio": 1.0
+        },
+        {
+          "effective_date": "2019-01-16",
+          "old_symbol": "CLAIM:INE688I01017",
+          "successor_symbol": "INE092T01019",
+          "share_ratio": 13.9
+        }
+      ],
+      "pending_policy": "same-class listed share mark; receipt locked",
+      "fractions": "proportional adjusted research units; trustee sells nominal fractions; no assumed cash receipt",
+      "evidence": {
+        "outputs\\backtest_repair_v5_20261103\\evidence\\CAPF_allotment_issuer.pdf": "d4cfcb5ddc56768a6de276d5a903f894b35d36b81a49e56c1e2369c7e473ae16",
+        "outputs\\backtest_repair_v5_20261103\\evidence\\CAPF_effective_issuer.html": "4b5b32d49518422d91fff9ee824f8f577aa6a0c346880bd9904ea5c10f0ef0cb",
+        "outputs\\backtest_repair_v5_20261103\\evidence\\CAPF_listing_issuer.html": "e4b2bd19a916d0575a31d8a05aa508b07ca9af72fb6ca4dca9e9a2a1f8748d1a",
+        "outputs\\backtest_repair_v5_20261103\\evidence\\CAPF_merger_FAQ.html": "0a83830758366468b752a1d953f73a49149f5f21c13359dc7ad5de96ada5881c"
+      }
+    }
+  ]
+}

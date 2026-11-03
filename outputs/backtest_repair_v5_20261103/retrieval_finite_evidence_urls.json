@@ -1,0 +1,386 @@
+[
+  {
+    "name": "AARTIIND_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=AARTIIND&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:48:19.077802+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35012 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "ABB_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=ABB&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:48:19.079802+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35012 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "ABFRL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=ABFRL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:48:19.079802+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35012 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "ADANIENT_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=ADANIENT&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:48:19.081800+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35012 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "ARVINDFASN_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=ARVINDFASN&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:48:54.170861+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "ASIANPAINT_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=ASIANPAINT&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:48:54.173751+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "AUROPHARMA_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=AUROPHARMA&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:48:54.172754+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "BAJAJELEC_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=BAJAJELEC&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:48:54.173751+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "BALKRISIND_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=BALKRISIND&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:49:29.179028+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35008 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "BHARTIARTL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=BHARTIARTL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:49:29.180043+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35007 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "CANBK_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=CANBK&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:49:29.182052+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35007 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "CCL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=CCL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:49:29.183047+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35005 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "CENTURYTEX_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=CENTURYTEX&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:50:04.196202+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35011 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "CESC_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=CESC&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:50:04.196202+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35011 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "COLPAL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=COLPAL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:50:04.196202+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35011 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "COX&KINGS_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=COX&KINGS&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:50:04.196202+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35012 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "CRISIL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=CRISIL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:50:39.213881+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35005 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "EMAMILTD_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=EMAMILTD&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:50:39.214908+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "ENGINERSIN_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=ENGINERSIN&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:50:39.215907+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "FRETAIL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=FRETAIL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:50:39.218924+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35015 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "GAYAPROJ_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=GAYAPROJ&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:51:14.224162+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "GICRE_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=GICRE&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:51:14.225166+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "GRASIM_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=GRASIM&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:51:14.225166+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "HATSUN_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=HATSUN&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:51:14.236969+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35004 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "HCC_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=HCC&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:51:49.233198+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35013 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "HCL-INSYS_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=HCL-INSYS&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:51:49.234200+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35013 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "HINDPETRO_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=HINDPETRO&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:51:49.234200+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35013 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "HINDZINC_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=HINDZINC&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:51:49.245261+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "IBVENTURES_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=IBVENTURES&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:52:24.252785+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35005 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "ICICIBANK_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=ICICIBANK&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:52:24.254934+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "IIFL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=IIFL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:52:24.258361+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35014 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "INDHOTEL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=INDHOTEL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:52:24.258919+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35014 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "INTELLECT_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=INTELLECT&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:52:59.262010+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35013 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "KARURVYSYA_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=KARURVYSYA&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:52:59.262010+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35013 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "KPIT_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=KPIT&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:52:59.277425+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35011 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "KTKBANK_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=KTKBANK&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:52:59.278426+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35011 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "LAKSHVILAS_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=LAKSHVILAS&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:53:34.279024+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35004 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "M&MFIN_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=M&MFIN&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:53:34.280031+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "MINDAIND_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=MINDAIND&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:53:34.294167+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "NIACL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=NIACL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:53:34.295159+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "PAGEIND_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=PAGEIND&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:54:09.286498+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35014 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "PEL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=PEL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:54:09.287486+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35014 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "PVR_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=PVR&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:54:09.302622+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35014 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "RALLIS_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=RALLIS&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:54:09.303452+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35013 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "RELAXO_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=RELAXO&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:54:44.304873+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35015 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "RELCAPITAL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=RELCAPITAL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:54:44.306531+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35014 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "RELIANCE_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=RELIANCE&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:54:44.321081+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35015 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "SOUTHBANK_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SOUTHBANK&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:54:44.322617+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35013 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "SRF_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SRF&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:55:19.324120+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35016 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "SRTRANSFIN_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SRTRANSFIN&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:55:19.325117+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35015 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "STAR_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=STAR&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:55:19.339252+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35013 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "SUNDARMFIN_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SUNDARMFIN&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:55:19.343127+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35012 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "SUPREMEIND_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SUPREMEIND&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:55:54.344546+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35002 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "SUVEN_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SUVEN&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:55:54.344546+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35003 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "SYMPHONY_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SYMPHONY&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:55:54.360551+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "TATACOMM_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=TATACOMM&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:55:54.361562+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35001 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "TATASTEEL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=TATASTEEL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:56:29.352323+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35012 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "TCS_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=TCS&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T15:56:29.353386+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35011 milliseconds with 0 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "CAPF_merger_FAQ.html",
+    "url": "https://www.idfcfirst.bank.in/idfc-bank-and-capital-first-merger",
+    "cached": true,
+    "sha256": "0a83830758366468b752a1d953f73a49149f5f21c13359dc7ad5de96ada5881c"
+  },
+  {
+    "name": "CAPF_effective_issuer.html",
+    "url": "https://www.idfcfirst.bank.in/about-us/news-and-media/press-releases/idfc-bank-capital-first-merged-on-Dec-18",
+    "cached": true,
+    "sha256": "4b5b32d49518422d91fff9ee824f8f577aa6a0c346880bd9904ea5c10f0ef0cb"
+  },
+  {
+    "name": "CAPF_allotment_issuer.pdf",
+    "url": "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/announcements/IDFC-Bank-Letter-to-Stock-Exchanges-Allotment-of-Shares-pursuant-to-Merger.pdf",
+    "cached": true,
+    "sha256": "d4cfcb5ddc56768a6de276d5a903f894b35d36b81a49e56c1e2369c7e473ae16"
+  },
+  {
+    "name": "CAPF_listing_issuer.html",
+    "url": "https://www.idfcfirst.bank.in/about-us/news-and-media/press-releases/idfc-first-bank-listing",
+    "cached": true,
+    "sha256": "e4b2bd19a916d0575a31d8a05aa508b07ca9af72fb6ca4dca9e9a2a1f8748d1a"
+  },
+  {
+    "name": "TECHNO_NCLT_order.pdf",
+    "url": "https://archive.nclt.gov.in/sites/default/files/final-orders-pdf/TECHNO%20ELECTRIC%20AND%20SIMRAN%20WIND%20PROJECT%2018%20ALD%202018.pdf",
+    "retrieved_at": "2026-11-03T15:56:29.373314+00:00",
+    "error": "Failed to perform, curl: (28) Failed to connect to archive.nclt.gov.in:443 after 21020 ms: Could not connect to server. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "TECHNO_scheme_SEBI.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/mar-2018/1520223842957.pdf",
+    "retrieved_at": "2026-11-03T15:56:29.377319+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35004 milliseconds with 1292968 out of 3715006 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  }
+]

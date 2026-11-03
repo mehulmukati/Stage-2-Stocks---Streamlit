@@ -13,7 +13,7 @@ import threading
 import time
 import uuid
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -115,6 +115,7 @@ class MarketSnapshot:
     price_revision: str
     constituent_revision: str
     as_of: pd.Timestamp | None = None
+    price_metadata: dict = field(default_factory=dict, compare=False, repr=False)
 
     @property
     def revisions(self) -> tuple[str, str]:
@@ -142,6 +143,11 @@ class MarketSnapshot:
             columns = ["Open", "High", "Low", "Close", "Volume"] + [c for c in QUALITY_COLUMNS if c in group]
             sub = group.set_index("date")[columns].sort_index()
             sub.attrs = {"source_revisions": self.revisions, "equity_policy_version": EQUITY_POLICY_VERSION}
+            if self.price_metadata.get("research_field_scopes"):
+                from research_acceptance import apply_field_scopes
+
+                sub = apply_field_scopes(sub, symbol, self.price_metadata["research_field_scopes"])
+                sub.attrs["research_scope_catalogue"] = self.price_metadata["research_field_scopes"]
             result[symbol] = sub
         return result
 
@@ -191,6 +197,7 @@ def load_snapshot(as_of=None) -> MarketSnapshot:
                 pm["revision"],
                 cm["revision"],
                 pd.Timestamp(as_of).normalize() if as_of is not None else None,
+                pm,
             )
     raise RuntimeError("Market sources changed while creating a snapshot; retry")
 

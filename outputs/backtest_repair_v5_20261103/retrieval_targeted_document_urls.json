@@ -1,0 +1,92 @@
+[
+  {
+    "name": "TECHNO_buyback_SEBI_201812.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/dec-2018/1545993505904.pdf",
+    "retrieved_at": "2026-11-03T15:54:48.603298+00:00",
+    "error": "Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "TECHNO_scheme_SEBI_retry.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/mar-2018/1520223842957.pdf",
+    "retrieved_at": "2026-11-03T15:54:48.604301+00:00",
+    "error": "Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "SRF_Q1_2017_issuer.pdf",
+    "url": "https://srf.com/wp-content/uploads/2020/11/Unaudited-Financial-Results-alongwith-Limited-Review-Report-for-the-Quarter-Ended-30-6-2017.pdf",
+    "retrieved_at": "2026-11-03T15:54:48.607295+00:00",
+    "error": "Failed to perform, curl: (60) SSL certificate OpenSSL verify result: unable to get local issuer certificate (20). See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "COLPAL_2019_annual_issuer.pdf",
+    "url": "https://www.colgateinvestors.co.in/media/2284/agmnoticefinal.pdf",
+    "retrieved_at": "2026-11-03T15:54:49.620671+00:00",
+    "status": 200,
+    "bytes": 6169637,
+    "content_type": "application/pdf",
+    "sha256": "e098d8445b4f311d034f542eb7c89be11aae63cb8167ef461d83bd8e89353f62"
+  },
+  {
+    "name": "NIACL_prebonus_issuer.html",
+    "url": "https://icsi.newindia.co.in/Default.aspx",
+    "retrieved_at": "2026-11-03T15:55:06.924391+00:00",
+    "status": 200,
+    "bytes": 33600,
+    "content_type": "text/html; charset=utf-8",
+    "sha256": "b8d489772c89ccf34c15260a4e4489168eb5210a44f2d915ee4e49cd5595a1d1"
+  },
+  {
+    "name": "GICRE_board_20180525_issuer.pdf",
+    "url": "https://www.gicre.in/phocadownload/financial-results/Audited%20Financial%20Results%20for%20the%20year%20ended%20March%2031%2C2018.pdf",
+    "retrieved_at": "2026-11-03T15:55:07.286159+00:00",
+    "status": 200,
+    "bytes": 1809759,
+    "content_type": "application/pdf",
+    "sha256": "71dbf42ead1393a55a6d777489d88fc70656c70781b5f5028d17a481a97aacfa"
+  },
+  {
+    "name": "GICRE_2019_annual_issuer.pdf",
+    "url": "https://www.gicre.in/images/phocadownload/47_GIC_Annual_Report.pdf",
+    "retrieved_at": "2026-11-03T15:55:22.174102+00:00",
+    "status": 200,
+    "bytes": 8185620,
+    "content_type": "application/pdf",
+    "sha256": "f2dffa676b8774b5b12aa286f55266dc5cc7b75e6d19e185650537bba101e205"
+  },
+  {
+    "name": "HINDPETRO_2018_annual_issuer.pdf",
+    "url": "https://www.hindustanpetroleum.com/documents/pdf/66th%20AGM.pdf",
+    "retrieved_at": "2026-11-03T15:55:39.071937+00:00",
+    "status": 200,
+    "bytes": 1825404,
+    "content_type": "application/pdf",
+    "sha256": "4a8800cdb38f1cf8808abd9a74003075ad6f990572a63f44ca0166de2bf88e1d"
+  },
+  {
+    "name": "EMAMILTD_reports_issuer.html",
+    "url": "https://www.emamiltd.in/investors/financials/annual-reports/",
+    "retrieved_at": "2026-11-03T15:55:52.976309+00:00",
+    "status": 404,
+    "bytes": 73373,
+    "content_type": "text/html; charset=UTF-8",
+    "response_sha256": "afd1bed983d585893ef2b0b4eae9d88a651b9fcec23b2ef900f34644e3d0666e"
+  },
+  {
+    "name": "ICICIBANK_2017_annual_issuer.html",
+    "url": "https://www.icicibank.com/annual-report/2016-17/index.html",
+    "retrieved_at": "2026-11-03T15:55:54.163912+00:00",
+    "status": 404,
+    "bytes": 335050,
+    "content_type": "text/html;charset=utf-8",
+    "response_sha256": "4cc4047e6f8fd3c3e9c5d0ce20721dcca86105c6a87c046d95abc5fdf167dc65"
+  },
+  {
+    "name": "TCS_2018_annual_issuer.pdf",
+    "url": "https://www.tcs.com/content/dam/tcs/investor-relations/financial-statements/2017-18/ar/annual-report-2017-2018.pdf",
+    "retrieved_at": "2026-11-03T15:55:58.030421+00:00",
+    "status": 200,
+    "bytes": 4092146,
+    "content_type": "application/pdf",
+    "sha256": "cb7137e8c6bbcb478e0989ab82c0bc96aaeba0756ec6c88807bd8a794a7adcc2"
+  }
+]

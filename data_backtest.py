@@ -285,6 +285,10 @@ def load_ohlcv_for_backtest(emit=_NOOP_EMIT, required_symbols=None, refresh=Fals
         base = base[base.date <= pd.Timestamp(target_key)]
         required = sorted(set(required_symbols if required_symbols is not None else snapshot.symbols(as_of=target_key)))
         result = _assess_ohlcv_freshness(base, target_key, required, "shared")
+        if getattr(snapshot, "price_metadata", {}).get("research_field_scopes"):
+            # Preserve revision-bound field certificates through the app's
+            # compatibility loader; do not rebuild unscoped frames from Close.
+            result.symbol_data = snapshot.ohlcv(as_of=target_key)
         result.source_revisions = snapshot.revisions
         result.earliest_price_date = str(base.date.min().date()) if not base.empty else None
         if result.is_fresh:

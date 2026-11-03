@@ -1,0 +1,47 @@
+[
+  {
+    "name": "CESC_announcements_201808_201810.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=CESC&from_date=01-08-2018&to_date=31-10-2018",
+    "retrieved_at": "2026-11-03T16:15:32.237348+00:00",
+    "status": 200,
+    "bytes": 6580,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "f64ad7e1b1b4fd4b68ea3a9063bbfc6f911ba97dc4d773497bc6e97a215ae21b"
+  },
+  {
+    "name": "GRASIM_announcements_201705_201707.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=GRASIM&from_date=01-05-2017&to_date=20-07-2017",
+    "retrieved_at": "2026-11-03T16:15:32.238348+00:00",
+    "status": 200,
+    "bytes": 21925,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "afbdcfae96d3eb95501469dd456907b6647dc4f0cf2aa1547fcf4da7c65aa7b9"
+  },
+  {
+    "name": "MINDAIND_announcements_201805_201807.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=MINDAIND&from_date=01-05-2018&to_date=31-07-2018",
+    "retrieved_at": "2026-11-03T16:15:32.239636+00:00",
+    "status": 200,
+    "bytes": 2,
+    "content_type": "application/json; charset=utf-8",
+    "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "name": "TCS_announcements_201804_201806.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=TCS&from_date=01-04-2018&to_date=30-06-2018",
+    "retrieved_at": "2026-11-03T16:15:32.241661+00:00",
+    "status": 200,
+    "bytes": 52723,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "e676d6c7cbac02f2307f23a613046f2d51ddc6a01d51c54f819e21d8b86257c9"
+  },
+  {
+    "name": "TCS_bonus_record_ad_issuer.pdf",
+    "url": "https://www.tcs.com/content/dam/tcs/pdf/discover-tcs/investor-relations/corporate-actions/2017-18/ad-record-date-bonus-shares-2018.pdf",
+    "retrieved_at": "2026-11-03T16:15:33.333931+00:00",
+    "status": 200,
+    "bytes": 1986799,
+    "content_type": "application/pdf",
+    "sha256": "8f6d5cad7dfa0a44d3b486dbcae0b4bbf24dd46a57404359849097abce6cb384"
+  }
+]

@@ -1,0 +1,7 @@
+[
+  ["CESC_announcements_201808_201810.json", "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=CESC&from_date=01-08-2018&to_date=31-10-2018"],
+  ["GRASIM_announcements_201705_201707.json", "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=GRASIM&from_date=01-05-2017&to_date=20-07-2017"],
+  ["MINDAIND_announcements_201805_201807.json", "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=MINDAIND&from_date=01-05-2018&to_date=31-07-2018"],
+  ["TCS_announcements_201804_201806.json", "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=TCS&from_date=01-04-2018&to_date=30-06-2018"],
+  ["TCS_bonus_record_ad_issuer.pdf", "https://www.tcs.com/content/dam/tcs/pdf/discover-tcs/investor-relations/corporate-actions/2017-18/ad-record-date-bonus-shares-2018.pdf"]
+]

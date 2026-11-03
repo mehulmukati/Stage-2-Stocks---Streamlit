@@ -1,0 +1,14 @@
+{
+  "protected_unchanged": 38,
+  "round_3_sealed_unchanged": 1103,
+  "round_4_sealed_unchanged": 2037,
+  "engine_circuit_ui_calendar_unchanged": [
+    "backtest_engine.py",
+    "backtest_accounting.py",
+    "momentum_engine.py",
+    "app.py",
+    "app_backtest.py",
+    "data/nse_session_calendar.json"
+  ],
+  "unchanged_raw_rows": 939941
+}

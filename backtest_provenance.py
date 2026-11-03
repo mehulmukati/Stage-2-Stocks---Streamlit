@@ -37,7 +37,7 @@ def result_calculations_current(result):
         manifests = {"single": result.get("run_manifest")}
     if not manifests:
         return False
-    required = ("backtest_engine.py", "backtest_accounting.py", "momentum_engine.py")
+    required = ("backtest_engine.py", "backtest_accounting.py", "momentum_engine.py", "research_acceptance.py")
     expected = {name: sha256(ROOT / name) for name in required}
     return all(
         isinstance(manifest, dict)
@@ -47,6 +47,10 @@ def result_calculations_current(result):
 
 
 def run_manifest(config, frames, benchmarks, calendar):
+    from research_acceptance import validate_consumption
+
+    membership_digest = frame_hash(config.compositions_df) if config.compositions_df is not None else None
+    accepted_scopes = validate_consumption(config, frames, membership_digest, calendar)
     settings = {
         f.name: getattr(config, f.name)
         for f in dataclasses.fields(config)
@@ -56,6 +60,7 @@ def run_manifest(config, frames, benchmarks, calendar):
         "backtest_engine.py",
         "backtest_accounting.py",
         "backtest_provenance.py",
+        "research_acceptance.py",
         "security_identity.py",
         "equity_data.py",
         "momentum_engine.py",
@@ -73,11 +78,16 @@ def run_manifest(config, frames, benchmarks, calendar):
         calendar=calendar_provenance(),
         code_and_registry_sha256={p: sha256(ROOT / p) for p in source_files},
         session_grid_sha256=hashlib.sha256(calendar.asi8.tobytes()).hexdigest(),
-        membership_sha256=frame_hash(config.compositions_df) if config.compositions_df is not None else None,
+        membership_sha256=membership_digest,
+        reviewed_field_scope_sha256=accepted_scopes,
         price_sha256={s: frame_hash(f) for s, f in sorted(frames.items())},
         benchmarks_sha256={s: frame_hash(f.to_frame()) for s, f in sorted(benchmarks.items())},
         source_revisions=sorted({str(f.attrs.get("source_revisions")) for f in frames.values()}),
-        certification="uncertified research; identity/coverage and nominal tax basis unresolved",
+        certification=(
+            "reviewed field/profile-scoped adjusted research; nominal execution/tax not certified"
+            if accepted_scopes
+            else "uncertified research; identity/coverage and nominal tax basis unresolved"
+        ),
         terminal_policy="no liquidation; realized tax accrued; scheduled events only",
         benchmark_basis="vendor-adjusted equity research versus supplied benchmark basis; no alpha claim",
     )

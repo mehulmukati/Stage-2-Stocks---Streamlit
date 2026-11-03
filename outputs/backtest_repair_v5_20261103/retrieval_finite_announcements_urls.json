@@ -1,0 +1,461 @@
+[
+  {
+    "name": "RELIANCE_20200513_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=RELIANCE&from_date=13-02-2020&to_date=27-06-2020",
+    "retrieved_at": "2026-11-03T16:17:29.238150+00:00",
+    "status": 200,
+    "bytes": 52282,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "788658649cce9da3b962e12f6c2ed23e0b5c1f3d221a77388a3a2dc52aca6ff8"
+  },
+  {
+    "name": "COX&KINGS_20181025_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=COX%26KINGS&from_date=27-07-2018&to_date=09-12-2018",
+    "retrieved_at": "2026-11-03T16:17:29.239154+00:00",
+    "status": 200,
+    "bytes": 21202,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "434aaac98149ba5cfb33622cedd40af6864ea8af46092b31fbe8e4ba00ceaf1c"
+  },
+  {
+    "name": "RELCAPITAL_20170905_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=RELCAPITAL&from_date=07-06-2017&to_date=20-10-2017",
+    "retrieved_at": "2026-11-03T16:17:29.241153+00:00",
+    "status": 200,
+    "bytes": 35357,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "e830e640cdffdabd3b10d981ac69bdaf74c2116b831a4b0655165791a5409673"
+  },
+  {
+    "name": "KARURVYSYA_20171012_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=KARURVYSYA&from_date=14-07-2017&to_date=26-11-2017",
+    "retrieved_at": "2026-11-03T16:17:29.240149+00:00",
+    "status": 200,
+    "bytes": 27260,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "d70e6df5b09940c6c0d1718fe4c658c16ceeae8b7f94e80ef3a26ee7b027b063"
+  },
+  {
+    "name": "GRASIM_20170719_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=GRASIM&from_date=20-04-2017&to_date=02-09-2017",
+    "retrieved_at": "2026-11-03T16:17:30.013956+00:00",
+    "status": 200,
+    "bytes": 28274,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "66748d0e020a9720b22a3cb02b3c404065103f7ac826039f63bcbd76062957f0"
+  },
+  {
+    "name": "INDHOTEL_20171004_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=INDHOTEL&from_date=06-07-2017&to_date=18-11-2017",
+    "retrieved_at": "2026-11-03T16:17:30.574169+00:00",
+    "status": 200,
+    "bytes": 17431,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "c48e2bf95a66d6762e3161f559f0d1f5fd89d8e7680c43e1de275faa7e04818a"
+  },
+  {
+    "name": "ABREL_20191011_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=ABREL&from_date=13-07-2019&to_date=25-11-2019",
+    "retrieved_at": "2026-11-03T16:17:30.575179+00:00",
+    "status": 200,
+    "bytes": 12384,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "c67b46447321ef7cef861aa2fd8f47ece8bac8eb91cc3e4f0d93e4b12a8d13d5"
+  },
+  {
+    "name": "TATASTEEL_20180131_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=TATASTEEL&from_date=02-11-2017&to_date=17-03-2018",
+    "retrieved_at": "2026-11-03T16:17:30.579234+00:00",
+    "status": 200,
+    "bytes": 28794,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "17151879f957770338fe3dbc21b147a1d29ee58f89d0842f7c01bc0dc9613756"
+  },
+  {
+    "name": "ICICIBANK_20170620_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=ICICIBANK&from_date=22-03-2017&to_date=04-08-2017",
+    "retrieved_at": "2026-11-03T16:17:30.958672+00:00",
+    "status": 200,
+    "bytes": 61674,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "785bb26ad1a417fe3794007f20b460df1a9064125dea88424cd017fb2f70c266"
+  },
+  {
+    "name": "HINDPETRO_20170711_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=HINDPETRO&from_date=12-04-2017&to_date=25-08-2017",
+    "retrieved_at": "2026-11-03T16:17:31.380664+00:00",
+    "status": 200,
+    "bytes": 22528,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "42b513cbaa29bc612dc5a9fbd371adaf506f0cbb9367a49774f9af0095c88670"
+  },
+  {
+    "name": "ABB_20191220_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=ABB&from_date=21-09-2019&to_date=03-02-2020",
+    "retrieved_at": "2026-11-03T16:17:31.381656+00:00",
+    "status": 200,
+    "bytes": 7452,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "657817c258a5f4d164bc36e38aeef62ec60860cf61f26cb569562fae111421f7"
+  },
+  {
+    "name": "PEL_20180131_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=PEL&from_date=02-11-2017&to_date=17-03-2018",
+    "retrieved_at": "2026-11-03T16:17:31.385021+00:00",
+    "status": 200,
+    "bytes": 18384,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "7a417fd6505071bb0db330c07665965c68a626bf076db408ff2d0422e011749a"
+  },
+  {
+    "name": "PEL_20191230_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=PEL&from_date=01-10-2019&to_date=13-02-2020",
+    "retrieved_at": "2026-11-03T16:17:31.856445+00:00",
+    "status": 200,
+    "bytes": 44534,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "6e7abe102fcbe9a1ebe7cc8482e548a84cf584cb05cdc06db923df8751db1f8e"
+  },
+  {
+    "name": "TATACOMM_20190917_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=TATACOMM&from_date=19-06-2019&to_date=01-11-2019",
+    "retrieved_at": "2026-11-03T16:17:32.201289+00:00",
+    "status": 200,
+    "bytes": 18378,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "e76ef81cae3fa98fe87da42db9f92bb242d867cd25492f9615b0869bf23ffb76"
+  },
+  {
+    "name": "PVRINOX_20200709_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=PVRINOX&from_date=10-04-2020&to_date=23-08-2020",
+    "retrieved_at": "2026-11-03T16:17:32.203829+00:00",
+    "status": 200,
+    "bytes": 14038,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "37d84efb285f184a635bfbfbefb6a733a753579f9f45eebf60da942d7eb0bf95"
+  },
+  {
+    "name": "BAJAJELEC_20200205_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=BAJAJELEC&from_date=07-11-2019&to_date=21-03-2020",
+    "retrieved_at": "2026-11-03T16:17:32.450402+00:00",
+    "status": 200,
+    "bytes": 19421,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "7f6cb3d2a1596ce151114f52ddf2e04c7e084c3ed319c1c6ecda56070b86ee83"
+  },
+  {
+    "name": "BRITANNIA_20190822_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=BRITANNIA&from_date=24-05-2019&to_date=06-10-2019",
+    "retrieved_at": "2026-11-03T16:17:32.795905+00:00",
+    "status": 200,
+    "bytes": 13017,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "4a25616fd57cbbcb31e2e9faa8af311363caf8101f1fa9e60b1eb593b428ab81"
+  },
+  {
+    "name": "HCL-INSYS_20171031_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=HCL-INSYS&from_date=02-08-2017&to_date=15-12-2017",
+    "retrieved_at": "2026-11-03T16:17:32.963293+00:00",
+    "status": 200,
+    "bytes": 24516,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "622ca060626538eadcf1e4ae0c9267ad944578b7938fa388be0a64ddfe685230"
+  },
+  {
+    "name": "DHANI_20180209_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=DHANI&from_date=11-11-2017&to_date=26-03-2018",
+    "retrieved_at": "2026-11-03T16:17:32.969289+00:00",
+    "status": 200,
+    "bytes": 12800,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "7e4d876417abbc2f0fbccda20eddfc23023115f96ce915051518e80527843015"
+  },
+  {
+    "name": "INTELLECT_20170717_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=INTELLECT&from_date=18-04-2017&to_date=31-08-2017",
+    "retrieved_at": "2026-11-03T16:17:33.464445+00:00",
+    "status": 200,
+    "bytes": 22676,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "89dbfcba4d58b2b472aa77accd48cc83ae09d88a8acb4167d9350615442291ee"
+  },
+  {
+    "name": "GAYAPROJ_20180130_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=GAYAPROJ&from_date=01-11-2017&to_date=16-03-2018",
+    "retrieved_at": "2026-11-03T16:17:33.510983+00:00",
+    "status": 200,
+    "bytes": 24925,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "c1b32c99a9274db2403c460408916986d490cf1d335c1c6b66a07029a382f078"
+  },
+  {
+    "name": "BHARTIARTL_20190423_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=BHARTIARTL&from_date=23-01-2019&to_date=07-06-2019",
+    "retrieved_at": "2026-11-03T16:17:33.695551+00:00",
+    "status": 200,
+    "bytes": 60491,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "f1b40ae2f0c9587decfa12af043cf16222a9918a6a2b85e825c60aeda022f686"
+  },
+  {
+    "name": "UNOMINDA_20180711_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=UNOMINDA&from_date=12-04-2018&to_date=25-08-2018",
+    "retrieved_at": "2026-11-03T16:17:33.913987+00:00",
+    "status": 200,
+    "bytes": 31117,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "d406976f18f07f9acaa700f6c15df5fe7e376fc3678451c46729506f21c167fe"
+  },
+  {
+    "name": "UNOMINDA_20200814_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=UNOMINDA&from_date=16-05-2020&to_date=28-09-2020",
+    "retrieved_at": "2026-11-03T16:17:34.336724+00:00",
+    "status": 200,
+    "bytes": 30704,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "87f2665553562550ccb35c4bd0205c3a69c68ea20c889865eb63f34655f01e7b"
+  },
+  {
+    "name": "ADANIENT_20180405_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=ADANIENT&from_date=05-01-2018&to_date=20-05-2018",
+    "retrieved_at": "2026-11-03T16:17:34.352729+00:00",
+    "status": 200,
+    "bytes": 22305,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "8b7d6b3c38a420ce823699cc632e86d0ccc64eaa76bcd1912c146de7066b175e"
+  },
+  {
+    "name": "TCS_20180531_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=TCS&from_date=02-03-2018&to_date=15-07-2018",
+    "retrieved_at": "2026-11-03T16:17:35.022530+00:00",
+    "status": 200,
+    "bytes": 73842,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "67f04f47b59965bdbc0da660f0b5663375f6e1998c81da1f2c7c587b20ed484e"
+  },
+  {
+    "name": "NIACL_20180627_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=NIACL&from_date=29-03-2018&to_date=11-08-2018",
+    "retrieved_at": "2026-11-03T16:17:35.036524+00:00",
+    "status": 200,
+    "bytes": 46401,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "40cb3fd12c69a7468b1a4cc79f5b431e77a92cb281afcd92211e407053cb7331"
+  },
+  {
+    "name": "HATSUN_20180531_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=HATSUN&from_date=02-03-2018&to_date=15-07-2018",
+    "retrieved_at": "2026-11-03T16:17:35.403520+00:00",
+    "status": 200,
+    "bytes": 22018,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "1b028c18ebdc6f1020d76dc8f090bee7f0e41e8efa7a28db4d3d9a800a7dbe76"
+  },
+  {
+    "name": "CANBK_20170217_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=CANBK&from_date=19-11-2016&to_date=03-04-2017",
+    "retrieved_at": "2026-11-03T16:17:35.568886+00:00",
+    "status": 200,
+    "bytes": 22922,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "99d01b807e148a309047ecb4e424764e0d1889da839dd9781f03da92aafddb5b"
+  },
+  {
+    "name": "GICRE_20180712_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=GICRE&from_date=13-04-2018&to_date=26-08-2018",
+    "retrieved_at": "2026-11-03T16:17:35.936649+00:00",
+    "status": 200,
+    "bytes": 33379,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "e53844d715bbd403b4d2246dc9b420176b94a91cfb21dcaba84d2f76d1f2997e"
+  },
+  {
+    "name": "CESC_20181030_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=CESC&from_date=01-08-2018&to_date=14-12-2018",
+    "retrieved_at": "2026-11-03T16:17:35.937647+00:00",
+    "status": 200,
+    "bytes": 14878,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "ed0b34b23e2182d1f663e840718afd7b5f9614b9e9c2b140a2577d81d9098ba1"
+  },
+  {
+    "name": "SUVEN_20200121_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=SUVEN&from_date=23-10-2019&to_date=06-03-2020",
+    "retrieved_at": "2026-11-03T16:17:36.044176+00:00",
+    "status": 200,
+    "bytes": 19707,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "20eaaba9ebdb8558dfd96453c8c5484902a9a3ebfe3c706677cec88f71c8d05a"
+  },
+  {
+    "name": "IIFL_20171017_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=IIFL&from_date=19-07-2017&to_date=01-12-2017",
+    "retrieved_at": "2026-11-03T16:17:36.525451+00:00",
+    "status": 200,
+    "bytes": 27360,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "9b20916470885b06cc31f04d1a54a242efa4c7642e6744168b223652affeb391"
+  },
+  {
+    "name": "IIFL_20190530_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=IIFL&from_date=01-03-2019&to_date=14-07-2019",
+    "retrieved_at": "2026-11-03T16:17:37.022409+00:00",
+    "status": 200,
+    "bytes": 26955,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "ab9777df8111773612607d6df8d31b73f2f2c7fe641e7c3436828a847279d540"
+  },
+  {
+    "name": "EMAMILTD_20180621_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=EMAMILTD&from_date=23-03-2018&to_date=05-08-2018",
+    "retrieved_at": "2026-11-03T16:17:37.163249+00:00",
+    "status": 200,
+    "bytes": 29020,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "fc29961f4e13173ce6aa3dfbf4a56abcb87ba91476850a0012ef32111e3362f0"
+  },
+  {
+    "name": "HCC_20181120_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=HCC&from_date=22-08-2018&to_date=04-01-2019",
+    "retrieved_at": "2026-11-03T16:17:37.274368+00:00",
+    "status": 200,
+    "bytes": 20117,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "221aacbeed33777be033478fba9bf28ac202d89fd8a18909e0015c3cd3489377"
+  },
+  {
+    "name": "KTKBANK_20161024_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=KTKBANK&from_date=26-07-2016&to_date=08-12-2016",
+    "retrieved_at": "2026-11-03T16:17:37.506193+00:00",
+    "status": 200,
+    "bytes": 29038,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "cd18a6416bd16b43100c893e1468b2079a97d0ba18ccbe3170ba9491e79703ca"
+  },
+  {
+    "name": "SRF_20170816_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=SRF&from_date=18-05-2017&to_date=30-09-2017",
+    "retrieved_at": "2026-11-03T16:17:38.065488+00:00",
+    "status": 200,
+    "bytes": 14783,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "19d925a0f4bd9eeba999b442904030434213db74e514d5d067db234c48f86311"
+  },
+  {
+    "name": "ABFRL_20200630_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=ABFRL&from_date=01-04-2020&to_date=14-08-2020",
+    "retrieved_at": "2026-11-03T16:17:38.408425+00:00",
+    "status": 200,
+    "bytes": 30286,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "a7ef67ad794c3bea30f214938ec9c5a1255cfad617dc5dabee9c6708dbd8055c"
+  },
+  {
+    "name": "SUNDARMFIN_20180201_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=SUNDARMFIN&from_date=03-11-2017&to_date=18-03-2018",
+    "retrieved_at": "2026-11-03T16:17:38.411388+00:00",
+    "status": 200,
+    "bytes": 26519,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "195be7dd87f268c9fc7ba1e279d7dc087ffeeedfc49ffc43cb6743d66a63f74c"
+  },
+  {
+    "name": "SOUTHBANK_20170216_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=SOUTHBANK&from_date=18-11-2016&to_date=02-04-2017",
+    "retrieved_at": "2026-11-03T16:17:38.900694+00:00",
+    "status": 200,
+    "bytes": 12431,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "4b1a668de07efbf2c3149d652aa5bb14b51f2adc8d302b57626278ac66683275"
+  },
+  {
+    "name": "LAKSHVILAS_20171205_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=LAKSHVILAS&from_date=06-09-2017&to_date=19-01-2018",
+    "retrieved_at": "2026-11-03T16:17:39.118399+00:00",
+    "status": 200,
+    "bytes": 18122,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "4b37f2dbd4927d82f472480faf7b4fcc00d676e95f7a80d2460c38fa590da5ea"
+  },
+  {
+    "name": "SHRIRAMFIN_20200709_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=SHRIRAMFIN&from_date=10-04-2020&to_date=23-08-2020",
+    "retrieved_at": "2026-11-03T16:17:39.224333+00:00",
+    "status": 200,
+    "bytes": 97459,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "335586655acee0fc5d1aab388ba3d1ba54523cd8da8b7a8d940881ad086daa1a"
+  },
+  {
+    "name": "FRETAIL_20171129_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=FRETAIL&from_date=31-08-2017&to_date=13-01-2018",
+    "retrieved_at": "2026-11-03T16:17:39.225327+00:00",
+    "status": 200,
+    "bytes": 12013,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "cea7b978cffa8b21d20f2ef2e0300c4ff67e0f947a276210ddfa9796e9ac7e59"
+  },
+  {
+    "name": "AARTIIND_20190703_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=AARTIIND&from_date=04-04-2019&to_date=17-08-2019",
+    "retrieved_at": "2026-11-03T16:17:39.922305+00:00",
+    "status": 200,
+    "bytes": 21154,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "6abeebc6a660fa60ea67dce9270f26ff7c53e775100127ad972f6bd0a1445952"
+  },
+  {
+    "name": "M&MFIN_20200722_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=M%26MFIN&from_date=23-04-2020&to_date=05-09-2020",
+    "retrieved_at": "2026-11-03T16:17:40.133953+00:00",
+    "status": 200,
+    "bytes": 58590,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "621f13f7f715607585c3d38099be6735661a6da9ca8744980133bf9b5f6a0eea"
+  },
+  {
+    "name": "BSOFT_20190124_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=BSOFT&from_date=26-10-2018&to_date=10-03-2019",
+    "retrieved_at": "2026-11-03T16:17:40.471726+00:00",
+    "status": 200,
+    "bytes": 11502,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "a18165690c81960bd139c99f5486c15aad97cb49f440875f43803e4400b3df36"
+  },
+  {
+    "name": "STAR_20180406_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=STAR&from_date=06-01-2018&to_date=21-05-2018",
+    "retrieved_at": "2026-11-03T16:17:40.473660+00:00",
+    "status": 200,
+    "bytes": 21721,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "b448ec05c73e2bba6f7a79b8447421d9e9eab2cda736868965721aa1b66f7ea6"
+  },
+  {
+    "name": "ARVINDFASN_20200317_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=ARVINDFASN&from_date=18-12-2019&to_date=01-05-2020",
+    "retrieved_at": "2026-11-03T16:17:40.818054+00:00",
+    "status": 200,
+    "bytes": 19070,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "52e8bc92fda6ce6412d8d95fba05d28e32ba802d15872d43121ebc8320ff1323"
+  },
+  {
+    "name": "TECHNO_ownership_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=TECHNO&from_date=01-06-2018&to_date=31-12-2018",
+    "retrieved_at": "2026-11-03T16:17:41.360783+00:00",
+    "status": 200,
+    "bytes": 3350,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "9d722806d6c506cf160bf67a758a1c94677575507c5daa4e6b40bfdd80ae96c7"
+  },
+  {
+    "name": "TECHNOE_ownership_announcements.json",
+    "url": "https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=TECHNOE&from_date=01-06-2018&to_date=31-12-2018",
+    "retrieved_at": "2026-11-03T16:17:41.813320+00:00",
+    "status": 200,
+    "bytes": 8572,
+    "content_type": "application/json; charset=utf-8",
+    "sha256": "b8400c292b15eacbb60da278a8d4e11c1b37dc0a371d8f1c21803bd8584c97e2"
+  }
+]

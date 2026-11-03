@@ -1,0 +1,28 @@
+[
+  {
+    "name": "SRF_Q1_native_issuer.pdf",
+    "url": "https://www.srf.com/wp-content/uploads/2020/11/Unaudited-Financial-Results-alongwith-Limited-Review-Report-for-the-Quarter-Ended-30-6-2017.pdf",
+    "retrieved_at": "2026-11-03T16:13:40.223459+00:00",
+    "transport": "Windows curl/Schannel; certificate verification enabled",
+    "return_code": 22,
+    "error": "  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\r\n                                 Dload  Upload   Total   Spent    Left  Speed\r\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0\r  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0\r\ncurl: (22) The requested URL returned error: 404\r\n"
+  },
+  {
+    "name": "TECHNO_buyback_native_SEBI.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/dec-2018/1545993505904.pdf",
+    "retrieved_at": "2026-11-03T16:13:40.224465+00:00",
+    "transport": "Windows curl/Schannel; certificate verification enabled",
+    "return_code": 0,
+    "sha256": "8c75bc7c6939ca07ad1f5784cdc6d11be92771ea5a61ab044a6ebabfb3246e9a",
+    "bytes": 2214484
+  },
+  {
+    "name": "ICICIBANK_prebonus_issuer.html",
+    "url": "https://www.icici.bank.in/about-us/article/news-performance-review-quarter-ended-september-30-2017-20172710175602015",
+    "retrieved_at": "2026-11-03T16:13:40.225458+00:00",
+    "transport": "Windows curl/Schannel; certificate verification enabled",
+    "return_code": 0,
+    "sha256": "8310a90e42aa5b0da47f05b69b6a1eb4a5c9f580da48234435ed3c6a318a1007",
+    "bytes": 401483
+  }
+]

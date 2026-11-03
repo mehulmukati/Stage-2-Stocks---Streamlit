@@ -1,0 +1,71 @@
+[
+  {
+    "name": "TECHNO_placement_NSE_2024.pdf",
+    "url": "https://nsearchives.nseindia.com/content/equities/PD_TECHNOE_190724.pdf",
+    "retrieved_at": "2026-11-03T16:06:09.117616+00:00",
+    "status": 200,
+    "bytes": 17512789,
+    "content_type": "application/pdf",
+    "sha256": "5571ca282cf585b04048e0791aa818faed53056c1bbf601d9daccd374677b078"
+  },
+  {
+    "name": "SRF_Q1_www_issuer.pdf",
+    "url": "https://www.srf.com/wp-content/uploads/2020/11/Unaudited-Financial-Results-alongwith-Limited-Review-Report-for-the-Quarter-Ended-30-6-2017.pdf",
+    "retrieved_at": "2026-11-03T16:06:09.118609+00:00",
+    "error": "Failed to perform, curl: (60) SSL certificate OpenSSL verify result: unable to get local issuer certificate (20). See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "EMAMILTD_2019_annual_issuer.pdf",
+    "url": "https://www.emamiltd.in/wp-content/themes/emami/pdf/Annual-Reports/2018-2019/20190712040345small83.pdf",
+    "retrieved_at": "2026-11-03T16:06:09.119612+00:00",
+    "status": 200,
+    "bytes": 28288463,
+    "content_type": "application/pdf",
+    "sha256": "8a94c659c2b3f46c7249bec3bde5070942932d9546273fbf79da1df1514b55ab"
+  },
+  {
+    "name": "MAXINDIA_listing_NSE_20160714.html",
+    "url": "https://nsearchives.nseindia.com/content/press/14072016.htm",
+    "retrieved_at": "2026-11-03T16:06:11.068982+00:00",
+    "status": 404,
+    "bytes": 3929,
+    "content_type": "text/html;charset=UTF-8",
+    "response_sha256": "8d036da5400984ee660de5fed723206a7c7a1f99d6ee69cf1b87c4bdc08bc8e7"
+  },
+  {
+    "name": "FRETAIL_listing_NSE_20160829.html",
+    "url": "https://nsearchives.nseindia.com/content/press/29082016.htm",
+    "retrieved_at": "2026-11-03T16:06:12.395908+00:00",
+    "status": 404,
+    "bytes": 3929,
+    "content_type": "text/html;charset=UTF-8",
+    "response_sha256": "8d036da5400984ee660de5fed723206a7c7a1f99d6ee69cf1b87c4bdc08bc8e7"
+  },
+  {
+    "name": "CANBK_offer_SEBI_index.html",
+    "url": "https://www.sebi.gov.in/filings/rights-issues/feb-2017/canara-bank_34259.html",
+    "retrieved_at": "2026-11-03T16:06:12.717666+00:00",
+    "status": 200,
+    "bytes": 7851,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "35632981de8fdd5abdcd5d53480bcf35c8164c8a4515b86501788409978c37cc"
+  },
+  {
+    "name": "KARURVYSYA_offer_SEBI_index.html",
+    "url": "https://www.sebi.gov.in/filings/rights-issues/oct-2017/the-karur-vysya-bank-limited_36280.html",
+    "retrieved_at": "2026-11-03T16:06:14.237149+00:00",
+    "status": 200,
+    "bytes": 7945,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "9ce241cbecdad412f321b26a3260e71dba5719876703271aed834cfb2fd9b1d0"
+  },
+  {
+    "name": "INDHOTEL_offer_SEBI.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/nov-2017/1511344551487.pdf",
+    "retrieved_at": "2026-11-03T16:06:14.447415+00:00",
+    "status": 200,
+    "bytes": 4893530,
+    "content_type": "application/pdf",
+    "sha256": "0b922d01986831e78f6b7d1f2589e521718df3004f333c8d2c7ad2cafc6c2a7b"
+  }
+]

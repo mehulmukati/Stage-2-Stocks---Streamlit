@@ -1,0 +1,17 @@
+{
+  "accepted": false,
+  "price_rows": 939941,
+  "reviewed_records": 31,
+  "reviewed_factors": 30,
+  "rebuilt_families": 27,
+  "sha256": {
+    "outputs\\backtest_repair_v5_20261103\\finite_decisions_v3.json": "3c5a1c65e654e57549be56c55ec779ac81290ed7b8dfc7a008ffe7b2c4aaa014",
+    "outputs\\backtest_repair_v4_20261103\\primary_model_v8\\primary_adjusted_research_candidate.parquet": "13b600f6c8f4e60c3c93519882e15ac3d11ee280904f6cfe8953eaf9022a6a67",
+    "outputs\\backtest_repair_v4_20261103\\primary_model_v8\\action_decisions.csv": "d0645c821dd24e98432c31ed8537e4f7cfd0aa78b31391a782147f0af731e260",
+    "outputs\\backtest_repair_v5_20261103\\build_reviewed_model.py": "e7135e4af816f5fec674bd3bd20be5313ab630e46872561a5aca3a83aa178bf2",
+    "historical_price_model.py": "2e3a0d3ab751722c3042639ec9dd1042d18eb99017c0d9a580627358890162ab",
+    "research_entitlements.py": "263bf553920bbda1cef51d1f4aec24d43ecdb8fe1509baaaf0ffa258c563f7af",
+    "outputs\\backtest_repair_v5_20261103\\reviewed_model_v2\\primary_adjusted_research_candidate.parquet": "eb77f7123b165f18fa2a4a62807c5b6b8fb2231b1805428256a057e3ce8bdecb",
+    "outputs\\backtest_repair_v5_20261103\\reviewed_model_v2\\action_decisions.csv": "8f82e9ae42f6d1aea5e85c707547b0d44f5d2b89c380a98cbb1afad7b55e88e1"
+  }
+}

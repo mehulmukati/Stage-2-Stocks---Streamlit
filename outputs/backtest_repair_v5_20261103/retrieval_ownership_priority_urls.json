@@ -1,0 +1,50 @@
+[
+  {
+    "name": "CAPF_merger_FAQ.html",
+    "url": "https://www.idfcfirst.bank.in/idfc-bank-and-capital-first-merger",
+    "retrieved_at": "2026-11-03T15:50:03.193023+00:00",
+    "status": 200,
+    "bytes": 2096606,
+    "content_type": "text/html;charset=utf-8",
+    "sha256": "0a83830758366468b752a1d953f73a49149f5f21c13359dc7ad5de96ada5881c"
+  },
+  {
+    "name": "CAPF_effective_issuer.html",
+    "url": "https://www.idfcfirst.bank.in/about-us/news-and-media/press-releases/idfc-bank-capital-first-merged-on-Dec-18",
+    "retrieved_at": "2026-11-03T15:50:03.194011+00:00",
+    "status": 200,
+    "bytes": 2055073,
+    "content_type": "text/html;charset=utf-8",
+    "sha256": "4b5b32d49518422d91fff9ee824f8f577aa6a0c346880bd9904ea5c10f0ef0cb"
+  },
+  {
+    "name": "CAPF_allotment_issuer.pdf",
+    "url": "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/announcements/IDFC-Bank-Letter-to-Stock-Exchanges-Allotment-of-Shares-pursuant-to-Merger.pdf",
+    "retrieved_at": "2026-11-03T15:50:03.195012+00:00",
+    "status": 200,
+    "bytes": 655285,
+    "content_type": "application/pdf",
+    "sha256": "d4cfcb5ddc56768a6de276d5a903f894b35d36b81a49e56c1e2369c7e473ae16"
+  },
+  {
+    "name": "CAPF_listing_issuer.html",
+    "url": "https://www.idfcfirst.bank.in/about-us/news-and-media/press-releases/idfc-first-bank-listing",
+    "retrieved_at": "2026-11-03T15:50:03.196009+00:00",
+    "status": 200,
+    "bytes": 2055202,
+    "content_type": "text/html;charset=utf-8",
+    "sha256": "e4b2bd19a916d0575a31d8a05aa508b07ca9af72fb6ca4dca9e9a2a1f8748d1a"
+  },
+  {
+    "name": "TECHNO_NCLT_order.pdf",
+    "url": "https://archive.nclt.gov.in/sites/default/files/final-orders-pdf/TECHNO%20ELECTRIC%20AND%20SIMRAN%20WIND%20PROJECT%2018%20ALD%202018.pdf",
+    "retrieved_at": "2026-11-03T15:50:04.060395+00:00",
+    "error": "Failed to perform, curl: (28) Failed to connect to archive.nclt.gov.in:443 after 21259 ms: Could not connect to server. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "TECHNO_scheme_SEBI.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/mar-2018/1520223842957.pdf",
+    "retrieved_at": "2026-11-03T15:50:04.156300+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 35006 milliseconds with 691512 out of 3715006 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  }
+]

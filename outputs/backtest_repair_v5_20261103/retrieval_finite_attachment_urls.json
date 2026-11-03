@@ -1,0 +1,608 @@
+[
+  {
+    "name": "nse_filing_5bdb9ed708dea109.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/RELIANCE_19052020194826_Reg30IntimationAdvertisements.pdf",
+    "retrieved_at": "2026-11-03T16:27:38.725722+00:00",
+    "status": 200,
+    "bytes": 24620107,
+    "content_type": "application/pdf",
+    "sha256": "06aedddd1205b43a8f1bc99f8fa2d5b81ee28ebeb9ce9e3d7ce103decefde6fe"
+  },
+  {
+    "name": "nse_filing_2f7a5ff7846b368d.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/RELIANCE_16062020183214_Reg30Intimationofadvertisments.pdf",
+    "retrieved_at": "2026-11-03T16:27:38.727720+00:00",
+    "status": 200,
+    "bytes": 17593143,
+    "content_type": "application/pdf",
+    "sha256": "db68e7790c4ace7dfe93aac548721820080a8fe501f90f431a1e0383762c957c"
+  },
+  {
+    "name": "nse_filing_e5cf30c0ac06b96e.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/NSE_14082018221519_865.zip",
+    "retrieved_at": "2026-11-03T16:27:38.728713+00:00",
+    "status": 200,
+    "bytes": 809374,
+    "content_type": "application/zip",
+    "sha256": "e3d86134ed6a677029ff5b4d2bbd65609c83a2dff34bbcaa1b764556ae48670a"
+  },
+  {
+    "name": "nse_filing_18f538a2dfc1e4ae.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/Rcap_Newspaper_24062017_27062017084856_125.zip",
+    "retrieved_at": "2026-11-03T16:27:39.745432+00:00",
+    "status": 200,
+    "bytes": 2949254,
+    "content_type": "application/zip",
+    "sha256": "34dba115d69e567bca7507fb93950b33d31752df10f38f6133064eb74c7426f6"
+  },
+  {
+    "name": "nse_filing_c424cc5e5385df08.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/KARURVYSYA_03102017160855.zip",
+    "retrieved_at": "2026-11-03T16:27:41.617742+00:00",
+    "status": 200,
+    "bytes": 684819,
+    "content_type": "application/zip",
+    "sha256": "e2111bbf1947d5545b182a6b7ad61c03b636639859d04ab46279581dd4fd695a"
+  },
+  {
+    "name": "nse_filing_b9c127742347fd44.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/NSEAllotment_22112017191828_413.zip",
+    "retrieved_at": "2026-11-03T16:27:42.266666+00:00",
+    "status": 200,
+    "bytes": 165469,
+    "content_type": "application/zip",
+    "sha256": "3261521d6917e229583b299de9f22a1faeacfde73f0e59e6d9ac2a805951edcf"
+  },
+  {
+    "name": "nse_filing_d9e9863e6dad6b7a.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/GRASIM_23062017171214.zip",
+    "retrieved_at": "2026-11-03T16:27:42.522238+00:00",
+    "status": 200,
+    "bytes": 628859,
+    "content_type": "application/zip",
+    "sha256": "0743cd8c7fdf107cf52522f8670db5cac7e0dacd17d8c1fd2317f3765f117149"
+  },
+  {
+    "name": "nse_filing_2cbb6d736905f6cb.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/Outcomeofmeeting_22092017_22092017185153_340.zip",
+    "retrieved_at": "2026-11-03T16:27:43.115024+00:00",
+    "status": 200,
+    "bytes": 74438,
+    "content_type": "application/zip",
+    "sha256": "aa8198928e34b3cc1a2302ba3dec0bc5f313bd7364c4002846b0f7efa811f771"
+  },
+  {
+    "name": "nse_filing_b58c033eac1f062b.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/indian_25092017113747.zip",
+    "retrieved_at": "2026-11-03T16:27:43.188637+00:00",
+    "status": 200,
+    "bytes": 74400,
+    "content_type": "application/zip",
+    "sha256": "2c1d37576cde4a0a4ef80c32dce0c704af84bad9ff9d777fed3df6306fcf8ffd"
+  },
+  {
+    "name": "nse_filing_e83e22029e3c44f8.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/TSLMeetingOutcome_14032018234902_003.zip",
+    "retrieved_at": "2026-11-03T16:27:43.417963+00:00",
+    "status": 200,
+    "bytes": 68499,
+    "content_type": "application/zip",
+    "sha256": "fcfdd6d5d2ab1b4f77d1d45a4e1fae0a101282ec6561a626e5687b590281bd2e"
+  },
+  {
+    "name": "nse_filing_b4f397b3154ffa48.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/OutcomeOfECOB_20012018131447_775.zip",
+    "retrieved_at": "2026-11-03T16:27:43.633490+00:00",
+    "status": 200,
+    "bytes": 89176,
+    "content_type": "application/zip",
+    "sha256": "2617910cad8494524435486298dce549a616c83b2fb50f44b8ee97d2aeff9cc2"
+  },
+  {
+    "name": "nse_filing_6d22fe6a8ba27839.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/ABB_28112019111546_ABBNCLTFINALORDERNovember2019_027.pdf",
+    "retrieved_at": "2026-11-03T16:27:43.635020+00:00",
+    "status": 200,
+    "bytes": 2127408,
+    "content_type": "application/pdf",
+    "sha256": "cbff0e2ca38e37784c806867bbcb528c4b1328f1773aa2e526efd02be79d0c83"
+  },
+  {
+    "name": "nse_filing_5674e833612e6341.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/PEL_20171108_SE_Intimation_08112017144347_148.zip",
+    "retrieved_at": "2026-11-03T16:27:43.704873+00:00",
+    "status": 200,
+    "bytes": 162299,
+    "content_type": "application/zip",
+    "sha256": "8f66752741a4a12e8a855ef1d9f4408b95c0bd3d7ce75af4cae67adb8ba811c6"
+  },
+  {
+    "name": "nse_filing_eda19e7f6b168f9f.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/PEL_SE_intimation_record_date_and_ratio_19_01_2018_19012018145913_530.zip",
+    "retrieved_at": "2026-11-03T16:27:43.751440+00:00",
+    "status": 200,
+    "bytes": 235317,
+    "content_type": "application/zip",
+    "sha256": "8b7478c477b64f361e9eee6ed74ceff8b5e7b95c3a3ab24f67602b63318fd220"
+  },
+  {
+    "name": "nse_filing_88488e6e93298d44.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/listcontract1_19122019085054_PEL_SE_intimation_record_date_and_ratio_18122019_011.pdf",
+    "retrieved_at": "2026-11-03T16:27:43.947780+00:00",
+    "status": 200,
+    "bytes": 482529,
+    "content_type": "application/pdf",
+    "sha256": "90c826dd2448638d6afbf705575dec919a70bcd548dd34d11f43d54db8261b2b"
+  },
+  {
+    "name": "nse_filing_8eb5db08456cbe08.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/PEL_22012020194524_PEL_Reg_30_22012020_287.pdf",
+    "retrieved_at": "2026-11-03T16:27:44.032473+00:00",
+    "status": 200,
+    "bytes": 1930815,
+    "content_type": "application/pdf",
+    "sha256": "88f25a2415ca811b20d45097d3de97b6f32769801b4b602ab3ced6af652eab5a"
+  },
+  {
+    "name": "nse_filing_c1869f69311c9f55.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/TATACOMM_07082019205539_16820_020.pdf",
+    "retrieved_at": "2026-11-03T16:27:44.800610+00:00",
+    "status": 200,
+    "bytes": 133684,
+    "content_type": "application/pdf",
+    "sha256": "c519644f51bb122f1572c90558d46d01714c9813b2ebfc095447324da60739fa"
+  },
+  {
+    "name": "nse_filing_e38f68ee8ee586ae.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/PVR_14072020120809_PVRNewspaperAdvertisementRightIssue14072020.pdf",
+    "retrieved_at": "2026-11-03T16:27:44.842829+00:00",
+    "status": 200,
+    "bytes": 8696902,
+    "content_type": "application/pdf",
+    "sha256": "218992034fa2051230aea19ab012729475e772deeb200d07c944c9006508c188"
+  },
+  {
+    "name": "nse_filing_094c58a51bf03171.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/PVR_06072020193329_OutcomeBM06072020.pdf",
+    "retrieved_at": "2026-11-03T16:27:44.970591+00:00",
+    "status": 200,
+    "bytes": 2204181,
+    "content_type": "application/pdf",
+    "sha256": "409bfb11a285d6f453288865f337c70752de4fa46a3675c7a43089f00c090387"
+  },
+  {
+    "name": "nse_filing_3d155080d9908c33.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/BAJAJELEC_31012020125815_SEIntimationPostMeeting31012020.pdf",
+    "retrieved_at": "2026-11-03T16:27:45.203699+00:00",
+    "status": 200,
+    "bytes": 118425,
+    "content_type": "application/pdf",
+    "sha256": "006c51ace55b7605f4fb346eeb84b0dc97966e14374b56b743d2679eadae819e"
+  },
+  {
+    "name": "nse_filing_46979f914288edff.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/BAJAJELEC_31012020194428_LettertoSEs31012020.pdf",
+    "retrieved_at": "2026-11-03T16:27:45.486369+00:00",
+    "status": 200,
+    "bytes": 204076,
+    "content_type": "application/pdf",
+    "sha256": "2b209db96b51de248b4aaa45eacedbfc59979fc5686df00c46d3fb0f0916866a"
+  },
+  {
+    "name": "nse_filing_f1fa11d24802f870.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/listcontract3_06102019171458_britannia_031.pdf",
+    "retrieved_at": "2026-11-03T16:27:45.676807+00:00",
+    "status": 200,
+    "bytes": 5426793,
+    "content_type": "application/pdf",
+    "sha256": "e114b9456c399e17bd3dc0e5b08c523156ba020cc8b302cf3ebd60d438f94231"
+  },
+  {
+    "name": "nse_filing_57830547021b93e1.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/Reg47intimation_14122017172426_221.zip",
+    "retrieved_at": "2026-11-03T16:27:45.740367+00:00",
+    "status": 200,
+    "bytes": 7025495,
+    "content_type": "application/zip",
+    "sha256": "8ac8eac053d5b6049e5bcb72f6f13f12ba5efcaaba6367295bcd71afe399555a"
+  },
+  {
+    "name": "nse_filing_95b3a551984238b4.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/OutcomeofRIC_20102017200825_516.zip",
+    "retrieved_at": "2026-11-03T16:27:47.141931+00:00",
+    "status": 200,
+    "bytes": 28741,
+    "content_type": "application/zip",
+    "sha256": "4e00cde8e767fe4923f36d5f1ea038b663ed5d7aafb006e341a2f4aa13302c9f"
+  },
+  {
+    "name": "nse_filing_1f9950846f455f3d.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/IVL_SE_Intimation_Rights_Issue_Allotment_16032018_16032018115003_293.zip",
+    "retrieved_at": "2026-11-03T16:27:47.286719+00:00",
+    "status": 200,
+    "bytes": 168589,
+    "content_type": "application/zip",
+    "sha256": "dd1d38263744215f0c21daea0fab330e8fa294fd9bec153e1f3953ba4cf3dff6"
+  },
+  {
+    "name": "nse_filing_df11958ffb368592.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/IBVentureLetterofOffer_05022018163247_481.zip",
+    "retrieved_at": "2026-11-03T16:27:47.465368+00:00",
+    "status": 200,
+    "bytes": 6320650,
+    "content_type": "application/zip",
+    "sha256": "21abd53a63a301e2f7fc3c6a571c64a4794ad0859f3ab190d5b27ddffadba215"
+  },
+  {
+    "name": "nse_filing_5f063dc5cf08c92e.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/INTELL_07072017150448.zip",
+    "retrieved_at": "2026-11-03T16:27:47.473387+00:00",
+    "status": 200,
+    "bytes": 118091,
+    "content_type": "application/zip",
+    "sha256": "5fc8d16136cb315af70e0f3b871ac033a503d66599cd9a8f07b218b400eb41ee"
+  },
+  {
+    "name": "nse_filing_f0d546da6ed7668d.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/Recorddateintimation06072017_06072017174950_332.zip",
+    "retrieved_at": "2026-11-03T16:27:47.692399+00:00",
+    "status": 200,
+    "bytes": 793937,
+    "content_type": "application/zip",
+    "sha256": "4fb5145bac52d5f67219165309f9480cfe198155d409f41478fbe2b0a0144434"
+  },
+  {
+    "name": "nse_filing_3127d6ead42c03e2.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/SchemeEffectivedate_24112017115706_701.zip",
+    "retrieved_at": "2026-11-03T16:27:47.851028+00:00",
+    "status": 200,
+    "bytes": 324918,
+    "content_type": "application/zip",
+    "sha256": "9caee5bc203d83a25e7482f2a8f6fbc0cfaeaece76d41fbe03feb6288811f74c"
+  },
+  {
+    "name": "nse_filing_2fe15f0442ac3648.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/rohitpuri_28022019164314_OutcomeofBM_132.pdf",
+    "retrieved_at": "2026-11-03T16:27:47.998222+00:00",
+    "status": 200,
+    "bytes": 845633,
+    "content_type": "application/pdf",
+    "sha256": "81c87a758df389937958ae324e474b3114aa0151a2bfe2ecc582e08e7b696f44"
+  },
+  {
+    "name": "nse_filing_4daa9ae237757a65.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/listcontract1_13052019124740_BAL_Addendum_ad_207.pdf",
+    "retrieved_at": "2026-11-03T16:27:48.386590+00:00",
+    "status": 200,
+    "bytes": 139138,
+    "content_type": "application/pdf",
+    "sha256": "c38dd4b3fa3d9b8ae7c5fa72f5f2782cb1ec0cb515307a37b8d307e5d8d56762"
+  },
+  {
+    "name": "nse_filing_6467e708972c2207.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/MINDAIND_11082020190205_revised_outcome.pdf",
+    "retrieved_at": "2026-11-03T16:27:48.387594+00:00",
+    "status": 200,
+    "bytes": 295338,
+    "content_type": "application/pdf",
+    "sha256": "469ca9e6d789bebebed7b1572f8e5e4ca8aecf8f471792f7e128bdcbfda52521"
+  },
+  {
+    "name": "nse_filing_4949436a0b177a07.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/MINDAIND_11082020103412_4265_001.pdf",
+    "retrieved_at": "2026-11-03T16:27:48.829623+00:00",
+    "status": 200,
+    "bytes": 237566,
+    "content_type": "application/pdf",
+    "sha256": "f1300313f8fafc5d48960cc3ec48e7d23491bd835aeb2dd116518183963e5871"
+  },
+  {
+    "name": "nse_filing_c212afff10a77f25.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/AEL-NCLT-ORDER_20022018120800_723.zip",
+    "retrieved_at": "2026-11-03T16:27:48.916327+00:00",
+    "status": 200,
+    "bytes": 804880,
+    "content_type": "application/zip",
+    "sha256": "5273390abf8fe93f7d80910869ad41a57da54b19a3405602609b6d06fd3fa37c"
+  },
+  {
+    "name": "nse_filing_fb4326d723aff6d0.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/RightsIssueCommitteemeetingoutcomeNSE06JUNE2018v2_07062018082713_440.zip",
+    "retrieved_at": "2026-11-03T16:27:48.925333+00:00",
+    "status": 200,
+    "bytes": 40141,
+    "content_type": "application/zip",
+    "sha256": "717a0cb2434af7509269f3e53f18504d24428b334682fb7c967efed2f0afd0f0"
+  },
+  {
+    "name": "nse_filing_ff5cf7bc8c3601b9.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/RightsIssueCommtMeetingOutcome12JULY2018NSE_12072018131249_384.zip",
+    "retrieved_at": "2026-11-03T16:27:49.095683+00:00",
+    "status": 200,
+    "bytes": 57986,
+    "content_type": "application/zip",
+    "sha256": "cd54534ffd7d415676a895e6a7cac1670e917e3fd0c7dfd0b0b378b01029cb63"
+  },
+  {
+    "name": "nse_filing_aa0e954d758b678d.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/Canarasubcommeeting03022017_03022017191103_726.zip",
+    "retrieved_at": "2026-11-03T16:27:49.186938+00:00",
+    "status": 200,
+    "bytes": 159641,
+    "content_type": "application/zip",
+    "sha256": "59c81ba293ce4beddd7d4fd4120632bf892bf45808195bfe270de6e31527c1c5"
+  },
+  {
+    "name": "nse_filing_6778a688a508452f.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/CanaraSubCommittee08022017_09022017082230_108.zip",
+    "retrieved_at": "2026-11-03T16:27:49.343516+00:00",
+    "status": 200,
+    "bytes": 196956,
+    "content_type": "application/zip",
+    "sha256": "e50be505ee0b528a76e48d3193885c0696b37fd6b272de473e76379182ccf25d"
+  },
+  {
+    "name": "nse_filing_a1cc7e58bab738bf.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/CESC_12102018165945_SEPressRelease_155.pdf",
+    "retrieved_at": "2026-11-03T16:27:49.546509+00:00",
+    "status": 200,
+    "bytes": 132921,
+    "content_type": "application/pdf",
+    "sha256": "c5326cf5534066af5d894540aff57f248c9cf5ce9aa53de11a943cf352f35ae4"
+  },
+  {
+    "name": "nse_filing_e6bf6ab0f3b151a0.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/SUVEN1509_07112019162750_SUVENNoticeofPetitionPaperAdvt07112019_270.pdf",
+    "retrieved_at": "2026-11-03T16:27:49.620281+00:00",
+    "status": 200,
+    "bytes": 1941141,
+    "content_type": "application/pdf",
+    "sha256": "fe5372f235e4a54fd3d52568e752bc849de169a111de7fc137b4c7b2c433487c"
+  },
+  {
+    "name": "nse_filing_1e9baa9ab13fb42a.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/Updateonschemeofdemerger_24102017194705_310.zip",
+    "retrieved_at": "2026-11-03T16:27:50.065735+00:00",
+    "status": 200,
+    "bytes": 169767,
+    "content_type": "application/zip",
+    "sha256": "f087a85d5181f60868bbadc37b02bc5c01919c854eddb9893a05f9540ec5fdf2"
+  },
+  {
+    "name": "nse_filing_f0a21051bda3daee.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/IIFL_13052019221433_Updates_561.pdf",
+    "retrieved_at": "2026-11-03T16:27:50.231680+00:00",
+    "status": 200,
+    "bytes": 198137,
+    "content_type": "application/pdf",
+    "sha256": "96f5d0c173a030a681a80c171cbae176dde285ab27840b9f3be73ba59b468c52"
+  },
+  {
+    "name": "nse_filing_c0a3172f40dbe6ae.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/HCC_22112018154250_NSE_107.pdf",
+    "retrieved_at": "2026-11-03T16:27:51.469525+00:00",
+    "status": 200,
+    "bytes": 10107076,
+    "content_type": "application/pdf",
+    "sha256": "ccf6498675d340edadcc67482f7d5a18814ef2f02535ffc78e19bd8497bb6317"
+  },
+  {
+    "name": "nse_filing_31d10cea7624b910.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/HCC_12112018130226_Outcome_973.pdf",
+    "retrieved_at": "2026-11-03T16:27:51.470523+00:00",
+    "status": 200,
+    "bytes": 580710,
+    "content_type": "application/pdf",
+    "sha256": "4111aba6b9c96ce1eda65b89173a6caa195eee058b85375642ec4cfd3f3540c0"
+  },
+  {
+    "name": "nse_filing_c5c5a638ba4ae853.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/BSENSELETTER_05082016121455_141.zip",
+    "retrieved_at": "2026-11-03T16:27:51.472041+00:00",
+    "status": 200,
+    "bytes": 377933,
+    "content_type": "application/zip",
+    "sha256": "0cd62e246771eac5dbae2d811dbaeb0677071075fccc87d30f43820e909064ba"
+  },
+  {
+    "name": "nse_filing_28958a45b8f457a5.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/StockExchangeLetter_21112016080701_093.zip",
+    "retrieved_at": "2026-11-03T16:27:53.106254+00:00",
+    "status": 200,
+    "bytes": 625005,
+    "content_type": "application/zip",
+    "sha256": "c06a4203487bf515adeed5717a170343403743479595e352570f751feb441240"
+  },
+  {
+    "name": "nse_filing_319d07a11b5bda57.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/ABFRL_25062020114147_NSE.pdf",
+    "retrieved_at": "2026-11-03T16:27:53.661496+00:00",
+    "status": 200,
+    "bytes": 227832,
+    "content_type": "application/pdf",
+    "sha256": "865ca5584127c43c20461fbea83e26412ef6cdee4c49345b4b92881595675238"
+  },
+  {
+    "name": "nse_filing_9016cf3c28375de9.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/ABFRL_26062020170503_ABFRLISIN.pdf",
+    "retrieved_at": "2026-11-03T16:28:06.590023+00:00",
+    "status": 200,
+    "bytes": 180793,
+    "content_type": "application/pdf",
+    "sha256": "65ea90d88ac610b11fd1e6ea27171ac2b760a33da4e9fe460c145cebc4f6f72b"
+  },
+  {
+    "name": "nse_filing_d6f996beb57dddfe.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/NEAPSNCLTORDERANDSCHEME_703.zip",
+    "retrieved_at": "2026-11-03T16:28:12.597267+00:00",
+    "status": 200,
+    "bytes": 1609737,
+    "content_type": "application/zip",
+    "sha256": "2b5159cac1d33b346a0505f2acc310abfe8b628275b6d65033438cb9f74b8526"
+  },
+  {
+    "name": "nse_filing_54b0451a57150c95.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/nse_21122016182429_246.zip",
+    "retrieved_at": "2026-11-03T16:28:16.368803+00:00",
+    "status": 200,
+    "bytes": 257857,
+    "content_type": "application/zip",
+    "sha256": "55adf3a149f1ce643ef9f25bef6f9ce1d556e3b2593f80ab30ff3d657c3a14ae"
+  },
+  {
+    "name": "nse_filing_271a59c1a3e8265f.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/EDELWEISS_01032017114046.zip",
+    "retrieved_at": "2026-11-03T16:28:16.879315+00:00",
+    "status": 200,
+    "bytes": 1988851,
+    "content_type": "application/zip",
+    "sha256": "a5a7d00d19486e4d15fe4e9c3ce22a1aec8a04fbd32473c9e7c8413de04b0c83"
+  },
+  {
+    "name": "nse_filing_429eba3b5855f5a5.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/LetrtoSE24112017_24112017132613_735.zip",
+    "retrieved_at": "2026-11-03T16:28:17.296721+00:00",
+    "status": 200,
+    "bytes": 225834,
+    "content_type": "application/zip",
+    "sha256": "7b35e5ff50509d2bd0a1e0e6eed78c816e45c09209f0a598b4ec73a9e072d8d4"
+  },
+  {
+    "name": "nse_filing_74b99905fbaf91b1.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/LettertoSEs03012018_03012018195911_259.zip",
+    "retrieved_at": "2026-11-03T16:28:17.529689+00:00",
+    "status": 200,
+    "bytes": 363574,
+    "content_type": "application/zip",
+    "sha256": "1a6baebee36a86521da70702b5a83e7fba88256915788d6d336b81bded4e6804"
+  },
+  {
+    "name": "nse_filing_c6d98d9c66e48755.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/SRTRANSFIN_06082020165943_OutcomeofSICMeetingAugust0620.pdf",
+    "retrieved_at": "2026-11-03T16:28:17.783069+00:00",
+    "status": 200,
+    "bytes": 496422,
+    "content_type": "application/pdf",
+    "sha256": "5bb5695c8ec8f84e07592787bf729080b3e1063023be75d848358de363173f90"
+  },
+  {
+    "name": "nse_filing_ff51bb1b94b88bb0.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/SRTRANSFIN_06072020213339_RecorddateBSENSE.pdf",
+    "retrieved_at": "2026-11-03T16:28:17.976022+00:00",
+    "status": 200,
+    "bytes": 585429,
+    "content_type": "application/pdf",
+    "sha256": "938f0a60c7408b87d44f12f474e10fb023d06eabfeeb160301f07f0aca7ed43a"
+  },
+  {
+    "name": "nse_filing_3cc764560f7a041e.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/Letter_BSE_NSE_Intimation_of_Scheme_Effective_20112017142350_627.zip",
+    "retrieved_at": "2026-11-03T16:28:18.960684+00:00",
+    "status": 200,
+    "bytes": 371148,
+    "content_type": "application/zip",
+    "sha256": "4f3660eb036a37c308ed1baa9be0202ff564cdde99be64471295252505f4f39e"
+  },
+  {
+    "name": "nse_filing_fd1f0bb4ce667541.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/AARTIIND_21062019185704_AARTIIND_425.pdf",
+    "retrieved_at": "2026-11-03T16:28:19.209274+00:00",
+    "status": 200,
+    "bytes": 2928392,
+    "content_type": "application/pdf",
+    "sha256": "802e7601c5c289adfaab99d469b64184e8365eada12238ed8651f41a4b1cd63e"
+  },
+  {
+    "name": "nse_filing_305701c0642b5bd5.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/M&MFIN_07082020175415_MMFSLRIstockexchangeintimation.pdf",
+    "retrieved_at": "2026-11-03T16:28:19.333989+00:00",
+    "status": 200,
+    "bytes": 36897194,
+    "content_type": "application/pdf",
+    "sha256": "71ca4464854aab299953e669c4230dd1f02b37d4620fea99d2ad09b3075aa102"
+  },
+  {
+    "name": "nse_filing_9c1d1f3618a0e70a.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/M&MFIN_20082020150903_RightsIssuebasisofallotment.pdf",
+    "retrieved_at": "2026-11-03T16:28:20.047003+00:00",
+    "status": 200,
+    "bytes": 23421153,
+    "content_type": "application/pdf",
+    "sha256": "535239e429d0bd70226da60fa9114aa0de503aa0b5839b36c1e2bde5fb44180e"
+  },
+  {
+    "name": "nse_filing_d996d258b068dc06.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/listcontract3_19122018195635_IntimationFinalOrder_211.pdf",
+    "retrieved_at": "2026-11-03T16:28:21.543894+00:00",
+    "status": 200,
+    "bytes": 431422,
+    "content_type": "application/pdf",
+    "sha256": "06725c517cdc60d8ab531417210d49c4e79a4bf4b330e55cac37f37701e76040"
+  },
+  {
+    "name": "nse_filing_11fff2251c253c3a.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/StridesShasunNewspaperAdvertisementHearingofpetition_09022018151843_357.zip",
+    "retrieved_at": "2026-11-03T16:28:22.002844+00:00",
+    "status": 200,
+    "bytes": 2734343,
+    "content_type": "application/zip",
+    "sha256": "a0e8f8696847d582f8ff511b6c1b2a4ff632834fdf4252b3cd9fd8ef0d4b1dbc"
+  },
+  {
+    "name": "nse_filing_1af7ec120722daad.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/ARVINDFASN_18032020144249_OutcomeofCOD18032020.pdf",
+    "retrieved_at": "2026-11-03T16:28:24.162372+00:00",
+    "status": 200,
+    "bytes": 318834,
+    "content_type": "application/pdf",
+    "sha256": "985f7fb872b6eb902793e6f96bba42b53bd1dd03994c8d8367bd78af6359f06e"
+  },
+  {
+    "name": "nse_filing_8a83080445d4d725.pdf",
+    "url": "https://nsearchives.nseindia.com/corporate/ARVINDFASN_20122019130807_PublicAnnouncementOfDLoF_032.pdf",
+    "retrieved_at": "2026-11-03T16:28:24.545766+00:00",
+    "status": 200,
+    "bytes": 4582369,
+    "content_type": "application/pdf",
+    "sha256": "20d6c08f3dffa3daaaf3731e6251ee7b9c3b91c5be8e8d171f54d7b1702a1e33"
+  },
+  {
+    "name": "CANBK_final_offer_SEBI.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/1487579909741.pdf",
+    "retrieved_at": "2026-11-03T16:28:45.856212+00:00",
+    "error": "Failed to perform, curl: (28) Operation timed out after 180007 milliseconds with 8930255 out of 23313021 bytes received. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "KARURVYSYA_final_offer_SEBI.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/nov-2017/1510050330405.pdf",
+    "retrieved_at": "2026-11-03T16:28:49.343066+00:00",
+    "error": "Failed to perform, curl: (56) Connection closed abruptly. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+  },
+  {
+    "name": "UNOMINDA_bonus_dividend_notice_NSE.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/3163_001_sw_21062018114112_484.zip",
+    "retrieved_at": "2026-11-03T16:28:49.915674+00:00",
+    "status": 200,
+    "bytes": 2293763,
+    "content_type": "application/zip",
+    "sha256": "4d18cbb39ee9d16b320d8d372278e28262b2a63bcef088b28f925d1640b23fc8"
+  },
+  {
+    "name": "SRF_dividend_NSE.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/2017_08_08_Ist_Interim_Dividend_17_18_SRF_08082017181446_471.zip",
+    "retrieved_at": "2026-11-03T16:28:50.548362+00:00",
+    "status": 200,
+    "bytes": 27700,
+    "content_type": "application/zip",
+    "sha256": "b6e759a2729e66d9e838b017e3813defc278587c2d4638021602638a7a8165fd"
+  },
+  {
+    "name": "TECHNO_ratio_record_NSE.zip",
+    "url": "https://nsearchives.nseindia.com/corporate/RD_30072018202546_30072018202620_30072018203207.zip",
+    "retrieved_at": "2026-11-03T16:28:50.908122+00:00",
+    "status": 200,
+    "bytes": 312993,
+    "content_type": "application/zip",
+    "sha256": "08d3d09169300c4b237b263e84cfd6b3f91c97eb37a45f06009ec3bb57c0db7b"
+  }
+]

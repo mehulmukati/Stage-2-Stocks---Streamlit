@@ -1,0 +1,14 @@
+........................................................................ [ 14%]
+........................................................................ [ 28%]
+........................................................................ [ 42%]
+........................................................................ [ 57%]
+........................................................................ [ 71%]
+........................................................................ [ 85%]
+.......................................................................  [100%]
+============================== warnings summary ===============================
+tests/test_historical_price_model.py::test_factor_audit_orders_outer_calendar_and_rejects_duplicates
+  D:\Content\GoogleDrive\Github\Stage-2-Stocks---Streamlit\historical_price_model.py:281: Pandas4Warning: Sorting by default when concatenating all DatetimeIndex is deprecated.  In the future, pandas will respect the default of `sort=False`. Specify `sort=True` or `sort=False` to silence this message. If you see this warnings when not directly calling concat, report a bug to pandas.
+    aligned = pd.concat(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+503 passed, 1 warning in 447.70s (0:07:27)
