@@ -1,0 +1,551 @@
+{
+  "passed": true,
+  "raw_notice_tables": [
+    {
+      "source": "ind_prs29082017.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs28082017.pdf",
+      "independent_rows": 50,
+      "applicable_rows": 48
+    },
+    {
+      "source": "ind_prs16102017.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs03112017.pdf",
+      "independent_rows": 4,
+      "applicable_rows": 4
+    },
+    {
+      "source": "ind_prs10112017.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs08012018.pdf",
+      "independent_rows": 8,
+      "applicable_rows": 8
+    },
+    {
+      "source": "ind_prs06032018.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs21022018.pdf",
+      "independent_rows": 50,
+      "applicable_rows": 48
+    },
+    {
+      "source": "ind_prs24052018.pdf",
+      "independent_rows": 6,
+      "applicable_rows": 6
+    },
+    {
+      "source": "ind_prs20062018.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs01082018.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs28082018.pdf",
+      "independent_rows": 50,
+      "applicable_rows": 50
+    },
+    {
+      "source": "ind_prs31082018.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs14122018.pdf",
+      "independent_rows": 10,
+      "applicable_rows": 10
+    },
+    {
+      "source": "ind_prs21012019.pdf",
+      "independent_rows": 4,
+      "applicable_rows": 4
+    },
+    {
+      "source": "ind_prs25022019.pdf",
+      "independent_rows": 50,
+      "applicable_rows": 50
+    },
+    {
+      "source": "ind_prs08042019.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs13062019.pdf",
+      "independent_rows": 4,
+      "applicable_rows": 4
+    },
+    {
+      "source": "ind_prs17092019_1.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs28082019.pdf",
+      "independent_rows": 42,
+      "applicable_rows": 42
+    },
+    {
+      "source": "ind_prs17092019.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs18122019.pdf",
+      "independent_rows": 6,
+      "applicable_rows": 6
+    },
+    {
+      "source": "ind_prs16122019.pdf",
+      "independent_rows": 14,
+      "applicable_rows": 14
+    },
+    {
+      "source": "ind_prs19122019.pdf",
+      "independent_rows": 4,
+      "applicable_rows": 4
+    },
+    {
+      "source": "ind_prs09012020.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs16032020.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    },
+    {
+      "source": "ind_prs10062020.pdf",
+      "independent_rows": 50,
+      "applicable_rows": 50
+    },
+    {
+      "source": "ind_prs02072020_1.pdf",
+      "independent_rows": 2,
+      "applicable_rows": 2
+    }
+  ],
+  "independent_unique_transitions": 374,
+  "preserved_source_records": 376,
+  "verified_action_boundaries": 24,
+  "applicable_actions": 23,
+  "forward_anchor_matches": true,
+  "reverse_initial_matches": true,
+  "monthly_comparisons": [
+    {
+      "date": "2017-06-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2017-07-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2017-08-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2017-09-29",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2017-10-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2017-11-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2017-12-29",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-01-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-02-28",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-03-28",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-04-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-05-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-06-29",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-07-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-08-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-09-28",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-10-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-11-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2018-12-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-01-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-02-28",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-03-29",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-04-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-05-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-06-28",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-07-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-08-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-09-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-10-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-11-29",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2019-12-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2020-01-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2020-02-28",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2020-03-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2020-04-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2020-05-29",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2020-06-30",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2020-07-31",
+      "securities": 501,
+      "matches": true
+    },
+    {
+      "date": "2020-08-31",
+      "securities": 501,
+      "matches": true
+    }
+  ],
+  "economic_forward_anchor_matches": true,
+  "economic_reverse_initial_matches": true,
+  "economic_monthly_comparisons": [
+    {
+      "date": "2017-06-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2017-07-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2017-08-31",
+      "matches": true,
+      "explicit_identifier_projections": [
+        "INFIBEAM:2017-08-31"
+      ]
+    },
+    {
+      "date": "2017-09-29",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2017-10-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2017-11-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2017-12-29",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-01-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-02-28",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-03-28",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-04-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-05-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-06-29",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-07-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-08-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-09-28",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-10-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-11-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2018-12-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-01-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-02-28",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-03-29",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-04-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-05-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-06-28",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-07-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-08-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-09-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-10-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-11-29",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2019-12-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2020-01-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2020-02-28",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2020-03-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2020-04-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2020-05-29",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2020-06-30",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2020-07-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    },
+    {
+      "date": "2020-08-31",
+      "matches": true,
+      "explicit_identifier_projections": []
+    }
+  ],
+  "production_walker_imported": false,
+  "accepted": false
+}

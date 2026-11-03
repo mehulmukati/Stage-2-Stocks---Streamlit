@@ -1,0 +1,50 @@
+Check actual accepted source quotes 152 symbols 576 sessions
+{
+  "source_revisions": [
+    "f7b7391fc10f41e29c49dec8a7274bd2",
+    "5aeb0b0c826746dca63ada9272a9d94f"
+  ],
+  "reconciliation": {
+    "Full Rebalance": {
+      "passed": true,
+      "fills": 1517,
+      "closed_lots": 1228,
+      "daily_rows": 576,
+      "max_cash_error": 1.509903313490213e-14,
+      "max_nav_error": 2.842170943040401e-14,
+      "max_quantity_error": 6.938893903907228e-18,
+      "max_tax_error": 5.551115123125783e-15
+    },
+    "Marginal Rebalance": {
+      "passed": true,
+      "fills": 1497,
+      "closed_lots": 1214,
+      "daily_rows": 576,
+      "max_cash_error": 7.13318293321663e-15,
+      "max_nav_error": 2.842170943040401e-14,
+      "max_quantity_error": 6.938893903907228e-18,
+      "max_tax_error": 1.1379786002407855e-14
+    },
+    "Prop Rebalance": {
+      "passed": true,
+      "fills": 1497,
+      "closed_lots": 1228,
+      "daily_rows": 576,
+      "max_cash_error": 1.5085155347094314e-14,
+      "max_nav_error": 2.842170943040401e-14,
+      "max_quantity_error": 6.938893903907228e-18,
+      "max_tax_error": 1.532107773982716e-14
+    }
+  },
+  "protected_baseline_inputs": {
+    "batch_v10.xlsx": true,
+    "data/compositions.parquet": true,
+    "data/constituents.parquet": true,
+    "data/screener_ohlcv.parquet": true,
+    "data/scrip_symbol_map.csv": true
+  },
+  "date_range": [
+    "2024-07-01",
+    "2026-10-27"
+  ]
+}

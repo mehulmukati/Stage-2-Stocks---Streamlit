@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "new_edges_independently_checked": 62,
+  "previous_round_edges_rechecked_separately": 23,
+  "obsolete_API_ISIN_edges_with_original_bulletins": 5,
+  "production_action_or_graph_imported": false,
+  "accepted": false
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "CMTR27792.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR27792.pdf",
+    "retrieved_at": "2026-11-03T14:14:13.787374+00:00",
+    "status": 200,
+    "bytes": 141174,
+    "content_type": "application/pdf",
+    "sha256": "1e5e2964d919b72fc3728d2e4d2ba785f77aebb162188c260b8f3d6479590282"
+  },
+  {
+    "name": "CSE_live_20140322.html",
+    "url": "https://www.cse-india.com/upload/CSE%20Notices%20%26%20Circulars/2014/Notice200314_4.htm",
+    "retrieved_at": "2026-11-03T14:14:13.788374+00:00",
+    "status": 200,
+    "bytes": 23732,
+    "content_type": "text/html",
+    "sha256": "cebd50776ec056be2bffe2c88fcd8d1e8cb7f3d911e36b09455940bfeb58eea9"
+  },
+  {
+    "name": "NSEIL_Annual_Report_2015.pdf",
+    "url": "https://nsearchives.nseindia.com/global/content/about_us/NSEIL_Annual_Report_2015.pdf",
+    "retrieved_at": "2026-11-03T14:14:13.789372+00:00",
+    "status": 200,
+    "bytes": 3077451,
+    "content_type": "application/pdf",
+    "sha256": "d11b024ba5ecb76fbb1fbf9322469a00e62c067362df8e275b0a738297073bb1"
+  },
+  {
+    "name": "zerodha_circulars_page58.html",
+    "url": "https://zerodha.com/marketintel/circulars/?page=58",
+    "retrieved_at": "2026-11-03T14:14:13.790372+00:00",
+    "status": 200,
+    "bytes": 36725,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "d658e0003fefd5ea89c4b7baa80e0bad2f04f7fc6eb8a5c823be6b349d394d62"
+  }
+]

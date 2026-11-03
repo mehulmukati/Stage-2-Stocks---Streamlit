@@ -1,0 +1,32 @@
+{
+  "status": "nominal execution not supported",
+  "records": [
+    {
+      "action_id": "YESBANK:2020-03-16",
+      "symbol": "YESBANK",
+      "old_security_id": "ISIN:INE528G01027",
+      "new_security_id": "ISIN:INE528G01035",
+      "kind": "reconstruction_with_conditional_lock_in",
+      "ex_date": "2020-03-16",
+      "identifier_effective_date": "2020-03-16",
+      "last_daily_old_identifier": "2020-03-13",
+      "share_ratio": 1,
+      "purpose": "75% lock-in for existing holdings >=100 shares under scheme; not a split; nominal execution unsupported",
+      "membership_conversion_supported": true,
+      "portfolio_adjustment_authorized": false,
+      "price_policy": "Evidence only; do not multiply already-adjusted units or credit dividends",
+      "applicable_to_scope": true,
+      "affected_event_row_ids": "IndexInclExcl - Upto 2020.xls:Nifty 500:2442",
+      "source": "outputs\\backtest_repair_v3_20261103\\evidence\\INSP43833.pdf",
+      "source_sha256": "c8d17de1f2d3e805d0776fc3cfd5d748cabb8a258d57e5eb27abd8138cf808e9",
+      "boundary_evidence": [
+        "cm13MAR2020bhav.csv.zip:cm13MAR2020bhav.csv:1986",
+        "cm16MAR2020bhav.csv.zip:cm16MAR2020bhav.csv:2029"
+      ],
+      "verified_at": "2026-11-03",
+      "identifier_date_semantics": "First supported daily raw exchange identifier observation; not a depository settlement date. Economic membership uses the separately evidenced ex_date.",
+      "research_unit_basis_policy": "No lot quantity, FIFO basis or cash adjustment in existing adjusted research units; no double split/bonus/distribution credit"
+    }
+  ],
+  "policy": "Identifier continuity only; no split multiplication. Conditional lock-in not erased. Adjusted research quantities are not nominal holdings eligible for the scheme threshold."
+}

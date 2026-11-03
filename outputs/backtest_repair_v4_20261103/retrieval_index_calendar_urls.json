@@ -1,0 +1,38 @@
+[
+  {
+    "name": "index_calendar_2014.json",
+    "url": "https://www.nseindia.com/api/historical/indicesHistory?indexType=NIFTY%20500&from=01-01-2014&to=31-12-2014",
+    "retrieved_at": "2026-11-03T13:33:39.051218+00:00",
+    "status": 503,
+    "bytes": 540,
+    "content_type": "text/html; charset=iso-8859-1",
+    "response_sha256": "4abe2a8ed384f16717158fb9d5bf76687dac11bbb6a358028650eda608af8552"
+  },
+  {
+    "name": "index_calendar_2015.json",
+    "url": "https://www.nseindia.com/api/historical/indicesHistory?indexType=NIFTY%20500&from=01-01-2015&to=31-12-2015",
+    "retrieved_at": "2026-11-03T13:33:39.052219+00:00",
+    "status": 503,
+    "bytes": 18516,
+    "content_type": "text/html",
+    "response_sha256": "aa4074c826519dfca773a9d0c7c757f6806b082fdd4466a528814f8e22aef4d1"
+  },
+  {
+    "name": "index_calendar_2016.json",
+    "url": "https://www.nseindia.com/api/historical/indicesHistory?indexType=NIFTY%20500&from=01-01-2016&to=31-12-2016",
+    "retrieved_at": "2026-11-03T13:33:39.053221+00:00",
+    "status": 503,
+    "bytes": 18516,
+    "content_type": "text/html",
+    "response_sha256": "aa4074c826519dfca773a9d0c7c757f6806b082fdd4466a528814f8e22aef4d1"
+  },
+  {
+    "name": "index_calendar_2017.json",
+    "url": "https://www.nseindia.com/api/historical/indicesHistory?indexType=NIFTY%20500&from=01-01-2017&to=30-06-2017",
+    "retrieved_at": "2026-11-03T13:33:39.055224+00:00",
+    "status": 503,
+    "bytes": 540,
+    "content_type": "text/html; charset=iso-8859-1",
+    "response_sha256": "4abe2a8ed384f16717158fb9d5bf76687dac11bbb6a358028650eda608af8552"
+  }
+]

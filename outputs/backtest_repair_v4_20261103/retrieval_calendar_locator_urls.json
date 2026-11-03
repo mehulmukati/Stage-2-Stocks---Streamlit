@@ -1,0 +1,56 @@
+[
+  {
+    "name": "zerodha_page59.html",
+    "url": "https://zerodha.com/marketintel/circulars/?page=59",
+    "retrieved_at": "2026-11-03T14:16:19.491832+00:00",
+    "status": 200,
+    "bytes": 37188,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "5d179566662bbf039f76dc2d4d081835b32c70c0895195a459a3640e07dd146b"
+  },
+  {
+    "name": "zerodha_page60.html",
+    "url": "https://zerodha.com/marketintel/circulars/?page=60",
+    "retrieved_at": "2026-11-03T14:16:19.492792+00:00",
+    "status": 200,
+    "bytes": 36908,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "e2b97d241781d091d4f4348359ec37ed2ed1ed9525e852398d8c4d763d2b068a"
+  },
+  {
+    "name": "zerodha_page61.html",
+    "url": "https://zerodha.com/marketintel/circulars/?page=61",
+    "retrieved_at": "2026-11-03T14:16:19.494788+00:00",
+    "status": 200,
+    "bytes": 37085,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "d3571ecd67af2876612fbf8763c85cb355428b797c4163592dfda7cb4c52811a"
+  },
+  {
+    "name": "zerodha_page62.html",
+    "url": "https://zerodha.com/marketintel/circulars/?page=62",
+    "retrieved_at": "2026-11-03T14:16:19.495949+00:00",
+    "status": 200,
+    "bytes": 34409,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "3fece5dbce9955ba97ad47545ed21a07ca56971ac9d83cbedc22fef155096c2f"
+  },
+  {
+    "name": "zerodha_page63.html",
+    "url": "https://zerodha.com/marketintel/circulars/?page=63",
+    "retrieved_at": "2026-11-03T14:16:19.639544+00:00",
+    "status": 200,
+    "bytes": 25609,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "b1201cd8aa6d2c40d938f86c7a7d2be8028c46bc873fdb24d94e2fda3d11890f"
+  },
+  {
+    "name": "zerodha_page64.html",
+    "url": "https://zerodha.com/marketintel/circulars/?page=64",
+    "retrieved_at": "2026-11-03T14:16:19.640543+00:00",
+    "status": 200,
+    "bytes": 25609,
+    "content_type": "text/html; charset=UTF-8",
+    "sha256": "b5b94ced8c5fabda50da0885d8cbc820cc7274c24a61b520efc8c0a5c5b0bd91"
+  }
+]

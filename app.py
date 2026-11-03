@@ -39,6 +39,7 @@ from ichimoku_tutorial import (
 )
 from index_overlay_data import load_index_overlay_series
 from jobs import JobStatus, registry
+from momentum_engine import calculation_revision as momentum_calculation_revision
 from momentum_ranking import rank_momentum_frame
 from stage2_breadth import aggregate_breadth, load_breadth_score_history
 from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
@@ -391,6 +392,7 @@ def _invalidate_legacy_score_result(kind: str, cached: dict, target_date=None) -
         and required_columns.issubset(frame.columns)
         and frame.attrs.get("source_revisions") == shared_market.source_revisions()
         and frame.attrs.get("equity_policy_version") == shared_market.EQUITY_POLICY_VERSION
+        and (kind != "momentum" or frame.attrs.get("momentum_calculation_revision") == momentum_calculation_revision())
         and cached.get("cache_date") == target_date
     ):
         return False

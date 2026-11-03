@@ -1,0 +1,2 @@
+# Preserve bytes bound by the delivery and evidence manifests.
+* -text -whitespace

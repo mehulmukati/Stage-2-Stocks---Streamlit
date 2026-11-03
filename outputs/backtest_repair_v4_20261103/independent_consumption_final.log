@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "source_supported_history_count_checks": 102705,
+  "independent_initial_metric_scalar_checks": 9018,
+  "production_engine_or_metric_imported": false,
+  "acceptance": false,
+  "limits": "Computability and arithmetic only; unsupported corporate actions and source disagreements remain separate blockers"
+}

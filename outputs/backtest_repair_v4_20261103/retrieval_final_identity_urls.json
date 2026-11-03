@@ -1,0 +1,17 @@
+[
+  {
+    "name": "PR250914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250914.zip",
+    "retrieved_at": "2026-11-03T14:31:35.907592+00:00",
+    "status": 200,
+    "bytes": 409593,
+    "content_type": "application/zip",
+    "sha256": "23ac5412ec942174a5f4daddf53ecebd250fec24d6553d00b1b92dc0b5df4a8b"
+  },
+  {
+    "name": "PR130814.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130814.zip",
+    "cached": true,
+    "sha256": "677524cc0362b7a459cd48559fee0372be887bd6b1f4a870914047bc1a54ada8"
+  }
+]

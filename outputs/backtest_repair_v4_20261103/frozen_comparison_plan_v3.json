@@ -1,0 +1,275 @@
+{
+  "schema": 3,
+  "baseline_commit": "bcdb6fb",
+  "supersedes": [
+    "frozen_comparison_plan.json",
+    "frozen_comparison_plan_v2.json"
+  ],
+  "clarification": "Original run_batch_csv.py inherits disabled quality defaults. The 7/25/18/45 filters belong to the prior diagnostic, not original batch defaults. Both exact configurations are frozen before new performance.",
+  "status": "blocked before any new strategy performance",
+  "profiles": [
+    {
+      "name": "original_batch_defaults",
+      "config": {
+        "m": 15,
+        "n": 30,
+        "rebalance_freq": "weekly",
+        "sort_method": "Average of 3/6/9/12 months",
+        "start_date": "2017-07-01",
+        "end_date": "2020-09-01",
+        "compositions_df": null,
+        "index_names": [
+          "NIFTY 500"
+        ],
+        "min_history_days": 252,
+        "apply_volume_filter": true,
+        "minimum_median_volume": 100000.0,
+        "max_stale_sessions": 3,
+        "market_calendar": null,
+        "max_position_pct": null,
+        "corporate_actions": [
+          {
+            "old_symbol": "JBCHEPHARM",
+            "event_type": "merger",
+            "successor_symbol": "TORNTPHARM",
+            "effective_date": "2026-07-17 00:00:00",
+            "last_trading_date": "2026-07-16 00:00:00",
+            "share_ratio": 0.51,
+            "source": "NSE Indices / Torrent Pharmaceuticals exchange filing",
+            "notes": "51 Torrent Pharmaceuticals shares for every 100 JB Chemicals shares"
+          }
+        ],
+        "band_rule": "classic",
+        "rebalance_anchor_date": null,
+        "portfolio_start_date": null,
+        "rank_on_rebalance_date": false,
+        "transaction_cost_pct": 0.001,
+        "brokerage_per_sale": 0.0,
+        "initial_capital": 1000000.0,
+        "ltcg_rate": 0.125,
+        "stcg_rate": 0.2,
+        "stage2_drop_exit": false,
+        "stage2_drop_threshold": 2,
+        "stage2_entry_filter": false,
+        "stage2_entry_threshold": 2,
+        "min_annual_return": 0.0,
+        "pct_from_52w_high": 100.0,
+        "max_circuits": 999,
+        "close_above_100dma": false,
+        "close_above_200dma": false,
+        "pos_days_3m_min": 0.0,
+        "pos_days_6m_min": 0.0,
+        "pos_days_12m_min": 0.0,
+        "universe_mode": "legacy_partial"
+      },
+      "variants": [
+        "Full Rebalance",
+        "Marginal Rebalance",
+        "Prop Rebalance"
+      ]
+    },
+    {
+      "name": "separate_quality_diagnostic_sensitivity",
+      "config": {
+        "m": 15,
+        "n": 30,
+        "rebalance_freq": "weekly",
+        "sort_method": "Average of 3/6/9/12 months",
+        "start_date": "2017-07-01",
+        "end_date": "2020-09-01",
+        "compositions_df": null,
+        "index_names": [
+          "NIFTY 500"
+        ],
+        "min_history_days": 252,
+        "apply_volume_filter": true,
+        "minimum_median_volume": 100000.0,
+        "max_stale_sessions": 3,
+        "market_calendar": null,
+        "max_position_pct": null,
+        "corporate_actions": [
+          {
+            "old_symbol": "JBCHEPHARM",
+            "event_type": "merger",
+            "successor_symbol": "TORNTPHARM",
+            "effective_date": "2026-07-17 00:00:00",
+            "last_trading_date": "2026-07-16 00:00:00",
+            "share_ratio": 0.51,
+            "source": "NSE Indices / Torrent Pharmaceuticals exchange filing",
+            "notes": "51 Torrent Pharmaceuticals shares for every 100 JB Chemicals shares"
+          }
+        ],
+        "band_rule": "classic",
+        "rebalance_anchor_date": null,
+        "portfolio_start_date": null,
+        "rank_on_rebalance_date": false,
+        "transaction_cost_pct": 0.001,
+        "brokerage_per_sale": 0.0,
+        "initial_capital": 1000000.0,
+        "ltcg_rate": 0.125,
+        "stcg_rate": 0.2,
+        "stage2_drop_exit": false,
+        "stage2_drop_threshold": 2,
+        "stage2_entry_filter": false,
+        "stage2_entry_threshold": 2,
+        "min_annual_return": 7.0,
+        "pct_from_52w_high": 25.0,
+        "max_circuits": 18,
+        "close_above_100dma": false,
+        "close_above_200dma": true,
+        "pos_days_3m_min": 45.0,
+        "pos_days_6m_min": 45.0,
+        "pos_days_12m_min": 45.0,
+        "universe_mode": "legacy_partial"
+      },
+      "variants": [
+        "Full Rebalance",
+        "Marginal Rebalance",
+        "Prop Rebalance"
+      ]
+    },
+    {
+      "name": "original_batch_defaults",
+      "config": {
+        "m": 15,
+        "n": 30,
+        "rebalance_freq": "monthly",
+        "sort_method": "Average of 3/6/9/12 months",
+        "start_date": "2017-07-01",
+        "end_date": "2020-09-01",
+        "compositions_df": null,
+        "index_names": [
+          "NIFTY 500"
+        ],
+        "min_history_days": 252,
+        "apply_volume_filter": true,
+        "minimum_median_volume": 100000.0,
+        "max_stale_sessions": 3,
+        "market_calendar": null,
+        "max_position_pct": null,
+        "corporate_actions": [
+          {
+            "old_symbol": "JBCHEPHARM",
+            "event_type": "merger",
+            "successor_symbol": "TORNTPHARM",
+            "effective_date": "2026-07-17 00:00:00",
+            "last_trading_date": "2026-07-16 00:00:00",
+            "share_ratio": 0.51,
+            "source": "NSE Indices / Torrent Pharmaceuticals exchange filing",
+            "notes": "51 Torrent Pharmaceuticals shares for every 100 JB Chemicals shares"
+          }
+        ],
+        "band_rule": "classic",
+        "rebalance_anchor_date": null,
+        "portfolio_start_date": null,
+        "rank_on_rebalance_date": false,
+        "transaction_cost_pct": 0.001,
+        "brokerage_per_sale": 0.0,
+        "initial_capital": 1000000.0,
+        "ltcg_rate": 0.125,
+        "stcg_rate": 0.2,
+        "stage2_drop_exit": false,
+        "stage2_drop_threshold": 2,
+        "stage2_entry_filter": false,
+        "stage2_entry_threshold": 2,
+        "min_annual_return": 0.0,
+        "pct_from_52w_high": 100.0,
+        "max_circuits": 999,
+        "close_above_100dma": false,
+        "close_above_200dma": false,
+        "pos_days_3m_min": 0.0,
+        "pos_days_6m_min": 0.0,
+        "pos_days_12m_min": 0.0,
+        "universe_mode": "legacy_partial"
+      },
+      "variants": [
+        "Full Rebalance",
+        "Marginal Rebalance",
+        "Prop Rebalance"
+      ]
+    },
+    {
+      "name": "separate_quality_diagnostic_sensitivity",
+      "config": {
+        "m": 15,
+        "n": 30,
+        "rebalance_freq": "monthly",
+        "sort_method": "Average of 3/6/9/12 months",
+        "start_date": "2017-07-01",
+        "end_date": "2020-09-01",
+        "compositions_df": null,
+        "index_names": [
+          "NIFTY 500"
+        ],
+        "min_history_days": 252,
+        "apply_volume_filter": true,
+        "minimum_median_volume": 100000.0,
+        "max_stale_sessions": 3,
+        "market_calendar": null,
+        "max_position_pct": null,
+        "corporate_actions": [
+          {
+            "old_symbol": "JBCHEPHARM",
+            "event_type": "merger",
+            "successor_symbol": "TORNTPHARM",
+            "effective_date": "2026-07-17 00:00:00",
+            "last_trading_date": "2026-07-16 00:00:00",
+            "share_ratio": 0.51,
+            "source": "NSE Indices / Torrent Pharmaceuticals exchange filing",
+            "notes": "51 Torrent Pharmaceuticals shares for every 100 JB Chemicals shares"
+          }
+        ],
+        "band_rule": "classic",
+        "rebalance_anchor_date": null,
+        "portfolio_start_date": null,
+        "rank_on_rebalance_date": false,
+        "transaction_cost_pct": 0.001,
+        "brokerage_per_sale": 0.0,
+        "initial_capital": 1000000.0,
+        "ltcg_rate": 0.125,
+        "stcg_rate": 0.2,
+        "stage2_drop_exit": false,
+        "stage2_drop_threshold": 2,
+        "stage2_entry_filter": false,
+        "stage2_entry_threshold": 2,
+        "min_annual_return": 7.0,
+        "pct_from_52w_high": 25.0,
+        "max_circuits": 18,
+        "close_above_100dma": false,
+        "close_above_200dma": true,
+        "pos_days_3m_min": 45.0,
+        "pos_days_6m_min": 45.0,
+        "pos_days_12m_min": 45.0,
+        "universe_mode": "legacy_partial"
+      },
+      "variants": [
+        "Full Rebalance",
+        "Marginal Rebalance",
+        "Prop Rebalance"
+      ]
+    }
+  ],
+  "membership": "complete candidate_v3 economic_ex_date NIFTY500; no survivor deletion",
+  "price_basis": "nse-cash-split-research-v1 candidate, currently unaccepted; no raw/adjusted splice",
+  "warmup": "252 supported observations plus complete 252-session metric windows; audit 750 default separately",
+  "execution": "positive current source quotes only in repaired app; blocked sale retains quantity and explicit stale-mark diagnostics",
+  "MoMo_adapter": "unimplemented: standing MISSING_DATA_POLICY assumes disclosed last-known-price sales; requires a common explicit policy before comparison",
+  "annualization": "elapsed calendar days",
+  "tax_basis": "same stated adjusted-unit research FIFO model, not nominal statutory tax basis",
+  "exclusions": "No security deleted for unavailable history; no synthetic pre-launch Microcap or independent parent components",
+  "comparisons": [
+    "old/repaired data effect on identical dates and profile if legitimate overlap",
+    "MoMo/app only after identical supported data, strategy and execution-policy adapter"
+  ],
+  "limitations": "NIFTY500-only bounded study cannot repair original five-component batch or match headline performance",
+  "strategy_comparison_run": false,
+  "source_sha256": {
+    "run_batch_csv.py": "16dca147a0f88f1a3fce533368be92cf0155dd5854d203a1ccec4aba1d182410",
+    "outputs/backtest_repair_v1_20261102/backtest_engine_baseline.py": "da7d8d0b5472e3e5b0124846d5901169cd848b342e28e7cf02e7eac37c150949",
+    "outputs/backtest_repair_v1_20261102/run_accounting_diagnostic.py": "323f9faa58bc60fe020f5088e65e2094167b93a1426739aa289840bab696b4c3",
+    "backtest_engine.py": "babb5890c67434c00c82c2fd226d101ee1b8d6b24ace7a92b6a143e360641eaf",
+    "backtest_accounting.py": "4738329a56a6833484b4de89797e614ea672f5a7f482451b137d93279c3bdedb",
+    "momentum_engine.py": "842b335225bff82d126c2638c80efacf71b5c421d9cc31662980e087011b67c5",
+    "MoMo/backtest/MISSING_DATA_POLICY.md": "5b1ff1d86e9312aec7d1de9559d694a21fcb5f004436490c6cafb68d65533c39"
+  }
+}

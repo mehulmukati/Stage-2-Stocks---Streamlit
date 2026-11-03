@@ -1,0 +1,444 @@
+{
+  "passed": true,
+  "new_edges_independently_checked": 62,
+  "previous_round_edges_rechecked_separately": 23,
+  "obsolete_API_ISIN_edges_with_original_bulletins": 5,
+  "checks": [
+    {
+      "old_isin": "INE455I01011",
+      "new_isin": "INE455I01029",
+      "date": "2014-01-27",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE665A01020",
+      "new_isin": "INE665A01038",
+      "date": "2014-02-03",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE288B01011",
+      "new_isin": "INE288B01029",
+      "date": "2014-06-20",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE238A01026",
+      "new_isin": "INE238A01034",
+      "date": "2014-07-28",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE176B01026",
+      "new_isin": "INE176B01034",
+      "date": "2014-08-26",
+      "ratio": 5.0,
+      "original_bulletin_required": true
+    },
+    {
+      "old_isin": "INE168A01017",
+      "new_isin": "INE168A01041",
+      "date": "2014-09-04",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE150B01013",
+      "new_isin": "INE150B01021",
+      "date": "2014-09-08",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE059D01012",
+      "new_isin": "INE059D01020",
+      "date": "2014-09-24",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE006I01038",
+      "new_isin": "INE006I01046",
+      "date": "2014-09-25",
+      "ratio": 2.0,
+      "original_bulletin_required": true
+    },
+    {
+      "old_isin": "INE659A01015",
+      "new_isin": "INE659A01023",
+      "date": "2014-09-30",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE062A01012",
+      "new_isin": "INE062A01020",
+      "date": "2014-11-20",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE260B01010",
+      "new_isin": "INE260B01028",
+      "date": "2014-11-28",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE090A01013",
+      "new_isin": "INE090A01021",
+      "date": "2014-12-04",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE573A01034",
+      "new_isin": "INE573A01042",
+      "date": "2014-12-18",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE160A01014",
+      "new_isin": "INE160A01022",
+      "date": "2014-12-18",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE842C01013",
+      "new_isin": "INE842C01021",
+      "date": "2015-01-05",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE982F01028",
+      "new_isin": "INE982F01036",
+      "date": "2015-01-06",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE463A01020",
+      "new_isin": "INE463A01038",
+      "date": "2015-01-08",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE028A01013",
+      "new_isin": "INE028A01039",
+      "date": "2015-01-22",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE112A01015",
+      "new_isin": "INE112A01023",
+      "date": "2015-01-22",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE493A01019",
+      "new_isin": "INE493A01027",
+      "date": "2015-01-23",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE205C01013",
+      "new_isin": "INE205C01021",
+      "date": "2015-02-02",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE669C01028",
+      "new_isin": "INE669C01036",
+      "date": "2015-03-19",
+      "ratio": 4.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE031B01031",
+      "new_isin": "INE031B01049",
+      "date": "2015-03-20",
+      "ratio": 2.5,
+      "original_bulletin_required": true
+    },
+    {
+      "old_isin": "INE101D01012",
+      "new_isin": "INE101D01020",
+      "date": "2015-03-23",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE531A01016",
+      "new_isin": "INE531A01024",
+      "date": "2015-03-26",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE988E01010",
+      "new_isin": "INE988E01028",
+      "date": "2015-06-25",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE686A01018",
+      "new_isin": "INE686A01026",
+      "date": "2015-08-21",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE208C01017",
+      "new_isin": "INE208C01025",
+      "date": "2015-09-16",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE010B01019",
+      "new_isin": "INE010B01027",
+      "date": "2015-10-06",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE176A01010",
+      "new_isin": "INE176A01028",
+      "date": "2015-10-07",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE790G01023",
+      "new_isin": "INE790G01031",
+      "date": "2015-11-06",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE871C01012",
+      "new_isin": "INE871C01020",
+      "date": "2015-11-26",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE987B01018",
+      "new_isin": "INE987B01026",
+      "date": "2015-11-26",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE039C01016",
+      "new_isin": "INE039C01024",
+      "date": "2015-12-03",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE576I01014",
+      "new_isin": "INE576I01022",
+      "date": "2015-12-10",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE461C01020",
+      "new_isin": "INE461C01038",
+      "date": "2016-01-06",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE095N01015",
+      "new_isin": "INE095N01023",
+      "date": "2016-06-02",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE150G01012",
+      "new_isin": "INE150G01020",
+      "date": "2016-06-06",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE343H01011",
+      "new_isin": "INE343H01029",
+      "date": "2016-07-13",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE195J01011",
+      "new_isin": "INE195J01029",
+      "date": "2016-08-12",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE951I01019",
+      "new_isin": "INE951I01027",
+      "date": "2016-08-30",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE296A01016",
+      "new_isin": "INE296A01024",
+      "date": "2016-09-08",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE849A01012",
+      "new_isin": "INE849A01020",
+      "date": "2016-09-12",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE405E01015",
+      "new_isin": "INE405E01023",
+      "date": "2016-09-12",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE988E01028",
+      "new_isin": "INE988E01036",
+      "date": "2016-09-21",
+      "ratio": 2.0,
+      "original_bulletin_required": true
+    },
+    {
+      "old_isin": "INE217B01028",
+      "new_isin": "INE217B01036",
+      "date": "2016-10-04",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE047A01013",
+      "new_isin": "INE047A01021",
+      "date": "2016-10-06",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE650K01013",
+      "new_isin": "INE650K01021",
+      "date": "2016-10-10",
+      "ratio": 2.6666666666666665,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE475E01018",
+      "new_isin": "INE475E01026",
+      "date": "2016-10-19",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE483B01018",
+      "new_isin": "INE483B01026",
+      "date": "2016-11-11",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE036D01010",
+      "new_isin": "INE036D01028",
+      "date": "2016-11-17",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE180C01018",
+      "new_isin": "INE180C01026",
+      "date": "2016-11-23",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE930H01015",
+      "new_isin": "INE930H01023",
+      "date": "2016-11-29",
+      "ratio": 2.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE634I01011",
+      "new_isin": "INE634I01029",
+      "date": "2016-12-13",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE019A01020",
+      "new_isin": "INE019A01038",
+      "date": "2017-01-04",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE336H01015",
+      "new_isin": "INE336H01023",
+      "date": "2017-02-10",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE263A01016",
+      "new_isin": "INE263A01024",
+      "date": "2017-03-16",
+      "ratio": 10.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE837H01012",
+      "new_isin": "INE837H01020",
+      "date": "2017-05-25",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE317F01027",
+      "new_isin": "INE317F01035",
+      "date": "2017-09-15",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    },
+    {
+      "old_isin": "INE039C01024",
+      "new_isin": "INE039C01032",
+      "date": "2017-10-05",
+      "ratio": 5.0,
+      "original_bulletin_required": true
+    },
+    {
+      "old_isin": "INE602A01015",
+      "new_isin": "INE602A01023",
+      "date": "2018-04-19",
+      "ratio": 5.0,
+      "original_bulletin_required": false
+    }
+  ],
+  "production_action_or_graph_imported": false,
+  "accepted": false
+}

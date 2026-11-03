@@ -111,11 +111,13 @@ def backtest_results(params: dict):
     result = st.session_state.get("backtest_cached_result")
     import market_data as shared_market
     from backtest_accounting import ACCOUNTING_VERSION
+    from backtest_provenance import result_calculations_current
 
     if result is not None and (
         result.get("source_revisions") != shared_market.source_revisions()
         or result.get("equity_policy_version") != shared_market.EQUITY_POLICY_VERSION
         or result.get("accounting_version") != ACCOUNTING_VERSION
+        or not result_calculations_current(result)
     ):
         st.session_state.pop("backtest_cached_result", None)
         st.info("Market data or calculation rules changed. Run the backtest again.")

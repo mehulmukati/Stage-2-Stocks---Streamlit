@@ -1,0 +1,39 @@
+{
+  "scope": [
+    "2017-07-01",
+    "2020-09-01"
+  ],
+  "model": "nse-cash-split-research-v1",
+  "accepted": false,
+  "source_revisions_unchanged": [
+    "f7b7391fc10f41e29c49dec8a7274bd2",
+    "5aeb0b0c826746dca63ada9272a9d94f"
+  ],
+  "unresolved_consumption_action_records": 67,
+  "affected_action_lineages": 59,
+  "opposing_primary_range_rows": 97,
+  "opposing_vendor_factor_intervals_all_histories": 2927,
+  "opposing_vendor_factor_intervals_after_earliest_warmup": 1460,
+  "potential_unsold_exit_securities": [
+    "TECHNO",
+    "CAPF"
+  ],
+  "scenario_missing_mark_rows": 1842,
+  "unique_missing_security_mark_days": 921,
+  "publication": "not performed; unaccepted price candidate is not consumed by app",
+  "app_changes": "Shared circuit calculation repaired; screener and backtest cached calculations invalidated by calculation fingerprint",
+  "comparison": "not run; price/action/source validation and common MoMo execution policy remain unresolved",
+  "next_required_work": "Adjudicate retained action/source-seam worklists using security-specific primary terms or a verifiable adjusted-history provider. Model TECHNO/CAPF ownership conversion and delayed-sale exposure. Bind a common MoMo/app execution convention before a matched comparison.",
+  "supported_now": [
+    "Complete reconciled membership evidence",
+    "Dated primary observation layer and tested explicit research-price construction",
+    "Independent signal/arithmetic checks",
+    "Independent reconciliation of the retained 2024 accounting diagnostic"
+  ],
+  "unsupported": [
+    "Full-scope unbiased 2017 portfolio comparison",
+    "Original five-component historical batch repair",
+    "Realistic nominal execution and statutory tax certification",
+    "Price-available survivor-subset performance claims"
+  ]
+}

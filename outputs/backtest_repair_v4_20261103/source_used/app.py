@@ -1,0 +1,1329 @@
+#!/usr/bin/env python3
+"""
+Screener app — Stage 2, Momentum, Phase Chart and Ichimoku. Parquet-backed, no external DB.
+Backtest lives in app_backtest.py (separate parquet baseline).
+"""
+
+import difflib
+import importlib
+import inspect
+import logging
+import os
+import threading
+import warnings
+from datetime import datetime
+
+import pandas as pd
+import streamlit as st
+from streamlit_autorefresh import st_autorefresh
+
+warnings.filterwarnings("ignore", category=FutureWarning)
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
+import apps.quant_portfolio_maker as qpm_navigation
+import charts as chart_builders
+import data as data_access
+import ichimoku_engine as ichimoku_calculations
+import ichimoku_summary as ichimoku_descriptions
+import market_data as shared_market
+import workers as worker_functions
+from app_backtest import _sidebar_backtest, render_backtest_tabs
+from config import IST, SCREENER_OHLCV_PARQUET
+from ichimoku_tutorial import (
+    diagram_svg,
+    extract_cheat_sheet,
+    load_tutorial,
+    strip_cheat_sheet,
+    strip_title,
+    tutorial_parts,
+)
+from index_overlay_data import load_index_overlay_series
+from jobs import JobStatus, registry
+from momentum_engine import calculation_revision as momentum_calculation_revision
+from momentum_ranking import rank_momentum_frame
+from stage2_breadth import aggregate_breadth, load_breadth_score_history
+from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
+from ui_helpers import _get_user_token, _poll_job
+
+# Streamlit reuses imported package objects across reruns. Refresh the small
+# navigation contract when this process predates the Portfolio Lab addition.
+if not hasattr(qpm_navigation, "PORTFOLIO_LAB_PAGE"):
+    qpm_navigation = importlib.reload(qpm_navigation)
+
+ENHANCED_ICHIMOKU_PAGE = qpm_navigation.ENHANCED_ICHIMOKU_PAGE
+HA_EMA_PAGE = qpm_navigation.HA_EMA_PAGE
+PORTFOLIO_LAB_PAGE = qpm_navigation.PORTFOLIO_LAB_PAGE
+QPM_PAGE_LABELS = qpm_navigation.PAGE_LABELS
+
+# Streamlit reruns app.py in the same process and can retain pre-change modules.
+# Reload only when a cached module predates the current chart interfaces.
+if (
+    getattr(chart_builders, "ICHIMOKU_CHART_VERSION", 0) < 8
+    or getattr(chart_builders, "PHASE_CHART_VERSION", 0) < 1
+    or not hasattr(chart_builders, "ichimoku_chart_figure")
+    or getattr(chart_builders, "STAGE2_BREADTH_CHART_VERSION", 0) < 1
+    or not hasattr(chart_builders, "stage2_breadth_count_figure")
+    or not hasattr(chart_builders, "stage2_breadth_percent_figure")
+    or "timeframe" not in inspect.signature(chart_builders.ichimoku_chart_figure).parameters
+    or "theme" not in inspect.signature(chart_builders.ichimoku_chart_figure).parameters
+):
+    chart_builders = importlib.reload(chart_builders)
+if (
+    getattr(ichimoku_calculations, "ICHIMOKU_ENGINE_VERSION", 0) < 2
+    or "timeframe" not in inspect.signature(ichimoku_calculations.compute_ichimoku).parameters
+):
+    ichimoku_calculations = importlib.reload(ichimoku_calculations)
+if getattr(ichimoku_descriptions, "ICHIMOKU_SUMMARY_VERSION", 0) < 2 or not hasattr(ichimoku_descriptions, "_periods"):
+    ichimoku_descriptions = importlib.reload(ichimoku_descriptions)
+_data_access_reloaded = False
+if getattr(data_access, "CHART_DATA_VERSION", 0) < 5 or getattr(data_access, "SCREENER_DATA_VERSION", 0) < 7:
+    data_access = importlib.reload(data_access)
+    _data_access_reloaded = True
+if _data_access_reloaded or getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 11:
+    worker_functions = importlib.reload(worker_functions)
+
+ichimoku_chart_figure = chart_builders.ichimoku_chart_figure
+phase_chart_figure = chart_builders.phase_chart_figure
+stage2_breadth_count_figure = chart_builders.stage2_breadth_count_figure
+stage2_breadth_percent_figure = chart_builders.stage2_breadth_percent_figure
+_compute_ichimoku = ichimoku_calculations.compute_ichimoku
+latest_ichimoku_state = ichimoku_calculations.latest_ichimoku_state
+build_ichimoku_summary = ichimoku_descriptions.build_ichimoku_summary
+_load_constituents = data_access._load_constituents
+_score_cache = data_access._score_cache
+fetch_chart_data = data_access.fetch_chart_data
+get_universe_coverage = data_access.get_universe_coverage
+momentum_worker = worker_functions.momentum_worker
+stage2_worker = worker_functions.stage2_worker
+
+
+def render_live_signal_tabs(idx_options: list[str]) -> None:
+    """Load Live Signal on demand so an isolated import error cannot stop app startup."""
+    try:
+        live_signal_module = importlib.import_module("app_live_signal")
+        renderer = live_signal_module.render_live_signal_tabs
+    except Exception as exc:
+        logging.exception("Live Signal could not be loaded")
+        st.error(f"Live Signal could not be loaded ({type(exc).__name__}): {exc}")
+        return
+
+    renderer(idx_options)
+
+
+@st.cache_data(ttl=3600)
+def compute_rolling_stage2(df):
+    return _compute_rolling_stage2(df)
+
+
+@st.cache_data(ttl=3600)
+def compute_ichimoku(df, timeframe: str = "Daily"):
+    return _compute_ichimoku(df, timeframe=timeframe)
+
+
+_state_lock = threading.RLock()
+_last_chart_ticker: str = ""
+
+
+# ── PARQUET BASELINE CHECK (once at startup) ──
+@st.cache_resource
+def _check_baseline() -> bool:
+    """Return True if screener_ohlcv.parquet exists; warn once if missing."""
+    return os.path.exists(SCREENER_OHLCV_PARQUET)
+
+
+_baseline_ok = _check_baseline()
+
+# ── PAGE CONFIG & CSS ──
+st.set_page_config(page_title="Stock Screeners | Nifty 750", page_icon="📈", layout="wide")
+# Backtest lives at app_backtest.py — link to it from the screener if desired.
+st.markdown(
+    """
+<style>
+.hero { text-align: center; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.2rem; }
+.sub-hero { text-align: center; opacity: 0.6; margin-top: -8px; }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
+# ──────────────────────────────────────────────
+# PHASE CHART
+# ──────────────────────────────────────────────
+
+
+def get_closest_symbol_match(ticker: str, threshold: float = 0.6) -> str | None:
+    constituents = _load_constituents()
+    all_symbols = list(dict.fromkeys([s for syms in constituents.values() for s in syms]))
+    if not all_symbols:
+        return None
+    matches = difflib.get_close_matches(ticker.upper(), all_symbols, n=1, cutoff=threshold)
+    return matches[0] if matches else None
+
+
+def render_phase_chart(ticker: str, use_log_scale: bool = True):
+    with st.spinner(f"Loading data for {ticker}…"):
+        df = fetch_chart_data(ticker)
+
+    if df.empty:
+        closest_match = get_closest_symbol_match(ticker)
+        if closest_match:
+            st.info(f"ℹ️ Symbol **{ticker}** not found. Did you mean **{closest_match}**? Loading that instead...")
+            with st.spinner(f"Loading data for {closest_match}…"):
+                df = fetch_chart_data(closest_match)
+            if df.empty:
+                st.error(f"❌ No data available for **{closest_match}**. Please try another symbol.")
+                return
+            ticker = closest_match
+        else:
+            st.error(f"❌ Symbol **{ticker}** not found in available stocks. Please check the symbol and try again.")
+            return
+
+    rolled = compute_rolling_stage2(df)
+    st.plotly_chart(phase_chart_figure(rolled, ticker, use_log_scale), width="stretch")
+    st.caption(
+        "🟢 Strong Stage 2 (score ≥ 6) · "
+        "🟡 Likely Stage 2 (4–5) · "
+        "🟠 Early/Weak Stage 2 (2–3) · "
+        "White = Not Stage 2 (<2)"
+    )
+
+
+def render_ichimoku_chart(
+    ticker: str,
+    timeframe: str = "Daily",
+    use_log_scale: bool = True,
+    show_chikou: bool = True,
+    show_crossovers: bool = True,
+):
+    with st.spinner(f"Loading data for {ticker}…"):
+        df = fetch_chart_data(ticker)
+
+    if df.empty:
+        closest_match = get_closest_symbol_match(ticker)
+        if closest_match:
+            st.info(f"ℹ️ Symbol **{ticker}** not found. Did you mean **{closest_match}**? Loading that instead...")
+            with st.spinner(f"Loading data for {closest_match}…"):
+                df = fetch_chart_data(closest_match)
+            if df.empty:
+                st.error(f"❌ No data available for **{closest_match}**. Please try another symbol.")
+                return
+            ticker = closest_match
+        else:
+            st.error(f"❌ Symbol **{ticker}** not found in available stocks. Please check the symbol and try again.")
+            return
+
+    try:
+        calculated = compute_ichimoku(df, timeframe)
+    except ValueError as exc:
+        st.error(f"❌ Ichimoku chart cannot be calculated: {exc}")
+        return
+    if calculated.empty:
+        st.warning(f"No valid OHLC history is available for **{ticker}**.")
+        return
+
+    state = latest_ichimoku_state(calculated, ticker, timeframe)
+    streamlit_context = getattr(st, "context", None)
+    streamlit_theme = getattr(streamlit_context, "theme", None)
+    theme_type = getattr(streamlit_theme, "type", "dark")
+    metric_cols = [*st.columns(2), *st.columns(2)]
+    price_position = str(state.get("price_position", "unavailable")).title()
+    distance = state.get("distance_pct")
+    distance_text = f"{float(distance):.1f}% from cloud" if distance is not None else None
+    price_help_parts = [f"Cloud visible at the latest price date: {state.get('displayed_cloud', 'unavailable')}."]
+    if distance_text:
+        price_help_parts.append(distance_text + ".")
+    metric_cols[0].metric(
+        "Price vs Cloud",
+        price_position,
+        help=" ".join(price_help_parts),
+    )
+    metric_cols[1].metric("TK Alignment", str(state.get("tk_relation", "unavailable")).title())
+    latest_cross = state.get("last_cross")
+    if latest_cross:
+        cross_value = str(latest_cross["strength"]).title()
+        age = int(latest_cross["age_sessions"])
+        if timeframe == "Weekly":
+            age_unit = "week" if age == 1 else "weeks"
+        else:
+            age_unit = "trading session" if age == 1 else "trading sessions"
+        cross_help = f"{str(latest_cross['direction']).title()} crossover · {age} {age_unit} ago."
+    else:
+        cross_value, cross_help = "None", "No valid cross in loaded history."
+    metric_cols[2].metric("Latest TK Cross", cross_value, help=cross_help)
+    metric_cols[3].metric("Projected Cloud", str(state.get("projected_cloud", "unavailable")).title())
+
+    st.plotly_chart(
+        ichimoku_chart_figure(
+            calculated,
+            ticker,
+            use_log_scale,
+            show_chikou,
+            show_crossovers,
+            timeframe,
+            theme=theme_type,
+        ),
+        width="stretch",
+    )
+    st.caption(
+        "🟢 Bullish cloud (Senkou A ≥ B) · 🔴 Bearish cloud (Senkou A < B) · "
+        "▲ Bullish Tenkan–Kijun cross · ▼ Bearish Tenkan–Kijun cross"
+    )
+    with st.container(border=True):
+        st.markdown("#### Ichimoku Summary")
+        st.write(build_ichimoku_summary(state))
+        st.caption("Rule-based technical description; not investment advice.")
+
+
+# ──────────────────────────────────────────────
+# SHARED HELPERS
+# ──────────────────────────────────────────────
+
+
+def _streamlit_theme_type() -> str:
+    streamlit_context = getattr(st, "context", None)
+    streamlit_theme = getattr(streamlit_context, "theme", None)
+    return str(getattr(streamlit_theme, "type", "dark"))
+
+
+def render_ichimoku_tutorial() -> None:
+    """Render the comprehensive Markdown tutorial with themed SVG diagrams."""
+    try:
+        tutorial = strip_cheat_sheet(strip_title(load_tutorial()))
+    except OSError:
+        st.error("The Ichimoku tutorial file could not be loaded.")
+        return
+
+    st.markdown('<p class="hero">📖 Ichimoku Tutorial</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">A practical guide to equilibrium, trend structure, entries, and risk</p>',
+        unsafe_allow_html=True,
+    )
+    theme = _streamlit_theme_type()
+    for kind, content in tutorial_parts(tutorial):
+        if kind == "diagram":
+            st.markdown(diagram_svg(content, theme), unsafe_allow_html=True)
+        else:
+            st.markdown(content)
+
+
+def render_ichimoku_cheat_sheet() -> None:
+    """Render section 69 of the tutorial as a compact, scannable reference."""
+    try:
+        groups = extract_cheat_sheet(load_tutorial())
+    except OSError:
+        groups = []
+    if not groups:
+        st.error("The Ichimoku cheat sheet could not be loaded.")
+        return
+
+    st.markdown('<p class="hero">⚡ Ichimoku Cheat Sheet</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">The 9 / 26 / 52 system at a glance</p>',
+        unsafe_allow_html=True,
+    )
+    columns = st.columns(2)
+    for index, (heading, entries) in enumerate(groups):
+        with columns[index % 2]:
+            with st.container(border=True):
+                st.markdown(f"#### {heading}")
+                st.markdown("\n".join(f"- {entry}" for entry in entries))
+    st.caption("Condensed from the comprehensive tutorial · Educational material, not investment advice.")
+
+
+def _render_source_banner(source: str, cache_date: str, count: int = None, frame=None, target_date=None) -> None:
+    suffix = f" · {count} stocks" if count is not None else ""
+    if frame is not None:
+        target_date = str(pd.Timestamp(target_date or cache_date).date())
+        freshness = data_access.screener_freshness(frame, target_date)
+        latest = freshness["latest_price_date"] or "unavailable"
+        st.caption(f"Target trading session: {target_date} · Latest price date: {latest}{suffix}")
+        if freshness["outdated_count"]:
+            st.warning(
+                f"Price data is incomplete for {target_date}: "
+                f"{freshness['current_count']}/{freshness['total_count']} stocks in this result "
+                "have prices for that session. "
+                f"{freshness['outdated_count']} have older or missing prices. "
+                "Check each stock's Price Date; these results are not fully current."
+            )
+        return
+    if source == "shared":
+        st.caption(f"Shared market snapshot · as of {cache_date}{suffix}")
+    elif source == "memory":
+        st.success(f"⚡ Served from memory cache for **{cache_date}**{suffix}.")
+    elif source == "db":
+        st.info(f"💾 Loaded from local database for **{cache_date}**{suffix}.")
+    elif source == "internet":
+        st.success(f"🌐 Fetched fresh EOD data and saved to database for **{cache_date}**{suffix}.")
+    elif source == "partial":
+        st.warning(
+            f"⚠️ Calculated for target **{cache_date}** using the latest price available per stock{suffix}. "
+            "Check **Price Date** before acting; this partial result was not saved as a fresh cache."
+        )
+    elif source == "fallback":
+        st.warning(f"⚠️ Fresh refresh unavailable. Showing the last verified cache from **{cache_date}**{suffix}.")
+
+
+def _start_score_refresh(kind: str, target_date: str) -> None:
+    """Recalculate once per accepted revision/session; never download market prices."""
+    target_date = str(pd.Timestamp(target_date).date())
+    key = (target_date, shared_market.source_revisions(), data_access.SCREENER_DATA_VERSION)
+    if st.session_state.get(f"{kind}_auto_refresh_key") == key:
+        st.warning("Automatic recalculation could not finish. Click Run to retry.")
+        return
+    st.session_state[f"{kind}_auto_refresh_key"] = key
+    st.session_state[f"{kind}_run_triggered"] = True
+    worker = stage2_worker if kind == "stage2" else momentum_worker
+    params = {"as_of_date": target_date} if kind == "momentum" else None
+    st.info("Updating screener results from the latest shared prices…")
+    _poll_job(kind, worker, params)
+    st_autorefresh(interval=1500, key=f"{kind}_automatic_recalculation")
+
+
+def _invalidate_legacy_score_result(kind: str, cached: dict, target_date=None) -> bool:
+    """Automatically replace results from an older source revision, schema, or session."""
+    target_date = str(pd.Timestamp(target_date or cached["cache_date"]).date())
+    frame = cached.get("df")
+    required_columns = {"Price Date"}
+    if kind == "stage2":
+        required_columns.update({"Stage 2 Days", "Stage 2 Since"})
+    if (
+        isinstance(frame, pd.DataFrame)
+        and required_columns.issubset(frame.columns)
+        and frame.attrs.get("source_revisions") == shared_market.source_revisions()
+        and frame.attrs.get("equity_policy_version") == shared_market.EQUITY_POLICY_VERSION
+        and (kind != "momentum" or frame.attrs.get("momentum_calculation_revision") == momentum_calculation_revision())
+        and cached.get("cache_date") == target_date
+    ):
+        return False
+    st.session_state.pop(f"{kind}_cached_result", None)
+    _score_cache[kind] = {"date": None, "data": None}
+    _start_score_refresh(kind, target_date)
+    return True
+
+
+# ──────────────────────────────────────────────
+# RESULTS — COVERAGE
+# ──────────────────────────────────────────────
+
+
+def coverage_results():
+    st.markdown('<p class="hero">📋 Universe Coverage</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">Why some index constituents are absent from the screener</p>',
+        unsafe_allow_html=True,
+    )
+
+    cov = get_universe_coverage()
+    if not cov:
+        st.error("Could not load coverage data — shared market sources may be missing.")
+        return
+
+    s = cov["summary"]
+
+    st.markdown(
+        """
+Momentum defaults to **252 trading days** of price history, with eligibility settings shared
+with Live Signal. Stage 2 needs at least 250 rows for its indicators. Both read full stored history.
+Stocks that fall below
+this threshold — typically recent IPOs or newly-added index constituents — are silently excluded
+from the universe count. They will appear automatically once they accumulate enough data.
+"""
+    )
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Total Constituents", s["total"])
+    c2.metric("Currently Scored", s["scored"])
+    c3.metric("Not Yet Eligible", s["missing_count"])
+
+    st.divider()
+
+    # Per-index breakdown table
+    st.subheader("By Index")
+    index_rows = []
+    for idx_name, d in cov["by_index"].items():
+        pct = round(d["scored"] / d["total"] * 100, 1) if d["total"] else 0
+        index_rows.append(
+            {
+                "Index": idx_name,
+                "Constituents": d["total"],
+                "Scored": d["scored"],
+                "Missing": len(d["missing"]),
+                "Coverage %": pct,
+            }
+        )
+    st.dataframe(pd.DataFrame(index_rows), hide_index=True, width="stretch")
+
+    st.divider()
+
+    # Full missing-symbol table
+    st.subheader(f"Excluded Symbols ({s['missing_count']} total)")
+    st.caption(
+        "Sorted by trading days available (ascending — closest to qualifying first). "
+        "Refreshes automatically when the parquet is updated."
+    )
+
+    if cov["all_missing"]:
+        missing_df = pd.DataFrame(cov["all_missing"])
+        st.dataframe(
+            missing_df,
+            hide_index=True,
+            width="stretch",
+            column_config={
+                "Symbol": st.column_config.TextColumn("Symbol", width="small"),
+                "Index": st.column_config.TextColumn("Index", width="medium"),
+                "Trading Days": st.column_config.NumberColumn("Trading Days", format="%d", width="small"),
+                "Days Until Eligible": st.column_config.NumberColumn("Days Until Eligible", format="%d", width="small"),
+                "Weeks Until Eligible": st.column_config.NumberColumn(
+                    "Weeks Until Eligible", format="%d wks", width="small"
+                ),
+            },
+            height=min(50 + len(cov["all_missing"]) * 35, 800),
+        )
+    else:
+        st.success("All constituents have sufficient data to be scored.")
+
+
+# ──────────────────────────────────────────────
+# RESULTS — STAGE 2
+# ──────────────────────────────────────────────
+
+
+def stage2_results(selected_indices: list[str], rsi_toggle: bool, show_illiquid: bool):
+    now_ist = datetime.now(IST).strftime("%d %b %Y · %I:%M %p IST")
+    st.markdown('<p class="hero">📊 Stage 2 Breakout Screener</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="sub-hero">EOD Analysis · 8-Point Weinstein Score · {now_ist}</p>', unsafe_allow_html=True)
+    st.divider()
+
+    if _poll_job("stage2", stage2_worker):
+        return
+
+    cached = st.session_state.get("stage2_cached_result")
+    if cached is None:
+        proc = _score_cache["stage2"]
+        if proc["data"] is not None and proc["date"] is not None:
+            cached = {"df": proc["data"], "cache_date": proc["date"], "source": "memory"}
+            st.session_state["stage2_cached_result"] = cached
+
+    if cached is None:
+        _start_score_refresh("stage2", data_access._get_target_key())
+        return
+
+    if _invalidate_legacy_score_result("stage2", cached, data_access._get_target_key()):
+        return
+
+    df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
+    target_date = data_access._get_target_key()
+    _render_source_banner(source, cache_date, frame=df, target_date=target_date)
+
+    display_df = df.copy()
+    if selected_indices:
+        display_df = display_df[display_df["Index"].isin(selected_indices)]
+    if rsi_toggle:
+        display_df = display_df[(display_df["RSI"] >= 50) & (display_df["RSI"] <= 70)]
+    if not show_illiquid:
+        display_df = display_df[~display_df["Illiquid"]]
+
+    if display_df.empty:
+        st.warning("No stocks match the selected filters. Adjust criteria or enable illiquid stocks.")
+        return
+
+    def _decorate_symbol(r):
+        sym = r["Symbol"]
+        if r.get("Illiquid", False):
+            sym += " 🚩 ILLIQ"
+        if r.get("Retest", False):
+            sym += " 🔄 RT"
+        return sym
+
+    display_df["Symbol"] = display_df.apply(_decorate_symbol, axis=1)
+    display_df = display_df[
+        [
+            "Symbol",
+            "Index",
+            "Stage",
+            "Score",
+            "Stage 2 Days",
+            "Stage 2 Since",
+            "Close",
+            "Price Date",
+            "Volume",
+            "Avg_Vol",
+            "Vol_Ratio",
+            "RSI",
+        ]
+    ]
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric(
+        "Latest Price Date",
+        data_access.screener_freshness(df, cache_date)["latest_price_date"] or "Unavailable",
+        help=(
+            f"Newest price in the scored universe. Target trading session: {target_date}. "
+            "Check Price Date for older rows."
+        ),
+    )
+    c2.metric(
+        "Total Universe",
+        len(df),
+        help="Stocks with ≥250 days of price history. See the 📋 Coverage tab for the full list of excluded symbols.",
+    )
+    c3.metric("Matches", len(display_df))
+    c4.metric("Strong Stage 2", len(display_df[display_df["Score"] >= 6]))
+
+    def color_rows(row):
+        bg_map = {
+            "🟢 Strong Stage 2": "rgba(34, 197, 94, 0.18)",
+            "🟡 Likely Stage 2": "rgba(234, 179, 8, 0.18)",
+            "🟠 Early/Weak Stage 2": "rgba(249, 115, 22, 0.15)",
+            "⚪ Not Stage 2": "rgba(0, 0, 0, 0)",
+        }
+        return [f'background-color: {bg_map.get(row["Stage"], "rgba(0,0,0,0)")}'] * len(row)
+
+    st.dataframe(
+        display_df.style.apply(color_rows, axis=1),
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "Symbol": st.column_config.TextColumn("Ticker", width="medium"),
+            "Index": st.column_config.TextColumn("Source", width="medium"),
+            "Stage": st.column_config.TextColumn("Classification", width="medium"),
+            "Score": st.column_config.NumberColumn("Score", format="%d/8", width="small"),
+            "Stage 2 Days": st.column_config.NumberColumn("Stage 2 Days", format="%d", width="small"),
+            "Stage 2 Since": st.column_config.TextColumn("Stage 2 Since", width="small"),
+            "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
+            "Price Date": st.column_config.TextColumn("Price Date", width="small"),
+            "Volume": st.column_config.NumberColumn("Volume", format="%,d", width="small"),
+            "Avg_Vol": st.column_config.NumberColumn("Avg Vol (10d)", format="%,d", width="small"),
+            "Vol_Ratio": st.column_config.NumberColumn("Vol Ratio", format="%.2f x", width="small"),
+            "RSI": st.column_config.NumberColumn("RSI(14)", format="%.1f", width="small"),
+        },
+        height=650,
+    )
+
+    exported = display_df.copy()
+    revisions = df.attrs.get("source_revisions")
+    if revisions:
+        exported["Price Revision"], exported["Constituent Revision"] = revisions
+    exported["As Of Date"] = cache_date
+    csv = exported.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "📥 Download Results",
+        csv,
+        file_name=f"stage2_screener_{datetime.now(IST).strftime('%Y%m%d')}.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+
+
+# ──────────────────────────────────────────────
+# RESULTS — MOMENTUM
+# ──────────────────────────────────────────────
+
+
+def _load_breadth_compositions(modified_ns=None) -> pd.DataFrame:
+    return shared_market.load_snapshot().membership.copy()
+
+
+def render_stage2_breadth(selected_indices: list[str]) -> None:
+    st.markdown('<p class="hero">🌡️ Stage 2 Market Breadth</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-hero">Daily distribution of mature stocks across the 8-point Weinstein Stage 2 model</p>',
+        unsafe_allow_html=True,
+    )
+    if not os.path.exists(SCREENER_OHLCV_PARQUET):
+        st.error("Historical breadth needs `data/screener_ohlcv.parquet`. Seed the screener data first.")
+        return
+
+    with st.spinner("Loading historical Stage 2 classifications…"):
+        try:
+            breadth_snapshot = shared_market.load_snapshot()
+            scores, from_disk_cache = load_breadth_score_history(snapshot=breadth_snapshot)
+        except Exception as exc:
+            logging.exception("Could not calculate Stage 2 breadth")
+            st.error(f"Could not calculate Stage 2 breadth ({type(exc).__name__}: {exc}).")
+            return
+
+    compositions = breadth_snapshot.membership
+    st.caption(shared_market.revision_label(breadth_snapshot.revisions))
+    daily = aggregate_breadth(scores, selected_indices, compositions)
+    if daily.empty:
+        st.warning("No mature Stage 2 observations are available for this universe yet.")
+        return
+
+    available_start, available_end = daily["date"].min().date(), daily["date"].max().date()
+    range_key = "stage2_breadth_range_" + "|".join(sorted(selected_indices))
+    start, end = st.slider(
+        "Date range",
+        min_value=available_start,
+        max_value=available_end,
+        value=(available_start, available_end),
+        key=range_key,
+    )
+    shown = daily[(daily["date"].dt.date >= start) & (daily["date"].dt.date <= end)].copy()
+    if shown.empty:
+        st.warning("No observations fall within the selected range.")
+        return
+
+    latest, prior = shown.iloc[-1], shown.iloc[-2] if len(shown) > 1 else shown.iloc[-1]
+    cols = st.columns(4)
+    cols[0].metric("Eligible stocks", f"{int(latest['Eligible']):,}")
+    cols[1].metric(
+        "Stage 2 breadth",
+        f"{latest['Stage 2 %']:.1f}%",
+        f"{latest['Stage 2 %'] - prior['Stage 2 %']:+.1f} pp",
+    )
+    cols[2].metric("Strong Stage 2", f"{int(latest['Strong']):,}", f"{latest['Strong'] - prior['Strong']:+.0f}")
+    cols[3].metric(
+        "Average score",
+        f"{latest['Average Score']:.2f}/8",
+        f"{latest['Average Score'] - prior['Average Score']:+.2f}",
+    )
+
+    selected_overlays = st.multiselect(
+        "Index overlay (log-scaled right axis)",
+        options=selected_indices,
+        default=["Nifty 50"] if "Nifty 50" in selected_indices else [],
+        help=(
+            "Uses the same index labels as the sidebar. The breadth bands stay linear; "
+            "index levels use the log-scaled right axis."
+        ),
+        key="stage2_breadth_benchmark_overlays_" + "|".join(sorted(selected_indices)),
+    )
+    start_ts, end_ts = pd.Timestamp(start), pd.Timestamp(end)
+    with st.spinner("Loading selected index overlays…"):
+        overlays, unavailable_overlays = load_index_overlay_series(selected_overlays, start_ts, end_ts)
+    if unavailable_overlays:
+        st.warning("No Yahoo Finance price history was available for: " + ", ".join(unavailable_overlays))
+    st.plotly_chart(stage2_breadth_count_figure(shown, overlays), width="stretch")
+    st.plotly_chart(stage2_breadth_percent_figure(shown, overlays), width="stretch")
+    source = "persisted daily-score cache" if from_disk_cache else "fresh calculation saved to the daily-score cache"
+    membership_note = (
+        "Historical index membership is applied for the selected indices. "
+        if not compositions.empty and selected_indices
+        else "All locally available screener symbols are included. "
+    )
+    st.caption(
+        f"{membership_note}‘Eligible’ means a stock traded that day and had enough prior history for the model. "
+        f"Source: {source}."
+    )
+    st.download_button(
+        "📥 Download daily breadth",
+        shown.to_csv(index=False).encode("utf-8"),
+        file_name="stage2_market_breadth.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+
+
+def momentum_results(selected_indices: list[str], idx_options: list[str], filters: dict):
+    now_ist = datetime.now(IST).strftime("%d %b %Y · %I:%M %p IST")
+    st.markdown('<p class="hero">🚀 Momentum Stock Screener</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="sub-hero">Sharpe Ratio Based Momentum Analysis · {now_ist}</p>', unsafe_allow_html=True)
+    st.divider()
+
+    if _poll_job("momentum", momentum_worker, {"as_of_date": filters.get("as_of_date")}):
+        return
+
+    cached = st.session_state.get("momentum_cached_result")
+    if cached is None:
+        proc = _score_cache["momentum"]
+        if proc["data"] is not None and proc["date"] is not None:
+            cached = {"df": proc["data"], "cache_date": proc["date"], "source": "memory"}
+            st.session_state["momentum_cached_result"] = cached
+
+    if cached is None:
+        _start_score_refresh("momentum", filters.get("as_of_date") or data_access._get_target_key())
+        return
+
+    if _invalidate_legacy_score_result("momentum", cached, filters.get("as_of_date") or data_access._get_target_key()):
+        return
+
+    full_df, cache_date, source = cached["df"], cached["cache_date"], cached["source"]
+    _render_source_banner(
+        source,
+        cache_date,
+        count=len(full_df),
+        frame=full_df,
+        target_date=filters.get("as_of_date") or data_access._get_target_key(),
+    )
+
+    if filters.get("as_of_date") and cache_date != str(filters["as_of_date"]):
+        st.info("The selected date changed. Click Run to calculate that dated snapshot.")
+        return
+
+    display_df = full_df[full_df["Index"].isin(selected_indices)].copy() if selected_indices else full_df.copy()
+
+    display_df = rank_momentum_frame(
+        display_df,
+        filters["sort_method"],
+        min_history_days=filters.get("min_history_days", 252),
+        minimum_median_volume=filters.get("minimum_median_volume", 100_000),
+        max_stale_sessions=filters.get("max_stale_sessions", 3),
+        min_annual_return=filters["min_annual_return"],
+        pct_from_52w_high=filters["pct_from_52w_high"],
+        max_circuits=filters["max_circuits"],
+        close_above_100dma=filters["close_above_100dma"],
+        close_above_200dma=filters["close_above_200dma"],
+        pos_days_3m_min=filters["pos_days_3m"],
+        pos_days_6m_min=filters["pos_days_6m"],
+        pos_days_12m_min=filters["pos_days_12m"],
+    )
+    if display_df.empty:
+        st.warning("No stocks match the selected eligibility and ranking settings.")
+        return
+    if full_df.attrs.get("source_revisions"):
+        st.caption(shared_market.revision_label(full_df.attrs["source_revisions"]))
+    display_df = display_df[
+        [
+            "Symbol",
+            "Index",
+            "Close",
+            "Price Date",
+            "Avg_Sharpe",
+            "Volatility",
+            "52w_High",
+            "Vol_Median",
+            "1Y_Change",
+            "Pct_From_52W_High",
+            "Circuit_Count",
+        ]
+    ]
+    display_df = display_df.rename(
+        columns={
+            "Avg_Sharpe": "Sharpe",
+            "Vol_Median": "Median Vol",
+            "1Y_Change": "1Y Change",
+            "Pct_From_52W_High": "% from 52wH",
+            "Circuit_Count": "Circuit Close",
+        }
+    )
+    display_df.insert(0, "Rank", range(1, len(display_df) + 1))
+
+    c1, c2, c3 = st.columns(3)
+    universe_label = (
+        "All Indices"
+        if len(selected_indices) == len(idx_options)
+        else (", ".join(selected_indices) if selected_indices else "None")
+    )
+    c1.metric("Universe", universe_label)
+    c2.metric(
+        "Total in Universe",
+        len(full_df),
+        help="Stocks with ≥250 days of price history. See the 📋 Coverage tab for the full list of excluded symbols.",
+    )
+    c3.metric("Matches", len(display_df))
+
+    st.dataframe(
+        display_df,
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "Rank": st.column_config.NumberColumn("Rank", format="%d", width="small"),
+            "Symbol": st.column_config.TextColumn("Symbol", width="medium"),
+            "Index": st.column_config.TextColumn("Index", width="medium"),
+            "Close": st.column_config.NumberColumn("Close (₹)", format="%.2f", width="small"),
+            "Price Date": st.column_config.TextColumn("Price Date", width="small"),
+            "Sharpe": st.column_config.NumberColumn("Sharpe", format="%.3f", width="small"),
+            "Volatility": st.column_config.NumberColumn("Volatility (%)", format="%.1f%%", width="small"),
+            "52w_High": st.column_config.NumberColumn("52w High", format="%.2f", width="small"),
+            "Median Vol": st.column_config.NumberColumn("Median Vol", format="%,d", width="small"),
+            "1Y Change": st.column_config.NumberColumn("1Y Change", format="%.2f%%", width="small"),
+            "% from 52wH": st.column_config.NumberColumn("% from 52wH", format="%.2f%%", width="small"),
+            "Circuit Close": st.column_config.NumberColumn("Circuit Close", format="%d", width="small"),
+        },
+        height=650,
+    )
+
+    exported = display_df.copy()
+    revisions = full_df.attrs.get("source_revisions")
+    if revisions:
+        exported["Price Revision"], exported["Constituent Revision"] = revisions
+    exported["As Of Date"] = cache_date
+    csv = exported.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "📥 Download Results",
+        csv,
+        file_name=f"momentum_screener_{datetime.now(IST).strftime('%Y%m%d')}.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+
+
+# ──────────────────────────────────────────────
+# DOCS
+# ──────────────────────────────────────────────
+
+
+def _load_index_options() -> list[str]:
+    return list(_load_constituents())
+
+
+_DOCS_SECTIONS = {
+    "Overview": "overview.md",
+    "Stage 2 Screener": "stage2_screener.md",
+    "Momentum Screener": "momentum_screener.md",
+    "Phase Chart": "phase_chart.md",
+    "Ichimoku Chart": "ichimoku_chart.md",
+    "Quant-Portfolio-Maker": "quant_portfolio_maker.md",
+    "Data & Methodology": "data_methodology.md",
+    "Momentum Backtest": "../backtest_user_guide.md",
+}
+
+_GUIDE_CSS = """
+<style>
+.guide-header {
+    padding: 1.25rem 0 1rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    margin-bottom: 1.75rem;
+}
+.guide-crumb {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: #94a3b8;
+    font-weight: 600;
+}
+[data-testid="stMarkdownContainer"] table th {
+    background: rgba(148, 163, 184, 0.08);
+    padding: 0.45rem 0.8rem;
+    border-bottom: 2px solid rgba(148, 163, 184, 0.25);
+}
+[data-testid="stMarkdownContainer"] table td {
+    padding: 0.45rem 0.8rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+[data-testid="stMarkdownContainer"] code:not(pre code) {
+    background: rgba(148, 163, 184, 0.12);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-size: 0.88em;
+}
+[data-testid="stMarkdownContainer"] pre {
+    background: rgba(15, 23, 42, 0.55) !important;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+}
+[data-testid="stMarkdownContainer"] blockquote {
+    border-left: 3px solid #3b82f6;
+    padding: 0.4rem 1rem;
+    margin: 0.75rem 0;
+    background: rgba(59, 130, 246, 0.07);
+    border-radius: 0 4px 4px 0;
+}
+</style>
+"""
+
+
+def render_docs():
+    st.markdown(_GUIDE_CSS, unsafe_allow_html=True)
+    docs_dir = os.path.join(os.path.dirname(__file__), "docs")
+    tabs = st.tabs(list(_DOCS_SECTIONS.keys()))
+    for tab, (section, filename) in zip(tabs, _DOCS_SECTIONS.items()):
+        with tab:
+            path = os.path.join(docs_dir, filename)
+            if not os.path.exists(path):
+                st.error(f"Documentation file missing: {filename}")
+                continue
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            lines = content.split("\n")
+            if lines and lines[0].startswith("# "):
+                content = "\n".join(lines[1:]).lstrip("\n")
+            with st.container(border=True):
+                st.markdown(content)
+
+
+# ──────────────────────────────────────────────
+# SIDEBAR PANELS
+# ──────────────────────────────────────────────
+
+
+def _sidebar_phase_chart() -> str:
+    global _last_chart_ticker
+    st.markdown("**Stock Symbol**")
+    # Widget keys are removed from session state when not rendered (tab switch).
+    # Restore explicitly from the persistent non-widget key or process-level fallback.
+    if "chart_ticker_input" not in st.session_state:
+        with _state_lock:
+            proc_ticker = _last_chart_ticker
+        restore = st.session_state.get("chart_ticker") or proc_ticker
+        if restore:
+            st.session_state["chart_ticker_input"] = restore
+    chart_ticker = st.text_input("NSE Symbol (e.g. RELIANCE)", key="chart_ticker_input").strip().upper()
+    if chart_ticker:
+        with _state_lock:
+            _last_chart_ticker = chart_ticker
+    st.session_state["chart_ticker"] = chart_ticker
+    return chart_ticker
+
+
+def _sidebar_stage2() -> tuple[bool, bool]:
+    st.markdown("**Filters**")
+    rsi_toggle = st.toggle("RSI between 50–70", value=False, key="stage2_rsi_toggle")
+    show_illiquid = st.toggle("Show Illiquid (Avg Vol < 1L)", value=False, key="stage2_show_illiquid")
+    st.divider()
+    if st.button("🚀 Run", type="primary", width="stretch", key="stage2_run_btn"):
+        st.session_state["stage2_run_triggered"] = True
+    return rsi_toggle, show_illiquid
+
+
+def _sidebar_momentum() -> dict:
+    if st.button("Refresh shared market data", key="shared_price_refresh"):
+        st.session_state["market_refresh_run_triggered"] = True
+    active_refresh = registry.latest(_get_user_token(), "market_refresh")
+    if st.session_state.get("market_refresh_run_triggered") or (
+        active_refresh and active_refresh.status in (JobStatus.RUNNING, JobStatus.QUEUED)
+    ):
+        st_autorefresh(interval=1500, key="shared_market_refresh_poll")
+    _poll_job("market_refresh", worker_functions.shared_market_refresh_worker)
+    completed_refresh = st.session_state.get("market_refresh_cached_result")
+    if completed_refresh and completed_refresh.get("source_revisions") == shared_market.source_revisions():
+        report = completed_refresh["report"]
+        if report.get("missing_target_symbols"):
+            st.warning(
+                f"Shared refresh published; {len(report['missing_target_symbols'])} "
+                "constituents lack target-session prices."
+            )
+        else:
+            st.success("Shared data refreshed. Screener results update automatically.")
+    latest_session = pd.Timestamp(data_access._get_target_key()).date()
+    previous_latest = st.session_state.get("mom_latest_session")
+    if (
+        previous_latest is not None
+        and previous_latest != latest_session
+        and st.session_state.get("mom_as_of_date") == previous_latest
+    ):
+        st.session_state["mom_as_of_date"] = latest_session
+    st.session_state["mom_latest_session"] = latest_session
+    as_of_date = st.date_input(
+        "As of date",
+        value=latest_session,
+        max_value=latest_session,
+        key="mom_as_of_date",
+    )
+    st.markdown("**Filters**")
+    sort_options = [
+        "Average of 3/6/9/12 months",
+        "Average of 1/3/6/9/12 months",
+        "Average of 1/3/6/12 months",
+        "Average of 1/3/12 months",
+        "Average of 3/6 months",
+        "1 year",
+        "9 months",
+        "6 months",
+        "3 months",
+    ]
+    sort_method = st.selectbox("Sort by Sharpe", options=sort_options, index=0, key="mom_sort_method")
+    min_annual_return = st.number_input(
+        "Min Annual Return (%)",
+        min_value=0.0,
+        max_value=1000.0,
+        value=7.0,
+        step=0.1,
+        format="%.2f",
+        key="mom_min_annual_return",
+    )
+    pct_from_52w_high = st.number_input(
+        "Within % of 52w High", min_value=0, max_value=100, value=25, step=1, key="mom_pct_from_52w_high"
+    )
+    max_circuits = st.number_input(
+        "Max Circuits (1yr)", min_value=0, max_value=100, value=18, step=1, key="mom_max_circuits"
+    )
+    close_above_100dma = st.checkbox("Close > 100 DMA", value=False, key="mom_close_above_100dma")
+    close_above_200dma = st.checkbox("Close > 200 DMA", value=True, key="mom_close_above_200dma")
+    pos_days_3m = st.number_input(
+        "Pos Days 3M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_3m"
+    )
+    pos_days_6m = st.number_input(
+        "Pos Days 6M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_6m"
+    )
+    pos_days_12m = st.number_input(
+        "Pos Days 12M (%)", min_value=0, max_value=100, value=45, step=1, key="mom_pos_days_12m"
+    )
+    min_history_days = st.number_input(
+        "Min history (trading days)", min_value=63, max_value=1260, value=252, step=21, key="mom_min_history"
+    )
+    minimum_median_volume = st.number_input(
+        "Min median daily volume (shares)", min_value=0, value=100_000, step=10_000, key="mom_min_volume"
+    )
+    max_stale_sessions = st.number_input("Max stale sessions", min_value=0, max_value=20, value=3, key="mom_max_stale")
+    st.divider()
+    if st.button("🚀 Run", type="primary", width="stretch", key="mom_run_btn"):
+        st.session_state["momentum_run_triggered"] = True
+    return {
+        "as_of_date": as_of_date,
+        "sort_method": sort_method,
+        "min_history_days": min_history_days,
+        "minimum_median_volume": minimum_median_volume,
+        "max_stale_sessions": max_stale_sessions,
+        "min_annual_return": min_annual_return,
+        "pct_from_52w_high": pct_from_52w_high,
+        "max_circuits": max_circuits,
+        "close_above_100dma": close_above_100dma,
+        "close_above_200dma": close_above_200dma,
+        "pos_days_3m": pos_days_3m,
+        "pos_days_6m": pos_days_6m,
+        "pos_days_12m": pos_days_12m,
+    }
+
+
+# ──────────────────────────────────────────────
+# MAIN
+# ──────────────────────────────────────────────
+
+
+_NAV_GROUPS = {
+    "Technical Analysis": (
+        "📊 Stage 2 Screener",
+        "🌡️ Stage 2 Breadth",
+        "📈 Phase Chart",
+        "☁️ Ichimoku Chart",
+    ),
+    "Multi Charts": (
+        "🔎 One Stock, Three Views",
+        "▦ Many Stocks, One View",
+    ),
+    "Quant-Portfolio-Maker": (
+        ENHANCED_ICHIMOKU_PAGE,
+        HA_EMA_PAGE,
+        PORTFOLIO_LAB_PAGE,
+    ),
+    "Momentum Factor": (
+        "🚀 Momentum Screener",
+        "⏱ Momentum Backtest",
+        "📡 Live Signal",
+    ),
+    "Info Hub": (
+        "📋 Coverage",
+        "📚 User Guide",
+    ),
+}
+
+_NAV_GROUP_ICONS = {
+    "Technical Analysis": "📊",
+    "Multi Charts": "▦",
+    "Quant-Portfolio-Maker": "🧮",
+    "Momentum Factor": "🚀",
+    "Info Hub": "ℹ️",
+}
+
+_NAV_LABEL_ALIASES = {
+    "📊 Stage 2": "📊 Stage 2 Screener",
+    "🚀 Momentum": "🚀 Momentum Screener",
+    "⏱ Backtest": "⏱ Momentum Backtest",
+}
+
+_MULTI_VIEW_DESTINATIONS = {
+    "phase": "📈 Phase Chart",
+    "ichimoku": "☁️ Ichimoku Chart",
+    "ha-ema": HA_EMA_PAGE,
+}
+
+
+def _apply_multi_chart_link() -> None:
+    """Consume a compact-chart link before the sidebar widgets are created."""
+    view = st.query_params.get("multi_view")
+    ticker = st.query_params.get("multi_ticker", "").strip().upper()
+    destination = _MULTI_VIEW_DESTINATIONS.get(view)
+    if destination and ticker and data_access._VALID_TICKER_RE.fullmatch(ticker):
+        st.session_state["active_screener"] = destination
+        st.session_state["chart_ticker"] = ticker
+        st.session_state["chart_ticker_input"] = ticker
+        del st.query_params["multi_view"]
+        del st.query_params["multi_ticker"]
+
+
+def _sidebar_navigation() -> str:
+    """Render compact grouped popover menus and return the active page label."""
+    valid_pages = {page for pages in _NAV_GROUPS.values() for page in pages}
+    saved_page = st.session_state.get("active_screener", "📊 Stage 2 Screener")
+    active_page = _NAV_LABEL_ALIASES.get(saved_page, saved_page)
+    if active_page not in valid_pages:
+        active_page = "📊 Stage 2 Screener"
+    st.session_state["active_screener"] = active_page
+
+    for group_name, pages in _NAV_GROUPS.items():
+        is_active_group = active_page in pages
+        active_marker = "• " if is_active_group else ""
+        menu_label = f"{active_marker}{_NAV_GROUP_ICONS[group_name]} {group_name}"
+        with st.popover(menu_label, width="stretch"):
+            for page in pages:
+                if st.button(
+                    page,
+                    key=f"nav_{page}",
+                    type="primary" if page == active_page else "secondary",
+                    width="stretch",
+                ):
+                    st.session_state["active_screener"] = page
+                    st.rerun()
+
+    return active_page
+
+
+def main():
+    _apply_multi_chart_link()
+    user_token = _get_user_token()
+    idx_options = _load_index_options()
+    st.caption(shared_market.revision_label(shared_market.source_revisions()))
+
+    bt_params: dict = {}
+    quant_portfolio_params: dict = {}
+    rsi_toggle = False
+    show_illiquid = False
+    mom_filters: dict = {}
+
+    if not _baseline_ok:
+        st.warning(
+            "Shared market files are missing. Run the explicit migration/bootstrap process before using the app."
+        )
+
+    with st.sidebar:
+        screener = _sidebar_navigation()
+        st.divider()
+
+        selected_indices = []
+        if screener not in (
+            "📈 Phase Chart",
+            "☁️ Ichimoku Chart",
+            "🔎 One Stock, Three Views",
+            "▦ Many Stocks, One View",
+            *QPM_PAGE_LABELS,
+            "📚 User Guide",
+            "⏱ Momentum Backtest",
+            "📋 Coverage",
+            "📡 Live Signal",
+        ):
+            st.markdown("### 📦 Indices")
+            cols = st.columns(2)
+            for i, idx in enumerate(idx_options):
+                if cols[i % 2].checkbox(idx, value=True, key=f"shared_idx_{idx}"):
+                    selected_indices.append(idx)
+            st.caption("💡 N50 + Next50 + Mid150 = LargeMidCap · Mid150 + Small250 = MidSmallCap · All = Total Market")
+
+        if screener == PORTFOLIO_LAB_PAGE:
+            import apps.quant_portfolio_maker.portfolio as portfolio_ui
+
+            if getattr(portfolio_ui, "PORTFOLIO_UI_VERSION", 0) < 7:
+                portfolio_ui = importlib.reload(portfolio_ui)
+
+            quant_portfolio_params = portfolio_ui.render_portfolio_sidebar(idx_options)
+        elif screener in (
+            "📈 Phase Chart",
+            "☁️ Ichimoku Chart",
+            "🔎 One Stock, Three Views",
+            ENHANCED_ICHIMOKU_PAGE,
+            HA_EMA_PAGE,
+        ):
+            _sidebar_phase_chart()
+        elif screener == "📊 Stage 2 Screener":
+            rsi_toggle, show_illiquid = _sidebar_stage2()
+        elif screener == "🚀 Momentum Screener":
+            mom_filters = _sidebar_momentum()
+        elif screener == "📋 Coverage":
+            pass
+        elif screener == "⏱ Momentum Backtest":
+            st.markdown("### ⏱ Momentum Backtest")
+            bt_params = _sidebar_backtest(idx_options)
+
+    # Poll active jobs quickly and check accepted screener source revisions every minute.
+    _kind_for_screener = {
+        "📊 Stage 2 Screener": "stage2",
+        "🚀 Momentum Screener": "momentum",
+        "⏱ Momentum Backtest": "backtest",
+    }
+    _active_kind = _kind_for_screener.get(screener)
+    if _active_kind:
+        if _active_kind in {"stage2", "momentum"}:
+            st_autorefresh(interval=60_000, key="shared_price_revision_watch")
+        _active_job = registry.latest(user_token, _active_kind)
+        _run_triggered = st.session_state.get(
+            "backtest_run_triggered" if _active_kind == "backtest" else f"{_active_kind}_run_triggered",
+            False,
+        )
+        if _run_triggered or (_active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
+            st_autorefresh(interval=1500, key="job_autorefresh")
+
+    if screener in ("🔎 One Stock, Three Views", "▦ Many Stocks, One View"):
+        import multi_charts
+
+        if screener == multi_charts.ONE_STOCK_PAGE:
+            multi_charts.render_one_stock(st.session_state.get("chart_ticker", ""))
+        else:
+            multi_charts.render_many_stocks()
+    elif screener == "📈 Phase Chart":
+        ticker = st.session_state.get("chart_ticker", "")
+        if not ticker:
+            st.markdown('<p class="hero">📈 Stage 2 Phase Chart</p>', unsafe_allow_html=True)
+            st.markdown(
+                '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>',
+                unsafe_allow_html=True,
+            )
+        else:
+            col1, col2 = st.columns([0.85, 0.15])
+            with col2:
+                use_log_scale = st.toggle("Log Y-Axis", value=True, key="chart_log_scale_toggle")
+            render_phase_chart(ticker, use_log_scale=use_log_scale)
+    elif screener == "☁️ Ichimoku Chart":
+        ticker = st.session_state.get("chart_ticker", "")
+        chart_tab, tutorial_tab, cheat_sheet_tab = st.tabs(["☁️ Chart", "📖 Tutorial", "⚡ Cheat Sheet"])
+        with chart_tab:
+            if not ticker:
+                st.markdown('<p class="hero">☁️ Ichimoku Cloud Chart</p>', unsafe_allow_html=True)
+                st.markdown(
+                    '<p class="sub-hero">Enter an NSE symbol in the sidebar to load the chart.</p>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                control_cols = [*st.columns(2), *st.columns(2)]
+                with control_cols[0]:
+                    timeframe = st.selectbox(
+                        "Timeframe",
+                        options=["Daily", "Weekly"],
+                        index=0,
+                        key="ichimoku_timeframe_select",
+                    )
+                with control_cols[1]:
+                    use_log_scale = st.toggle("Log Y-Axis", value=True, key="ichimoku_log_scale_toggle")
+                with control_cols[2]:
+                    show_chikou = st.toggle("Show Chikou", value=True, key="ichimoku_chikou_toggle")
+                with control_cols[3]:
+                    show_crossovers = st.toggle("Show Crosses", value=True, key="ichimoku_crosses_toggle")
+                render_ichimoku_chart(ticker, timeframe, use_log_scale, show_chikou, show_crossovers)
+        with tutorial_tab:
+            render_ichimoku_tutorial()
+        with cheat_sheet_tab:
+            render_ichimoku_cheat_sheet()
+    elif screener in QPM_PAGE_LABELS:
+        ticker = st.session_state.get("chart_ticker", "")
+        try:
+            from apps.quant_portfolio_maker.app import render_quant_portfolio_maker
+        except Exception as exc:
+            logging.exception("Quant-Portfolio-Maker could not be loaded")
+            st.error(f"Quant-Portfolio-Maker could not be loaded ({type(exc).__name__}: {exc}).")
+        else:
+            render_quant_portfolio_maker(screener, ticker, quant_portfolio_params)
+    elif screener == "📋 Coverage":
+        coverage_results()
+    elif screener == "📊 Stage 2 Screener":
+        stage2_results(selected_indices, rsi_toggle, show_illiquid)
+    elif screener == "🌡️ Stage 2 Breadth":
+        render_stage2_breadth(selected_indices)
+    elif screener == "⏱ Momentum Backtest":
+        render_backtest_tabs(bt_params)
+    elif screener == "📡 Live Signal":
+        st.markdown('<p class="hero">📡 Live Signal</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="sub-hero">Weekly trade instructions from a momentum rebalance snapshot</p>',
+            unsafe_allow_html=True,
+        )
+        render_live_signal_tabs(idx_options)
+    elif screener == "📚 User Guide":
+        render_docs()
+    else:  # 🚀 Momentum Screener
+        momentum_results(selected_indices, idx_options, mom_filters)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "rows": 939941,
+  "independently_reconstructed_applied_factors": 4288,
+  "maximum_price_absolute_error": 1.3642420526593924e-12,
+  "nominal_volume_unchanged": true,
+  "NSE_IDEA_indicative_annex_example": "0.5916033057851239669421487603",
+  "production_price_model_imported": false,
+  "acceptance": false,
+  "limits": "Arithmetic reconstruction from recorded primary terms; unresolved action identity, missing terms, source conflicts and tradability are NOT certified"
+}
+Calendar: 862 expected/observed; zero unexplained differences

@@ -1,0 +1,9 @@
+{
+  "baseline_commit": "bcdb6fb",
+  "baseline_git_blob_sha256": "1c9a041e329708e10a4ecf57848c04981c39f121d606e521273ab983c0ec2503",
+  "reproduction": "SJVN / INE002L01015, 2017-05-23 return -4.915515%; weekly first rank 2017-07-06: lower-circuit count 0 before, 1 after",
+  "root_cause": "Reversed negative-band inequalities were mutually exclusive in both scalar and vector paths",
+  "changed_initial_security_frequency_cases": 340,
+  "other_recorded_initial_signal_metrics_unchanged": true,
+  "portfolio_performance_run": false
+}

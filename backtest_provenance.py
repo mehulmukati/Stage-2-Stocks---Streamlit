@@ -26,6 +26,26 @@ def frame_hash(frame):
     return digest.hexdigest()
 
 
+def result_calculations_current(result):
+    """Reject a saved result when calculation code changes with identical data.
+
+    Support both direct engine results and the app's paired band-rule result.
+    This does not certify the market data or any investment convention.
+    """
+    manifests = result.get("run_manifests")
+    if manifests is None:
+        manifests = {"single": result.get("run_manifest")}
+    if not manifests:
+        return False
+    required = ("backtest_engine.py", "backtest_accounting.py", "momentum_engine.py")
+    expected = {name: sha256(ROOT / name) for name in required}
+    return all(
+        isinstance(manifest, dict)
+        and all(manifest.get("code_and_registry_sha256", {}).get(name) == digest for name, digest in expected.items())
+        for manifest in manifests.values()
+    )
+
+
 def run_manifest(config, frames, benchmarks, calendar):
     settings = {
         f.name: getattr(config, f.name)

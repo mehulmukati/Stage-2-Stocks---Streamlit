@@ -1,0 +1,9 @@
+{
+  "missing_adjusted": 33754,
+  "missing_market_session_rows": 1002,
+  "other_missing_rows": 32752,
+  "other_missing_labels": 84,
+  "partial_labels_outside_failed_queries": 12,
+  "ahlucont_partial_gaps": 45,
+  "ohlc_flags": 246
+}

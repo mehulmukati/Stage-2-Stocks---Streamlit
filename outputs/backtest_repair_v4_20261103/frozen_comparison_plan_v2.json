@@ -1,0 +1,98 @@
+{
+  "baseline_commit": "bcdb6fb",
+  "status": "frozen_before_any_new_performance; blocked pending full price/consumption validation",
+  "scope": [
+    "2017-07-01",
+    "2020-09-01"
+  ],
+  "universe": "complete reviewed NIFTY500; no unavailable-security deletion",
+  "membership": "Round3 candidate_v3 economic_ex_date",
+  "profiles": [
+    {
+      "m": 15,
+      "n": 30,
+      "rebalance_freq": "weekly",
+      "sort_method": "Average of 3/6/9/12 months",
+      "min_history_days": 252,
+      "band_rule": "classic",
+      "stage2_drop_exit": false,
+      "max_position_pct": null,
+      "transaction_cost_pct": 0.001,
+      "brokerage_per_sale": 0.0,
+      "stcg_rate": 0.2,
+      "ltcg_rate": 0.125,
+      "initial_capital": 1000000,
+      "quality": {
+        "min_annual_return": 7.0,
+        "pct_from_52w_high": 25.0,
+        "max_circuits": 18,
+        "close_above_100dma": false,
+        "close_above_200dma": true,
+        "pos_days_3m_min": 45.0,
+        "pos_days_6m_min": 45.0,
+        "pos_days_12m_min": 45.0
+      },
+      "apply_volume_filter": true,
+      "minimum_median_volume": 100000.0,
+      "stage2_entry_filter": false,
+      "stage2_drop_threshold": 2,
+      "variants": [
+        "Full Rebalance",
+        "Marginal Rebalance",
+        "Prop Rebalance"
+      ],
+      "rank_on_rebalance_date": false,
+      "max_stale_sessions": 3
+    },
+    {
+      "m": 15,
+      "n": 30,
+      "rebalance_freq": "monthly",
+      "sort_method": "Average of 3/6/9/12 months",
+      "min_history_days": 252,
+      "band_rule": "classic",
+      "stage2_drop_exit": false,
+      "max_position_pct": null,
+      "transaction_cost_pct": 0.001,
+      "brokerage_per_sale": 0.0,
+      "stcg_rate": 0.2,
+      "ltcg_rate": 0.125,
+      "initial_capital": 1000000,
+      "quality": {
+        "min_annual_return": 7.0,
+        "pct_from_52w_high": 25.0,
+        "max_circuits": 18,
+        "close_above_100dma": false,
+        "close_above_200dma": true,
+        "pos_days_3m_min": 45.0,
+        "pos_days_6m_min": 45.0,
+        "pos_days_12m_min": 45.0
+      },
+      "apply_volume_filter": true,
+      "minimum_median_volume": 100000.0,
+      "stage2_entry_filter": false,
+      "stage2_drop_threshold": 2,
+      "variants": [
+        "Full Rebalance",
+        "Marginal Rebalance",
+        "Prop Rebalance"
+      ],
+      "rank_on_rebalance_date": false,
+      "max_stale_sessions": 3
+    }
+  ],
+  "price_basis": "nse-cash-split-research-v1 candidate; unaccepted; cannot execute until factor and consumption blockers close",
+  "annualization": "elapsed calendar days",
+  "default_history_coverage_audit": 750,
+  "execution_comparison_blocker": "MoMo/backtest/MISSING_DATA_POLICY.md requires explicitly labelled assumed last-price exits; current app retains units absent executable quote. No claim of execution equivalence without an explicit common-policy adapter/decision.",
+  "strategy_matrix_run": false,
+  "source_hashes": {
+    "backtest_engine.py": "babb5890c67434c00c82c2fd226d101ee1b8d6b24ace7a92b6a143e360641eaf",
+    "backtest_accounting.py": "4738329a56a6833484b4de89797e614ea672f5a7f482451b137d93279c3bdedb",
+    "momentum_engine.py": "842b335225bff82d126c2638c80efacf71b5c421d9cc31662980e087011b67c5",
+    "MoMo/backtest/MISSING_DATA_POLICY.md": "5b1ff1d86e9312aec7d1de9559d694a21fcb5f004436490c6cafb68d65533c39",
+    "run_batch_csv.py": "16dca147a0f88f1a3fce533368be92cf0155dd5854d203a1ccec4aba1d182410",
+    "outputs/backtest_repair_v1_20261102/run_accounting_diagnostic.py": "323f9faa58bc60fe020f5088e65e2094167b93a1426739aa289840bab696b4c3"
+  },
+  "supersedes": "frozen_comparison_plan.json; exact quality fields and sort label clarified before any new performance"
+}

@@ -1,0 +1,3854 @@
+[
+  {
+    "name": "PR090714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090714.zip",
+    "retrieved_at": "2026-11-03T14:01:59.925658+00:00",
+    "status": 200,
+    "bytes": 359385,
+    "content_type": "application/zip",
+    "sha256": "dde916996842827fa43a0f2f775788f4dd766663af39846e275a8ad424d1060a"
+  },
+  {
+    "name": "PR060415.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060415.zip",
+    "retrieved_at": "2026-11-03T14:01:59.927656+00:00",
+    "status": 200,
+    "bytes": 320942,
+    "content_type": "application/zip",
+    "sha256": "6968f9899399bcc61ed32344d386d909518c5a273a5ae73d90048cd7cb337230"
+  },
+  {
+    "name": "PR180716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180716.zip",
+    "retrieved_at": "2026-11-03T14:01:59.928654+00:00",
+    "status": 200,
+    "bytes": 444564,
+    "content_type": "application/zip",
+    "sha256": "1202969e3e265b883db51316548938016c79012d90f3f9f7fc06d3df08932515"
+  },
+  {
+    "name": "PR040714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040714.zip",
+    "retrieved_at": "2026-11-03T14:01:59.935651+00:00",
+    "status": 200,
+    "bytes": 355893,
+    "content_type": "application/zip",
+    "sha256": "9c391206f08f7a4a8527f28851a1577c771948fd532c7e9b3f1db890edb28cae"
+  },
+  {
+    "name": "PR250315.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250315.zip",
+    "retrieved_at": "2026-11-03T14:02:01.893155+00:00",
+    "status": 200,
+    "bytes": 403657,
+    "content_type": "application/zip",
+    "sha256": "30a8f42f74c8088f98ae9bb2af8e19a90a316faa65721253e242fce1a5cff835"
+  },
+  {
+    "name": "PR150715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150715.zip",
+    "retrieved_at": "2026-11-03T14:02:01.893155+00:00",
+    "status": 200,
+    "bytes": 322165,
+    "content_type": "application/zip",
+    "sha256": "b2235717bb0619f8f043978075548801641fa949a03e65705ee8fd94eb8bc7d1"
+  },
+  {
+    "name": "PR300316.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR300316.zip",
+    "retrieved_at": "2026-11-03T14:02:02.362276+00:00",
+    "status": 200,
+    "bytes": 448205,
+    "content_type": "application/zip",
+    "sha256": "5c89ed0a3127d3737e429dc410f2dc911d64a017b0a2ee65d3ce487befe4ddb6"
+  },
+  {
+    "name": "PR150716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150716.zip",
+    "retrieved_at": "2026-11-03T14:02:02.613651+00:00",
+    "status": 200,
+    "bytes": 460672,
+    "content_type": "application/zip",
+    "sha256": "2a599b20f3fb85e9f53b2e53929b715eb578ab038939c965e41dfb43c87ad31a"
+  },
+  {
+    "name": "PR090317.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090317.zip",
+    "retrieved_at": "2026-11-03T14:02:02.750941+00:00",
+    "status": 200,
+    "bytes": 410637,
+    "content_type": "application/zip",
+    "sha256": "c1adc8f5224681a1023e0062671f1e98b6923a9d5043105929ff7b306e63a244"
+  },
+  {
+    "name": "PR140717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140717.zip",
+    "retrieved_at": "2026-11-03T14:02:02.920457+00:00",
+    "status": 200,
+    "bytes": 451052,
+    "content_type": "application/zip",
+    "sha256": "fa2179ca5d70bcb75bf1731c55d301ccc2687d45a67752619bf2b513b5547dc2"
+  },
+  {
+    "name": "PR220318.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220318.zip",
+    "retrieved_at": "2026-11-03T14:02:03.181012+00:00",
+    "status": 200,
+    "bytes": 463049,
+    "content_type": "application/zip",
+    "sha256": "21ff57e9e7b84593113ae4b36f1bc57467cc73c07224227328baedd0c8afe897"
+  },
+  {
+    "name": "PR190718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190718.zip",
+    "retrieved_at": "2026-11-03T14:02:03.198035+00:00",
+    "status": 200,
+    "bytes": 559435,
+    "content_type": "application/zip",
+    "sha256": "b235358d735e3cd9fb3a9fe8c89e7a3dd098bfb33f54370db3c8d9a041c994cd"
+  },
+  {
+    "name": "PR150319.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150319.zip",
+    "retrieved_at": "2026-11-03T14:02:03.480266+00:00",
+    "status": 200,
+    "bytes": 314729,
+    "content_type": "application/zip",
+    "sha256": "00bdcd7da894ac883bed6e5b53538e0e13836469503685d9fc2f75263c4e2f46"
+  },
+  {
+    "name": "PR190719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190719.zip",
+    "retrieved_at": "2026-11-03T14:02:03.678297+00:00",
+    "status": 200,
+    "bytes": 337862,
+    "content_type": "application/zip",
+    "sha256": "c36d8ecec125f3447ce8be83a11022216ce25217bb9e8f20c5f0baeafdc60ac0"
+  },
+  {
+    "name": "PR090720.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090720.zip",
+    "retrieved_at": "2026-11-03T14:02:03.690853+00:00",
+    "status": 200,
+    "bytes": 291784,
+    "content_type": "application/zip",
+    "sha256": "97e079a9e831b2910d7bf2db9348d6cdb86bbe35a45a144deecd80f7d5651e10"
+  },
+  {
+    "name": "PR051114.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR051114.zip",
+    "retrieved_at": "2026-11-03T14:02:04.151196+00:00",
+    "status": 200,
+    "bytes": 370786,
+    "content_type": "application/zip",
+    "sha256": "8576b9b9ac1f9c14d7bd838208609baf4d97e6c203935ba15a2109de325110db"
+  },
+  {
+    "name": "PR030815.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030815.zip",
+    "retrieved_at": "2026-11-03T14:02:04.448591+00:00",
+    "status": 200,
+    "bytes": 379764,
+    "content_type": "application/zip",
+    "sha256": "e72f341d84e8c7f9e78622b4a373dbe5e3d6a963513ecf40b52601d71ca78b8d"
+  },
+  {
+    "name": "PR091115.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR091115.zip",
+    "retrieved_at": "2026-11-03T14:02:04.824202+00:00",
+    "status": 200,
+    "bytes": 360495,
+    "content_type": "application/zip",
+    "sha256": "2ce2a94262bd46ec9430843810c2871f0312fa8afde519771689d7667b43f1e4"
+  },
+  {
+    "name": "PR170316.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170316.zip",
+    "retrieved_at": "2026-11-03T14:02:05.002168+00:00",
+    "status": 200,
+    "bytes": 418862,
+    "content_type": "application/zip",
+    "sha256": "3bf7ef5d094661ba118b9cb742dad091be7bfaef5733425397e1cd401bec9b97"
+  },
+  {
+    "name": "PR241116.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR241116.zip",
+    "retrieved_at": "2026-11-03T14:02:05.282384+00:00",
+    "status": 200,
+    "bytes": 548164,
+    "content_type": "application/zip",
+    "sha256": "354c6739eea568abc663e21f983c5a13cf29e3c61099a9908a70a189da00a69e"
+  },
+  {
+    "name": "PR310717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310717.zip",
+    "retrieved_at": "2026-11-03T14:02:05.592988+00:00",
+    "status": 200,
+    "bytes": 488216,
+    "content_type": "application/zip",
+    "sha256": "3bfdbf2c7d24662a3a31bb1027d33d49442f62b91f21230bcbd3311d0721e3cf"
+  },
+  {
+    "name": "PR201117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR201117.zip",
+    "retrieved_at": "2026-11-03T14:02:05.809617+00:00",
+    "status": 200,
+    "bytes": 447765,
+    "content_type": "application/zip",
+    "sha256": "6372bfe03a8eecb0cd5858ab59948337cb1ae7a1a67e54e39769b6a81116ff0e"
+  },
+  {
+    "name": "PR140818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140818.zip",
+    "retrieved_at": "2026-11-03T14:02:05.860906+00:00",
+    "status": 200,
+    "bytes": 552318,
+    "content_type": "application/zip",
+    "sha256": "7463e803ae92a007e09b3cb9e4e780fe777b0600f5d00b88135fcb5bacae9f84"
+  },
+  {
+    "name": "PR201118.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR201118.zip",
+    "retrieved_at": "2026-11-03T14:02:06.223076+00:00",
+    "status": 200,
+    "bytes": 552322,
+    "content_type": "application/zip",
+    "sha256": "1b0643729f270096d9b411c964cd8a76f1b6aade330bf3dd6ad46f99af3a1350"
+  },
+  {
+    "name": "PR250719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250719.zip",
+    "retrieved_at": "2026-11-03T14:02:06.316705+00:00",
+    "status": 200,
+    "bytes": 322465,
+    "content_type": "application/zip",
+    "sha256": "ce48f1fc68a520f7cce8859d12eb8f5cd909c69fd9cb27f22c2c2f895094197f"
+  },
+  {
+    "name": "PR160919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160919.zip",
+    "retrieved_at": "2026-11-03T14:02:06.330725+00:00",
+    "status": 200,
+    "bytes": 348977,
+    "content_type": "application/zip",
+    "sha256": "70dfffeccaaa6c53d97351ca11eaf01fc3fb8242cafa512877255edb739a271e"
+  },
+  {
+    "name": "PR311019.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR311019.zip",
+    "retrieved_at": "2026-11-03T14:02:06.660879+00:00",
+    "status": 200,
+    "bytes": 299616,
+    "content_type": "application/zip",
+    "sha256": "e47a9651d8f7752ad9dbc559e99388c68d332a7438035bfcde2965d4a36cf8f2"
+  },
+  {
+    "name": "PR170220.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170220.zip",
+    "retrieved_at": "2026-11-03T14:02:06.777948+00:00",
+    "status": 200,
+    "bytes": 359048,
+    "content_type": "application/zip",
+    "sha256": "2f4ea2db20cf6336a680eb42a4c024cf7e0e05f265aae8992dc695b6f2bfc55c"
+  },
+  {
+    "name": "PR110314.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110314.zip",
+    "retrieved_at": "2026-11-03T14:02:06.790978+00:00",
+    "status": 200,
+    "bytes": 331804,
+    "content_type": "application/zip",
+    "sha256": "6209801e2aae54a40bafc1f701425fb8660fb9699609d8eae1a3f5dd32fe9f8d"
+  },
+  {
+    "name": "PR250414.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250414.zip",
+    "retrieved_at": "2026-11-03T14:02:07.809121+00:00",
+    "status": 200,
+    "bytes": 342024,
+    "content_type": "application/zip",
+    "sha256": "6f78373acbd7e692fc1790fa5a32fa69434dee42ffce237c6b8134d59bd68104"
+  },
+  {
+    "name": "PR240714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR240714.zip",
+    "retrieved_at": "2026-11-03T14:02:08.312232+00:00",
+    "status": 200,
+    "bytes": 376503,
+    "content_type": "application/zip",
+    "sha256": "27f7ff8ee405f990163cd928bd429ec80f96f77bc1b6b283fcdf83ab4e4b1819"
+  },
+  {
+    "name": "PR221014.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR221014.zip",
+    "retrieved_at": "2026-11-03T14:02:08.380002+00:00",
+    "status": 200,
+    "bytes": 338450,
+    "content_type": "application/zip",
+    "sha256": "e47304669a5e97f8b154b64233999c3857b3ceed9c1a34164cdcfeebeb27efea"
+  },
+  {
+    "name": "PR100315.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100315.zip",
+    "retrieved_at": "2026-11-03T14:02:08.422440+00:00",
+    "status": 200,
+    "bytes": 338443,
+    "content_type": "application/zip",
+    "sha256": "72803a3566d9d1ae1ba474369dbfa104a310723bb75b40da5d6437f4a8ec6aa9"
+  },
+  {
+    "name": "PR230415.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230415.zip",
+    "retrieved_at": "2026-11-03T14:02:08.624416+00:00",
+    "status": 200,
+    "bytes": 364007,
+    "content_type": "application/zip",
+    "sha256": "95408f77eee1a0beb14ea05a0680aaed0ba46344d9ffed50b050f8e2cef99072"
+  },
+  {
+    "name": "PR230715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230715.zip",
+    "retrieved_at": "2026-11-03T14:02:08.641519+00:00",
+    "status": 200,
+    "bytes": 375202,
+    "content_type": "application/zip",
+    "sha256": "4a6de7d400467115d6f7f62af5feeddcfca38d42202ba18c581d17153acd7d30"
+  },
+  {
+    "name": "PR211015.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR211015.zip",
+    "retrieved_at": "2026-11-03T14:02:08.703039+00:00",
+    "status": 200,
+    "bytes": 387224,
+    "content_type": "application/zip",
+    "sha256": "3fe2c5f963733db91018b223b332b967dbdd56d7fcc2f63eeab35e9bcd5de20a"
+  },
+  {
+    "name": "PR080316.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080316.zip",
+    "retrieved_at": "2026-11-03T14:02:09.035296+00:00",
+    "status": 200,
+    "bytes": 447908,
+    "content_type": "application/zip",
+    "sha256": "16aaf8776cbdabad708a37a6eee7f5739fc9533d30208f04f2535645d12e40de"
+  },
+  {
+    "name": "PR280416.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280416.zip",
+    "retrieved_at": "2026-11-03T14:02:09.047298+00:00",
+    "status": 200,
+    "bytes": 442660,
+    "content_type": "application/zip",
+    "sha256": "31d677928053d005b36cdca59893a2377626868e05be3b680e77375e57ed32f5"
+  },
+  {
+    "name": "PR280716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280716.zip",
+    "retrieved_at": "2026-11-03T14:02:09.085854+00:00",
+    "status": 200,
+    "bytes": 543555,
+    "content_type": "application/zip",
+    "sha256": "8828445b417c0f0b85295bd2d96494b99670b786463433c1a79425071709b5f9"
+  },
+  {
+    "name": "PR211016.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR211016.zip",
+    "retrieved_at": "2026-11-03T14:02:09.225930+00:00",
+    "status": 200,
+    "bytes": 453510,
+    "content_type": "application/zip",
+    "sha256": "707bc03705eb40c1825f18c56fba516bc70dcd03a2d777ee32aaf07c7a7184c4"
+  },
+  {
+    "name": "PR210317.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210317.zip",
+    "retrieved_at": "2026-11-03T14:02:09.392393+00:00",
+    "status": 200,
+    "bytes": 428390,
+    "content_type": "application/zip",
+    "sha256": "28ceaed42f4cb85c825bcdbbcfcc5d720e3ef4526424efab897ed5316f589d60"
+  },
+  {
+    "name": "PR030517.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030517.zip",
+    "retrieved_at": "2026-11-03T14:02:09.572805+00:00",
+    "status": 200,
+    "bytes": 441029,
+    "content_type": "application/zip",
+    "sha256": "37530d5b6f664d3218e63d9e53e93f619c9155629b10f19fdc2fc7db0f03acda"
+  },
+  {
+    "name": "PR270717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270717.zip",
+    "retrieved_at": "2026-11-03T14:02:09.754295+00:00",
+    "status": 200,
+    "bytes": 598489,
+    "content_type": "application/zip",
+    "sha256": "fc7fb7d27c6db18cdec8d5fc2370834b7d203b98a27346fc90ca4933edea80d5"
+  },
+  {
+    "name": "PR311017.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR311017.zip",
+    "retrieved_at": "2026-11-03T14:02:09.891080+00:00",
+    "status": 200,
+    "bytes": 432405,
+    "content_type": "application/zip",
+    "sha256": "70dd100920d457bf9146d5d38f0f2e3fc0825f34f2553f042e0e53059f0844ee"
+  },
+  {
+    "name": "PR270318.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270318.zip",
+    "retrieved_at": "2026-11-03T14:02:09.954598+00:00",
+    "status": 200,
+    "bytes": 496876,
+    "content_type": "application/zip",
+    "sha256": "5b4a59e5661568131c28f63edb35e0a22de9aaf5846cf800ba76e22612a58953"
+  },
+  {
+    "name": "PR030518.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030518.zip",
+    "retrieved_at": "2026-11-03T14:02:10.017235+00:00",
+    "status": 200,
+    "bytes": 462330,
+    "content_type": "application/zip",
+    "sha256": "73ca8cd931c6ab7713f5da1e4e54dd2278b7319b8d572b9c31b0a94c7fc1b979"
+  },
+  {
+    "name": "PR270718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270718.zip",
+    "retrieved_at": "2026-11-03T14:02:10.233638+00:00",
+    "status": 200,
+    "bytes": 514020,
+    "content_type": "application/zip",
+    "sha256": "cc0309bdb28fe0dee0f71eddb700e1cd5d1bc9093003f9d4cbddb8add16fc3b6"
+  },
+  {
+    "name": "PR291018.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR291018.zip",
+    "retrieved_at": "2026-11-03T14:02:10.297884+00:00",
+    "status": 200,
+    "bytes": 561245,
+    "content_type": "application/zip",
+    "sha256": "0fb5a2e578c64ff3e6e8847330414f667c6a7d61e28fb3566b69bac74f96b588"
+  },
+  {
+    "name": "PR280319.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280319.zip",
+    "retrieved_at": "2026-11-03T14:02:10.379548+00:00",
+    "status": 200,
+    "bytes": 303384,
+    "content_type": "application/zip",
+    "sha256": "a9193cd24a43fadd7674f398135ed1b162cadebc5638c5022a89936b81f4636f"
+  },
+  {
+    "name": "PR060519.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060519.zip",
+    "retrieved_at": "2026-11-03T14:02:10.401961+00:00",
+    "status": 200,
+    "bytes": 348227,
+    "content_type": "application/zip",
+    "sha256": "1a294f68393ee9d40246aad0da0923a7227bf138ba5217e9f1e5b5c07f6e00e1"
+  },
+  {
+    "name": "PR060819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060819.zip",
+    "retrieved_at": "2026-11-03T14:02:10.647650+00:00",
+    "status": 200,
+    "bytes": 340530,
+    "content_type": "application/zip",
+    "sha256": "eb62e7c43acda5fc454728a2414b7840d06148135ccb6f9651f9b699905de7db"
+  },
+  {
+    "name": "PR211119.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR211119.zip",
+    "retrieved_at": "2026-11-03T14:02:10.675339+00:00",
+    "status": 200,
+    "bytes": 324569,
+    "content_type": "application/zip",
+    "sha256": "411e66b57c8b653a25fde14a9cd530108a9c7925a53d0f89f689070d3bf168b3"
+  },
+  {
+    "name": "PR310320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310320.zip",
+    "retrieved_at": "2026-11-03T14:02:10.745733+00:00",
+    "status": 200,
+    "bytes": 327635,
+    "content_type": "application/zip",
+    "sha256": "04e00fd831103f343ea61ebe725d1f3699d1e8238c443dc9ecea83eb9807221a"
+  },
+  {
+    "name": "PR040520.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040520.zip",
+    "retrieved_at": "2026-11-03T14:02:10.993079+00:00",
+    "status": 200,
+    "bytes": 312742,
+    "content_type": "application/zip",
+    "sha256": "2b5f0301b04eac04abda05753f8897d72c3b8b57e3f6a93ff805ba4ee0902b97"
+  },
+  {
+    "name": "PR040820.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040820.zip",
+    "retrieved_at": "2026-11-03T14:02:11.046769+00:00",
+    "status": 200,
+    "bytes": 290426,
+    "content_type": "application/zip",
+    "sha256": "2f37e0ba16eae71dc1799ebe972bbe7d1e260c543e3323a6021785ec90318a26"
+  },
+  {
+    "name": "PR170914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170914.zip",
+    "retrieved_at": "2026-11-03T14:02:11.048764+00:00",
+    "status": 200,
+    "bytes": 372438,
+    "content_type": "application/zip",
+    "sha256": "9638bd3e094fda09aafe889d9b4df737975b58e71ee07984109bf6e7b5f47016"
+  },
+  {
+    "name": "PR160915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160915.zip",
+    "retrieved_at": "2026-11-03T14:02:11.389059+00:00",
+    "status": 200,
+    "bytes": 398009,
+    "content_type": "application/zip",
+    "sha256": "81fe654dee81fee48679dd59e32116923db0fd858a5e60783bf15b5ae44a014f"
+  },
+  {
+    "name": "PR150916.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150916.zip",
+    "retrieved_at": "2026-11-03T14:02:11.733980+00:00",
+    "status": 200,
+    "bytes": 516209,
+    "content_type": "application/zip",
+    "sha256": "ccb3963ec6f4a5fb9e57dc07c2a9c3379d4b364503c4b0ba56d4198977458754"
+  },
+  {
+    "name": "PR130917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130917.zip",
+    "retrieved_at": "2026-11-03T14:02:11.773517+00:00",
+    "status": 200,
+    "bytes": 446952,
+    "content_type": "application/zip",
+    "sha256": "1cd611881f8ec48ba4c7426d9b7336041ce41585ec2267ed8aa5af7d5c89f4ff"
+  },
+  {
+    "name": "PR180918.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180918.zip",
+    "retrieved_at": "2026-11-03T14:02:12.144838+00:00",
+    "status": 200,
+    "bytes": 525125,
+    "content_type": "application/zip",
+    "sha256": "264fcc72d7bf6724b84a069ec47f972158745bcd593ecca27fe4450076255a6c"
+  },
+  {
+    "name": "PR251018.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR251018.zip",
+    "retrieved_at": "2026-11-03T14:02:12.391610+00:00",
+    "status": 200,
+    "bytes": 642427,
+    "content_type": "application/zip",
+    "sha256": "22aad935400df44c5b12952d17c116f89dd7806f3f7eafce60759820e1e1f8c7"
+  },
+  {
+    "name": "PR120617.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120617.zip",
+    "retrieved_at": "2026-11-03T14:02:12.415828+00:00",
+    "status": 200,
+    "bytes": 473667,
+    "content_type": "application/zip",
+    "sha256": "53bb6df1c8141fafc85336a3c3bd022c63798e782c69eef8b2bd919b6a58ab29"
+  },
+  {
+    "name": "PR060718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060718.zip",
+    "retrieved_at": "2026-11-03T14:02:12.508247+00:00",
+    "status": 200,
+    "bytes": 458470,
+    "content_type": "application/zip",
+    "sha256": "9bce103247531e420b1cfb2c187d332083c9a271aa6fb41ce61f32f16730d757"
+  },
+  {
+    "name": "PR080719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080719.zip",
+    "retrieved_at": "2026-11-03T14:02:12.575832+00:00",
+    "status": 200,
+    "bytes": 333328,
+    "content_type": "application/zip",
+    "sha256": "dd5cf2f13beb31ec217070bba20042af83c38a402f03043af0a11be469177212"
+  },
+  {
+    "name": "PR060720.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060720.zip",
+    "retrieved_at": "2026-11-03T14:02:12.838025+00:00",
+    "status": 200,
+    "bytes": 321280,
+    "content_type": "application/zip",
+    "sha256": "5ccc92c776422147070e63b6ba2d7a7a285c8561d6ee053d460b537818770930"
+  },
+  {
+    "name": "PR160614.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160614.zip",
+    "retrieved_at": "2026-11-03T14:02:13.304008+00:00",
+    "status": 200,
+    "bytes": 359301,
+    "content_type": "application/zip",
+    "sha256": "019d6a255f65e52f6e2bc53e274924f089c47e3a178f7461aad99ca13cefc056"
+  },
+  {
+    "name": "PR220914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220914.zip",
+    "retrieved_at": "2026-11-03T14:02:13.486361+00:00",
+    "status": 200,
+    "bytes": 382017,
+    "content_type": "application/zip",
+    "sha256": "70d67285ddb6d3306667458bda61c2f961e55e994d9acc4c43c285353622352f"
+  },
+  {
+    "name": "PR240615.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR240615.zip",
+    "retrieved_at": "2026-11-03T14:02:13.798101+00:00",
+    "status": 200,
+    "bytes": 415100,
+    "content_type": "application/zip",
+    "sha256": "bf755b3b35dc54cb05b11ca23efdd5610e1a592f7ed7159876e177b881054b72"
+  },
+  {
+    "name": "PR281015.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR281015.zip",
+    "retrieved_at": "2026-11-03T14:02:13.891726+00:00",
+    "status": 200,
+    "bytes": 414695,
+    "content_type": "application/zip",
+    "sha256": "e3e8b2e3d9fdb5ac48261ade9914d1246b88ec69e2b928c565454d23d33ab5c7"
+  },
+  {
+    "name": "PR160616.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160616.zip",
+    "retrieved_at": "2026-11-03T14:02:14.186420+00:00",
+    "status": 200,
+    "bytes": 407830,
+    "content_type": "application/zip",
+    "sha256": "0d27fa6ea7e443b7033b5889c2216cd0064ec7e80344c791aed053ea870ce65d"
+  },
+  {
+    "name": "PR011116.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR011116.zip",
+    "retrieved_at": "2026-11-03T14:02:14.519140+00:00",
+    "status": 200,
+    "bytes": 405346,
+    "content_type": "application/zip",
+    "sha256": "acf61db24846fbb8b6ad9baaef30a1b18b82073eb56c074315692f02b275e3e0"
+  },
+  {
+    "name": "PR150617.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150617.zip",
+    "retrieved_at": "2026-11-03T14:02:14.522124+00:00",
+    "status": 200,
+    "bytes": 449091,
+    "content_type": "application/zip",
+    "sha256": "b4f7eabb7c47b3bee40f655481d307c29d166802ba5287b7d9ec49292d30ab98"
+  },
+  {
+    "name": "PR140618.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140618.zip",
+    "retrieved_at": "2026-11-03T14:02:14.895837+00:00",
+    "status": 200,
+    "bytes": 452504,
+    "content_type": "application/zip",
+    "sha256": "2caa38740f4c30c9eaecc8cd651b933ee63adf0776d80f9d9eb92abb076a9fde"
+  },
+  {
+    "name": "PR130619.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130619.zip",
+    "retrieved_at": "2026-11-03T14:02:15.286425+00:00",
+    "status": 200,
+    "bytes": 322704,
+    "content_type": "application/zip",
+    "sha256": "cf532ea9992285e741b4b60a6dc4ea65d98164410ed18567f225cba4801ddcda"
+  },
+  {
+    "name": "PR301019.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR301019.zip",
+    "retrieved_at": "2026-11-03T14:02:15.567337+00:00",
+    "status": 200,
+    "bytes": 298604,
+    "content_type": "application/zip",
+    "sha256": "31751bb963419143b7174122391e249922a7f581f4c0494a6b5dd4773847a0b6"
+  },
+  {
+    "name": "PR030320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030320.zip",
+    "retrieved_at": "2026-11-03T14:02:15.570104+00:00",
+    "status": 200,
+    "bytes": 328763,
+    "content_type": "application/zip",
+    "sha256": "1eb24a25f5c8f6ac89e623cf6bbe907d91ad223280656cbb65ac070a376b756b"
+  },
+  {
+    "name": "PR230720.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230720.zip",
+    "retrieved_at": "2026-11-03T14:02:15.901942+00:00",
+    "status": 200,
+    "bytes": 294976,
+    "content_type": "application/zip",
+    "sha256": "1224d5d496daa87b4549b8dd22044dba5417e792566642ce77f8c470ed94f1cc"
+  },
+  {
+    "name": "PR310815.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310815.zip",
+    "retrieved_at": "2026-11-03T14:02:16.295331+00:00",
+    "status": 200,
+    "bytes": 397928,
+    "content_type": "application/zip",
+    "sha256": "f97e2e20549740fcbc7f83d6078738f94dcacad45ee9b42bd115eebc49f67ab8"
+  },
+  {
+    "name": "PR010916.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR010916.zip",
+    "retrieved_at": "2026-11-03T14:02:16.297878+00:00",
+    "status": 200,
+    "bytes": 452558,
+    "content_type": "application/zip",
+    "sha256": "385b1048996dea75761f09a956b68d647f998d7d7803dece9150dcfc8ea9d897"
+  },
+  {
+    "name": "PR310817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310817.zip",
+    "retrieved_at": "2026-11-03T14:02:16.299414+00:00",
+    "status": 200,
+    "bytes": 589021,
+    "content_type": "application/zip",
+    "sha256": "28646dced1829bec96deba5d90b3ba40e209ce9e8f908a55e504585b182686f5"
+  },
+  {
+    "name": "PR110918.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110918.zip",
+    "retrieved_at": "2026-11-03T14:02:16.922000+00:00",
+    "status": 200,
+    "bytes": 511732,
+    "content_type": "application/zip",
+    "sha256": "0511c1d3b1d45a0269ec485767da8fb3dd0797fd863d44de61c05620c8425e58"
+  },
+  {
+    "name": "PR090919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090919.zip",
+    "retrieved_at": "2026-11-03T14:02:17.401388+00:00",
+    "status": 200,
+    "bytes": 357443,
+    "content_type": "application/zip",
+    "sha256": "8e6933f4f98c56733af8f4c5c1480848153e02ba2caf611e4357559a10e6ea34"
+  },
+  {
+    "name": "PR140917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140917.zip",
+    "retrieved_at": "2026-11-03T14:02:17.505001+00:00",
+    "status": 200,
+    "bytes": 448590,
+    "content_type": "application/zip",
+    "sha256": "32f6186ae7f74a57e27d018a93b6baeb0e083c8d2a81e001909d31b98565f2fd"
+  },
+  {
+    "name": "PR080318.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080318.zip",
+    "retrieved_at": "2026-11-03T14:02:17.508540+00:00",
+    "status": 200,
+    "bytes": 423143,
+    "content_type": "application/zip",
+    "sha256": "51f4f0c352dfffc610701349d3da17fdefe8ba09258e0a13991c031ccd5937ac"
+  },
+  {
+    "name": "PR200319.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200319.zip",
+    "retrieved_at": "2026-11-03T14:02:17.614630+00:00",
+    "status": 200,
+    "bytes": 316674,
+    "content_type": "application/zip",
+    "sha256": "1be00f662d5c9283e5b3b50ff00334126984eca7134d758f71e97badfd148435"
+  },
+  {
+    "name": "PR120919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120919.zip",
+    "retrieved_at": "2026-11-03T14:02:17.815551+00:00",
+    "status": 200,
+    "bytes": 321625,
+    "content_type": "application/zip",
+    "sha256": "d2b5eacf9aa284bee9aac78bcd2ac395f05a1f15a4d2f7107efedd9ca8f35da5"
+  },
+  {
+    "name": "PR260320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260320.zip",
+    "retrieved_at": "2026-11-03T14:02:17.877074+00:00",
+    "status": 200,
+    "bytes": 283419,
+    "content_type": "application/zip",
+    "sha256": "178622295ee7554640e531abc4914cd29ef668def150af5b05b97168465b2d96"
+  },
+  {
+    "name": "PR250615.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250615.zip",
+    "retrieved_at": "2026-11-03T14:02:17.905156+00:00",
+    "status": 200,
+    "bytes": 423423,
+    "content_type": "application/zip",
+    "sha256": "c52fca45ec56dc591c63c1284a0149d1d6222d082a2dc13cd34d18f9f77dc487"
+  },
+  {
+    "name": "PR071116.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR071116.zip",
+    "retrieved_at": "2026-11-03T14:02:18.267917+00:00",
+    "status": 200,
+    "bytes": 460689,
+    "content_type": "application/zip",
+    "sha256": "d1fe3d01fcb86965b186894f208ea0ad6cfb271911aab05ac4227e192fad38dd"
+  },
+  {
+    "name": "PR230317.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230317.zip",
+    "retrieved_at": "2026-11-03T14:02:18.730165+00:00",
+    "status": 200,
+    "bytes": 450145,
+    "content_type": "application/zip",
+    "sha256": "9bd46b09188536f690b5b988446f346ce3a9b36e1d3cf6ded30d2cf6614f9dec"
+  },
+  {
+    "name": "PR091118.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR091118.zip",
+    "retrieved_at": "2026-11-03T14:02:18.808312+00:00",
+    "status": 200,
+    "bytes": 463508,
+    "content_type": "application/zip",
+    "sha256": "2c01a1338441bb0bd41e3d30394d333d599fea118e1e9de62b0bf9a05533012c"
+  },
+  {
+    "name": "PR151119.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR151119.zip",
+    "retrieved_at": "2026-11-03T14:02:19.011998+00:00",
+    "status": 200,
+    "bytes": 330804,
+    "content_type": "application/zip",
+    "sha256": "0211265744cf8c1a619e3ac926f1821a6a47c94115fd5f07e68ec95a80489f9d"
+  },
+  {
+    "name": "PR250714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250714.zip",
+    "retrieved_at": "2026-11-03T14:02:19.511970+00:00",
+    "status": 200,
+    "bytes": 377218,
+    "content_type": "application/zip",
+    "sha256": "b26ec17bd658a0af32cf9542ae76d3f4db7082041a2676238f75d4c8bc2a1fcc"
+  },
+  {
+    "name": "PR300715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR300715.zip",
+    "retrieved_at": "2026-11-03T14:02:19.520606+00:00",
+    "status": 200,
+    "bytes": 428092,
+    "content_type": "application/zip",
+    "sha256": "5e97a63cf8dc7ed0786532d3c5ddb2c608bafb6bbf7a6021aa8d323efaa81c70"
+  },
+  {
+    "name": "PR270716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270716.zip",
+    "retrieved_at": "2026-11-03T14:02:19.782310+00:00",
+    "status": 200,
+    "bytes": 517077,
+    "content_type": "application/zip",
+    "sha256": "fe30205a752e18ca2eb797da93f41664b344af51c0f2bc90d9ced186cb3fcc8e"
+  },
+  {
+    "name": "PR260717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260717.zip",
+    "retrieved_at": "2026-11-03T14:02:19.801844+00:00",
+    "status": 200,
+    "bytes": 541976,
+    "content_type": "application/zip",
+    "sha256": "ed7b81d23b362e75b4494620874abf92ae585ef144d931d5e8d622b1256d9da0"
+  },
+  {
+    "name": "PR080720.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080720.zip",
+    "retrieved_at": "2026-11-03T14:02:20.019877+00:00",
+    "status": 200,
+    "bytes": 303701,
+    "content_type": "application/zip",
+    "sha256": "3d829205499b43d9fa71675ad2c04e124f8130b01ec6a26fbc9400daafb7916c"
+  },
+  {
+    "name": "PR120717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120717.zip",
+    "retrieved_at": "2026-11-03T14:02:20.048898+00:00",
+    "status": 200,
+    "bytes": 439454,
+    "content_type": "application/zip",
+    "sha256": "5a25a94fca4ffc3b808e30be12ca67bf20592877beb1e0aeef9c86df45e41fd7"
+  },
+  {
+    "name": "PR121017.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR121017.zip",
+    "retrieved_at": "2026-11-03T14:02:20.061495+00:00",
+    "status": 200,
+    "bytes": 415077,
+    "content_type": "application/zip",
+    "sha256": "3b0f22a8cf56e0451c04acbff25354abdbaedc414ad91cf002b7765af1566622"
+  },
+  {
+    "name": "PR110718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110718.zip",
+    "retrieved_at": "2026-11-03T14:02:20.562165+00:00",
+    "status": 200,
+    "bytes": 458485,
+    "content_type": "application/zip",
+    "sha256": "1813ec69de09ec0664f33478882e675e631f65d58cecdcfad1f2249fd6b267af"
+  },
+  {
+    "name": "PR100719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100719.zip",
+    "retrieved_at": "2026-11-03T14:02:20.661405+00:00",
+    "status": 200,
+    "bytes": 360973,
+    "content_type": "application/zip",
+    "sha256": "917ea604db60b48380594d7db5374231bb39532d73a043b56c426379ffbc7381"
+  },
+  {
+    "name": "PR211117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR211117.zip",
+    "retrieved_at": "2026-11-03T14:02:20.671953+00:00",
+    "status": 200,
+    "bytes": 482411,
+    "content_type": "application/zip",
+    "sha256": "672a5f43aecd670a224c4e7523b8977ee93b6a683818282ed1bde8eaabf415f4"
+  },
+  {
+    "name": "PR190918.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190918.zip",
+    "retrieved_at": "2026-11-03T14:02:20.775328+00:00",
+    "status": 200,
+    "bytes": 594675,
+    "content_type": "application/zip",
+    "sha256": "f350289477e74599cdedcd8cf896aa54e033f2a93600b49b83e2417b9d9ffea7"
+  },
+  {
+    "name": "PR291118.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR291118.zip",
+    "retrieved_at": "2026-11-03T14:02:20.891544+00:00",
+    "status": 200,
+    "bytes": 676543,
+    "content_type": "application/zip",
+    "sha256": "67053399b927c5426b48ca28f19a4e5f4b5a571a840ddad5ca7d12c2f4d885e8"
+  },
+  {
+    "name": "PR180719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180719.zip",
+    "retrieved_at": "2026-11-03T14:02:21.113588+00:00",
+    "status": 200,
+    "bytes": 335802,
+    "content_type": "application/zip",
+    "sha256": "52ac22c0e3714ca1e150825fcbee10bb0ed240f5122d1b683cef9056bf535ffb"
+  },
+  {
+    "name": "PR281119.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR281119.zip",
+    "retrieved_at": "2026-11-03T14:02:21.205973+00:00",
+    "status": 200,
+    "bytes": 304609,
+    "content_type": "application/zip",
+    "sha256": "f259480ae67f5f1db27afb49080dece361e5c9752e7f72147a24dce09b6b8fd9"
+  },
+  {
+    "name": "PR180320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180320.zip",
+    "retrieved_at": "2026-11-03T14:02:21.547937+00:00",
+    "status": 200,
+    "bytes": 312102,
+    "content_type": "application/zip",
+    "sha256": "8d8fb18ccf55a841da88139276f1a537e8ff6d5bfc07134514e0b9b3a7741309"
+  },
+  {
+    "name": "PR050614.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050614.zip",
+    "retrieved_at": "2026-11-03T14:02:21.939939+00:00",
+    "status": 200,
+    "bytes": 348317,
+    "content_type": "application/zip",
+    "sha256": "be27c0dd5eadd41ffc559ee1a3e9839870e6a9583da3b6706583277e683b4f88"
+  },
+  {
+    "name": "PR020715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020715.zip",
+    "retrieved_at": "2026-11-03T14:02:22.111689+00:00",
+    "status": 200,
+    "bytes": 352541,
+    "content_type": "application/zip",
+    "sha256": "fbe6f60a42626a21e5f7e5e68d853b897975126d80b1e7fae3693dad0f912769"
+  },
+  {
+    "name": "PR290616.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290616.zip",
+    "retrieved_at": "2026-11-03T14:02:22.363500+00:00",
+    "status": 200,
+    "bytes": 441626,
+    "content_type": "application/zip",
+    "sha256": "e004c23a785ebb59f596d3ddf6a164c6215373c54f469045705449f243cbebf4"
+  },
+  {
+    "name": "PR290617.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290617.zip",
+    "retrieved_at": "2026-11-03T14:02:22.403062+00:00",
+    "status": 200,
+    "bytes": 563615,
+    "content_type": "application/zip",
+    "sha256": "715df156dd9c71d85209020b7401ce7a9261819bed64cf408346973a27c3aa71"
+  },
+  {
+    "name": "PR310518.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310518.zip",
+    "retrieved_at": "2026-11-03T14:02:22.428380+00:00",
+    "status": 200,
+    "bytes": 645509,
+    "content_type": "application/zip",
+    "sha256": "735cf6b2f357f50e7e1ad12fbdca489c62feba63d8831eb6de4c98a6246f7735"
+  },
+  {
+    "name": "PR010819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR010819.zip",
+    "retrieved_at": "2026-11-03T14:02:22.532125+00:00",
+    "status": 200,
+    "bytes": 345575,
+    "content_type": "application/zip",
+    "sha256": "1ab6a80e1b335009bec3402221a83c7b81ffd7f50c0731d046cfdbca7dec6635"
+  },
+  {
+    "name": "PR190919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190919.zip",
+    "retrieved_at": "2026-11-03T14:02:22.668683+00:00",
+    "status": 200,
+    "bytes": 318430,
+    "content_type": "application/zip",
+    "sha256": "9ce23a897d00dc8ef959caf028877bd113ce8c07d740c3d968c3209617d900ee"
+  },
+  {
+    "name": "PR110914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110914.zip",
+    "retrieved_at": "2026-11-03T14:02:22.783410+00:00",
+    "status": 200,
+    "bytes": 359791,
+    "content_type": "application/zip",
+    "sha256": "82da608e57b41b130c862bbc9621d60f35e85dd8d1961bdfda8aa10809de10d3"
+  },
+  {
+    "name": "PR080916.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080916.zip",
+    "retrieved_at": "2026-11-03T14:02:22.943631+00:00",
+    "status": 200,
+    "bytes": 495315,
+    "content_type": "application/zip",
+    "sha256": "f842547af60119637ff733f3e9bae7c6c7fa49f71f330b6dfb69b7a5764a5487"
+  },
+  {
+    "name": "PR180917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180917.zip",
+    "retrieved_at": "2026-11-03T14:02:23.016317+00:00",
+    "status": 200,
+    "bytes": 479685,
+    "content_type": "application/zip",
+    "sha256": "f0a96531a4cd25d75c416feb6b2d477339b9fe6ebee790034fa77a22206604c6"
+  },
+  {
+    "name": "PR170918.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170918.zip",
+    "retrieved_at": "2026-11-03T14:02:23.351835+00:00",
+    "status": 200,
+    "bytes": 568497,
+    "content_type": "application/zip",
+    "sha256": "e697978682e4e3f03119f4a5386c5bf5553b22469dccec8648a12f7c7a840b6a"
+  },
+  {
+    "name": "PR200819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200819.zip",
+    "retrieved_at": "2026-11-03T14:02:23.684903+00:00",
+    "status": 200,
+    "bytes": 317358,
+    "content_type": "application/zip",
+    "sha256": "bab8831d1862cc2521bbeaa8d7355b5f85254b495856f8a8a12b974101b09d54"
+  },
+  {
+    "name": "PR190820.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190820.zip",
+    "retrieved_at": "2026-11-03T14:02:24.022365+00:00",
+    "status": 200,
+    "bytes": 311746,
+    "content_type": "application/zip",
+    "sha256": "67dd268fb72d5aaabe51a8106ea6636dd3cd77d8ea8f788aab7dc3791d02cdac"
+  },
+  {
+    "name": "PR310714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310714.zip",
+    "retrieved_at": "2026-11-03T14:02:24.134427+00:00",
+    "status": 200,
+    "bytes": 415671,
+    "content_type": "application/zip",
+    "sha256": "94d5f6c913f86140f6d6c186ff1c2c7a1f556d49e02b1003300cf6dd52e10bc0"
+  },
+  {
+    "name": "PR280715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280715.zip",
+    "retrieved_at": "2026-11-03T14:02:24.308024+00:00",
+    "status": 200,
+    "bytes": 387292,
+    "content_type": "application/zip",
+    "sha256": "f296de1cf786a4086417c6f1e101ce6ac624c28f6352b4d0f76cd50bf24904ad"
+  },
+  {
+    "name": "PR200717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200717.zip",
+    "retrieved_at": "2026-11-03T14:02:24.606785+00:00",
+    "status": 200,
+    "bytes": 500182,
+    "content_type": "application/zip",
+    "sha256": "e1af9fff558e92e7d0da39a9b049ff97b8167904024d274256ed2ca84c502907"
+  },
+  {
+    "name": "PR260718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260718.zip",
+    "retrieved_at": "2026-11-03T14:02:24.720762+00:00",
+    "status": 200,
+    "bytes": 672038,
+    "content_type": "application/zip",
+    "sha256": "c8a18c276947b3a4df5abf95452b541fa0de0c2fe263334114428f0ef299e646"
+  },
+  {
+    "name": "PR160720.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160720.zip",
+    "retrieved_at": "2026-11-03T14:02:26.153309+00:00",
+    "status": 200,
+    "bytes": 297417,
+    "content_type": "application/zip",
+    "sha256": "12f627dabbaa71ea699fe8e3438d72b529fc75c917a66a58d961bcce21c7da5a"
+  },
+  {
+    "name": "PR140214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140214.zip",
+    "retrieved_at": "2026-11-03T14:02:26.153309+00:00",
+    "status": 200,
+    "bytes": 305524,
+    "content_type": "application/zip",
+    "sha256": "3861e7da28447d09c719995707ab6757407f7b7b3d2e18c13e33cf6fc5e12b17"
+  },
+  {
+    "name": "PR270614.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270614.zip",
+    "retrieved_at": "2026-11-03T14:02:26.427126+00:00",
+    "status": 200,
+    "bytes": 328250,
+    "content_type": "application/zip",
+    "sha256": "cff4334db700512c89ce3d3dc27b6b955bf3a469879f75b67f5d414c64e2db6a"
+  },
+  {
+    "name": "PR030215.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030215.zip",
+    "retrieved_at": "2026-11-03T14:02:26.465068+00:00",
+    "status": 200,
+    "bytes": 368866,
+    "content_type": "application/zip",
+    "sha256": "1f015f4a45ca996edb2d6a9083d6d83eb031726bfca7711deca39c3de40529d1"
+  },
+  {
+    "name": "PR100715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100715.zip",
+    "retrieved_at": "2026-11-03T14:02:27.147008+00:00",
+    "status": 200,
+    "bytes": 307089,
+    "content_type": "application/zip",
+    "sha256": "52eb028ab5b77573ea6f5bd71f1b93251d5c3dbb7b21b505f372c10ed1083622"
+  },
+  {
+    "name": "PR080216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080216.zip",
+    "retrieved_at": "2026-11-03T14:02:27.376263+00:00",
+    "status": 200,
+    "bytes": 415053,
+    "content_type": "application/zip",
+    "sha256": "4e049a9d703032ed51c89836e8689a9247eac8d7cab84901695c8ba5792954c5"
+  },
+  {
+    "name": "PR140716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140716.zip",
+    "retrieved_at": "2026-11-03T14:02:27.381254+00:00",
+    "status": 200,
+    "bytes": 459315,
+    "content_type": "application/zip",
+    "sha256": "249f8107e2edb98bfbe45558b12481eea0af2b7eae9a54cd1f06cc3bec173644"
+  },
+  {
+    "name": "PR220217.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220217.zip",
+    "retrieved_at": "2026-11-03T14:02:27.563718+00:00",
+    "status": 200,
+    "bytes": 468204,
+    "content_type": "application/zip",
+    "sha256": "14addd5cde7fc3c82c43b54e11330c00819ebdcfb8ad68b469f38bb4d7410b1f"
+  },
+  {
+    "name": "PR060218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060218.zip",
+    "retrieved_at": "2026-11-03T14:02:27.583256+00:00",
+    "status": 200,
+    "bytes": 495423,
+    "content_type": "application/zip",
+    "sha256": "9879b95ca5ce256d8b12b4fb3936766e8ce174eeed6b1ab9a0f93d2d113d71e8"
+  },
+  {
+    "name": "PR180219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180219.zip",
+    "retrieved_at": "2026-11-03T14:02:27.944577+00:00",
+    "status": 200,
+    "bytes": 332905,
+    "content_type": "application/zip",
+    "sha256": "6fa52971c4c0d7cbc273c7c8b6e98685a4a858a2048026f374361281bfa1ede3"
+  },
+  {
+    "name": "PR240220.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR240220.zip",
+    "retrieved_at": "2026-11-03T14:02:28.380363+00:00",
+    "status": 200,
+    "bytes": 329325,
+    "content_type": "application/zip",
+    "sha256": "0d7f567badbed455434d46b1d47967079c9130e65221d10f6406021e684e1e0b"
+  },
+  {
+    "name": "PR280515.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280515.zip",
+    "retrieved_at": "2026-11-03T14:02:28.445596+00:00",
+    "status": 200,
+    "bytes": 433077,
+    "content_type": "application/zip",
+    "sha256": "002dbd03a45dd5d0ec8c88f6244776e7897df4d3e26ae524beca90e8d655f5e6"
+  },
+  {
+    "name": "PR030616.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030616.zip",
+    "retrieved_at": "2026-11-03T14:02:28.478601+00:00",
+    "status": 200,
+    "bytes": 354796,
+    "content_type": "application/zip",
+    "sha256": "acd33c1e5e92bcfb5ac8e447a30ede0eac94474827d09925d9b7d8db4f9af30f"
+  },
+  {
+    "name": "PR260517.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260517.zip",
+    "retrieved_at": "2026-11-03T14:02:28.777286+00:00",
+    "status": 200,
+    "bytes": 473854,
+    "content_type": "application/zip",
+    "sha256": "85e6bcb19eea713090b9ab3f6cd5c567a05e672ed8785a9f51be0bcca13017cf"
+  },
+  {
+    "name": "PR050815.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050815.zip",
+    "retrieved_at": "2026-11-03T14:02:29.366166+00:00",
+    "status": 200,
+    "bytes": 389751,
+    "content_type": "application/zip",
+    "sha256": "e98263e2f3084498d9a3cb499d7b5390be5e8730ce89c3a47764ce1280e021c7"
+  },
+  {
+    "name": "PR030816.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030816.zip",
+    "retrieved_at": "2026-11-03T14:02:29.386340+00:00",
+    "status": 200,
+    "bytes": 445498,
+    "content_type": "application/zip",
+    "sha256": "fadc4efaeca412ae2d01fc41736d890b62d256e9523556a5918512bdbc36e04a"
+  },
+  {
+    "name": "PR230816.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230816.zip",
+    "retrieved_at": "2026-11-03T14:02:29.749469+00:00",
+    "status": 200,
+    "bytes": 480263,
+    "content_type": "application/zip",
+    "sha256": "82cc76f9e8a0ea239dd0bb311f68f084e2915422b6b55eed469b2cdd31de0635"
+  },
+  {
+    "name": "PR031116.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR031116.zip",
+    "retrieved_at": "2026-11-03T14:02:29.786070+00:00",
+    "status": 200,
+    "bytes": 435177,
+    "content_type": "application/zip",
+    "sha256": "444d2c80ec297c4cb231a0a4e64344e25edfddc8bade25a91310d59ce917979c"
+  },
+  {
+    "name": "PR070217.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070217.zip",
+    "retrieved_at": "2026-11-03T14:02:29.955931+00:00",
+    "status": 200,
+    "bytes": 470400,
+    "content_type": "application/zip",
+    "sha256": "17022a297656b03ce24628440a3fa2c4d42d9468553a530d56e9abb2d3fc51dd"
+  },
+  {
+    "name": "PR230817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230817.zip",
+    "retrieved_at": "2026-11-03T14:02:30.292916+00:00",
+    "status": 200,
+    "bytes": 509687,
+    "content_type": "application/zip",
+    "sha256": "9d2a2759a744eb3decced637128148e7773fbcdb969de719a6da582600a65b30"
+  },
+  {
+    "name": "PR200917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200917.zip",
+    "retrieved_at": "2026-11-03T14:02:30.774234+00:00",
+    "status": 200,
+    "bytes": 465378,
+    "content_type": "application/zip",
+    "sha256": "7a29511119339066251fdd111a5f483d31346d98ffb93526312782f33f49a48b"
+  },
+  {
+    "name": "PR200218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200218.zip",
+    "retrieved_at": "2026-11-03T14:02:30.825518+00:00",
+    "status": 200,
+    "bytes": 480765,
+    "content_type": "application/zip",
+    "sha256": "d09292c7550d167d59b1f3d1a67d039e702a4756115b8f5d4f22850cbf568812"
+  },
+  {
+    "name": "PR010818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR010818.zip",
+    "retrieved_at": "2026-11-03T14:02:30.837276+00:00",
+    "status": 200,
+    "bytes": 468989,
+    "content_type": "application/zip",
+    "sha256": "0046b12e26165f672fc30d473da8376bed452e8badf14c7dd4eddbd157e72440"
+  },
+  {
+    "name": "PR290818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290818.zip",
+    "retrieved_at": "2026-11-03T14:02:30.975131+00:00",
+    "status": 200,
+    "bytes": 594865,
+    "content_type": "application/zip",
+    "sha256": "fc731bf7f2f78c1f7a46c01af4acfae900fd30f3daef3e31afbd904500df5b78"
+  },
+  {
+    "name": "PR061118.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR061118.zip",
+    "retrieved_at": "2026-11-03T14:02:32.194308+00:00",
+    "status": 200,
+    "bytes": 540513,
+    "content_type": "application/zip",
+    "sha256": "658419187919d8750c77013a3d5aed4bf037e75aef40dc6fc509b0a7abfa0c40"
+  },
+  {
+    "name": "PR070219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070219.zip",
+    "retrieved_at": "2026-11-03T14:02:32.194308+00:00",
+    "status": 200,
+    "bytes": 323186,
+    "content_type": "application/zip",
+    "sha256": "a35a76d56d50a8a868016e64dd92da58b78ef13e6e0ba359f02a415ac9b80e14"
+  },
+  {
+    "name": "PR080819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080819.zip",
+    "retrieved_at": "2026-11-03T14:02:32.198420+00:00",
+    "status": 200,
+    "bytes": 340980,
+    "content_type": "application/zip",
+    "sha256": "65c63de889cb38bf84f8d69615d3468daffb55e5a411be89ea7fc05a214faed3"
+  },
+  {
+    "name": "PR210819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210819.zip",
+    "retrieved_at": "2026-11-03T14:02:32.372864+00:00",
+    "status": 200,
+    "bytes": 323005,
+    "content_type": "application/zip",
+    "sha256": "be0104725a722e33d8b4ea91b078bd44121317ab8e109031f38450e2489144c9"
+  },
+  {
+    "name": "PR300120.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR300120.zip",
+    "retrieved_at": "2026-11-03T14:02:32.797527+00:00",
+    "status": 200,
+    "bytes": 285572,
+    "content_type": "application/zip",
+    "sha256": "3e4cf9dd46097d7a6aa1923662142c116532f824aecdaabefc414cea3440bd7e"
+  },
+  {
+    "name": "PR280720.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280720.zip",
+    "retrieved_at": "2026-11-03T14:02:32.930183+00:00",
+    "status": 200,
+    "bytes": 290071,
+    "content_type": "application/zip",
+    "sha256": "448f1cb3bddd62d8f732250a34412d6b9bca659f68276640c6ff1a803fafab38"
+  },
+  {
+    "name": "PR050820.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050820.zip",
+    "retrieved_at": "2026-11-03T14:02:34.307937+00:00",
+    "status": 200,
+    "bytes": 297917,
+    "content_type": "application/zip",
+    "sha256": "751dd49e537e8838e80b7f36fdfd6e7c06e3d78578ba7c62e755d036b4e5f3ba"
+  },
+  {
+    "name": "PR070814.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070814.zip",
+    "retrieved_at": "2026-11-03T14:02:34.305934+00:00",
+    "status": 200,
+    "bytes": 357725,
+    "content_type": "application/zip",
+    "sha256": "6b78bf3d578b86f76db5653e66d1b9c978d5682edac9facf35973ffdc177de17"
+  },
+  {
+    "name": "PR070815.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070815.zip",
+    "retrieved_at": "2026-11-03T14:02:34.307937+00:00",
+    "status": 200,
+    "bytes": 398671,
+    "content_type": "application/zip",
+    "sha256": "f02faef3a3076922a8ab8d054dfa0748f7438ee8c008380a1b51f920a693da72"
+  },
+  {
+    "name": "PR090816.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090816.zip",
+    "retrieved_at": "2026-11-03T14:02:34.309935+00:00",
+    "status": 200,
+    "bytes": 461294,
+    "content_type": "application/zip",
+    "sha256": "6cef42d4c784e85d3febf15c9ade331b09c0fcb8bb071b0b8f2a69766bfbb50e"
+  },
+  {
+    "name": "PR080817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080817.zip",
+    "retrieved_at": "2026-11-03T14:02:34.841087+00:00",
+    "status": 200,
+    "bytes": 472199,
+    "content_type": "application/zip",
+    "sha256": "17895ab9c97fd21c72879613ce54309d22b2aee6d3058e9d9f440b595571aa99"
+  },
+  {
+    "name": "PR090818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090818.zip",
+    "retrieved_at": "2026-11-03T14:02:34.915632+00:00",
+    "status": 200,
+    "bytes": 525528,
+    "content_type": "application/zip",
+    "sha256": "07ac1ed8d205b0cbe6c26643f2160b8b9dac1f6d64b1045050dffda52d18c35a"
+  },
+  {
+    "name": "PR160819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160819.zip",
+    "retrieved_at": "2026-11-03T14:02:35.116441+00:00",
+    "status": 200,
+    "bytes": 353723,
+    "content_type": "application/zip",
+    "sha256": "30ef3d826a58917716811f6175b8d0df54ff17bfe35492213bdb3a169398e846"
+  },
+  {
+    "name": "PR110214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110214.zip",
+    "retrieved_at": "2026-11-03T14:02:35.611698+00:00",
+    "status": 200,
+    "bytes": 291840,
+    "content_type": "application/zip",
+    "sha256": "4c8a2e2b5ebca1d85aa6ce9a06da315e9b8f62da58d932a53a5e2933af5a0ad0"
+  },
+  {
+    "name": "PR170714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170714.zip",
+    "retrieved_at": "2026-11-03T14:02:35.919654+00:00",
+    "status": 200,
+    "bytes": 362433,
+    "content_type": "application/zip",
+    "sha256": "a75b1133691ad5dd40f1d8ae8cd4ae460c8109740bfa3f603ab06a0dd752f9f1"
+  },
+  {
+    "name": "PR090215.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090215.zip",
+    "retrieved_at": "2026-11-03T14:02:35.921668+00:00",
+    "status": 200,
+    "bytes": 320799,
+    "content_type": "application/zip",
+    "sha256": "df69df06aa87a1f6f7781821d4e850ffb20239d74669369c9b428a90dc5dc438"
+  },
+  {
+    "name": "PR210715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210715.zip",
+    "retrieved_at": "2026-11-03T14:02:36.187064+00:00",
+    "status": 200,
+    "bytes": 360130,
+    "content_type": "application/zip",
+    "sha256": "dd24bb51e0d3f14d73a881af6a0bc502aacce5f7307c7c46bedec949cec9557b"
+  },
+  {
+    "name": "PR160216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160216.zip",
+    "retrieved_at": "2026-11-03T14:02:36.213288+00:00",
+    "status": 200,
+    "bytes": 429669,
+    "content_type": "application/zip",
+    "sha256": "4107ad6fd079f3a0aba1f89bafaa228c0cf5a27f0953046584f7eeddabcd347c"
+  },
+  {
+    "name": "PR140217.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140217.zip",
+    "retrieved_at": "2026-11-03T14:02:36.438357+00:00",
+    "status": 200,
+    "bytes": 451691,
+    "content_type": "application/zip",
+    "sha256": "2b37418a630f1119a2972e80571ca528548571c54f757d958469dc04f1986c33"
+  },
+  {
+    "name": "PR230218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230218.zip",
+    "retrieved_at": "2026-11-03T14:02:36.580957+00:00",
+    "status": 200,
+    "bytes": 419945,
+    "content_type": "application/zip",
+    "sha256": "912babaafae9f57259ed099b74546e9759a5c8067028f5a72b86909f3ec666f8"
+  },
+  {
+    "name": "PR250718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250718.zip",
+    "retrieved_at": "2026-11-03T14:02:36.682196+00:00",
+    "status": 200,
+    "bytes": 635223,
+    "content_type": "application/zip",
+    "sha256": "5c51e9583d1275a8a2a347823c4b27081934212d7cad49bc6ce8e8f2d43088b2"
+  },
+  {
+    "name": "PR120219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120219.zip",
+    "retrieved_at": "2026-11-03T14:02:36.727144+00:00",
+    "status": 200,
+    "bytes": 311345,
+    "content_type": "application/zip",
+    "sha256": "e04089751986579eea1af5de7bd233d02bbc9b5b58d9ac63bf9eacdbc59cddb1"
+  },
+  {
+    "name": "PR220719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220719.zip",
+    "retrieved_at": "2026-11-03T14:02:36.816121+00:00",
+    "status": 200,
+    "bytes": 354714,
+    "content_type": "application/zip",
+    "sha256": "50d5277c38de536f5998d4ff85ce44ca832e2034b179e0c2e6f9c12af99d1ebf"
+  },
+  {
+    "name": "PR040320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040320.zip",
+    "retrieved_at": "2026-11-03T14:02:37.049906+00:00",
+    "status": 200,
+    "bytes": 316491,
+    "content_type": "application/zip",
+    "sha256": "11cf1295e7c0c50e84f5ed6485edadb5071d18ba85511011e36515f8e1190f1c"
+  },
+  {
+    "name": "PR100914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100914.zip",
+    "retrieved_at": "2026-11-03T14:02:37.185287+00:00",
+    "status": 200,
+    "bytes": 368621,
+    "content_type": "application/zip",
+    "sha256": "dfff7332810277cbfcf5742e3691dd11deeabf90b7fd355d2825b20513616f04"
+  },
+  {
+    "name": "PR120918.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120918.zip",
+    "retrieved_at": "2026-11-03T14:02:37.212318+00:00",
+    "status": 200,
+    "bytes": 551703,
+    "content_type": "application/zip",
+    "sha256": "4d3174d71bcfc93f73c7b357e38b5a90b5c7e5b38b3c6cfd15bd9a7a21c8d4c6"
+  },
+  {
+    "name": "PR240315.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR240315.zip",
+    "retrieved_at": "2026-11-03T14:02:37.223840+00:00",
+    "status": 200,
+    "bytes": 395789,
+    "content_type": "application/zip",
+    "sha256": "0c51c9253268c81962c71b75a2ea0ef5f89280a1952aecefb8d5cd7b5b71e863"
+  },
+  {
+    "name": "PR220715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220715.zip",
+    "retrieved_at": "2026-11-03T14:02:37.444794+00:00",
+    "status": 200,
+    "bytes": 368111,
+    "content_type": "application/zip",
+    "sha256": "cb9c5255191d04dc61613f0585c992c7d6bd2cef06533154f1f0a8c0c860dcd0"
+  },
+  {
+    "name": "PR030317.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030317.zip",
+    "retrieved_at": "2026-11-03T14:02:37.485303+00:00",
+    "status": 200,
+    "bytes": 421935,
+    "content_type": "application/zip",
+    "sha256": "772885fefa64295c81adbb72fa747c7bb773b0154c21dabb43e7113ad3608736"
+  },
+  {
+    "name": "PR010715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR010715.zip",
+    "retrieved_at": "2026-11-03T14:02:37.583035+00:00",
+    "status": 200,
+    "bytes": 359686,
+    "content_type": "application/zip",
+    "sha256": "96e7266710c8f647b6a87fbc14c4cb5b5c38a69a6f0f89f370ebf3449725685a"
+  },
+  {
+    "name": "PR150915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150915.zip",
+    "retrieved_at": "2026-11-03T14:02:37.778935+00:00",
+    "status": 200,
+    "bytes": 386690,
+    "content_type": "application/zip",
+    "sha256": "9e7f53a3fd340cb7de38c264ae8c1410b186f6e89d30ac2f15e3305a73e115b0"
+  },
+  {
+    "name": "PR070916.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070916.zip",
+    "retrieved_at": "2026-11-03T14:02:37.778935+00:00",
+    "status": 200,
+    "bytes": 489938,
+    "content_type": "application/zip",
+    "sha256": "e0b161e8ca030290f4236e350d4f0929a84605190381e6107300b191e68d0acc"
+  },
+  {
+    "name": "PR260619.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260619.zip",
+    "retrieved_at": "2026-11-03T14:02:37.866056+00:00",
+    "status": 200,
+    "bytes": 303690,
+    "content_type": "application/zip",
+    "sha256": "c7d0f2d5976ba5ccbfcf641966ca43ab056534c626105e8e2894d085a93670a6"
+  },
+  {
+    "name": "PR180919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180919.zip",
+    "retrieved_at": "2026-11-03T14:02:38.068631+00:00",
+    "status": 200,
+    "bytes": 322635,
+    "content_type": "application/zip",
+    "sha256": "af710baee8e6d99473053ec0320691f47fd654ad9b5a8e474cb3379962566f9f"
+  },
+  {
+    "name": "PR110320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110320.zip",
+    "retrieved_at": "2026-11-03T14:02:38.229408+00:00",
+    "status": 200,
+    "bytes": 329332,
+    "content_type": "application/zip",
+    "sha256": "81818d2ed23eeec8360614b562250c9587aa5841ce8152a393979b419d7850f8"
+  },
+  {
+    "name": "PR050314.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050314.zip",
+    "retrieved_at": "2026-11-03T14:02:38.245123+00:00",
+    "status": 200,
+    "bytes": 304652,
+    "content_type": "application/zip",
+    "sha256": "9c03ecec7205d4a0ef6f4366bf8e2b14cd6cbaf91f8a013f26e52652dde60cc9"
+  },
+  {
+    "name": "PR120914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120914.zip",
+    "retrieved_at": "2026-11-03T14:02:38.390723+00:00",
+    "status": 200,
+    "bytes": 341060,
+    "content_type": "application/zip",
+    "sha256": "4a97905e9f60fe28407b781ba992c19595e3bb13d012ae1afb2dd75949228c6d"
+  },
+  {
+    "name": "PR180315.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180315.zip",
+    "retrieved_at": "2026-11-03T14:02:38.546850+00:00",
+    "status": 200,
+    "bytes": 350203,
+    "content_type": "application/zip",
+    "sha256": "0b4fbf7a299cbaa1c5495b54b9ff3f7a59bbc62e13f9250d17fc84fd5467b57a"
+  },
+  {
+    "name": "PR180915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180915.zip",
+    "retrieved_at": "2026-11-03T14:02:38.554029+00:00",
+    "status": 200,
+    "bytes": 401761,
+    "content_type": "application/zip",
+    "sha256": "007a2f0fd1e3b917b153604a326f0d2a855b4a779baaf54b347ec3fb4b939455"
+  },
+  {
+    "name": "PR230316.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230316.zip",
+    "retrieved_at": "2026-11-03T14:02:38.787492+00:00",
+    "status": 200,
+    "bytes": 396805,
+    "content_type": "application/zip",
+    "sha256": "00ecf43c89de6a02c5b2abd902148aee109d40fdea7dd93c0f297a218c2876cd"
+  },
+  {
+    "name": "PR270916.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270916.zip",
+    "retrieved_at": "2026-11-03T14:02:38.838093+00:00",
+    "status": 200,
+    "bytes": 484977,
+    "content_type": "application/zip",
+    "sha256": "8a77cb616755d5a9e03de1cd78a14d614c7a7c087bca349ab71a65509044cd1b"
+  },
+  {
+    "name": "PR160218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160218.zip",
+    "retrieved_at": "2026-11-03T14:02:39.018115+00:00",
+    "status": 200,
+    "bytes": 468193,
+    "content_type": "application/zip",
+    "sha256": "2215feed99aa4d33baaedf0f4b32bb7819756c95467252e79529135b109941b1"
+  },
+  {
+    "name": "PR230818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230818.zip",
+    "retrieved_at": "2026-11-03T14:02:39.032979+00:00",
+    "status": 200,
+    "bytes": 587199,
+    "content_type": "application/zip",
+    "sha256": "81a85c9adaf05275b974dc2c3398a677d3c8b5a62fc90fd9fae398592e0cf79a"
+  },
+  {
+    "name": "PR110319.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110319.zip",
+    "retrieved_at": "2026-11-03T14:02:39.315628+00:00",
+    "status": 200,
+    "bytes": 318129,
+    "content_type": "application/zip",
+    "sha256": "6307bce4918f9e0a5cc0d902621edc2a4aac05c28fa62589e06e28d35f8f2f51"
+  },
+  {
+    "name": "PR110919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110919.zip",
+    "retrieved_at": "2026-11-03T14:02:39.378858+00:00",
+    "status": 200,
+    "bytes": 359640,
+    "content_type": "application/zip",
+    "sha256": "497afdc1f393ce6f842c019daedc408bb2bb08bc7d53f23848d991ec48cb62ac"
+  },
+  {
+    "name": "PR180220.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180220.zip",
+    "retrieved_at": "2026-11-03T14:02:39.382840+00:00",
+    "status": 200,
+    "bytes": 302703,
+    "content_type": "application/zip",
+    "sha256": "a9037207df0ef61f4fc2c59a548dd0996c6663c7177b0d95fb2d777e9ebc215c"
+  },
+  {
+    "name": "PR140714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140714.zip",
+    "retrieved_at": "2026-11-03T14:02:39.689967+00:00",
+    "status": 200,
+    "bytes": 361238,
+    "content_type": "application/zip",
+    "sha256": "f8d0a845abafc7c7f31cbbaefed88e6e280e57bbe4146afba127be4a16ae4778"
+  },
+  {
+    "name": "PR270315.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270315.zip",
+    "retrieved_at": "2026-11-03T14:02:39.717871+00:00",
+    "status": 200,
+    "bytes": 337418,
+    "content_type": "application/zip",
+    "sha256": "16f08e32db3092c198c4bbaab1423603a4462bf3a0d61edb39a3ff80f49f8fea"
+  },
+  {
+    "name": "PR160715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160715.zip",
+    "retrieved_at": "2026-11-03T14:02:39.769467+00:00",
+    "status": 200,
+    "bytes": 323191,
+    "content_type": "application/zip",
+    "sha256": "5085015c758ad5ae50ae3722e5c6fc2b830af89ca918a271478f62e8f2629c0c"
+  },
+  {
+    "name": "PR130717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130717.zip",
+    "retrieved_at": "2026-11-03T14:02:39.992363+00:00",
+    "status": 200,
+    "bytes": 463828,
+    "content_type": "application/zip",
+    "sha256": "fee01ae08cf372323a1585b83a8b4418c4cdbb0d1804ead4d8b2cd32667f37a5"
+  },
+  {
+    "name": "PR310119.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310119.zip",
+    "retrieved_at": "2026-11-03T14:02:40.151871+00:00",
+    "status": 200,
+    "bytes": 327938,
+    "content_type": "application/zip",
+    "sha256": "758f401abded58e3e0ae734346ac7e0821f2f20c7f47f8a6b0774f853077e2ab"
+  },
+  {
+    "name": "PR080715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080715.zip",
+    "retrieved_at": "2026-11-03T14:02:40.161089+00:00",
+    "status": 200,
+    "bytes": 331642,
+    "content_type": "application/zip",
+    "sha256": "02b35382f3f6fd0086100b94aa987bfa8c08e3901e2d9dae909d2b48d101cd2a"
+  },
+  {
+    "name": "PR290716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290716.zip",
+    "retrieved_at": "2026-11-03T14:02:40.488372+00:00",
+    "status": 200,
+    "bytes": 443280,
+    "content_type": "application/zip",
+    "sha256": "a5e916c75b6364101b4c44e961bb6bc49d0ba641ecbc13619263439e525a2c80"
+  },
+  {
+    "name": "PR030717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030717.zip",
+    "retrieved_at": "2026-11-03T14:02:40.493379+00:00",
+    "status": 200,
+    "bytes": 456790,
+    "content_type": "application/zip",
+    "sha256": "b6ae9603d2a13c13d79a950ad0653b206b5d95c809beb3d58c8b71962dc1edb8"
+  },
+  {
+    "name": "PR020818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020818.zip",
+    "retrieved_at": "2026-11-03T14:02:40.812998+00:00",
+    "status": 200,
+    "bytes": 520531,
+    "content_type": "application/zip",
+    "sha256": "b456ca5eb64accee5bfe459fe3da7ebcfd698356740ebdee4900d5efcc09211c"
+  },
+  {
+    "name": "PR170719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170719.zip",
+    "retrieved_at": "2026-11-03T14:02:40.896621+00:00",
+    "status": 200,
+    "bytes": 314720,
+    "content_type": "application/zip",
+    "sha256": "d2abd57f30130d121c6a965e378c4e30105dc0b2f8c46ca30c88e291811c1ac8"
+  },
+  {
+    "name": "PR100915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100915.zip",
+    "retrieved_at": "2026-11-03T14:02:41.305421+00:00",
+    "status": 200,
+    "bytes": 368867,
+    "content_type": "application/zip",
+    "sha256": "a4aaf7eb4fcb9824355022f8d3c7f6f5ce1ca59f0e11458da9f8173d410b6207"
+  },
+  {
+    "name": "PR290615.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290615.zip",
+    "retrieved_at": "2026-11-03T14:02:41.754761+00:00",
+    "status": 200,
+    "bytes": 338226,
+    "content_type": "application/zip",
+    "sha256": "f1059c9526326e2162ac1c9e676d2e4c32550bdebc960623e61120fedcd3011e"
+  },
+  {
+    "name": "PR100216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100216.zip",
+    "retrieved_at": "2026-11-03T14:02:42.130903+00:00",
+    "status": 200,
+    "bytes": 392414,
+    "content_type": "application/zip",
+    "sha256": "9fabcf5dc5c4281235b12f9800ee45dbc2b4aa2d32d949ef12622deb6445a5e6"
+  },
+  {
+    "name": "PR210617.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210617.zip",
+    "retrieved_at": "2026-11-03T14:02:42.180189+00:00",
+    "status": 200,
+    "bytes": 464699,
+    "content_type": "application/zip",
+    "sha256": "c21d2e9dd4b654e8a83d925d17f7d774e496daadec2ef5b92779a1a13e018265"
+  },
+  {
+    "name": "PR040718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040718.zip",
+    "retrieved_at": "2026-11-03T14:02:42.224192+00:00",
+    "status": 200,
+    "bytes": 462218,
+    "content_type": "application/zip",
+    "sha256": "b51871e272b9ac4bbaf66d0e6540e8b958c17e6d97de554305f6df7f0cc701a1"
+  },
+  {
+    "name": "PR160320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160320.zip",
+    "retrieved_at": "2026-11-03T14:02:42.646756+00:00",
+    "status": 200,
+    "bytes": 317482,
+    "content_type": "application/zip",
+    "sha256": "e20198349d1bb4a006676b2d4e342b248d7b575765c36736eec7360e44c9a86a"
+  },
+  {
+    "name": "PR050717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050717.zip",
+    "retrieved_at": "2026-11-03T14:02:42.667348+00:00",
+    "status": 200,
+    "bytes": 464551,
+    "content_type": "application/zip",
+    "sha256": "49280ecc49723daf41cd1f0f3bb2183750a87b48661bfcce855f58bcae57e30a"
+  },
+  {
+    "name": "PR270114.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270114.zip",
+    "retrieved_at": "2026-11-03T14:02:42.669494+00:00",
+    "status": 200,
+    "bytes": 343481,
+    "content_type": "application/zip",
+    "sha256": "6763a067dab19314fb6fb40a047ca951d29877580afad3e54c7c5635c084957d"
+  },
+  {
+    "name": "PR080914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080914.zip",
+    "retrieved_at": "2026-11-03T14:02:42.880121+00:00",
+    "status": 200,
+    "bytes": 374267,
+    "content_type": "application/zip",
+    "sha256": "d0abb130214c7963ac42d0c34e5dd37eb23dcd3b8027145021d5c4891d643841"
+  },
+  {
+    "name": "PR280115.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280115.zip",
+    "retrieved_at": "2026-11-03T14:02:43.459753+00:00",
+    "status": 200,
+    "bytes": 387942,
+    "content_type": "application/zip",
+    "sha256": "6f5127abd9252fb04a331b90f2d459cc9cba5bcecb7836740a5e56a13d759940"
+  },
+  {
+    "name": "PR080915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080915.zip",
+    "retrieved_at": "2026-11-03T14:02:43.471753+00:00",
+    "status": 200,
+    "bytes": 397644,
+    "content_type": "application/zip",
+    "sha256": "ad6d490b829856f9f10d0df9348bfc66caf0f2a5c64aedfadcc6b1a9f4b24eae"
+  },
+  {
+    "name": "PR020216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020216.zip",
+    "retrieved_at": "2026-11-03T14:02:43.524271+00:00",
+    "status": 200,
+    "bytes": 438597,
+    "content_type": "application/zip",
+    "sha256": "e9a45ffc2832f842108de354d2d09a44207b5a67c396b6759432aa68b5813190"
+  },
+  {
+    "name": "PR220316.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220316.zip",
+    "retrieved_at": "2026-11-03T14:02:43.721305+00:00",
+    "status": 200,
+    "bytes": 446396,
+    "content_type": "application/zip",
+    "sha256": "b956eb14b5e8b28c7e2241aacc197e6380d72c5d5bde5e9c810f86e4778a388c"
+  },
+  {
+    "name": "PR061117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR061117.zip",
+    "retrieved_at": "2026-11-03T14:02:43.862900+00:00",
+    "status": 200,
+    "bytes": 483234,
+    "content_type": "application/zip",
+    "sha256": "d4853fd4916c28685b0ded9921cb744d85b411319b22196d21ba2f7716172bb9"
+  },
+  {
+    "name": "PR190618.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190618.zip",
+    "retrieved_at": "2026-11-03T14:02:43.941487+00:00",
+    "status": 200,
+    "bytes": 493780,
+    "content_type": "application/zip",
+    "sha256": "af8e590380e5047780a58b5e73a9d92b45e060b699f906e1aec0cd44d9477b02"
+  },
+  {
+    "name": "PR051118.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR051118.zip",
+    "retrieved_at": "2026-11-03T14:02:44.465175+00:00",
+    "status": 200,
+    "bytes": 526131,
+    "content_type": "application/zip",
+    "sha256": "3f8439a61e744f47324aee4f426ee02c0c3e4cff13bafe365109ebddc3321785"
+  },
+  {
+    "name": "PR020719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020719.zip",
+    "retrieved_at": "2026-11-03T14:02:44.753051+00:00",
+    "status": 200,
+    "bytes": 304997,
+    "content_type": "application/zip",
+    "sha256": "f2c2303151dcf73b48cebd30a6dbdf609925cd44296933a1a7fcd88134bd21bc"
+  },
+  {
+    "name": "PR041119.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR041119.zip",
+    "retrieved_at": "2026-11-03T14:02:44.929387+00:00",
+    "status": 200,
+    "bytes": 326213,
+    "content_type": "application/zip",
+    "sha256": "8b17b5b81e207bf9ec44f6e01be8b6fe933be45077212aaa8817426821954ddf"
+  },
+  {
+    "name": "PR060320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060320.zip",
+    "retrieved_at": "2026-11-03T14:02:44.968216+00:00",
+    "status": 200,
+    "bytes": 326253,
+    "content_type": "application/zip",
+    "sha256": "07d5f50883148304485843a8ebd055377c5618d111be72602426f3afdf8abf5c"
+  },
+  {
+    "name": "PR270314.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270314.zip",
+    "retrieved_at": "2026-11-03T14:02:45.162541+00:00",
+    "status": 200,
+    "bytes": 390900,
+    "content_type": "application/zip",
+    "sha256": "61fd733ed13cea04aeb4c88f2139146e1f78939b7d050dd96b5f0e23eedcbe97"
+  },
+  {
+    "name": "PR161214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR161214.zip",
+    "retrieved_at": "2026-11-03T14:02:45.444477+00:00",
+    "status": 200,
+    "bytes": 364415,
+    "content_type": "application/zip",
+    "sha256": "5f0d3a239dfb61965bed98fa65b3596f4416a8747f5ca451df610ced4d0896c7"
+  },
+  {
+    "name": "PR070915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070915.zip",
+    "retrieved_at": "2026-11-03T14:02:45.509074+00:00",
+    "status": 200,
+    "bytes": 375154,
+    "content_type": "application/zip",
+    "sha256": "b2978873f19faaca753b5913d0979e4f366c414e4af9908d64592b96d76bb5cb"
+  },
+  {
+    "name": "PR101115.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR101115.zip",
+    "retrieved_at": "2026-11-03T14:02:45.538623+00:00",
+    "status": 200,
+    "bytes": 357616,
+    "content_type": "application/zip",
+    "sha256": "fb5697c2477eeaef897d299778d8d8fd91a1ae47b0916097fd845dc5543ea8fe"
+  },
+  {
+    "name": "PR160316.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160316.zip",
+    "retrieved_at": "2026-11-03T14:02:45.714456+00:00",
+    "status": 200,
+    "bytes": 393547,
+    "content_type": "application/zip",
+    "sha256": "9430d727e92648f8886aa34019f0f870deb18cad04f376dd56f8b402d5b64929"
+  },
+  {
+    "name": "PR310816.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310816.zip",
+    "retrieved_at": "2026-11-03T14:02:45.826985+00:00",
+    "status": 200,
+    "bytes": 889478,
+    "content_type": "application/zip",
+    "sha256": "e05a00412d4daa1a119c988969fde3ab3430048798dffe15c0ee510567af74a2"
+  },
+  {
+    "name": "PR151216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR151216.zip",
+    "retrieved_at": "2026-11-03T14:02:45.878647+00:00",
+    "status": 200,
+    "bytes": 423535,
+    "content_type": "application/zip",
+    "sha256": "63452815bb6f9904bed2ab61cce0f91e431e374b92cf1b8dce668559f62b9db7"
+  },
+  {
+    "name": "PR210917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210917.zip",
+    "retrieved_at": "2026-11-03T14:02:46.008709+00:00",
+    "status": 200,
+    "bytes": 456902,
+    "content_type": "application/zip",
+    "sha256": "8d3e769028deeeb7255919646ad9eaa01f3ac84c41fc6c14855b2d9347b43f71"
+  },
+  {
+    "name": "PR031117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR031117.zip",
+    "retrieved_at": "2026-11-03T14:02:46.282958+00:00",
+    "status": 200,
+    "bytes": 438879,
+    "content_type": "application/zip",
+    "sha256": "4c26aa28afa0e6126fd2ab8846c2de85066b92db867e9a76441afed1745a6b75"
+  },
+  {
+    "name": "PR130318.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130318.zip",
+    "retrieved_at": "2026-11-03T14:02:46.320494+00:00",
+    "status": 200,
+    "bytes": 447295,
+    "content_type": "application/zip",
+    "sha256": "c42d96da81ea0bf8653091080c0cdbc7040f02765e9e39ff30a18137d1d0651f"
+  },
+  {
+    "name": "PR280219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280219.zip",
+    "retrieved_at": "2026-11-03T14:02:46.631947+00:00",
+    "status": 200,
+    "bytes": 298859,
+    "content_type": "application/zip",
+    "sha256": "e5c5d17d80d91cfb4c858e00d627a69e42eaba9f4c448fba466ec9bd8a6b3c5b"
+  },
+  {
+    "name": "PR260319.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260319.zip",
+    "retrieved_at": "2026-11-03T14:02:46.663483+00:00",
+    "status": 200,
+    "bytes": 318578,
+    "content_type": "application/zip",
+    "sha256": "1d452d862413d5023fa8160148b83c5eb0964b09ae6ca20222eae35c35b13f23"
+  },
+  {
+    "name": "PR220819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220819.zip",
+    "retrieved_at": "2026-11-03T14:02:46.953535+00:00",
+    "status": 200,
+    "bytes": 326118,
+    "content_type": "application/zip",
+    "sha256": "34b2e022abc76abb9e65a8903422992bac7f8542979931d4543671092928cc96"
+  },
+  {
+    "name": "PR230320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230320.zip",
+    "retrieved_at": "2026-11-03T14:02:47.117987+00:00",
+    "status": 200,
+    "bytes": 357883,
+    "content_type": "application/zip",
+    "sha256": "806fe4ff24c3b45b54ec01f2370f70d5e519c9b74faf928c0d8e9296da2e7d24"
+  },
+  {
+    "name": "PR230714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230714.zip",
+    "retrieved_at": "2026-11-03T14:02:47.342266+00:00",
+    "status": 200,
+    "bytes": 372550,
+    "content_type": "application/zip",
+    "sha256": "50c6c9c86a43c2ac8d67a287ed055ebfdd6aecbb80865dc5067facb3aa0cadce"
+  },
+  {
+    "name": "PR270715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270715.zip",
+    "retrieved_at": "2026-11-03T14:02:47.532016+00:00",
+    "status": 200,
+    "bytes": 392166,
+    "content_type": "application/zip",
+    "sha256": "96441efbb860a9a8e7b2ad871f109ea7ab0cbd0fbc9955cd256daad220773be7"
+  },
+  {
+    "name": "PR280717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280717.zip",
+    "retrieved_at": "2026-11-03T14:02:47.547028+00:00",
+    "status": 200,
+    "bytes": 455357,
+    "content_type": "application/zip",
+    "sha256": "0d98894a477498faad0a7d23d6233fc1981379331febf8908dca2a9a5e8e4442"
+  },
+  {
+    "name": "PR290420.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290420.zip",
+    "retrieved_at": "2026-11-03T14:02:47.879498+00:00",
+    "status": 200,
+    "bytes": 281377,
+    "content_type": "application/zip",
+    "sha256": "fabc3900031d50bd964f65a9a7fa17a9e07f9b6d1ebefc4a5303acbc6346eb62"
+  },
+  {
+    "name": "PR260820.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260820.zip",
+    "retrieved_at": "2026-11-03T14:02:48.102255+00:00",
+    "status": 200,
+    "bytes": 304868,
+    "content_type": "application/zip",
+    "sha256": "18590ab87ba7c9d4e56a44a98636fa51d8a7820e72bea8591262f7c0ebe426b3"
+  },
+  {
+    "name": "PR170214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170214.zip",
+    "retrieved_at": "2026-11-03T14:02:48.244341+00:00",
+    "status": 200,
+    "bytes": 310242,
+    "content_type": "application/zip",
+    "sha256": "92760a918b0d9b8ed9b5f08299413e70ddefa448f60357f52c8b7e1b657afa4d"
+  },
+  {
+    "name": "PR180714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180714.zip",
+    "retrieved_at": "2026-11-03T14:02:48.267892+00:00",
+    "status": 200,
+    "bytes": 362536,
+    "content_type": "application/zip",
+    "sha256": "afd15efade1527a138a11f130f00038c128ed1b45939ac9a31f4553729a5c626"
+  },
+  {
+    "name": "PR040914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040914.zip",
+    "retrieved_at": "2026-11-03T14:02:48.505086+00:00",
+    "status": 200,
+    "bytes": 352857,
+    "content_type": "application/zip",
+    "sha256": "b93aae6d723e129f62e559a58f21c1f59da2f64c6dd98fd5b5aa177a84ef4bf3"
+  },
+  {
+    "name": "PR110216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110216.zip",
+    "retrieved_at": "2026-11-03T14:02:48.639858+00:00",
+    "status": 200,
+    "bytes": 433426,
+    "content_type": "application/zip",
+    "sha256": "17463e9c2b50ebf223c62e404b8295ad4c6248c0f8accc2ee8f3cb6a39d10616"
+  },
+  {
+    "name": "PR160916.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160916.zip",
+    "retrieved_at": "2026-11-03T14:02:48.923184+00:00",
+    "status": 200,
+    "bytes": 463206,
+    "content_type": "application/zip",
+    "sha256": "1faad51173958f0cb19b1fad25b7e0a1c01ad8170ba2590b2fb3d761b8ea718f"
+  },
+  {
+    "name": "PR140218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140218.zip",
+    "retrieved_at": "2026-11-03T14:02:49.030595+00:00",
+    "status": 200,
+    "bytes": 532400,
+    "content_type": "application/zip",
+    "sha256": "c0cb86c5d429fcb24151c487edf441b6915645d9cb847ad1551c30c88691f80a"
+  },
+  {
+    "name": "PR030818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030818.zip",
+    "retrieved_at": "2026-11-03T14:02:49.260218+00:00",
+    "status": 200,
+    "bytes": 504283,
+    "content_type": "application/zip",
+    "sha256": "60acdcd1b7b0cf170021bf932ca3f03bca2fc46dcf3190a36147e68f29fd647b"
+  },
+  {
+    "name": "PR060214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060214.zip",
+    "retrieved_at": "2026-11-03T14:02:49.420739+00:00",
+    "status": 200,
+    "bytes": 359667,
+    "content_type": "application/zip",
+    "sha256": "61dcbe1af7cfc0343de7a62f6710a02f510b57e66831c73aa6ca3e3e758ba161"
+  },
+  {
+    "name": "PR220115.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220115.zip",
+    "retrieved_at": "2026-11-03T14:02:49.550617+00:00",
+    "status": 200,
+    "bytes": 335430,
+    "content_type": "application/zip",
+    "sha256": "790c46a953682a033df4f9bcd2500a809cc7429e46b7c22766c626ff84dbfd91"
+  },
+  {
+    "name": "PR151015.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR151015.zip",
+    "retrieved_at": "2026-11-03T14:02:49.999496+00:00",
+    "status": 200,
+    "bytes": 380048,
+    "content_type": "application/zip",
+    "sha256": "ae036f747618f651ed4018380e4b20aaece8011a553df0510e0972ce2da29f67"
+  },
+  {
+    "name": "PR040216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040216.zip",
+    "retrieved_at": "2026-11-03T14:02:50.126170+00:00",
+    "status": 200,
+    "bytes": 413393,
+    "content_type": "application/zip",
+    "sha256": "05e0c7ff3fc846e0621f24ae86123c5d5cb115419d6fc7818c71bfc0e45c0884"
+  },
+  {
+    "name": "PR010816.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR010816.zip",
+    "retrieved_at": "2026-11-03T14:02:50.339610+00:00",
+    "status": 200,
+    "bytes": 484817,
+    "content_type": "application/zip",
+    "sha256": "8071641b1dd4302f15a90f595eed69508b65b0027c51ede55b1561304dc2e45e"
+  },
+  {
+    "name": "PR140916.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140916.zip",
+    "retrieved_at": "2026-11-03T14:02:50.353578+00:00",
+    "status": 200,
+    "bytes": 449220,
+    "content_type": "application/zip",
+    "sha256": "420576d72203c6f0a76c62ea3c6fad137cb8f587de341bf9c27ea3fde18d9dcf"
+  },
+  {
+    "name": "PR020317.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020317.zip",
+    "retrieved_at": "2026-11-03T14:02:50.421203+00:00",
+    "status": 200,
+    "bytes": 441482,
+    "content_type": "application/zip",
+    "sha256": "02a620b589bc0efd4be6b7b6daaf077fc72fecdaab7d71a830a9b58c40d58199"
+  },
+  {
+    "name": "PR071117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR071117.zip",
+    "retrieved_at": "2026-11-03T14:02:50.719943+00:00",
+    "status": 200,
+    "bytes": 454330,
+    "content_type": "application/zip",
+    "sha256": "5e2377d404fcab96c13d2780c29350b083d0e2b7d3bcb5ed52c2ff8c0e1fdeb8"
+  },
+  {
+    "name": "PR010218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR010218.zip",
+    "retrieved_at": "2026-11-03T14:02:50.846999+00:00",
+    "status": 200,
+    "bytes": 452156,
+    "content_type": "application/zip",
+    "sha256": "315fb77ce3826da0da582d69b1e62349297a9e59de02ffb76a07ec14a06240a6"
+  },
+  {
+    "name": "PR140219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140219.zip",
+    "retrieved_at": "2026-11-03T14:02:50.877665+00:00",
+    "status": 200,
+    "bytes": 314862,
+    "content_type": "application/zip",
+    "sha256": "4e66c81cffd733241c2cad5746c52e279e9a03ee73ba7c8e84723beca7bf51a5"
+  },
+  {
+    "name": "PR040719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040719.zip",
+    "retrieved_at": "2026-11-03T14:02:50.881660+00:00",
+    "status": 200,
+    "bytes": 304956,
+    "content_type": "application/zip",
+    "sha256": "df3a44734eeed318e2cb557586f8441c25ad780caab5b6511dce4c0c91f37f29"
+  },
+  {
+    "name": "PR090819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090819.zip",
+    "retrieved_at": "2026-11-03T14:02:51.352728+00:00",
+    "status": 200,
+    "bytes": 343435,
+    "content_type": "application/zip",
+    "sha256": "fb76df716e7503d4f3a1fa7c8a28b052a8fb05f17d9b0fa71c33d8fd5d989a31"
+  },
+  {
+    "name": "PR270814.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270814.zip",
+    "retrieved_at": "2026-11-03T14:02:51.743772+00:00",
+    "status": 200,
+    "bytes": 397154,
+    "content_type": "application/zip",
+    "sha256": "b117dd51b8e6d36eac299ca9d15f61c160debc1f8ec48071ee798e3ff72134fb"
+  },
+  {
+    "name": "PR030915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030915.zip",
+    "retrieved_at": "2026-11-03T14:02:51.843385+00:00",
+    "status": 200,
+    "bytes": 361934,
+    "content_type": "application/zip",
+    "sha256": "48909a1b8c4e56d533ece861540c4ab470dc109f8ba1494ff8d5c268400d70c2"
+  },
+  {
+    "name": "PR170919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170919.zip",
+    "retrieved_at": "2026-11-03T14:02:51.849606+00:00",
+    "status": 200,
+    "bytes": 323153,
+    "content_type": "application/zip",
+    "sha256": "aca890b7d2bf9b01484cb8c0e9ebd93c66e58fe0896005b7991e00ce845a041b"
+  },
+  {
+    "name": "PR180615.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180615.zip",
+    "retrieved_at": "2026-11-03T14:02:52.093834+00:00",
+    "status": 200,
+    "bytes": 351557,
+    "content_type": "application/zip",
+    "sha256": "0cc4bb6e41fc0449108fc76b137a315e5e8505bea4f3f00f7d4f5404c05682f6"
+  },
+  {
+    "name": "PR120719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120719.zip",
+    "retrieved_at": "2026-11-03T14:02:52.370772+00:00",
+    "status": 200,
+    "bytes": 322576,
+    "content_type": "application/zip",
+    "sha256": "6a4d06f8799f241926846dbddb110a6e16d96ef60406d320b125d3c0ba632694"
+  },
+  {
+    "name": "PR190314.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190314.zip",
+    "retrieved_at": "2026-11-03T14:02:52.566988+00:00",
+    "status": 200,
+    "bytes": 331168,
+    "content_type": "application/zip",
+    "sha256": "11d2ac7d9936ecd7096dd0a4adcd1a76232a0c5031be63234b6b350af3384a66"
+  },
+  {
+    "name": "PR200715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200715.zip",
+    "retrieved_at": "2026-11-03T14:02:52.683639+00:00",
+    "status": 200,
+    "bytes": 333188,
+    "content_type": "application/zip",
+    "sha256": "818a22d1290719fe64653c40b945a8c843a41653a5b030322dca75bb32e3f4ca"
+  },
+  {
+    "name": "PR100817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100817.zip",
+    "retrieved_at": "2026-11-03T14:02:52.793243+00:00",
+    "status": 200,
+    "bytes": 484686,
+    "content_type": "application/zip",
+    "sha256": "514b973874b2004c46e301e90d8b894078424c626d73cacabc97d52bc5331bb8"
+  },
+  {
+    "name": "PR120718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120718.zip",
+    "retrieved_at": "2026-11-03T14:02:52.940202+00:00",
+    "status": 200,
+    "bytes": 519683,
+    "content_type": "application/zip",
+    "sha256": "699936b49d6d764c26e2f8c6b668152d04eff0d8987f589e82674028855b3e40"
+  },
+  {
+    "name": "PR040619.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040619.zip",
+    "retrieved_at": "2026-11-03T14:02:52.965366+00:00",
+    "status": 200,
+    "bytes": 307393,
+    "content_type": "application/zip",
+    "sha256": "95fca1ebb377a30e07b52a7c0c7260544917d7bd6eb4340d4f3e0f0ac37378c8"
+  },
+  {
+    "name": "PR140720.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140720.zip",
+    "retrieved_at": "2026-11-03T14:02:52.998380+00:00",
+    "status": 200,
+    "bytes": 308951,
+    "content_type": "application/zip",
+    "sha256": "54103cafbcfe6e4ad105f817f6b8cc245f03f1d794e447600a31d5350075eafb"
+  },
+  {
+    "name": "PR070214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070214.zip",
+    "retrieved_at": "2026-11-03T14:02:53.377197+00:00",
+    "status": 200,
+    "bytes": 308319,
+    "content_type": "application/zip",
+    "sha256": "0d8b353647531f89a04c8a4cd9d250925a9880547eb7889b1267b3fc02dba178"
+  },
+  {
+    "name": "PR160215.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160215.zip",
+    "retrieved_at": "2026-11-03T14:02:53.378361+00:00",
+    "status": 200,
+    "bytes": 370956,
+    "content_type": "application/zip",
+    "sha256": "39d853c521faf45e11ee92286d88ec59f6f467dc8b72974c92639262c16c6cf3"
+  },
+  {
+    "name": "PR140915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140915.zip",
+    "retrieved_at": "2026-11-03T14:02:53.752084+00:00",
+    "status": 200,
+    "bytes": 379400,
+    "content_type": "application/zip",
+    "sha256": "8c2ea3659af147ae1360642f0603c87864b0bca4331ba1bb324cc686d2573168"
+  },
+  {
+    "name": "PR280917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280917.zip",
+    "retrieved_at": "2026-11-03T14:02:53.783597+00:00",
+    "status": 200,
+    "bytes": 595862,
+    "content_type": "application/zip",
+    "sha256": "9dbef2867c166b900eb0ec44b7532e21eab66ccf976cb7d727176c0f7be2ee3a"
+  },
+  {
+    "name": "PR150218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150218.zip",
+    "retrieved_at": "2026-11-03T14:02:54.102020+00:00",
+    "status": 200,
+    "bytes": 484333,
+    "content_type": "application/zip",
+    "sha256": "9c41f9375c20faffc2ec6cc57bb5ac363f8cbfc2039c7b5c8d02efcf21d40762"
+  },
+  {
+    "name": "PR190514.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190514.zip",
+    "retrieved_at": "2026-11-03T14:02:54.319699+00:00",
+    "status": 200,
+    "bytes": 381990,
+    "content_type": "application/zip",
+    "sha256": "ef319da6fb1373434a84882c5711d8d3fd97c8d66e83b7e4e09dcad2ca2c06ab"
+  },
+  {
+    "name": "PR120515.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120515.zip",
+    "retrieved_at": "2026-11-03T14:02:54.846184+00:00",
+    "status": 200,
+    "bytes": 357462,
+    "content_type": "application/zip",
+    "sha256": "0aad6846fda798cf0eb838bbcaa5335f358b82496f0256b938caa75e4bfd5070"
+  },
+  {
+    "name": "PR231015.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR231015.zip",
+    "retrieved_at": "2026-11-03T14:02:55.048329+00:00",
+    "status": 200,
+    "bytes": 357476,
+    "content_type": "application/zip",
+    "sha256": "a04b7402ae0cef7e8a28397e877e50244635f74e4bed6f3893fe96fa39e40da5"
+  },
+  {
+    "name": "PR060416.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060416.zip",
+    "retrieved_at": "2026-11-03T14:02:55.050354+00:00",
+    "status": 200,
+    "bytes": 387153,
+    "content_type": "application/zip",
+    "sha256": "2223bd760605b1425512acc31c5e51ade24e7be8680234fcf6948f166924e98a"
+  },
+  {
+    "name": "PR041116.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR041116.zip",
+    "retrieved_at": "2026-11-03T14:02:55.155512+00:00",
+    "status": 200,
+    "bytes": 908080,
+    "content_type": "application/zip",
+    "sha256": "22ff353c2b7f16152e2911723f9fd1354ff0cd284165b5f45f96d3bc67b9d45c"
+  },
+  {
+    "name": "PR290317.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290317.zip",
+    "retrieved_at": "2026-11-03T14:02:55.437584+00:00",
+    "status": 200,
+    "bytes": 433277,
+    "content_type": "application/zip",
+    "sha256": "fa03b0746c84f6462a59e2a02564d7a3b533070980221f83f90ebb754fb6df35"
+  },
+  {
+    "name": "PR011117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR011117.zip",
+    "retrieved_at": "2026-11-03T14:02:55.531123+00:00",
+    "status": 200,
+    "bytes": 438569,
+    "content_type": "application/zip",
+    "sha256": "b460a5458bee44ef448f98715d1c5251c2d7518bec07adc4c073ade1c4ae0b1b"
+  },
+  {
+    "name": "PR230318.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230318.zip",
+    "retrieved_at": "2026-11-03T14:02:55.807132+00:00",
+    "status": 200,
+    "bytes": 516958,
+    "content_type": "application/zip",
+    "sha256": "1767103bfca7dfbf5dd7dc998536c03a341caa7e780832c2b7043ec9fe85de69"
+  },
+  {
+    "name": "PR311018.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR311018.zip",
+    "retrieved_at": "2026-11-03T14:02:55.970229+00:00",
+    "status": 200,
+    "bytes": 498232,
+    "content_type": "application/zip",
+    "sha256": "d285aca3e2658e495d2c9bf57163bbb55faafc069d5682fdec83837f7ab56ff6"
+  },
+  {
+    "name": "PR190520.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190520.zip",
+    "retrieved_at": "2026-11-03T14:02:55.971091+00:00",
+    "status": 200,
+    "bytes": 282203,
+    "content_type": "application/zip",
+    "sha256": "d5b131f24fb10a6ab3772f2b86d166ca2a959555aa7ece953c11d335691c1267"
+  },
+  {
+    "name": "PR150714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150714.zip",
+    "retrieved_at": "2026-11-03T14:02:56.212177+00:00",
+    "status": 200,
+    "bytes": 355920,
+    "content_type": "application/zip",
+    "sha256": "6ff19882f0e2eaa58fbd0b49aee526b089091a6928a15d4985a87d82777f9448"
+  },
+  {
+    "name": "PR170715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170715.zip",
+    "retrieved_at": "2026-11-03T14:02:56.501750+00:00",
+    "status": 200,
+    "bytes": 328611,
+    "content_type": "application/zip",
+    "sha256": "0d8229cf09906bd8769d1df1c493da8001f20fd5324ddfa5d8be0b2146b3e0f7"
+  },
+  {
+    "name": "PR240717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR240717.zip",
+    "retrieved_at": "2026-11-03T14:02:56.750751+00:00",
+    "status": 200,
+    "bytes": 514528,
+    "content_type": "application/zip",
+    "sha256": "be8eb9ff887b3061ea2188f7de4209345b9a0c1e1b8e9bdc923f3db7f4ee3b5b"
+  },
+  {
+    "name": "PR230718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230718.zip",
+    "retrieved_at": "2026-11-03T14:02:57.017533+00:00",
+    "status": 200,
+    "bytes": 566221,
+    "content_type": "application/zip",
+    "sha256": "f8039b49c61efcad4b13275e3ab2d876fd8800ddd16901da058d1ffa102f1a2e"
+  },
+  {
+    "name": "PR290719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290719.zip",
+    "retrieved_at": "2026-11-03T14:02:57.342711+00:00",
+    "status": 200,
+    "bytes": 342419,
+    "content_type": "application/zip",
+    "sha256": "901800e0a9ca07216c3022c387add6071936fbda4ef476da37838dbe787d54f1"
+  },
+  {
+    "name": "PR030820.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030820.zip",
+    "retrieved_at": "2026-11-03T14:02:57.438036+00:00",
+    "status": 200,
+    "bytes": 327388,
+    "content_type": "application/zip",
+    "sha256": "cb9496fe26959a509b2d07fda58cce54cb48543af93e726bfe13d1f2d7fbd227"
+  },
+  {
+    "name": "PR190619.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190619.zip",
+    "retrieved_at": "2026-11-03T14:02:57.527290+00:00",
+    "status": 200,
+    "bytes": 325087,
+    "content_type": "application/zip",
+    "sha256": "ce7bdb50ae66ebd687520059a3d3e2865efac0525f2f33e9731b8ffadd445989"
+  },
+  {
+    "name": "PR060717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060717.zip",
+    "retrieved_at": "2026-11-03T14:02:57.564961+00:00",
+    "status": 200,
+    "bytes": 452914,
+    "content_type": "application/zip",
+    "sha256": "80eba3474bda66cbbd3d74c19f55236bd683d02b5fcd8f2b3c891c63b6fa8aa3"
+  },
+  {
+    "name": "PR050718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050718.zip",
+    "retrieved_at": "2026-11-03T14:02:57.667490+00:00",
+    "status": 200,
+    "bytes": 471103,
+    "content_type": "application/zip",
+    "sha256": "cfad9288549705b5c30a621afab7c4c39b3310bf1f9cd8f1a4ef07933f7ec456"
+  },
+  {
+    "name": "PR110719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110719.zip",
+    "retrieved_at": "2026-11-03T14:02:57.779844+00:00",
+    "status": 200,
+    "bytes": 326460,
+    "content_type": "application/zip",
+    "sha256": "8fd38af9b8390a36aa4f134ca95b6e84e43ba9ab3d4e40bc4fbe372e1bc0c8be"
+  },
+  {
+    "name": "PR130214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130214.zip",
+    "retrieved_at": "2026-11-03T14:02:58.040684+00:00",
+    "status": 200,
+    "bytes": 308161,
+    "content_type": "application/zip",
+    "sha256": "3c1af99f31375e7f448d6d59db5bc1a9a1fd848c100cba8037d49fd91baa3257"
+  },
+  {
+    "name": "PR210714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210714.zip",
+    "retrieved_at": "2026-11-03T14:02:58.053676+00:00",
+    "status": 200,
+    "bytes": 373413,
+    "content_type": "application/zip",
+    "sha256": "24f3243afeb1fd19ee0e536f60a69cc53a62e282533aee4d28c1cdbd207bb03e"
+  },
+  {
+    "name": "PR140715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140715.zip",
+    "retrieved_at": "2026-11-03T14:02:58.414688+00:00",
+    "status": 200,
+    "bytes": 322589,
+    "content_type": "application/zip",
+    "sha256": "f452cabb1f0d6c0f6051ffd42c695bfe4c3ca4e9fe179e0e8109ca683fe60927"
+  },
+  {
+    "name": "PR250716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250716.zip",
+    "retrieved_at": "2026-11-03T14:02:58.567815+00:00",
+    "status": 200,
+    "bytes": 493138,
+    "content_type": "application/zip",
+    "sha256": "7938e10cfaa39d88ab3db0ed977c1aed5bbaf111ddf398fd76a4241415df6cd5"
+  },
+  {
+    "name": "PR300718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR300718.zip",
+    "retrieved_at": "2026-11-03T14:02:58.774367+00:00",
+    "status": 200,
+    "bytes": 510607,
+    "content_type": "application/zip",
+    "sha256": "c7cade6571a76a5da5546c26b199b9c240c45ff6a202fecb8e80bb3cb299375d"
+  },
+  {
+    "name": "PR200217.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200217.zip",
+    "retrieved_at": "2026-11-03T14:02:58.879427+00:00",
+    "status": 200,
+    "bytes": 493400,
+    "content_type": "application/zip",
+    "sha256": "b5e50ba86ad8eec0bb9bc55b10ca70c53f8f0a0ea3b820c6329adb18fe28c848"
+  },
+  {
+    "name": "PR090817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090817.zip",
+    "retrieved_at": "2026-11-03T14:02:59.118056+00:00",
+    "status": 200,
+    "bytes": 461639,
+    "content_type": "application/zip",
+    "sha256": "3ab4bb883e3bb15fb488c185dd46d13923966cd046b2aa735d16c0bf5addc8de"
+  },
+  {
+    "name": "PR180718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180718.zip",
+    "retrieved_at": "2026-11-03T14:02:59.257050+00:00",
+    "status": 200,
+    "bytes": 541447,
+    "content_type": "application/zip",
+    "sha256": "fa604fbd12db6f83a30853e4c195ff2314111b7aac6c3daf97a3bea433f53a3e"
+  },
+  {
+    "name": "PR230114.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230114.zip",
+    "retrieved_at": "2026-11-03T14:02:59.327131+00:00",
+    "status": 200,
+    "bytes": 321457,
+    "content_type": "application/zip",
+    "sha256": "11bb794834c21d8d948c5038105aef4405c48d9e56b5303dc53f8208793fdab4"
+  },
+  {
+    "name": "PR030714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030714.zip",
+    "retrieved_at": "2026-11-03T14:02:59.497862+00:00",
+    "status": 200,
+    "bytes": 340274,
+    "content_type": "application/zip",
+    "sha256": "96fdfca6aea515617778f1dafff66f76b14bbca901957a1cdd6289fe5720ce50"
+  },
+  {
+    "name": "PR200820.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200820.zip",
+    "retrieved_at": "2026-11-03T14:02:59.511868+00:00",
+    "status": 200,
+    "bytes": 311936,
+    "content_type": "application/zip",
+    "sha256": "742d9663b8cb23d667f794e5370a63477a39bf19d231fe10f5eab35cde08cd29"
+  },
+  {
+    "name": "PR130814.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130814.zip",
+    "retrieved_at": "2026-11-03T14:02:59.925708+00:00",
+    "status": 200,
+    "bytes": 337828,
+    "content_type": "application/zip",
+    "sha256": "677524cc0362b7a459cd48559fee0372be887bd6b1f4a870914047bc1a54ada8"
+  },
+  {
+    "name": "PR140815.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140815.zip",
+    "retrieved_at": "2026-11-03T14:02:59.927715+00:00",
+    "status": 200,
+    "bytes": 422219,
+    "content_type": "application/zip",
+    "sha256": "0f2d23c4478ab0c4245490cf2180cb9008a44c2e16c182860f1936ee36d46b1e"
+  },
+  {
+    "name": "PR190816.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190816.zip",
+    "retrieved_at": "2026-11-03T14:03:00.149548+00:00",
+    "status": 200,
+    "bytes": 439071,
+    "content_type": "application/zip",
+    "sha256": "7bb04d2cff92e8993941a3d7fdaeb11089ee3193b1d2bdb9f6197dbf8093ac00"
+  },
+  {
+    "name": "PR190320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190320.zip",
+    "retrieved_at": "2026-11-03T14:03:00.359219+00:00",
+    "status": 200,
+    "bytes": 325262,
+    "content_type": "application/zip",
+    "sha256": "5f114136e844cb6baf7ce8155a1ff6356fe2fcafd1c2c77a73f64bfe1a307d42"
+  },
+  {
+    "name": "PR160714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160714.zip",
+    "retrieved_at": "2026-11-03T14:03:00.757944+00:00",
+    "status": 200,
+    "bytes": 357164,
+    "content_type": "application/zip",
+    "sha256": "b082f973ce4b9576f6e24da10b60ec9dc9aab310e4dc79243742d904c98ecdfb"
+  },
+  {
+    "name": "PR180717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180717.zip",
+    "retrieved_at": "2026-11-03T14:03:00.765330+00:00",
+    "status": 200,
+    "bytes": 473743,
+    "content_type": "application/zip",
+    "sha256": "6012b81bde2f408f3f0401c7a35e175c2496414ac02fa8cf76781e2188bed5f0"
+  },
+  {
+    "name": "PR200718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200718.zip",
+    "retrieved_at": "2026-11-03T14:03:00.800409+00:00",
+    "status": 200,
+    "bytes": 503650,
+    "content_type": "application/zip",
+    "sha256": "5bea5e4940cce8980fb297977bffdb1ac249930162fc7fb564ee3c8493fc2d6d"
+  },
+  {
+    "name": "PR150719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150719.zip",
+    "retrieved_at": "2026-11-03T14:03:00.893547+00:00",
+    "status": 200,
+    "bytes": 345581,
+    "content_type": "application/zip",
+    "sha256": "20bbbe40d34a70174b338d7868a1f6989b91d612c9bc5c633bd01146e225aff0"
+  },
+  {
+    "name": "PR130220.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130220.zip",
+    "retrieved_at": "2026-11-03T14:03:01.088913+00:00",
+    "status": 200,
+    "bytes": 331789,
+    "content_type": "application/zip",
+    "sha256": "3360899b5ef3141a10a2cec18673b39dbada4b4d0b2bb79187e51afd2049909e"
+  },
+  {
+    "name": "PR110614.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110614.zip",
+    "retrieved_at": "2026-11-03T14:03:01.223676+00:00",
+    "status": 200,
+    "bytes": 361596,
+    "content_type": "application/zip",
+    "sha256": "8c107087faeb46177ed4151a74ff1d2f24ca1fc9c5b8aa7af7aac18c91e410d7"
+  },
+  {
+    "name": "PR080615.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080615.zip",
+    "retrieved_at": "2026-11-03T14:03:01.223676+00:00",
+    "status": 200,
+    "bytes": 349067,
+    "content_type": "application/zip",
+    "sha256": "7a5310c2daca3700a8234f4b848249c134fc45897eabd216a000d99deae9b630"
+  },
+  {
+    "name": "PR210815.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210815.zip",
+    "retrieved_at": "2026-11-03T14:03:01.260827+00:00",
+    "status": 200,
+    "bytes": 437150,
+    "content_type": "application/zip",
+    "sha256": "38a0e848087bb1d5ccaf5a2643f53897052d74d8cf825e3c958a236c4d88b0ab"
+  },
+  {
+    "name": "PR191115.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR191115.zip",
+    "retrieved_at": "2026-11-03T14:03:01.493942+00:00",
+    "status": 200,
+    "bytes": 370465,
+    "content_type": "application/zip",
+    "sha256": "7d05fbe4c2028b62ed126cc26bc8f770f32d3a9b2b6d3a186d5dff37118bcb64"
+  },
+  {
+    "name": "PR180216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180216.zip",
+    "retrieved_at": "2026-11-03T14:03:01.526966+00:00",
+    "status": 200,
+    "bytes": 402154,
+    "content_type": "application/zip",
+    "sha256": "2a46498c5de4c06597859b07d4be75d5fa9181bb81078833ae2cdefa04f86279"
+  },
+  {
+    "name": "PR090616.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090616.zip",
+    "retrieved_at": "2026-11-03T14:03:01.561052+00:00",
+    "status": 200,
+    "bytes": 416374,
+    "content_type": "application/zip",
+    "sha256": "dad66c095c0f9f6e107fd068e3230c09a237b6609a72e3152111e131bb17ba2f"
+  },
+  {
+    "name": "PR080617.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080617.zip",
+    "retrieved_at": "2026-11-03T14:03:01.580880+00:00",
+    "status": 200,
+    "bytes": 444111,
+    "content_type": "application/zip",
+    "sha256": "b3900a48b2b896e46eb5969a93907a8750d9dfd43c0f0137a033d0ba5ecffd7e"
+  },
+  {
+    "name": "PR150219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR150219.zip",
+    "retrieved_at": "2026-11-03T14:03:01.837709+00:00",
+    "status": 200,
+    "bytes": 313666,
+    "content_type": "application/zip",
+    "sha256": "c73b5dc548994c5bb0bdd6f64588fb780ed9cdce72ec02536958645564e89b70"
+  },
+  {
+    "name": "PR210820.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210820.zip",
+    "retrieved_at": "2026-11-03T14:03:01.917561+00:00",
+    "status": 200,
+    "bytes": 298963,
+    "content_type": "application/zip",
+    "sha256": "788ba66f69beb5fee8684ac0d5531b973105bba732e059d1a75cfc5bd8799dd4"
+  },
+  {
+    "name": "PR100714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100714.zip",
+    "retrieved_at": "2026-11-03T14:03:01.918405+00:00",
+    "status": 200,
+    "bytes": 366078,
+    "content_type": "application/zip",
+    "sha256": "f08844a8af2e59d0806ddcc491e336b5fbd6245b9b0aa49a9ecec7cfde7bf6e1"
+  },
+  {
+    "name": "PR040717.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040717.zip",
+    "retrieved_at": "2026-11-03T14:03:02.051353+00:00",
+    "status": 200,
+    "bytes": 437926,
+    "content_type": "application/zip",
+    "sha256": "a8716640c8f82bc58c74b4bd966c20284db75248c6d6cdc9306920f5867e24fa"
+  },
+  {
+    "name": "PR020419.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020419.zip",
+    "retrieved_at": "2026-11-03T14:03:02.320109+00:00",
+    "status": 200,
+    "bytes": 294308,
+    "content_type": "application/zip",
+    "sha256": "7b659c01d62ae974f71f684400bd71063b5b977c83fc78cc77ec8e39ba1ececd"
+  },
+  {
+    "name": "PR060220.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060220.zip",
+    "retrieved_at": "2026-11-03T14:03:02.396077+00:00",
+    "status": 200,
+    "bytes": 329674,
+    "content_type": "application/zip",
+    "sha256": "245b5d1ae86cd16bbd96ecf9cc55e17a5ff283be05f045ef411f0a92b6141b28"
+  },
+  {
+    "name": "PR070917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070917.zip",
+    "retrieved_at": "2026-11-03T14:03:02.722291+00:00",
+    "status": 200,
+    "bytes": 460751,
+    "content_type": "application/zip",
+    "sha256": "31da418b02bb95fa28bab838b9ce430879cc96d3142ad18785bc55647e2f7f63"
+  },
+  {
+    "name": "PR250220.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR250220.zip",
+    "retrieved_at": "2026-11-03T14:03:02.862051+00:00",
+    "status": 200,
+    "bytes": 314003,
+    "content_type": "application/zip",
+    "sha256": "fd76fb315276d7aaafbcc5e7f082052a12dbd004a830b553c2d2adda812abdef"
+  },
+  {
+    "name": "PR180214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180214.zip",
+    "retrieved_at": "2026-11-03T14:03:02.875078+00:00",
+    "status": 200,
+    "bytes": 289853,
+    "content_type": "application/zip",
+    "sha256": "036a5892a4fb788d7df84a0d637e392b6ef9ece58e8299e09fed17e65cceb47d"
+  },
+  {
+    "name": "PR120814.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120814.zip",
+    "retrieved_at": "2026-11-03T14:03:03.074612+00:00",
+    "status": 200,
+    "bytes": 348279,
+    "content_type": "application/zip",
+    "sha256": "8ea74ce6457541b0016c1bcce9d25aec6920675b14b78acf5b2bf5202c8f2f29"
+  },
+  {
+    "name": "PR100215.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100215.zip",
+    "retrieved_at": "2026-11-03T14:03:03.108149+00:00",
+    "status": 200,
+    "bytes": 378861,
+    "content_type": "application/zip",
+    "sha256": "753e6b1560c12a30fdafe9ea4c1f39b0b81032b6a2951b1f10c37eb661286769"
+  },
+  {
+    "name": "PR280815.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280815.zip",
+    "retrieved_at": "2026-11-03T14:03:03.165181+00:00",
+    "status": 200,
+    "bytes": 374691,
+    "content_type": "application/zip",
+    "sha256": "ea3ab05775d80aa05469867a64980b9596f4cf68ccfd44f1bf6463c2385a9219"
+  },
+  {
+    "name": "PR030216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030216.zip",
+    "retrieved_at": "2026-11-03T14:03:03.214298+00:00",
+    "status": 200,
+    "bytes": 385628,
+    "content_type": "application/zip",
+    "sha256": "6d99196d2bc40d724e4e117acaef01a5ac11c2e6d026dd70d685241626bd4408"
+  },
+  {
+    "name": "PR020217.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020217.zip",
+    "retrieved_at": "2026-11-03T14:03:03.625816+00:00",
+    "status": 200,
+    "bytes": 465878,
+    "content_type": "application/zip",
+    "sha256": "528ff6aa79e89dcd970c7a3e6bb713aba4aaf8b32d66090bab5019692191935e"
+  },
+  {
+    "name": "PR040919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040919.zip",
+    "retrieved_at": "2026-11-03T14:03:03.644032+00:00",
+    "status": 200,
+    "bytes": 311702,
+    "content_type": "application/zip",
+    "sha256": "7ca8101d036cd25075af9ecd5726bbc18277011f7d802e69c947b3f3c78e9e7c"
+  },
+  {
+    "name": "PR120320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120320.zip",
+    "retrieved_at": "2026-11-03T14:03:03.736256+00:00",
+    "status": 200,
+    "bytes": 309685,
+    "content_type": "application/zip",
+    "sha256": "8b364267a1c83e22adfded0889a1dba81913aef9d72f284d18a14320b112210b"
+  },
+  {
+    "name": "PR070817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070817.zip",
+    "retrieved_at": "2026-11-03T14:03:03.771331+00:00",
+    "status": 200,
+    "bytes": 488125,
+    "content_type": "application/zip",
+    "sha256": "f0f08a49bd05b0529156cdf68d55534630aebd122e2be92be44a9cb5ae0783fa"
+  },
+  {
+    "name": "PR220218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220218.zip",
+    "retrieved_at": "2026-11-03T14:03:03.822524+00:00",
+    "status": 200,
+    "bytes": 543652,
+    "content_type": "application/zip",
+    "sha256": "e5160db544294ba8ca956a1826adc859db27b10130d5cbe4f6f8807f316753c4"
+  },
+  {
+    "name": "PR300818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR300818.zip",
+    "retrieved_at": "2026-11-03T14:03:04.043027+00:00",
+    "status": 200,
+    "bytes": 636852,
+    "content_type": "application/zip",
+    "sha256": "5691c4d61128c895e03e21924599c9cb6bb0a4d07915c5915d24c1f2c6185dae"
+  },
+  {
+    "name": "PR220720.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220720.zip",
+    "retrieved_at": "2026-11-03T14:03:04.127805+00:00",
+    "status": 200,
+    "bytes": 295870,
+    "content_type": "application/zip",
+    "sha256": "3b857b321fe042e37ebd7c3c8e7eeb13ade29faaa4b0ccd9b84697d35c1c0a01"
+  },
+  {
+    "name": "PR280714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR280714.zip",
+    "retrieved_at": "2026-11-03T14:03:04.231489+00:00",
+    "status": 200,
+    "bytes": 389455,
+    "content_type": "application/zip",
+    "sha256": "ed3e5c92edcc410a37298652fc14aa1dc063dec4a4d0ff74cd061ed7b3ebc933"
+  },
+  {
+    "name": "PR190914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190914.zip",
+    "retrieved_at": "2026-11-03T14:03:04.287563+00:00",
+    "status": 200,
+    "bytes": 374206,
+    "content_type": "application/zip",
+    "sha256": "abfc0bf55a4cc0862924a976881eac98b2b2ff1fec023dd310d4a3391cba4173"
+  },
+  {
+    "name": "PR131114.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR131114.zip",
+    "retrieved_at": "2026-11-03T14:03:04.365387+00:00",
+    "status": 200,
+    "bytes": 360585,
+    "content_type": "application/zip",
+    "sha256": "e45f12d74e4f7f588e815593e1eb8c3cdbcd5010e0c78193584fe10f75ffcacc"
+  },
+  {
+    "name": "PR020514.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020514.zip",
+    "retrieved_at": "2026-11-03T14:03:04.574363+00:00",
+    "status": 200,
+    "bytes": 354402,
+    "content_type": "application/zip",
+    "sha256": "781b72f6858cca801f40fd61b9e7a551e335236a3acc3fbc1619c068d9007c41"
+  },
+  {
+    "name": "PR060215.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060215.zip",
+    "retrieved_at": "2026-11-03T14:03:04.580581+00:00",
+    "status": 200,
+    "bytes": 358695,
+    "content_type": "application/zip",
+    "sha256": "25cde3aaef4b99e59477b7e605ac040b19291e022eb26020caf902d83f9c8bac"
+  },
+  {
+    "name": "PR050515.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050515.zip",
+    "retrieved_at": "2026-11-03T14:03:04.887393+00:00",
+    "status": 200,
+    "bytes": 325140,
+    "content_type": "application/zip",
+    "sha256": "4096e50b30f16986db3674b576b744f6603ec98f21d71886f57d087d79c85a45"
+  },
+  {
+    "name": "PR140317.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140317.zip",
+    "retrieved_at": "2026-11-03T14:03:04.977583+00:00",
+    "status": 200,
+    "bytes": 455794,
+    "content_type": "application/zip",
+    "sha256": "428a4b526c087598fb6a72e288b119010609c42c672584c2819d1bae2feccd9c"
+  },
+  {
+    "name": "PR081117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR081117.zip",
+    "retrieved_at": "2026-11-03T14:03:05.038250+00:00",
+    "status": 200,
+    "bytes": 473550,
+    "content_type": "application/zip",
+    "sha256": "220e868dbb33f4c448a8303c87edbe5f063a6adad44a11d24cc3d1f00f3f7ac8"
+  },
+  {
+    "name": "PR060318.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060318.zip",
+    "retrieved_at": "2026-11-03T14:03:05.173168+00:00",
+    "status": 200,
+    "bytes": 434393,
+    "content_type": "application/zip",
+    "sha256": "7f2a82c30629e99dd2744fec7312685950fc48909d3746b84d8b9c697943a8ac"
+  },
+  {
+    "name": "PR301018.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR301018.zip",
+    "retrieved_at": "2026-11-03T14:03:05.852222+00:00",
+    "status": 200,
+    "bytes": 522753,
+    "content_type": "application/zip",
+    "sha256": "1042119d2434a72c80ef49091e787cc9d201a528a346cbeb5ee98d5293c08913"
+  },
+  {
+    "name": "PR110220.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110220.zip",
+    "retrieved_at": "2026-11-03T14:03:06.612741+00:00",
+    "status": 200,
+    "bytes": 319406,
+    "content_type": "application/zip",
+    "sha256": "3af1a2773f758bc53b86a2202f981e3a8daad00b2a46e5b6616a19a876384ae2"
+  },
+  {
+    "name": "PR170320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170320.zip",
+    "retrieved_at": "2026-11-03T14:03:06.615732+00:00",
+    "status": 200,
+    "bytes": 307943,
+    "content_type": "application/zip",
+    "sha256": "b5c67f61bd2da37a8a32943d82b35a8f15db3e9a78747e01a31bfa287c4a8dc1"
+  },
+  {
+    "name": "PR220714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR220714.zip",
+    "retrieved_at": "2026-11-03T14:03:06.614732+00:00",
+    "status": 200,
+    "bytes": 380732,
+    "content_type": "application/zip",
+    "sha256": "dd1f07c0e3303df913fd095c34caf0910761a95fde785d57e0542a046030a337"
+  },
+  {
+    "name": "PR200314.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200314.zip",
+    "retrieved_at": "2026-11-03T14:03:06.615732+00:00",
+    "status": 200,
+    "bytes": 339660,
+    "content_type": "application/zip",
+    "sha256": "a153f55ca54b1660a9c70b3aaa1834a03536a6759208f9b4b30094996d9116a4"
+  },
+  {
+    "name": "PR230315.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230315.zip",
+    "retrieved_at": "2026-11-03T14:03:06.980513+00:00",
+    "status": 200,
+    "bytes": 394267,
+    "content_type": "application/zip",
+    "sha256": "ade2c412a2cda62de3e4353285eadcade0584ebc5a841d2f7e99219be3ff1783"
+  },
+  {
+    "name": "PR301216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR301216.zip",
+    "retrieved_at": "2026-11-03T14:03:07.014289+00:00",
+    "status": 200,
+    "bytes": 389724,
+    "content_type": "application/zip",
+    "sha256": "5521ed204baebb48d4b09c77ef1ce5c3515356961c6e6a3f7f292166f943ac9d"
+  },
+  {
+    "name": "PR110917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110917.zip",
+    "retrieved_at": "2026-11-03T14:03:07.135931+00:00",
+    "status": 200,
+    "bytes": 491267,
+    "content_type": "application/zip",
+    "sha256": "c5279def5b578e88164cee631162157386435e420f7e4199f04c32a88117a0b7"
+  },
+  {
+    "name": "PR190318.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190318.zip",
+    "retrieved_at": "2026-11-03T14:03:07.141942+00:00",
+    "status": 200,
+    "bytes": 473745,
+    "content_type": "application/zip",
+    "sha256": "db93f2918e5bd69493bb2a5e2fbf5e00a73e071a4de4c01830787a70e9c89a5b"
+  },
+  {
+    "name": "PR140220.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR140220.zip",
+    "retrieved_at": "2026-11-03T14:03:07.422735+00:00",
+    "status": 200,
+    "bytes": 338741,
+    "content_type": "application/zip",
+    "sha256": "cbb15c1516ed489e66db7971066a7890099f0731f0bbe5303e69a0eaab780640"
+  },
+  {
+    "name": "PR050214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050214.zip",
+    "retrieved_at": "2026-11-03T14:03:07.431727+00:00",
+    "status": 200,
+    "bytes": 265758,
+    "content_type": "application/zip",
+    "sha256": "a5bda40dab8a4deec17a4629536fecf74d5085f7b113b1ac3f4cefbf9faceb0f"
+  },
+  {
+    "name": "PR110714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR110714.zip",
+    "retrieved_at": "2026-11-03T14:03:07.725097+00:00",
+    "status": 200,
+    "bytes": 349683,
+    "content_type": "application/zip",
+    "sha256": "a74102ff5de1fe0d5efc9bc848693c78052588adfcd6bd3f3f0663cb8db15025"
+  },
+  {
+    "name": "PR040215.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040215.zip",
+    "retrieved_at": "2026-11-03T14:03:07.972121+00:00",
+    "status": 200,
+    "bytes": 352908,
+    "content_type": "application/zip",
+    "sha256": "f8a76850ca59e49811da70e3b07c7c8503d9131e8b93e1c79dc5c3afd1d02b4d"
+  },
+  {
+    "name": "PR170217.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170217.zip",
+    "retrieved_at": "2026-11-03T14:03:08.110949+00:00",
+    "status": 200,
+    "bytes": 474795,
+    "content_type": "application/zip",
+    "sha256": "22e5d2a83d8220e7798d96f9c69e6f417a7d03955d4e6887b607f4a3551e3642"
+  },
+  {
+    "name": "PR020218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020218.zip",
+    "retrieved_at": "2026-11-03T14:03:08.236047+00:00",
+    "status": 200,
+    "bytes": 485893,
+    "content_type": "application/zip",
+    "sha256": "7566ae129d021f48b7521e71a7e4896befb817aff47519096a7a051fc651c086"
+  },
+  {
+    "name": "PR040219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040219.zip",
+    "retrieved_at": "2026-11-03T14:03:08.278847+00:00",
+    "status": 200,
+    "bytes": 376066,
+    "content_type": "application/zip",
+    "sha256": "ee2c8bc0a8879ceeed653fa4324c14dfa4c0dbd50e5ea28842902d833c724b9a"
+  },
+  {
+    "name": "PR240114.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR240114.zip",
+    "retrieved_at": "2026-11-03T14:03:09.478427+00:00",
+    "status": 200,
+    "bytes": 328999,
+    "content_type": "application/zip",
+    "sha256": "71135b7742eacb1a3acf5645adb2b81e3c17a14e6ea394582ad597791601f4bb"
+  },
+  {
+    "name": "PR010814.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR010814.zip",
+    "retrieved_at": "2026-11-03T14:03:09.477421+00:00",
+    "status": 200,
+    "bytes": 360250,
+    "content_type": "application/zip",
+    "sha256": "3427cb67f111eb3d10406d9ad6e81f84dec64750a82c34f8a11bc173adda97f5"
+  },
+  {
+    "name": "PR260716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260716.zip",
+    "retrieved_at": "2026-11-03T14:03:09.479996+00:00",
+    "status": 200,
+    "bytes": 508304,
+    "content_type": "application/zip",
+    "sha256": "e75396ddd872949ab807832b23d122c7808a52cf658462ccc7bba2f41f64534a"
+  },
+  {
+    "name": "PR210618.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210618.zip",
+    "retrieved_at": "2026-11-03T14:03:09.597659+00:00",
+    "status": 200,
+    "bytes": 467250,
+    "content_type": "application/zip",
+    "sha256": "5ecb11a8c327ec76b6bad91261becc250f4010a8614c504cfb385a7cb37f994f"
+  },
+  {
+    "name": "PR310719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310719.zip",
+    "retrieved_at": "2026-11-03T14:03:10.093829+00:00",
+    "status": 200,
+    "bytes": 338992,
+    "content_type": "application/zip",
+    "sha256": "78456cdf61f679614893dac600b474d503af8d49893998eb10e01c2d08189b59"
+  },
+  {
+    "name": "PR141119.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR141119.zip",
+    "retrieved_at": "2026-11-03T14:03:10.336481+00:00",
+    "status": 200,
+    "bytes": 318556,
+    "content_type": "application/zip",
+    "sha256": "5ecff4f0efac9087fa2afeda7dd1e531d0ae59a5f2aa7d4a044c67cacc039c1e"
+  },
+  {
+    "name": "PR050514.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050514.zip",
+    "retrieved_at": "2026-11-03T14:03:10.698653+00:00",
+    "status": 200,
+    "bytes": 327527,
+    "content_type": "application/zip",
+    "sha256": "3264bf04b77ab3ba4f1df2724aad598967a27235279c7a8786547e9ac81ff43e"
+  },
+  {
+    "name": "PR090614.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090614.zip",
+    "retrieved_at": "2026-11-03T14:03:11.341787+00:00",
+    "status": 200,
+    "bytes": 356153,
+    "content_type": "application/zip",
+    "sha256": "0076fff6367628ed6c9eb98036ac75ba6c1f0a7cd2c0a283ae326b5edc06bdfd"
+  },
+  {
+    "name": "PR160615.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160615.zip",
+    "retrieved_at": "2026-11-03T14:03:11.343785+00:00",
+    "status": 200,
+    "bytes": 353774,
+    "content_type": "application/zip",
+    "sha256": "2e501ba9548988492b27881e78c2da3aea64167f2285dac170384fcb1c67dcb5"
+  },
+  {
+    "name": "PR100616.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR100616.zip",
+    "retrieved_at": "2026-11-03T14:03:11.662617+00:00",
+    "status": 200,
+    "bytes": 366032,
+    "content_type": "application/zip",
+    "sha256": "1b7dd09d79ea631bf3946b3aae9b7fbb633da0e72b6ef4445b4864c8a28f2c0a"
+  },
+  {
+    "name": "PR050617.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050617.zip",
+    "retrieved_at": "2026-11-03T14:03:11.772542+00:00",
+    "status": 200,
+    "bytes": 439017,
+    "content_type": "application/zip",
+    "sha256": "5c0e90ec6069d96be513a0627ea858829fee0ae7d41cce1450dc790dcfb55daf"
+  },
+  {
+    "name": "PR230418.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230418.zip",
+    "retrieved_at": "2026-11-03T14:03:11.896726+00:00",
+    "status": 200,
+    "bytes": 500892,
+    "content_type": "application/zip",
+    "sha256": "c52be49e0b4417a6b7ac36f19ce8d82f6b00da4848ad3abe492a65ba1a536e52"
+  },
+  {
+    "name": "PR060618.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060618.zip",
+    "retrieved_at": "2026-11-03T14:03:12.160895+00:00",
+    "status": 200,
+    "bytes": 489334,
+    "content_type": "application/zip",
+    "sha256": "ea27e68afa3022b231c0e942b76558005573873fc5434299f437e99967ab8262"
+  },
+  {
+    "name": "PR090719.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090719.zip",
+    "retrieved_at": "2026-11-03T14:03:12.215887+00:00",
+    "status": 200,
+    "bytes": 313722,
+    "content_type": "application/zip",
+    "sha256": "d09f9d16e400cd3976a1fbc52df9d26e6a77efb35f6f490e0f37f0d20e5dc59d"
+  },
+  {
+    "name": "PR210214.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210214.zip",
+    "retrieved_at": "2026-11-03T14:03:12.696901+00:00",
+    "status": 200,
+    "bytes": 335180,
+    "content_type": "application/zip",
+    "sha256": "2318d099eae4a62bdea50e4dbdecb98479d0c4a0fe22192f876295c766b8c47a"
+  },
+  {
+    "name": "PR030914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030914.zip",
+    "retrieved_at": "2026-11-03T14:03:12.712409+00:00",
+    "status": 200,
+    "bytes": 357855,
+    "content_type": "application/zip",
+    "sha256": "2b4d078bf2adb08d5c029a71849c1f8d135951dfd90f392ead85ebcb8ccabbcb"
+  },
+  {
+    "name": "PR171115.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR171115.zip",
+    "retrieved_at": "2026-11-03T14:03:12.879221+00:00",
+    "status": 200,
+    "bytes": 425929,
+    "content_type": "application/zip",
+    "sha256": "d602cfba824db16880298886931196b714b963b79b4257cb7b9c40305b77b144"
+  },
+  {
+    "name": "PR161116.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR161116.zip",
+    "retrieved_at": "2026-11-03T14:03:12.895806+00:00",
+    "status": 200,
+    "bytes": 453554,
+    "content_type": "application/zip",
+    "sha256": "b3bff9a028d33822438630c0e6ac4ee6b010d708d22b0cc8c64998e1e132d7d2"
+  },
+  {
+    "name": "PR300817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR300817.zip",
+    "retrieved_at": "2026-11-03T14:03:13.367906+00:00",
+    "status": 200,
+    "bytes": 549925,
+    "content_type": "application/zip",
+    "sha256": "ac0ecd26ff21f7a5f5dc0a5b644f6c9aa1e8c5a701a704452abd96afa6d02e18"
+  },
+  {
+    "name": "PR091117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR091117.zip",
+    "retrieved_at": "2026-11-03T14:03:13.811892+00:00",
+    "status": 200,
+    "bytes": 492642,
+    "content_type": "application/zip",
+    "sha256": "594aab4e4530f5a11e8ccb4434fbaa933e13028cc3355e7cffe01ce3195c847b"
+  },
+  {
+    "name": "PR290819.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR290819.zip",
+    "retrieved_at": "2026-11-03T14:03:14.615454+00:00",
+    "status": 200,
+    "bytes": 313428,
+    "content_type": "application/zip",
+    "sha256": "fae44c5f266f10c42d7572de21a2f663f66523b65f600940cebf2e2f4f7ef322"
+  },
+  {
+    "name": "PR130614.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR130614.zip",
+    "retrieved_at": "2026-11-03T14:03:14.616452+00:00",
+    "status": 200,
+    "bytes": 354312,
+    "content_type": "application/zip",
+    "sha256": "20193c1af27d9c1c4bdbec1b52e45a548ad68d7959b141fe0d3635b331491edf"
+  },
+  {
+    "name": "PR291014.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR291014.zip",
+    "retrieved_at": "2026-11-03T14:03:14.630455+00:00",
+    "status": 200,
+    "bytes": 400990,
+    "content_type": "application/zip",
+    "sha256": "d10b2aede734ce09d53365386423fb08bd8d35b558bb9c3e53eed00378801f2f"
+  },
+  {
+    "name": "PR120615.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR120615.zip",
+    "retrieved_at": "2026-11-03T14:03:15.018808+00:00",
+    "status": 200,
+    "bytes": 351440,
+    "content_type": "application/zip",
+    "sha256": "769b5c43d31c90a05f37efb4cb6aa199691b66740b403dd8169e9f7adc72af75"
+  },
+  {
+    "name": "PR090617.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090617.zip",
+    "retrieved_at": "2026-11-03T14:03:15.054810+00:00",
+    "status": 200,
+    "bytes": 466015,
+    "content_type": "application/zip",
+    "sha256": "5dffe77e049b3286f199ffc698b0d4a9a697b4f0a0524ecb6e4ed48a02e6c31d"
+  },
+  {
+    "name": "PR170620.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR170620.zip",
+    "retrieved_at": "2026-11-03T14:03:15.056813+00:00",
+    "status": 200,
+    "bytes": 283469,
+    "content_type": "application/zip",
+    "sha256": "2cadc62eea1c94c5141808dcfdeb3e3a348db5421be9ae414c54eb7ac019d891"
+  },
+  {
+    "name": "PR240918.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR240918.zip",
+    "retrieved_at": "2026-11-03T14:03:15.482467+00:00",
+    "status": 200,
+    "bytes": 604754,
+    "content_type": "application/zip",
+    "sha256": "6c7095fd106ac88e8367ba1de4cee337c23cdbaff7f7159215ec7c52d930f895"
+  },
+  {
+    "name": "PR200919.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200919.zip",
+    "retrieved_at": "2026-11-03T14:03:15.882794+00:00",
+    "status": 200,
+    "bytes": 325833,
+    "content_type": "application/zip",
+    "sha256": "43352288c7b29177bc36311b8162ddedff2e18a7223e7daca21af0ff8349c9b3"
+  },
+  {
+    "name": "PR210316.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210316.zip",
+    "retrieved_at": "2026-11-03T14:03:15.978848+00:00",
+    "status": 200,
+    "bytes": 399868,
+    "content_type": "application/zip",
+    "sha256": "0788cc7300a022dcaf201cba010a02a2ed2bb3755010ff58f1c400fb5da23872"
+  },
+  {
+    "name": "PR020320.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020320.zip",
+    "retrieved_at": "2026-11-03T14:03:15.979661+00:00",
+    "status": 200,
+    "bytes": 314716,
+    "content_type": "application/zip",
+    "sha256": "439de553df3f750ea2fad150f1a92f61e9dae13986a60446589ed03c0b3169b6"
+  },
+  {
+    "name": "PR080714.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR080714.zip",
+    "retrieved_at": "2026-11-03T14:03:16.267478+00:00",
+    "status": 200,
+    "bytes": 377723,
+    "content_type": "application/zip",
+    "sha256": "d1a069209f1294749ea749b8b0391d45f4a1e6995e5ddb36af53ff7893eca41a"
+  },
+  {
+    "name": "PR070715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR070715.zip",
+    "retrieved_at": "2026-11-03T14:03:16.288968+00:00",
+    "status": 200,
+    "bytes": 313425,
+    "content_type": "application/zip",
+    "sha256": "538c8b91aff3c6fc1997357e6b952c2c145b50760d8aac086780acebfcd7df90"
+  },
+  {
+    "name": "PR300616.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR300616.zip",
+    "retrieved_at": "2026-11-03T14:03:16.691926+00:00",
+    "status": 200,
+    "bytes": 485949,
+    "content_type": "application/zip",
+    "sha256": "e104d304c59ceba2dec2598e13cf97b3e1705bab4cc002129be2b10ed6c17618"
+  },
+  {
+    "name": "PR160217.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR160217.zip",
+    "retrieved_at": "2026-11-03T14:03:16.964296+00:00",
+    "status": 200,
+    "bytes": 485372,
+    "content_type": "application/zip",
+    "sha256": "e690eb48633face0ca6cb81bfdf08291264dfbe7023a62a67a19d03860332bdf"
+  },
+  {
+    "name": "PR030718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR030718.zip",
+    "retrieved_at": "2026-11-03T14:03:17.067582+00:00",
+    "status": 200,
+    "bytes": 461547,
+    "content_type": "application/zip",
+    "sha256": "b0c52f06a58081452976a017682c75879263832fab33c9a1fb936d354e21069c"
+  },
+  {
+    "name": "PR050914.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR050914.zip",
+    "retrieved_at": "2026-11-03T14:03:17.087580+00:00",
+    "status": 200,
+    "bytes": 337371,
+    "content_type": "application/zip",
+    "sha256": "43be5d43947ad1893941907c4e8c7d3f0b991fec6802d640ec4b648f74b6d9ce"
+  },
+  {
+    "name": "PR060715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060715.zip",
+    "retrieved_at": "2026-11-03T14:03:17.342457+00:00",
+    "status": 200,
+    "bytes": 329293,
+    "content_type": "application/zip",
+    "sha256": "131d72b9bbf2b650c824da15d5c48f1a5fbedc7e75beede6c764c5b36708c01f"
+  },
+  {
+    "name": "PR190916.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190916.zip",
+    "retrieved_at": "2026-11-03T14:03:17.705712+00:00",
+    "status": 200,
+    "bytes": 493163,
+    "content_type": "application/zip",
+    "sha256": "9cb34df0e15da8b0c650ce2472912d0e9956e4c3118820c815b0d6bfc186fee8"
+  },
+  {
+    "name": "PR071216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR071216.zip",
+    "retrieved_at": "2026-11-03T14:03:17.705712+00:00",
+    "status": 200,
+    "bytes": 397090,
+    "content_type": "application/zip",
+    "sha256": "8a53233c87893d9dec4a9eef79a9becd75659bfb4837a0965a60d80e42732c81"
+  },
+  {
+    "name": "PR040817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR040817.zip",
+    "retrieved_at": "2026-11-03T14:03:18.134459+00:00",
+    "status": 200,
+    "bytes": 453421,
+    "content_type": "application/zip",
+    "sha256": "15672c868a1756222f13fd2ba7dd188804e290325c4aa717a4486248ee070c9e"
+  },
+  {
+    "name": "PR060917.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR060917.zip",
+    "retrieved_at": "2026-11-03T14:03:18.354541+00:00",
+    "status": 200,
+    "bytes": 487319,
+    "content_type": "application/zip",
+    "sha256": "16d07853049cf2e2b30c72796f1e62f8900168c7996798cbb0c978e4d55de573"
+  },
+  {
+    "name": "PR161117.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR161117.zip",
+    "retrieved_at": "2026-11-03T14:03:18.555439+00:00",
+    "status": 200,
+    "bytes": 468335,
+    "content_type": "application/zip",
+    "sha256": "7fe08c36781ba140d291c6638d497af55edf0aae2edeaed77defbd660e6c4cd3"
+  },
+  {
+    "name": "PR211217.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR211217.zip",
+    "retrieved_at": "2026-11-03T14:03:18.574332+00:00",
+    "status": 200,
+    "bytes": 442120,
+    "content_type": "application/zip",
+    "sha256": "bd7c2a5e17cd1ce53a3f184c2d9c4a73602d0a608090afe418f669e9b6739b2b"
+  },
+  {
+    "name": "PR210218.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210218.zip",
+    "retrieved_at": "2026-11-03T14:03:18.915658+00:00",
+    "status": 200,
+    "bytes": 498107,
+    "content_type": "application/zip",
+    "sha256": "18d6f76be16c36853d28887a5425ec0c8e65f7c10dd0a0028c47b1f570509266"
+  },
+  {
+    "name": "PR090718.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR090718.zip",
+    "retrieved_at": "2026-11-03T14:03:19.587450+00:00",
+    "status": 200,
+    "bytes": 450554,
+    "content_type": "application/zip",
+    "sha256": "6a6e06abc445dbb6f8c9357ff045b992af68970881161eb9435aa9cc7da3a9aa"
+  },
+  {
+    "name": "PR200818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200818.zip",
+    "retrieved_at": "2026-11-03T14:03:19.588452+00:00",
+    "status": 200,
+    "bytes": 485487,
+    "content_type": "application/zip",
+    "sha256": "1d949e438aeec14a9bdd2bc481a9c4bf788e03287b18e9ff4393d42e767a5d8d"
+  },
+  {
+    "name": "PR141118.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR141118.zip",
+    "retrieved_at": "2026-11-03T14:03:19.727832+00:00",
+    "status": 200,
+    "bytes": 545909,
+    "content_type": "application/zip",
+    "sha256": "eab656312f380ecf28fd08f838deaf26e7de789ce0d6c0081384aef077b54c26"
+  },
+  {
+    "name": "PR270215.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR270215.zip",
+    "retrieved_at": "2026-11-03T14:03:19.883000+00:00",
+    "status": 200,
+    "bytes": 332330,
+    "content_type": "application/zip",
+    "sha256": "5757ee0fff69efb6095acb7bd7754614df70d35c3591ce32c176bbb2b4b9333e"
+  },
+  {
+    "name": "PR020915.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR020915.zip",
+    "retrieved_at": "2026-11-03T14:03:19.993924+00:00",
+    "status": 200,
+    "bytes": 417753,
+    "content_type": "application/zip",
+    "sha256": "15c347e5a746b4611f0cf11c5f13271ff7169371be2fb6776179065501a24c20"
+  },
+  {
+    "name": "PR230216.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR230216.zip",
+    "retrieved_at": "2026-11-03T14:03:20.006954+00:00",
+    "status": 200,
+    "bytes": 409076,
+    "content_type": "application/zip",
+    "sha256": "24df8c9043cfbbe9a2ba0b306e7f029d2b8d658fa9594b73d7472cb27e1fc28f"
+  },
+  {
+    "name": "PR010317.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR010317.zip",
+    "retrieved_at": "2026-11-03T14:03:20.231917+00:00",
+    "status": 200,
+    "bytes": 431563,
+    "content_type": "application/zip",
+    "sha256": "4c7a8010861862800e56e036e1db54a84a77be010bd38167f9ccad40a252cd03"
+  },
+  {
+    "name": "PR210219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR210219.zip",
+    "retrieved_at": "2026-11-03T14:03:20.380606+00:00",
+    "status": 200,
+    "bytes": 305901,
+    "content_type": "application/zip",
+    "sha256": "bc673681362c3fdf03ab3989693d40d71cc0378a4ae47c2f41a61ac11e2f24c5"
+  },
+  {
+    "name": "PR200716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR200716.zip",
+    "retrieved_at": "2026-11-03T14:03:20.504184+00:00",
+    "status": 200,
+    "bytes": 425420,
+    "content_type": "application/zip",
+    "sha256": "c056bc776607f4bf0cd3b43edb41f5eed4450ad7d2be5704517438956fa95a53"
+  },
+  {
+    "name": "PR310818.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR310818.zip",
+    "retrieved_at": "2026-11-03T14:03:20.652742+00:00",
+    "status": 200,
+    "bytes": 487499,
+    "content_type": "application/zip",
+    "sha256": "0ab0cab27c584b8ce2d5314c534e5089cbac77d0dca8444d9cc69d2b85dcd16d"
+  },
+  {
+    "name": "PR240715.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR240715.zip",
+    "retrieved_at": "2026-11-03T14:03:20.868379+00:00",
+    "status": 200,
+    "bytes": 379572,
+    "content_type": "application/zip",
+    "sha256": "f0bc23578875a7a9652d22eb1651cacaec5e9c428d5c4e08417096447a764469"
+  },
+  {
+    "name": "PR190716.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR190716.zip",
+    "retrieved_at": "2026-11-03T14:03:21.171041+00:00",
+    "status": 200,
+    "bytes": 443644,
+    "content_type": "application/zip",
+    "sha256": "9d26d56106aeebdc9f6c00761fd3b58f0a68dd183091483858ae0c638b8937e4"
+  },
+  {
+    "name": "PR031219.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR031219.zip",
+    "retrieved_at": "2026-11-03T14:03:21.529298+00:00",
+    "status": 200,
+    "bytes": 245208,
+    "content_type": "application/zip",
+    "sha256": "47036ca8d0bddcceb8b98b5bbad11a00305b2ffcbef503c90f401f0fe278d15e"
+  },
+  {
+    "name": "PR180817.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR180817.zip",
+    "retrieved_at": "2026-11-03T14:03:21.906761+00:00",
+    "status": 200,
+    "bytes": 447507,
+    "content_type": "application/zip",
+    "sha256": "4fb4b4d274240a43b02da4a099848b0b8c611364fcb8a097377eef028ee6789b"
+  },
+  {
+    "name": "PR260315.zip",
+    "url": "https://nsearchives.nseindia.com/archives/equities/bhavcopy/pr/PR260315.zip",
+    "retrieved_at": "2026-11-03T14:03:21.930679+00:00",
+    "status": 200,
+    "bytes": 416071,
+    "content_type": "application/zip",
+    "sha256": "72ac2c41a12127f54e816caf5da7f01f8af458604e68a7acb46e5309da979a23"
+  }
+]

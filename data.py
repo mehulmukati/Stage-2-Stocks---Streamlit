@@ -31,7 +31,7 @@ _NOOP_EMIT: Callable[[str, str], None] = lambda _lv, _msg: None
 
 import market_data as shared_market
 from config import IST
-from momentum_engine import precompute_metrics
+from momentum_engine import calculation_revision, precompute_metrics
 from stage2_engine import check_weinstein_retest, current_stage2_run, score_stage2
 
 
@@ -346,6 +346,8 @@ def _load_and_score(constituents, for_momentum, emit=_NOOP_EMIT, as_of_date=None
     result.attrs["source_revisions"] = snapshot.revisions
     result.attrs["as_of_date"] = str(target.date())
     result.attrs["equity_policy_version"] = EQUITY_POLICY_VERSION
+    if for_momentum:
+        result.attrs["momentum_calculation_revision"] = calculation_revision()
     return result
 
 
@@ -506,7 +508,7 @@ def resolve_screener_data(for_momentum=False, emit=_NOOP_EMIT, as_of_date=None):
     target_key = str(pd.Timestamp(as_of_date).date()) if as_of_date is not None else _get_target_key()
     snapshot = shared_market.load_snapshot(target_key)
     kind = "momentum" if for_momentum else "stage2"
-    key = (target_key, snapshot.revisions, EQUITY_POLICY_VERSION)
+    key = (target_key, snapshot.revisions, EQUITY_POLICY_VERSION, calculation_revision() if for_momentum else None)
     with _cache_lock:
         hit = _score_cache[kind]
         if hit.get("key") == key and hit.get("data") is not None:

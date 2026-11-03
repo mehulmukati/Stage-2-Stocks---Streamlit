@@ -1,3 +1,6 @@
+import hashlib
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -6,6 +9,11 @@ from equity_data import session_frame
 
 _VOL_WINDOW = 251
 _VOL_MIN_PERIODS = 63
+
+
+def calculation_revision():
+    """Bind cached scores to the calculation source as well as market data."""
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
 def _annualized_vol(returns: pd.Series) -> float | None:
@@ -29,7 +37,7 @@ def _count_circuits(df: pd.DataFrame, calendar=None) -> int | None:
     circuit_count = 0
     for level in CIRCUIT_LEVELS:
         upper = (pct_change >= level - CIRCUIT_TOLERANCE) & (pct_change <= level + CIRCUIT_TOLERANCE)
-        lower = (pct_change <= -level - CIRCUIT_TOLERANCE) & (pct_change >= -level + CIRCUIT_TOLERANCE)
+        lower = (pct_change >= -level - CIRCUIT_TOLERANCE) & (pct_change <= -level + CIRCUIT_TOLERANCE)
         circuit_count += (upper | lower).sum()
     return int(circuit_count)
 
@@ -110,7 +118,7 @@ def precompute_metrics(df: pd.DataFrame, calendar=None) -> pd.DataFrame:
     circuit_hits = pd.Series(0.0, index=c.index).where(pct_chg.notna())
     for level in CIRCUIT_LEVELS:
         upper = (pct_chg >= level - CIRCUIT_TOLERANCE) & (pct_chg <= level + CIRCUIT_TOLERANCE)
-        lower = (pct_chg <= -level - CIRCUIT_TOLERANCE) & (pct_chg >= -level + CIRCUIT_TOLERANCE)
+        lower = (pct_chg >= -level - CIRCUIT_TOLERANCE) & (pct_chg <= -level + CIRCUIT_TOLERANCE)
         circuit_hits += (upper | lower).astype(float)
 
     # Positive-days: tail(days_approx) → days_approx-1 diffs → rolling(days_approx) / (days_approx-1)

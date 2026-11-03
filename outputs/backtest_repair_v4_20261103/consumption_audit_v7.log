@@ -1,0 +1,22 @@
+{
+  "canonical_missing_adjusted": 33754,
+  "canonical_ohlc_flags": 246,
+  "complete_ledger_rows": 34003,
+  "primary_candidate_observations_on_original_missing": 33754,
+  "genuine_missing_positive_quotes": 3,
+  "flags_primary_agree": 149,
+  "flags_primary_oppose": 97,
+  "warmup_sessions": 862,
+  "total_raw_model_rows": 939941,
+  "unresolved_actions_all": 126,
+  "unresolved_actions_potentially_consumed": 67,
+  "post_exit_cases": 374,
+  "post_exit_blocked_cases": 4,
+  "post_exit_no_sale_within_scope": 4,
+  "post_exit_missing_marks": 1842,
+  "vendor_checked_intervals": 452956,
+  "vendor_opposing_factor_intervals": 2927,
+  "accepted": false,
+  "publication_performed": false,
+  "strategy_comparison_run": false
+}

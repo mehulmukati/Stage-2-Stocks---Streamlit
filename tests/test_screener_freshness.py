@@ -76,6 +76,8 @@ def test_new_publication_recalculates_once_without_clicking_run_or_fetching_pric
         frame = pd.DataFrame({"Price Date": [target], "Stage 2 Days": [1], "Stage 2 Since": [target]})
         frame.attrs["source_revisions"] = ("new-prices", "members")
         frame.attrs["equity_policy_version"] = app.shared_market.EQUITY_POLICY_VERSION
+        if kind == "momentum":
+            frame.attrs["momentum_calculation_revision"] = app.momentum_calculation_revision()
         st.session_state[f"{kind}_cached_result"] = dict(df=frame, cache_date=target, source="shared")
         return True
 

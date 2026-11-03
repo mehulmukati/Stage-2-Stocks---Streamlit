@@ -1,0 +1,47 @@
+{
+  "expected": 862,
+  "observed": 862,
+  "missing": [],
+  "unexpected": [],
+  "evidence": [
+    {
+      "path": "outputs\\backtest_repair_v4_20261103\\evidence\\CMTR25326.pdf",
+      "sha256": "1247dc6cb843e6bfaa50c42d416dc021fd55cbbb6420c43e652d2b7a07fd2f35"
+    },
+    {
+      "path": "outputs\\backtest_repair_v4_20261103\\evidence\\CMTR28337.pdf",
+      "sha256": "5733cf3b16cf5cf05879fb28777d0fbf6636c44c8dd204c8fe2f02ef9bb722c4"
+    },
+    {
+      "path": "outputs\\backtest_repair_v4_20261103\\evidence\\CMTR31297.pdf",
+      "sha256": "bf33e9aade8773908fc5d6de105cc731e93bf063cd1564a82fe1998c5aaf6432"
+    },
+    {
+      "path": "outputs\\backtest_repair_v3_20261103\\evidence\\CMTR33746.pdf",
+      "sha256": "2fd7ee17432434df26154bbdb9de549d3e4a7acd4cf567843513457e9c98fbce"
+    },
+    {
+      "path": "outputs\\backtest_repair_v4_20261103\\evidence\\CMTR26360.pdf",
+      "sha256": "dcc7ba7d2b626494189065569732fc27f5a13945c707d5a9be62474ddb0331a5",
+      "holiday": "2014-04-24"
+    },
+    {
+      "path": "outputs\\backtest_repair_v4_20261103\\evidence\\CMTR27792.pdf",
+      "sha256": "1e5e2964d919b72fc3728d2e4d2ba785f77aebb162188c260b8f3d6479590282",
+      "holiday": "2014-10-15"
+    },
+    {
+      "path": "outputs\\backtest_repair_v4_20261103\\evidence\\CMTR26045.pdf",
+      "sha256": "29c0eb8dad67a30944b8df6d6124f679811d9864ca30dd468b3742bf1fa28ca4",
+      "live": "2014-03-22"
+    },
+    {
+      "path": "outputs\\backtest_repair_v4_20261103\\evidence\\NSEIL_Annual_Report_2015.pdf",
+      "sha256": "d11b024ba5ecb76fbb1fbf9322469a00e62c067362df8e275b0a738297073bb1",
+      "page": 12,
+      "live": "2015-02-28",
+      "limitation": "Cash movement figure footnote plus original CM bhavcopy; CD28927 is currency-segment evidence only"
+    }
+  ],
+  "accepted_calendar_changed": false
+}

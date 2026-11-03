@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <style>
+        body{
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            height: 90vh;
+            justify-content: center;
+        }
+        .errorContainer h2 {
+            font-size: 260px;
+            color: #e97e62;
+            font-family: "Montserrat";
+            font-weight: bold;
+            margin: 0 10px;
+            line-height: 317px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .img-align {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .errorContainer h3 {
+            color: #3a2d7d;
+            font-family: "Montserrat";
+            line-height: 24px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .btn-common {
+            font-family: "Montserrat";
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.29;
+            letter-spacing: normal;
+            border: solid 1px #C35516;
+            padding: 15px 45px 15px 25px;
+            border-radius: 25px;
+            color: #C35516;
+            font-family: "Montserrat";
+            font-weight: normal;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .btn {
+            font-size: 0.875rem;
+        }
+
+        .btn:not(:disabled):not(.disabled) {
+            cursor: pointer;
+        }
+
+        .btn-common:before {
+            top: 50%;
+            right: 15px;
+            width: 9px;
+            height: 9px;
+            -webkit-transform-origin: 50% 50%;
+            transform-origin: 50% 50%;
+            -webkit-transform: translate(0, -5px) rotate(45deg);
+            transform: translate(0, -5px) rotate(45deg);
+            box-shadow: inset -2px 2px 0 0 #C35516;
+            border-radius: 0;
+        }
+
+        .btn-common:after,
+        .btn-common:before {
+            content: "";
+            display: block;
+            position: absolute;
+            transition: all 0.5s ease-in-out;
+        }
+
+        .btn-align {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+        }
+    </style>
+<script >bazadebezolkohpepadr="2124203332"</script><script type="text/javascript" src="https://nsearchives.nseindia.com/akam/13/7e9cc5ae"  defer></script></head>
+
+<body>
+    <div class="errorContainer img-align">
+        <h2>4</h2>
+        <img src="https://nseindia.com/assets/images/error-logo.png"  alt="error" title="error">
+        <h2>4</h2>
+    </div>
+    <div class="errorContainer btn-align">
+        <h3>The file you are trying to access doesn't appear to exist.</h3>
+        <div class="gotoHome">
+            <a class="btn btn-common" href="https://www.nseindia.com/">Go to Homepage</a>
+        </div>
+    </div>
+<noscript><img src="https://nsearchives.nseindia.com/akam/13/pixel_7e9cc5ae?a=dD1jYTFmMmEwNmNjNWZmNDQ1OGQ5OTFkZTkwNjYyY2JjNDUxMjQyZTNmJmpzPW9mZg==" style="visibility: hidden; position: absolute; left: -999px; top: -999px;" /></noscript></body>
+
+</html>

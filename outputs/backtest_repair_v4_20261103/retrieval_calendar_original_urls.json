@@ -1,0 +1,29 @@
+[
+  {
+    "name": "FAOP26362.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/FAOP26362.pdf",
+    "retrieved_at": "2026-11-03T14:17:18.436366+00:00",
+    "status": 200,
+    "bytes": 185942,
+    "content_type": "application/pdf",
+    "sha256": "394c33d36af0ff31ea13adacc31ac45dbc799659de4b8767244e95349af14855"
+  },
+  {
+    "name": "CMTR26045.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR26045.pdf",
+    "retrieved_at": "2026-11-03T14:17:18.436366+00:00",
+    "status": 200,
+    "bytes": 514989,
+    "content_type": "application/pdf",
+    "sha256": "29c0eb8dad67a30944b8df6d6124f679811d9864ca30dd468b3742bf1fa28ca4"
+  },
+  {
+    "name": "CD28927.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CD28927.pdf",
+    "retrieved_at": "2026-11-03T14:17:18.438364+00:00",
+    "status": 200,
+    "bytes": 185740,
+    "content_type": "application/pdf",
+    "sha256": "4bc57ca23c6fe60582e5b107bce9bdb76deea4b7e33326cfc045c265521e07cd"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "model": "nse-cash-split-research-v1",
+  "raw_rows": 939941,
+  "warmup_sessions": 862,
+  "warmup_first": "2014-01-01",
+  "warmup_last": "2017-06-30",
+  "seed_security_ids": 663,
+  "research_lineages": 640,
+  "lineage_edges": 105,
+  "action_decisions": 5468,
+  "unresolved_actions": 126,
+  "ambiguous_quote_rows": 0,
+  "accepted": false
+}

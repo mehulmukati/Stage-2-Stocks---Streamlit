@@ -1,0 +1,2034 @@
+[
+  {
+    "old_isin": "INE871C01020",
+    "new_isin": "INE871C01038",
+    "date": "2018-06-26",
+    "kind": "split_and_bonus",
+    "share_ratio": 3,
+    "evidence": [
+      "cm26JUN2018bhav.csv.zip:cm26JUN2018bhav.csv:156",
+      "cm27JUN2018bhav.csv.zip:cm27JUN2018bhav.csv:153"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\AVANTIFEED_msei.html"
+  },
+  {
+    "old_isin": "INE216A01022",
+    "new_isin": "INE216A01030",
+    "date": "2018-11-29",
+    "kind": "face_value_split",
+    "share_ratio": 2,
+    "evidence": [
+      "cm29NOV2018bhav.csv.zip:cm29NOV2018bhav.csv:251",
+      "cm30NOV2018bhav.csv.zip:cm30NOV2018bhav.csv:255"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\BRITANNIA_msei.html"
+  },
+  {
+    "old_isin": "INE477A01012",
+    "new_isin": "INE477A01020",
+    "date": "2017-10-12",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm12OCT2017bhav.csv.zip:cm12OCT2017bhav.csv:248",
+      "cm13OCT2017bhav.csv.zip:cm13OCT2017bhav.csv:249"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\CANFINHOME_msei.html"
+  },
+  {
+    "old_isin": "INE121A01016",
+    "new_isin": "INE121A01024",
+    "date": "2019-06-14",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm14JUN2019bhav.csv.zip:cm14JUN2019bhav.csv:308",
+      "cm17JUN2019bhav.csv.zip:cm17JUN2019bhav.csv:311"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\CHOLAFIN_msei.html"
+  },
+  {
+    "old_isin": "INE111A01017",
+    "new_isin": "INE111A01025",
+    "date": "2018-06-26",
+    "kind": "face_value_split",
+    "share_ratio": 2,
+    "evidence": [
+      "cm26JUN2018bhav.csv.zip:cm26JUN2018bhav.csv:321",
+      "cm27JUN2018bhav.csv.zip:cm27JUN2018bhav.csv:318"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\CONCOR_msei.html"
+  },
+  {
+    "old_isin": "INE066A01013",
+    "new_isin": "INE066A01021",
+    "date": "2020-08-24",
+    "kind": "face_value_split",
+    "share_ratio": 10,
+    "evidence": [
+      "cm24AUG2020bhav.csv.zip:cm24AUG2020bhav.csv:463",
+      "cm25AUG2020bhav.csv.zip:cm25AUG2020bhav.csv:453"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\EICHERMOT_msei.html"
+  },
+  {
+    "old_isin": "INE844O01022",
+    "new_isin": "INE844O01030",
+    "date": "2019-01-15",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm15JAN2019bhav.csv.zip:cm15JAN2019bhav.csv:597",
+      "cm16JAN2019bhav.csv.zip:cm16JAN2019bhav.csv:599"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\CML39771.pdf"
+  },
+  {
+    "old_isin": "INE040A01026",
+    "new_isin": "INE040A01034",
+    "date": "2019-09-19",
+    "kind": "face_value_split",
+    "share_ratio": 2,
+    "evidence": [
+      "cm19SEP2019bhav.csv.zip:cm19SEP2019bhav.csv:633",
+      "cm20SEP2019bhav.csv.zip:cm20SEP2019bhav.csv:639"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\HDFCBANK_msei.html"
+  },
+  {
+    "old_isin": "INE978A01019",
+    "new_isin": "INE978A01027",
+    "date": "2017-10-10",
+    "kind": "face_value_split",
+    "share_ratio": 2,
+    "evidence": [
+      "cm10OCT2017bhav.csv.zip:cm10OCT2017bhav.csv:598",
+      "cm11OCT2017bhav.csv.zip:cm11OCT2017bhav.csv:587"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\HERITGFOOD_msei.html"
+  },
+  {
+    "old_isin": "INE022Q01012",
+    "new_isin": "INE022Q01020",
+    "date": "2018-10-19",
+    "kind": "face_value_split",
+    "share_ratio": 10,
+    "evidence": [
+      "cm19OCT2018bhav.csv.zip:cm19OCT2018bhav.csv:741",
+      "cm22OCT2018bhav.csv.zip:cm22OCT2018bhav.csv:747"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\IEX_msei.html"
+  },
+  {
+    "old_isin": "INE203G01019",
+    "new_isin": "INE203G01027",
+    "date": "2017-11-09",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm09NOV2017bhav.csv.zip:cm09NOV2017bhav.csv:680",
+      "cm10NOV2017bhav.csv.zip:cm10NOV2017bhav.csv:665"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\IGL_msei.html"
+  },
+  {
+    "old_isin": "INE483S01012",
+    "new_isin": "INE483S01020",
+    "date": "2017-08-31",
+    "kind": "face_value_split",
+    "share_ratio": 10,
+    "evidence": [
+      "cm31AUG2017bhav.csv.zip:cm31AUG2017bhav.csv:696",
+      "cm01SEP2017bhav.csv.zip:cm01SEP2017bhav.csv:693"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\FAOP35607.pdf"
+  },
+  {
+    "old_isin": "INE962Y01013",
+    "new_isin": "INE962Y01021",
+    "date": "2020-04-03",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm07APR2020bhav.csv.zip:cm07APR2020bhav.csv:836",
+      "cm08APR2020bhav.csv.zip:cm08APR2020bhav.csv:812"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\IRCON_msei.html"
+  },
+  {
+    "old_isin": "INE854D01016",
+    "new_isin": "INE854D01024",
+    "date": "2018-06-15",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm15JUN2018bhav.csv.zip:cm15JUN2018bhav.csv:1050",
+      "cm18JUN2018bhav.csv.zip:cm18JUN2018bhav.csv:1040"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\FAOP37978.pdf"
+  },
+  {
+    "old_isin": "INE048G01018",
+    "new_isin": "INE048G01026",
+    "date": "2017-07-19",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm19JUL2017bhav.csv.zip:cm19JUL2017bhav.csv:1044",
+      "cm20JUL2017bhav.csv.zip:cm20JUL2017bhav.csv:1046"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\NAVINFLUOR_msei.html"
+  },
+  {
+    "old_isin": "INE095N01023",
+    "new_isin": "INE095N01031",
+    "date": "2018-04-25",
+    "kind": "face_value_split",
+    "share_ratio": 2,
+    "evidence": [
+      "cm25APR2018bhav.csv.zip:cm25APR2018bhav.csv:1127",
+      "cm26APR2018bhav.csv.zip:cm26APR2018bhav.csv:1118"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\NBCC_msei.html"
+  },
+  {
+    "old_isin": "INE285J01010",
+    "new_isin": "INE285J01028",
+    "date": "2020-01-15",
+    "kind": "face_value_split",
+    "share_ratio": 2,
+    "evidence": [
+      "cm15JAN2020bhav.csv.zip:cm15JAN2020bhav.csv:1597",
+      "cm16JAN2020bhav.csv.zip:cm16JAN2020bhav.csv:1590"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\SIS_CMPT43159.pdf"
+  },
+  {
+    "old_isin": "INE805D01026",
+    "new_isin": "INE805D01034",
+    "date": "2017-07-25",
+    "kind": "face_value_split",
+    "share_ratio": 2,
+    "evidence": [
+      "cm25JUL2017bhav.csv.zip:cm25JUL2017bhav.csv:1544",
+      "cm26JUL2017bhav.csv.zip:cm26JUL2017bhav.csv:1519"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\SUNTECK_msei.html"
+  },
+  {
+    "old_isin": "INE064C01014",
+    "new_isin": "INE064C01022",
+    "date": "2019-12-13",
+    "kind": "face_value_split",
+    "share_ratio": 10,
+    "evidence": [
+      "cm13DEC2019bhav.csv.zip:cm13DEC2019bhav.csv:1810",
+      "cm16DEC2019bhav.csv.zip:cm16DEC2019bhav.csv:1830"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\TRIDENT_msei.html"
+  },
+  {
+    "old_isin": "INE410B01029",
+    "new_isin": "INE410B01037",
+    "date": "2020-02-05",
+    "kind": "face_value_split",
+    "share_ratio": 2,
+    "evidence": [
+      "cm05FEB2020bhav.csv.zip:cm05FEB2020bhav.csv:1886",
+      "cm06FEB2020bhav.csv.zip:cm06FEB2020bhav.csv:1887"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\VINATIORGA_msei.html"
+  },
+  {
+    "old_isin": "INE528G01019",
+    "new_isin": "INE528G01027",
+    "date": "2017-09-21",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm21SEP2017bhav.csv.zip:cm21SEP2017bhav.csv:1749",
+      "cm22SEP2017bhav.csv.zip:cm22SEP2017bhav.csv:1748"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\YESBANK_msei.html"
+  },
+  {
+    "old_isin": "INE528G01027",
+    "new_isin": "INE528G01035",
+    "date": "2020-03-16",
+    "kind": "reconstruction_with_conditional_lock_in",
+    "share_ratio": 1,
+    "evidence": [
+      "cm13MAR2020bhav.csv.zip:cm13MAR2020bhav.csv:1986",
+      "cm16MAR2020bhav.csv.zip:cm16MAR2020bhav.csv:2029"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\INSP43833.pdf"
+  },
+  {
+    "old_isin": "INE520A01019",
+    "new_isin": "INE520A01027",
+    "date": "2018-09-07",
+    "kind": "face_value_split",
+    "share_ratio": 5,
+    "evidence": [
+      "cm07SEP2018bhav.csv.zip:cm07SEP2018bhav.csv:1909",
+      "cm10SEP2018bhav.csv.zip:cm10SEP2018bhav.csv:1903"
+    ],
+    "source": "outputs\\backtest_repair_v3_20261103\\evidence\\ZENSARTECH_msei.html"
+  },
+  {
+    "old_isin": "INE455I01011",
+    "new_isin": "INE455I01029",
+    "date": "2014-01-27",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:33",
+      "cm24JAN2014bhav.csv.zip:cm24JAN2014bhav.csv:745",
+      "cm27JAN2014bhav.csv.zip:cm27JAN2014bhav.csv:731",
+      "cm28JAN2014bhav.csv.zip:cm28JAN2014bhav.csv:721",
+      "cm29JAN2014bhav.csv.zip:cm29JAN2014bhav.csv:732",
+      "cm30JAN2014bhav.csv.zip:cm30JAN2014bhav.csv:727",
+      "cm31JAN2014bhav.csv.zip:cm31JAN2014bhav.csv:727",
+      "cm03FEB2014bhav.csv.zip:cm03FEB2014bhav.csv:729",
+      "cm04FEB2014bhav.csv.zip:cm04FEB2014bhav.csv:740",
+      "cm05FEB2014bhav.csv.zip:cm05FEB2014bhav.csv:738",
+      "cm06FEB2014bhav.csv.zip:cm06FEB2014bhav.csv:733"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE665A01020",
+    "new_isin": "INE665A01038",
+    "date": "2014-02-03",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:59",
+      "cm31JAN2014bhav.csv.zip:cm31JAN2014bhav.csv:1298",
+      "cm03FEB2014bhav.csv.zip:cm03FEB2014bhav.csv:1301",
+      "cm04FEB2014bhav.csv.zip:cm04FEB2014bhav.csv:1315",
+      "cm05FEB2014bhav.csv.zip:cm05FEB2014bhav.csv:1314",
+      "cm06FEB2014bhav.csv.zip:cm06FEB2014bhav.csv:1313",
+      "cm07FEB2014bhav.csv.zip:cm07FEB2014bhav.csv:1333",
+      "cm10FEB2014bhav.csv.zip:cm10FEB2014bhav.csv:1292",
+      "cm11FEB2014bhav.csv.zip:cm11FEB2014bhav.csv:1319",
+      "cm12FEB2014bhav.csv.zip:cm12FEB2014bhav.csv:1316",
+      "cm13FEB2014bhav.csv.zip:cm13FEB2014bhav.csv:1307"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE288B01011",
+    "new_isin": "INE288B01029",
+    "date": "2014-06-20",
+    "kind": "split_and_bonus",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:331",
+      "cm17JUN2014bhav.csv.zip:cm17JUN2014bhav.csv:310",
+      "cm18JUN2014bhav.csv.zip:cm18JUN2014bhav.csv:306",
+      "cm19JUN2014bhav.csv.zip:cm19JUN2014bhav.csv:300",
+      "cm20JUN2014bhav.csv.zip:cm20JUN2014bhav.csv:302",
+      "cm23JUN2014bhav.csv.zip:cm23JUN2014bhav.csv:306",
+      "cm24JUN2014bhav.csv.zip:cm24JUN2014bhav.csv:303",
+      "cm25JUN2014bhav.csv.zip:cm25JUN2014bhav.csv:309",
+      "cm26JUN2014bhav.csv.zip:cm26JUN2014bhav.csv:305",
+      "cm27JUN2014bhav.csv.zip:cm27JUN2014bhav.csv:307",
+      "cm30JUN2014bhav.csv.zip:cm30JUN2014bhav.csv:306"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE238A01026",
+    "new_isin": "INE238A01034",
+    "date": "2014-07-28",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:617",
+      "cm25JUL2014bhav.csv.zip:cm25JUL2014bhav.csv:128",
+      "cm28JUL2014bhav.csv.zip:cm28JUL2014bhav.csv:127",
+      "cm30JUL2014bhav.csv.zip:cm30JUL2014bhav.csv:132",
+      "cm31JUL2014bhav.csv.zip:cm31JUL2014bhav.csv:130",
+      "cm01AUG2014bhav.csv.zip:cm01AUG2014bhav.csv:129",
+      "cm04AUG2014bhav.csv.zip:cm04AUG2014bhav.csv:129",
+      "cm05AUG2014bhav.csv.zip:cm05AUG2014bhav.csv:127",
+      "cm06AUG2014bhav.csv.zip:cm06AUG2014bhav.csv:131",
+      "cm07AUG2014bhav.csv.zip:cm07AUG2014bhav.csv:129"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE176B01026",
+    "new_isin": "INE176B01034",
+    "date": "2014-08-26",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:911",
+      "PR130814.zip:Bc130814.csv:102",
+      "PR130814.zip:Bc130814.csv:562",
+      "cm25AUG2014bhav.csv.zip:cm25AUG2014bhav.csv:512",
+      "cm26AUG2014bhav.csv.zip:cm26AUG2014bhav.csv:515",
+      "cm27AUG2014bhav.csv.zip:cm27AUG2014bhav.csv:513",
+      "cm28AUG2014bhav.csv.zip:cm28AUG2014bhav.csv:512",
+      "cm01SEP2014bhav.csv.zip:cm01SEP2014bhav.csv:515",
+      "cm02SEP2014bhav.csv.zip:cm02SEP2014bhav.csv:516",
+      "cm03SEP2014bhav.csv.zip:cm03SEP2014bhav.csv:519",
+      "cm04SEP2014bhav.csv.zip:cm04SEP2014bhav.csv:518",
+      "cm05SEP2014bhav.csv.zip:cm05SEP2014bhav.csv:525"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE168A01017",
+    "new_isin": "INE168A01041",
+    "date": "2014-09-04",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1027",
+      "cm01SEP2014bhav.csv.zip:cm01SEP2014bhav.csv:674",
+      "cm02SEP2014bhav.csv.zip:cm02SEP2014bhav.csv:672",
+      "cm03SEP2014bhav.csv.zip:cm03SEP2014bhav.csv:681",
+      "cm04SEP2014bhav.csv.zip:cm04SEP2014bhav.csv:672",
+      "cm05SEP2014bhav.csv.zip:cm05SEP2014bhav.csv:688",
+      "cm08SEP2014bhav.csv.zip:cm08SEP2014bhav.csv:676",
+      "cm09SEP2014bhav.csv.zip:cm09SEP2014bhav.csv:680",
+      "cm10SEP2014bhav.csv.zip:cm10SEP2014bhav.csv:684",
+      "cm11SEP2014bhav.csv.zip:cm11SEP2014bhav.csv:672",
+      "cm12SEP2014bhav.csv.zip:cm12SEP2014bhav.csv:682"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE150B01013",
+    "new_isin": "INE150B01021",
+    "date": "2014-09-08",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1084",
+      "cm05SEP2014bhav.csv.zip:cm05SEP2014bhav.csv:52",
+      "cm08SEP2014bhav.csv.zip:cm08SEP2014bhav.csv:52",
+      "cm09SEP2014bhav.csv.zip:cm09SEP2014bhav.csv:51",
+      "cm10SEP2014bhav.csv.zip:cm10SEP2014bhav.csv:52",
+      "cm11SEP2014bhav.csv.zip:cm11SEP2014bhav.csv:52",
+      "cm12SEP2014bhav.csv.zip:cm12SEP2014bhav.csv:51",
+      "cm15SEP2014bhav.csv.zip:cm15SEP2014bhav.csv:52",
+      "cm16SEP2014bhav.csv.zip:cm16SEP2014bhav.csv:52",
+      "cm17SEP2014bhav.csv.zip:cm17SEP2014bhav.csv:52",
+      "cm18SEP2014bhav.csv.zip:cm18SEP2014bhav.csv:51"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE059D01012",
+    "new_isin": "INE059D01020",
+    "date": "2014-09-24",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1713",
+      "cm22SEP2014bhav.csv.zip:cm22SEP2014bhav.csv:802",
+      "cm23SEP2014bhav.csv.zip:cm23SEP2014bhav.csv:805",
+      "cm24SEP2014bhav.csv.zip:cm24SEP2014bhav.csv:800",
+      "cm25SEP2014bhav.csv.zip:cm25SEP2014bhav.csv:799",
+      "cm26SEP2014bhav.csv.zip:cm26SEP2014bhav.csv:802",
+      "cm29SEP2014bhav.csv.zip:cm29SEP2014bhav.csv:797",
+      "cm30SEP2014bhav.csv.zip:cm30SEP2014bhav.csv:800",
+      "cm01OCT2014bhav.csv.zip:cm01OCT2014bhav.csv:798"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE006I01038",
+    "new_isin": "INE006I01046",
+    "date": "2014-09-25",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1769",
+      "PR030914.zip:Bc030914.csv:244",
+      "PR030914.zip:Bc030914.csv:876",
+      "PR040914.zip:Bc040914.csv:259",
+      "PR040914.zip:Bc040914.csv:841",
+      "PR050914.zip:Bc050914.csv:273",
+      "PR050914.zip:Bc050914.csv:918",
+      "PR080914.zip:Bc080914.csv:279",
+      "PR080914.zip:Bc080914.csv:974",
+      "PR100914.zip:Bc100914.csv:370",
+      "PR100914.zip:Bc100914.csv:954",
+      "PR110914.zip:Bc110914.csv:402",
+      "PR110914.zip:Bc110914.csv:985",
+      "PR120914.zip:Bc120914.csv:400",
+      "PR120914.zip:Bc120914.csv:983",
+      "PR170914.zip:Bc170914.csv:399",
+      "PR170914.zip:Bc170914.csv:982",
+      "PR190914.zip:Bc190914.csv:438",
+      "PR190914.zip:Bc190914.csv:893",
+      "PR220914.zip:Bc220914.csv:366",
+      "PR220914.zip:Bc220914.csv:820",
+      "PR250914.zip:Bc250914.csv:313",
+      "PR250914.zip:Bc250914.csv:637",
+      "PR270814.zip:Bc270814.csv:275",
+      "PR270814.zip:Bc270814.csv:729",
+      "cm22SEP2014bhav.csv.zip:cm22SEP2014bhav.csv:113",
+      "cm23SEP2014bhav.csv.zip:cm23SEP2014bhav.csv:112",
+      "cm24SEP2014bhav.csv.zip:cm24SEP2014bhav.csv:113",
+      "cm25SEP2014bhav.csv.zip:cm25SEP2014bhav.csv:112",
+      "cm26SEP2014bhav.csv.zip:cm26SEP2014bhav.csv:110",
+      "cm29SEP2014bhav.csv.zip:cm29SEP2014bhav.csv:111",
+      "cm30SEP2014bhav.csv.zip:cm30SEP2014bhav.csv:112",
+      "cm01OCT2014bhav.csv.zip:cm01OCT2014bhav.csv:112"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE659A01015",
+    "new_isin": "INE659A01023",
+    "date": "2014-09-30",
+    "kind": "split_and_bonus",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1774",
+      "cm29SEP2014bhav.csv.zip:cm29SEP2014bhav.csv:1352",
+      "cm30SEP2014bhav.csv.zip:cm30SEP2014bhav.csv:1369",
+      "cm01OCT2014bhav.csv.zip:cm01OCT2014bhav.csv:1356",
+      "cm07OCT2014bhav.csv.zip:cm07OCT2014bhav.csv:1373",
+      "cm08OCT2014bhav.csv.zip:cm08OCT2014bhav.csv:1360",
+      "cm09OCT2014bhav.csv.zip:cm09OCT2014bhav.csv:1385",
+      "cm10OCT2014bhav.csv.zip:cm10OCT2014bhav.csv:1349"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE062A01012",
+    "new_isin": "INE062A01020",
+    "date": "2014-11-20",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1858",
+      "cm17NOV2014bhav.csv.zip:cm17NOV2014bhav.csv:1238",
+      "cm18NOV2014bhav.csv.zip:cm18NOV2014bhav.csv:1243",
+      "cm19NOV2014bhav.csv.zip:cm19NOV2014bhav.csv:1237",
+      "cm20NOV2014bhav.csv.zip:cm20NOV2014bhav.csv:1236",
+      "cm21NOV2014bhav.csv.zip:cm21NOV2014bhav.csv:1244",
+      "cm24NOV2014bhav.csv.zip:cm24NOV2014bhav.csv:1245",
+      "cm25NOV2014bhav.csv.zip:cm25NOV2014bhav.csv:1237",
+      "cm26NOV2014bhav.csv.zip:cm26NOV2014bhav.csv:1217",
+      "cm27NOV2014bhav.csv.zip:cm27NOV2014bhav.csv:1230",
+      "cm28NOV2014bhav.csv.zip:cm28NOV2014bhav.csv:1241"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE260B01010",
+    "new_isin": "INE260B01028",
+    "date": "2014-11-28",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1874",
+      "cm25NOV2014bhav.csv.zip:cm25NOV2014bhav.csv:461",
+      "cm26NOV2014bhav.csv.zip:cm26NOV2014bhav.csv:457",
+      "cm27NOV2014bhav.csv.zip:cm27NOV2014bhav.csv:465",
+      "cm28NOV2014bhav.csv.zip:cm28NOV2014bhav.csv:464",
+      "cm01DEC2014bhav.csv.zip:cm01DEC2014bhav.csv:467",
+      "cm02DEC2014bhav.csv.zip:cm02DEC2014bhav.csv:461",
+      "cm03DEC2014bhav.csv.zip:cm03DEC2014bhav.csv:457",
+      "cm04DEC2014bhav.csv.zip:cm04DEC2014bhav.csv:462",
+      "cm05DEC2014bhav.csv.zip:cm05DEC2014bhav.csv:463",
+      "cm08DEC2014bhav.csv.zip:cm08DEC2014bhav.csv:467"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE090A01013",
+    "new_isin": "INE090A01021",
+    "date": "2014-12-04",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1877",
+      "cm01DEC2014bhav.csv.zip:cm01DEC2014bhav.csv:579",
+      "cm02DEC2014bhav.csv.zip:cm02DEC2014bhav.csv:575",
+      "cm03DEC2014bhav.csv.zip:cm03DEC2014bhav.csv:569",
+      "cm04DEC2014bhav.csv.zip:cm04DEC2014bhav.csv:573",
+      "cm05DEC2014bhav.csv.zip:cm05DEC2014bhav.csv:576",
+      "cm08DEC2014bhav.csv.zip:cm08DEC2014bhav.csv:578",
+      "cm09DEC2014bhav.csv.zip:cm09DEC2014bhav.csv:576",
+      "cm10DEC2014bhav.csv.zip:cm10DEC2014bhav.csv:576",
+      "cm11DEC2014bhav.csv.zip:cm11DEC2014bhav.csv:578",
+      "cm12DEC2014bhav.csv.zip:cm12DEC2014bhav.csv:578"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE573A01034",
+    "new_isin": "INE573A01042",
+    "date": "2014-12-18",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1907",
+      "cm15DEC2014bhav.csv.zip:cm15DEC2014bhav.csv:701",
+      "cm16DEC2014bhav.csv.zip:cm16DEC2014bhav.csv:708",
+      "cm17DEC2014bhav.csv.zip:cm17DEC2014bhav.csv:703",
+      "cm18DEC2014bhav.csv.zip:cm18DEC2014bhav.csv:700",
+      "cm19DEC2014bhav.csv.zip:cm19DEC2014bhav.csv:708",
+      "cm22DEC2014bhav.csv.zip:cm22DEC2014bhav.csv:702",
+      "cm23DEC2014bhav.csv.zip:cm23DEC2014bhav.csv:698",
+      "cm24DEC2014bhav.csv.zip:cm24DEC2014bhav.csv:692",
+      "cm26DEC2014bhav.csv.zip:cm26DEC2014bhav.csv:698"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE160A01014",
+    "new_isin": "INE160A01022",
+    "date": "2014-12-18",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1909",
+      "cm15DEC2014bhav.csv.zip:cm15DEC2014bhav.csv:1069",
+      "cm16DEC2014bhav.csv.zip:cm16DEC2014bhav.csv:1076",
+      "cm17DEC2014bhav.csv.zip:cm17DEC2014bhav.csv:1067",
+      "cm18DEC2014bhav.csv.zip:cm18DEC2014bhav.csv:1065",
+      "cm19DEC2014bhav.csv.zip:cm19DEC2014bhav.csv:1076",
+      "cm22DEC2014bhav.csv.zip:cm22DEC2014bhav.csv:1066",
+      "cm23DEC2014bhav.csv.zip:cm23DEC2014bhav.csv:1063",
+      "cm24DEC2014bhav.csv.zip:cm24DEC2014bhav.csv:1056",
+      "cm26DEC2014bhav.csv.zip:cm26DEC2014bhav.csv:1063"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE842C01013",
+    "new_isin": "INE842C01021",
+    "date": "2015-01-05",
+    "kind": "split_and_bonus",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1931",
+      "cm02JAN2015bhav.csv.zip:cm02JAN2015bhav.csv:887",
+      "cm05JAN2015bhav.csv.zip:cm05JAN2015bhav.csv:883",
+      "cm06JAN2015bhav.csv.zip:cm06JAN2015bhav.csv:881",
+      "cm07JAN2015bhav.csv.zip:cm07JAN2015bhav.csv:883",
+      "cm08JAN2015bhav.csv.zip:cm08JAN2015bhav.csv:885",
+      "cm09JAN2015bhav.csv.zip:cm09JAN2015bhav.csv:884",
+      "cm12JAN2015bhav.csv.zip:cm12JAN2015bhav.csv:887",
+      "cm13JAN2015bhav.csv.zip:cm13JAN2015bhav.csv:889",
+      "cm14JAN2015bhav.csv.zip:cm14JAN2015bhav.csv:885",
+      "cm15JAN2015bhav.csv.zip:cm15JAN2015bhav.csv:884"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE982F01028",
+    "new_isin": "INE982F01036",
+    "date": "2015-01-06",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1933",
+      "cm05JAN2015bhav.csv.zip:cm05JAN2015bhav.csv:515",
+      "cm06JAN2015bhav.csv.zip:cm06JAN2015bhav.csv:514",
+      "cm07JAN2015bhav.csv.zip:cm07JAN2015bhav.csv:516",
+      "cm08JAN2015bhav.csv.zip:cm08JAN2015bhav.csv:516",
+      "cm09JAN2015bhav.csv.zip:cm09JAN2015bhav.csv:518",
+      "cm12JAN2015bhav.csv.zip:cm12JAN2015bhav.csv:515",
+      "cm13JAN2015bhav.csv.zip:cm13JAN2015bhav.csv:518",
+      "cm14JAN2015bhav.csv.zip:cm14JAN2015bhav.csv:513",
+      "cm15JAN2015bhav.csv.zip:cm15JAN2015bhav.csv:514",
+      "cm16JAN2015bhav.csv.zip:cm16JAN2015bhav.csv:518"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE463A01020",
+    "new_isin": "INE463A01038",
+    "date": "2015-01-08",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1935",
+      "cm05JAN2015bhav.csv.zip:cm05JAN2015bhav.csv:165",
+      "cm06JAN2015bhav.csv.zip:cm06JAN2015bhav.csv:167",
+      "cm07JAN2015bhav.csv.zip:cm07JAN2015bhav.csv:168",
+      "cm08JAN2015bhav.csv.zip:cm08JAN2015bhav.csv:168",
+      "cm09JAN2015bhav.csv.zip:cm09JAN2015bhav.csv:169",
+      "cm12JAN2015bhav.csv.zip:cm12JAN2015bhav.csv:169",
+      "cm13JAN2015bhav.csv.zip:cm13JAN2015bhav.csv:169",
+      "cm14JAN2015bhav.csv.zip:cm14JAN2015bhav.csv:166",
+      "cm15JAN2015bhav.csv.zip:cm15JAN2015bhav.csv:168",
+      "cm16JAN2015bhav.csv.zip:cm16JAN2015bhav.csv:171"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE028A01013",
+    "new_isin": "INE028A01039",
+    "date": "2015-01-22",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1941",
+      "cm19JAN2015bhav.csv.zip:cm19JAN2015bhav.csv:155",
+      "cm20JAN2015bhav.csv.zip:cm20JAN2015bhav.csv:156",
+      "cm21JAN2015bhav.csv.zip:cm21JAN2015bhav.csv:156",
+      "cm22JAN2015bhav.csv.zip:cm22JAN2015bhav.csv:156",
+      "cm23JAN2015bhav.csv.zip:cm23JAN2015bhav.csv:154",
+      "cm27JAN2015bhav.csv.zip:cm27JAN2015bhav.csv:155",
+      "cm28JAN2015bhav.csv.zip:cm28JAN2015bhav.csv:154",
+      "cm29JAN2015bhav.csv.zip:cm29JAN2015bhav.csv:156",
+      "cm30JAN2015bhav.csv.zip:cm30JAN2015bhav.csv:150"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE112A01015",
+    "new_isin": "INE112A01023",
+    "date": "2015-01-22",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1944",
+      "cm19JAN2015bhav.csv.zip:cm19JAN2015bhav.csv:281",
+      "cm20JAN2015bhav.csv.zip:cm20JAN2015bhav.csv:281",
+      "cm21JAN2015bhav.csv.zip:cm21JAN2015bhav.csv:283",
+      "cm22JAN2015bhav.csv.zip:cm22JAN2015bhav.csv:282",
+      "cm23JAN2015bhav.csv.zip:cm23JAN2015bhav.csv:278",
+      "cm27JAN2015bhav.csv.zip:cm27JAN2015bhav.csv:275",
+      "cm28JAN2015bhav.csv.zip:cm28JAN2015bhav.csv:276",
+      "cm29JAN2015bhav.csv.zip:cm29JAN2015bhav.csv:279",
+      "cm30JAN2015bhav.csv.zip:cm30JAN2015bhav.csv:271"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE493A01019",
+    "new_isin": "INE493A01027",
+    "date": "2015-01-23",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1948",
+      "cm20JAN2015bhav.csv.zip:cm20JAN2015bhav.csv:1431",
+      "cm21JAN2015bhav.csv.zip:cm21JAN2015bhav.csv:1437",
+      "cm22JAN2015bhav.csv.zip:cm22JAN2015bhav.csv:1425",
+      "cm23JAN2015bhav.csv.zip:cm23JAN2015bhav.csv:1435",
+      "cm27JAN2015bhav.csv.zip:cm27JAN2015bhav.csv:1412",
+      "cm28JAN2015bhav.csv.zip:cm28JAN2015bhav.csv:1416",
+      "cm29JAN2015bhav.csv.zip:cm29JAN2015bhav.csv:1424",
+      "cm30JAN2015bhav.csv.zip:cm30JAN2015bhav.csv:1394",
+      "cm02FEB2015bhav.csv.zip:cm02FEB2015bhav.csv:1395"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE205C01013",
+    "new_isin": "INE205C01021",
+    "date": "2015-02-02",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:1964",
+      "cm30JAN2015bhav.csv.zip:cm30JAN2015bhav.csv:1057",
+      "cm02FEB2015bhav.csv.zip:cm02FEB2015bhav.csv:1061",
+      "cm03FEB2015bhav.csv.zip:cm03FEB2015bhav.csv:1053",
+      "cm04FEB2015bhav.csv.zip:cm04FEB2015bhav.csv:1060",
+      "cm05FEB2015bhav.csv.zip:cm05FEB2015bhav.csv:1056",
+      "cm06FEB2015bhav.csv.zip:cm06FEB2015bhav.csv:1057",
+      "cm09FEB2015bhav.csv.zip:cm09FEB2015bhav.csv:1055",
+      "cm10FEB2015bhav.csv.zip:cm10FEB2015bhav.csv:1048",
+      "cm11FEB2015bhav.csv.zip:cm11FEB2015bhav.csv:1047",
+      "cm12FEB2015bhav.csv.zip:cm12FEB2015bhav.csv:1051"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE669C01028",
+    "new_isin": "INE669C01036",
+    "date": "2015-03-19",
+    "kind": "split_and_bonus",
+    "share_ratio": 4.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:2080",
+      "cm16MAR2015bhav.csv.zip:cm16MAR2015bhav.csv:1430",
+      "cm17MAR2015bhav.csv.zip:cm17MAR2015bhav.csv:1421",
+      "cm18MAR2015bhav.csv.zip:cm18MAR2015bhav.csv:1421",
+      "cm19MAR2015bhav.csv.zip:cm19MAR2015bhav.csv:1411",
+      "cm20MAR2015bhav.csv.zip:cm20MAR2015bhav.csv:1432",
+      "cm23MAR2015bhav.csv.zip:cm23MAR2015bhav.csv:1423",
+      "cm24MAR2015bhav.csv.zip:cm24MAR2015bhav.csv:1392",
+      "cm25MAR2015bhav.csv.zip:cm25MAR2015bhav.csv:1409",
+      "cm26MAR2015bhav.csv.zip:cm26MAR2015bhav.csv:1413",
+      "cm27MAR2015bhav.csv.zip:cm27MAR2015bhav.csv:1414"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE031B01031",
+    "new_isin": "INE031B01049",
+    "date": "2015-03-20",
+    "kind": "split",
+    "share_ratio": 2.5,
+    "evidence": [
+      "nse_actions_2014_2020.json:2082",
+      "PR180315.zip:Bc180315.csv:15",
+      "PR180315.zip:Bc180315.csv:64",
+      "cm17MAR2015bhav.csv.zip:cm17MAR2015bhav.csv:43",
+      "cm18MAR2015bhav.csv.zip:cm18MAR2015bhav.csv:44",
+      "cm19MAR2015bhav.csv.zip:cm19MAR2015bhav.csv:43",
+      "cm20MAR2015bhav.csv.zip:cm20MAR2015bhav.csv:43",
+      "cm23MAR2015bhav.csv.zip:cm23MAR2015bhav.csv:43",
+      "cm24MAR2015bhav.csv.zip:cm24MAR2015bhav.csv:44",
+      "cm25MAR2015bhav.csv.zip:cm25MAR2015bhav.csv:43",
+      "cm26MAR2015bhav.csv.zip:cm26MAR2015bhav.csv:43",
+      "cm27MAR2015bhav.csv.zip:cm27MAR2015bhav.csv:43",
+      "cm30MAR2015bhav.csv.zip:cm30MAR2015bhav.csv:44"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE101D01012",
+    "new_isin": "INE101D01020",
+    "date": "2015-03-23",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:2087",
+      "cm20MAR2015bhav.csv.zip:cm20MAR2015bhav.csv:483",
+      "cm23MAR2015bhav.csv.zip:cm23MAR2015bhav.csv:482",
+      "cm24MAR2015bhav.csv.zip:cm24MAR2015bhav.csv:478",
+      "cm25MAR2015bhav.csv.zip:cm25MAR2015bhav.csv:482",
+      "cm26MAR2015bhav.csv.zip:cm26MAR2015bhav.csv:478",
+      "cm27MAR2015bhav.csv.zip:cm27MAR2015bhav.csv:482",
+      "cm30MAR2015bhav.csv.zip:cm30MAR2015bhav.csv:475",
+      "cm31MAR2015bhav.csv.zip:cm31MAR2015bhav.csv:479",
+      "cm01APR2015bhav.csv.zip:cm01APR2015bhav.csv:476"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE531A01016",
+    "new_isin": "INE531A01024",
+    "date": "2015-03-26",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:2098",
+      "cm23MAR2015bhav.csv.zip:cm23MAR2015bhav.csv:738",
+      "cm24MAR2015bhav.csv.zip:cm24MAR2015bhav.csv:732",
+      "cm25MAR2015bhav.csv.zip:cm25MAR2015bhav.csv:739",
+      "cm26MAR2015bhav.csv.zip:cm26MAR2015bhav.csv:735",
+      "cm27MAR2015bhav.csv.zip:cm27MAR2015bhav.csv:741",
+      "cm30MAR2015bhav.csv.zip:cm30MAR2015bhav.csv:725",
+      "cm31MAR2015bhav.csv.zip:cm31MAR2015bhav.csv:732",
+      "cm01APR2015bhav.csv.zip:cm01APR2015bhav.csv:729"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE988E01010",
+    "new_isin": "INE988E01028",
+    "date": "2015-06-25",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:2244",
+      "cm22JUN2015bhav.csv.zip:cm22JUN2015bhav.csv:702",
+      "cm23JUN2015bhav.csv.zip:cm23JUN2015bhav.csv:690",
+      "cm24JUN2015bhav.csv.zip:cm24JUN2015bhav.csv:695",
+      "cm25JUN2015bhav.csv.zip:cm25JUN2015bhav.csv:698",
+      "cm26JUN2015bhav.csv.zip:cm26JUN2015bhav.csv:695",
+      "cm29JUN2015bhav.csv.zip:cm29JUN2015bhav.csv:703",
+      "cm30JUN2015bhav.csv.zip:cm30JUN2015bhav.csv:700",
+      "cm01JUL2015bhav.csv.zip:cm01JUL2015bhav.csv:703",
+      "cm02JUL2015bhav.csv.zip:cm02JUL2015bhav.csv:707",
+      "cm03JUL2015bhav.csv.zip:cm03JUL2015bhav.csv:701"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE686A01018",
+    "new_isin": "INE686A01026",
+    "date": "2015-08-21",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:2779",
+      "cm18AUG2015bhav.csv.zip:cm18AUG2015bhav.csv:662",
+      "cm19AUG2015bhav.csv.zip:cm19AUG2015bhav.csv:658",
+      "cm20AUG2015bhav.csv.zip:cm20AUG2015bhav.csv:666",
+      "cm21AUG2015bhav.csv.zip:cm21AUG2015bhav.csv:670",
+      "cm24AUG2015bhav.csv.zip:cm24AUG2015bhav.csv:671",
+      "cm25AUG2015bhav.csv.zip:cm25AUG2015bhav.csv:652",
+      "cm26AUG2015bhav.csv.zip:cm26AUG2015bhav.csv:652",
+      "cm27AUG2015bhav.csv.zip:cm27AUG2015bhav.csv:652",
+      "cm28AUG2015bhav.csv.zip:cm28AUG2015bhav.csv:662",
+      "cm31AUG2015bhav.csv.zip:cm31AUG2015bhav.csv:658"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE208C01017",
+    "new_isin": "INE208C01025",
+    "date": "2015-09-16",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3174",
+      "cm14SEP2015bhav.csv.zip:cm14SEP2015bhav.csv:33",
+      "cm15SEP2015bhav.csv.zip:cm15SEP2015bhav.csv:32",
+      "cm16SEP2015bhav.csv.zip:cm16SEP2015bhav.csv:33",
+      "cm18SEP2015bhav.csv.zip:cm18SEP2015bhav.csv:32",
+      "cm21SEP2015bhav.csv.zip:cm21SEP2015bhav.csv:32",
+      "cm22SEP2015bhav.csv.zip:cm22SEP2015bhav.csv:33",
+      "cm23SEP2015bhav.csv.zip:cm23SEP2015bhav.csv:33",
+      "cm24SEP2015bhav.csv.zip:cm24SEP2015bhav.csv:33"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE010B01019",
+    "new_isin": "INE010B01027",
+    "date": "2015-10-06",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3680",
+      "cm05OCT2015bhav.csv.zip:cm05OCT2015bhav.csv:217",
+      "cm06OCT2015bhav.csv.zip:cm06OCT2015bhav.csv:216",
+      "cm07OCT2015bhav.csv.zip:cm07OCT2015bhav.csv:217",
+      "cm08OCT2015bhav.csv.zip:cm08OCT2015bhav.csv:215",
+      "cm09OCT2015bhav.csv.zip:cm09OCT2015bhav.csv:215",
+      "cm12OCT2015bhav.csv.zip:cm12OCT2015bhav.csv:219",
+      "cm13OCT2015bhav.csv.zip:cm13OCT2015bhav.csv:218",
+      "cm14OCT2015bhav.csv.zip:cm14OCT2015bhav.csv:217",
+      "cm15OCT2015bhav.csv.zip:cm15OCT2015bhav.csv:219",
+      "cm16OCT2015bhav.csv.zip:cm16OCT2015bhav.csv:216"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE176A01010",
+    "new_isin": "INE176A01028",
+    "date": "2015-10-07",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3681",
+      "cm05OCT2015bhav.csv.zip:cm05OCT2015bhav.csv:161",
+      "cm06OCT2015bhav.csv.zip:cm06OCT2015bhav.csv:160",
+      "cm07OCT2015bhav.csv.zip:cm07OCT2015bhav.csv:160",
+      "cm08OCT2015bhav.csv.zip:cm08OCT2015bhav.csv:160",
+      "cm09OCT2015bhav.csv.zip:cm09OCT2015bhav.csv:161",
+      "cm12OCT2015bhav.csv.zip:cm12OCT2015bhav.csv:160",
+      "cm13OCT2015bhav.csv.zip:cm13OCT2015bhav.csv:158",
+      "cm14OCT2015bhav.csv.zip:cm14OCT2015bhav.csv:158",
+      "cm15OCT2015bhav.csv.zip:cm15OCT2015bhav.csv:159",
+      "cm16OCT2015bhav.csv.zip:cm16OCT2015bhav.csv:160"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE790G01023",
+    "new_isin": "INE790G01031",
+    "date": "2015-11-06",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3735",
+      "cm03NOV2015bhav.csv.zip:cm03NOV2015bhav.csv:1246",
+      "cm04NOV2015bhav.csv.zip:cm04NOV2015bhav.csv:1241",
+      "cm05NOV2015bhav.csv.zip:cm05NOV2015bhav.csv:1252",
+      "cm06NOV2015bhav.csv.zip:cm06NOV2015bhav.csv:1233",
+      "cm09NOV2015bhav.csv.zip:cm09NOV2015bhav.csv:1248",
+      "cm10NOV2015bhav.csv.zip:cm10NOV2015bhav.csv:1245",
+      "cm11NOV2015bhav.csv.zip:cm11NOV2015bhav.csv:1172",
+      "cm13NOV2015bhav.csv.zip:cm13NOV2015bhav.csv:1257",
+      "cm16NOV2015bhav.csv.zip:cm16NOV2015bhav.csv:1263"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE871C01012",
+    "new_isin": "INE871C01020",
+    "date": "2015-11-26",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3787",
+      "cm23NOV2015bhav.csv.zip:cm23NOV2015bhav.csv:130",
+      "cm24NOV2015bhav.csv.zip:cm24NOV2015bhav.csv:129",
+      "cm26NOV2015bhav.csv.zip:cm26NOV2015bhav.csv:127",
+      "cm27NOV2015bhav.csv.zip:cm27NOV2015bhav.csv:128",
+      "cm30NOV2015bhav.csv.zip:cm30NOV2015bhav.csv:130",
+      "cm01DEC2015bhav.csv.zip:cm01DEC2015bhav.csv:128",
+      "cm02DEC2015bhav.csv.zip:cm02DEC2015bhav.csv:131",
+      "cm03DEC2015bhav.csv.zip:cm03DEC2015bhav.csv:129",
+      "cm04DEC2015bhav.csv.zip:cm04DEC2015bhav.csv:128"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE987B01018",
+    "new_isin": "INE987B01026",
+    "date": "2015-11-26",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3788",
+      "cm23NOV2015bhav.csv.zip:cm23NOV2015bhav.csv:940",
+      "cm24NOV2015bhav.csv.zip:cm24NOV2015bhav.csv:943",
+      "cm26NOV2015bhav.csv.zip:cm26NOV2015bhav.csv:934",
+      "cm27NOV2015bhav.csv.zip:cm27NOV2015bhav.csv:931",
+      "cm30NOV2015bhav.csv.zip:cm30NOV2015bhav.csv:934",
+      "cm01DEC2015bhav.csv.zip:cm01DEC2015bhav.csv:933",
+      "cm02DEC2015bhav.csv.zip:cm02DEC2015bhav.csv:934",
+      "cm03DEC2015bhav.csv.zip:cm03DEC2015bhav.csv:940",
+      "cm04DEC2015bhav.csv.zip:cm04DEC2015bhav.csv:929"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE039C01016",
+    "new_isin": "INE039C01024",
+    "date": "2015-12-03",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3793",
+      "cm30NOV2015bhav.csv.zip:cm30NOV2015bhav.csv:682",
+      "cm01DEC2015bhav.csv.zip:cm01DEC2015bhav.csv:677",
+      "cm02DEC2015bhav.csv.zip:cm02DEC2015bhav.csv:680",
+      "cm03DEC2015bhav.csv.zip:cm03DEC2015bhav.csv:687",
+      "cm04DEC2015bhav.csv.zip:cm04DEC2015bhav.csv:675",
+      "cm07DEC2015bhav.csv.zip:cm07DEC2015bhav.csv:695",
+      "cm08DEC2015bhav.csv.zip:cm08DEC2015bhav.csv:686",
+      "cm09DEC2015bhav.csv.zip:cm09DEC2015bhav.csv:685",
+      "cm10DEC2015bhav.csv.zip:cm10DEC2015bhav.csv:687",
+      "cm11DEC2015bhav.csv.zip:cm11DEC2015bhav.csv:681"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE576I01014",
+    "new_isin": "INE576I01022",
+    "date": "2015-12-10",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3800",
+      "cm07DEC2015bhav.csv.zip:cm07DEC2015bhav.csv:716",
+      "cm08DEC2015bhav.csv.zip:cm08DEC2015bhav.csv:707",
+      "cm09DEC2015bhav.csv.zip:cm09DEC2015bhav.csv:706",
+      "cm10DEC2015bhav.csv.zip:cm10DEC2015bhav.csv:709",
+      "cm11DEC2015bhav.csv.zip:cm11DEC2015bhav.csv:703",
+      "cm14DEC2015bhav.csv.zip:cm14DEC2015bhav.csv:709",
+      "cm15DEC2015bhav.csv.zip:cm15DEC2015bhav.csv:701",
+      "cm16DEC2015bhav.csv.zip:cm16DEC2015bhav.csv:705",
+      "cm17DEC2015bhav.csv.zip:cm17DEC2015bhav.csv:704",
+      "cm18DEC2015bhav.csv.zip:cm18DEC2015bhav.csv:707"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE461C01020",
+    "new_isin": "INE461C01038",
+    "date": "2016-01-06",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:3843",
+      "cm04JAN2016bhav.csv.zip:cm04JAN2016bhav.csv:484",
+      "cm05JAN2016bhav.csv.zip:cm05JAN2016bhav.csv:490",
+      "cm06JAN2016bhav.csv.zip:cm06JAN2016bhav.csv:487",
+      "cm07JAN2016bhav.csv.zip:cm07JAN2016bhav.csv:486",
+      "cm08JAN2016bhav.csv.zip:cm08JAN2016bhav.csv:486",
+      "cm11JAN2016bhav.csv.zip:cm11JAN2016bhav.csv:492",
+      "cm12JAN2016bhav.csv.zip:cm12JAN2016bhav.csv:491",
+      "cm13JAN2016bhav.csv.zip:cm13JAN2016bhav.csv:491",
+      "cm14JAN2016bhav.csv.zip:cm14JAN2016bhav.csv:485",
+      "cm15JAN2016bhav.csv.zip:cm15JAN2016bhav.csv:483"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE095N01015",
+    "new_isin": "INE095N01023",
+    "date": "2016-06-02",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:4282",
+      "cm30MAY2016bhav.csv.zip:cm30MAY2016bhav.csv:976",
+      "cm31MAY2016bhav.csv.zip:cm31MAY2016bhav.csv:958",
+      "cm01JUN2016bhav.csv.zip:cm01JUN2016bhav.csv:962",
+      "cm02JUN2016bhav.csv.zip:cm02JUN2016bhav.csv:965",
+      "cm03JUN2016bhav.csv.zip:cm03JUN2016bhav.csv:960",
+      "cm06JUN2016bhav.csv.zip:cm06JUN2016bhav.csv:961",
+      "cm07JUN2016bhav.csv.zip:cm07JUN2016bhav.csv:958",
+      "cm08JUN2016bhav.csv.zip:cm08JUN2016bhav.csv:959",
+      "cm09JUN2016bhav.csv.zip:cm09JUN2016bhav.csv:964",
+      "cm10JUN2016bhav.csv.zip:cm10JUN2016bhav.csv:972"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE150G01012",
+    "new_isin": "INE150G01020",
+    "date": "2016-06-06",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:4289",
+      "cm03JUN2016bhav.csv.zip:cm03JUN2016bhav.csv:838",
+      "cm06JUN2016bhav.csv.zip:cm06JUN2016bhav.csv:839",
+      "cm07JUN2016bhav.csv.zip:cm07JUN2016bhav.csv:835",
+      "cm08JUN2016bhav.csv.zip:cm08JUN2016bhav.csv:835",
+      "cm09JUN2016bhav.csv.zip:cm09JUN2016bhav.csv:843",
+      "cm10JUN2016bhav.csv.zip:cm10JUN2016bhav.csv:850",
+      "cm13JUN2016bhav.csv.zip:cm13JUN2016bhav.csv:845",
+      "cm14JUN2016bhav.csv.zip:cm14JUN2016bhav.csv:839",
+      "cm15JUN2016bhav.csv.zip:cm15JUN2016bhav.csv:842",
+      "cm16JUN2016bhav.csv.zip:cm16JUN2016bhav.csv:851"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE343H01011",
+    "new_isin": "INE343H01029",
+    "date": "2016-07-13",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:4398",
+      "cm11JUL2016bhav.csv.zip:cm11JUL2016bhav.csv:1395",
+      "cm12JUL2016bhav.csv.zip:cm12JUL2016bhav.csv:1385",
+      "cm13JUL2016bhav.csv.zip:cm13JUL2016bhav.csv:1382",
+      "cm14JUL2016bhav.csv.zip:cm14JUL2016bhav.csv:1389",
+      "cm15JUL2016bhav.csv.zip:cm15JUL2016bhav.csv:1372",
+      "cm18JUL2016bhav.csv.zip:cm18JUL2016bhav.csv:1390",
+      "cm19JUL2016bhav.csv.zip:cm19JUL2016bhav.csv:1384",
+      "cm20JUL2016bhav.csv.zip:cm20JUL2016bhav.csv:1383",
+      "cm21JUL2016bhav.csv.zip:cm21JUL2016bhav.csv:1376",
+      "cm22JUL2016bhav.csv.zip:cm22JUL2016bhav.csv:1376"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE195J01011",
+    "new_isin": "INE195J01029",
+    "date": "2016-08-12",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:4801",
+      "cm09AUG2016bhav.csv.zip:cm09AUG2016bhav.csv:1139",
+      "cm10AUG2016bhav.csv.zip:cm10AUG2016bhav.csv:1155",
+      "cm11AUG2016bhav.csv.zip:cm11AUG2016bhav.csv:1144",
+      "cm12AUG2016bhav.csv.zip:cm12AUG2016bhav.csv:1141",
+      "cm16AUG2016bhav.csv.zip:cm16AUG2016bhav.csv:1139",
+      "cm17AUG2016bhav.csv.zip:cm17AUG2016bhav.csv:1134",
+      "cm18AUG2016bhav.csv.zip:cm18AUG2016bhav.csv:1150",
+      "cm19AUG2016bhav.csv.zip:cm19AUG2016bhav.csv:1146",
+      "cm22AUG2016bhav.csv.zip:cm22AUG2016bhav.csv:1161"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE951I01019",
+    "new_isin": "INE951I01027",
+    "date": "2016-08-30",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:4918",
+      "cm29AUG2016bhav.csv.zip:cm29AUG2016bhav.csv:1609",
+      "cm30AUG2016bhav.csv.zip:cm30AUG2016bhav.csv:1613",
+      "cm31AUG2016bhav.csv.zip:cm31AUG2016bhav.csv:1609",
+      "cm01SEP2016bhav.csv.zip:cm01SEP2016bhav.csv:1620",
+      "cm02SEP2016bhav.csv.zip:cm02SEP2016bhav.csv:1597",
+      "cm06SEP2016bhav.csv.zip:cm06SEP2016bhav.csv:1629",
+      "cm07SEP2016bhav.csv.zip:cm07SEP2016bhav.csv:1622",
+      "cm08SEP2016bhav.csv.zip:cm08SEP2016bhav.csv:1624",
+      "cm09SEP2016bhav.csv.zip:cm09SEP2016bhav.csv:1617"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE296A01016",
+    "new_isin": "INE296A01024",
+    "date": "2016-09-08",
+    "kind": "split_and_bonus",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5043",
+      "cm06SEP2016bhav.csv.zip:cm06SEP2016bhav.csv:149",
+      "cm07SEP2016bhav.csv.zip:cm07SEP2016bhav.csv:148",
+      "cm08SEP2016bhav.csv.zip:cm08SEP2016bhav.csv:149",
+      "cm09SEP2016bhav.csv.zip:cm09SEP2016bhav.csv:148",
+      "cm12SEP2016bhav.csv.zip:cm12SEP2016bhav.csv:147",
+      "cm14SEP2016bhav.csv.zip:cm14SEP2016bhav.csv:148",
+      "cm15SEP2016bhav.csv.zip:cm15SEP2016bhav.csv:146",
+      "cm16SEP2016bhav.csv.zip:cm16SEP2016bhav.csv:146"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE849A01012",
+    "new_isin": "INE849A01020",
+    "date": "2016-09-12",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5128",
+      "cm09SEP2016bhav.csv.zip:cm09SEP2016bhav.csv:1552",
+      "cm12SEP2016bhav.csv.zip:cm12SEP2016bhav.csv:1545",
+      "cm14SEP2016bhav.csv.zip:cm14SEP2016bhav.csv:1564",
+      "cm15SEP2016bhav.csv.zip:cm15SEP2016bhav.csv:1549",
+      "cm16SEP2016bhav.csv.zip:cm16SEP2016bhav.csv:1560",
+      "cm19SEP2016bhav.csv.zip:cm19SEP2016bhav.csv:1563",
+      "cm20SEP2016bhav.csv.zip:cm20SEP2016bhav.csv:1553",
+      "cm21SEP2016bhav.csv.zip:cm21SEP2016bhav.csv:1567",
+      "cm22SEP2016bhav.csv.zip:cm22SEP2016bhav.csv:1565"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE405E01015",
+    "new_isin": "INE405E01023",
+    "date": "2016-09-12",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5131",
+      "cm09SEP2016bhav.csv.zip:cm09SEP2016bhav.csv:947",
+      "cm12SEP2016bhav.csv.zip:cm12SEP2016bhav.csv:943",
+      "cm14SEP2016bhav.csv.zip:cm14SEP2016bhav.csv:954",
+      "cm15SEP2016bhav.csv.zip:cm15SEP2016bhav.csv:941",
+      "cm16SEP2016bhav.csv.zip:cm16SEP2016bhav.csv:945",
+      "cm19SEP2016bhav.csv.zip:cm19SEP2016bhav.csv:943",
+      "cm20SEP2016bhav.csv.zip:cm20SEP2016bhav.csv:942",
+      "cm21SEP2016bhav.csv.zip:cm21SEP2016bhav.csv:953",
+      "cm22SEP2016bhav.csv.zip:cm22SEP2016bhav.csv:943"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE988E01028",
+    "new_isin": "INE988E01036",
+    "date": "2016-09-21",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5581",
+      "PR140916.zip:Bc140916.csv:481",
+      "PR140916.zip:Bc140916.csv:1071",
+      "PR150916.zip:Bc150916.csv:300",
+      "PR150916.zip:Bc150916.csv:1223",
+      "PR160916.zip:Bc160916.csv:460",
+      "PR160916.zip:Bc160916.csv:1050",
+      "PR190916.zip:Bc190916.csv:406",
+      "PR190916.zip:Bc190916.csv:996",
+      "cm19SEP2016bhav.csv.zip:cm19SEP2016bhav.csv:747",
+      "cm20SEP2016bhav.csv.zip:cm20SEP2016bhav.csv:744",
+      "cm21SEP2016bhav.csv.zip:cm21SEP2016bhav.csv:751",
+      "cm22SEP2016bhav.csv.zip:cm22SEP2016bhav.csv:746",
+      "cm23SEP2016bhav.csv.zip:cm23SEP2016bhav.csv:746",
+      "cm26SEP2016bhav.csv.zip:cm26SEP2016bhav.csv:746",
+      "cm27SEP2016bhav.csv.zip:cm27SEP2016bhav.csv:746",
+      "cm28SEP2016bhav.csv.zip:cm28SEP2016bhav.csv:754",
+      "cm29SEP2016bhav.csv.zip:cm29SEP2016bhav.csv:758",
+      "cm30SEP2016bhav.csv.zip:cm30SEP2016bhav.csv:750"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE217B01028",
+    "new_isin": "INE217B01036",
+    "date": "2016-10-04",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5784",
+      "cm03OCT2016bhav.csv.zip:cm03OCT2016bhav.csv:773",
+      "cm04OCT2016bhav.csv.zip:cm04OCT2016bhav.csv:766",
+      "cm05OCT2016bhav.csv.zip:cm05OCT2016bhav.csv:771",
+      "cm06OCT2016bhav.csv.zip:cm06OCT2016bhav.csv:771",
+      "cm07OCT2016bhav.csv.zip:cm07OCT2016bhav.csv:776",
+      "cm10OCT2016bhav.csv.zip:cm10OCT2016bhav.csv:771",
+      "cm13OCT2016bhav.csv.zip:cm13OCT2016bhav.csv:770",
+      "cm14OCT2016bhav.csv.zip:cm14OCT2016bhav.csv:766"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE047A01013",
+    "new_isin": "INE047A01021",
+    "date": "2016-10-06",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5785",
+      "cm03OCT2016bhav.csv.zip:cm03OCT2016bhav.csv:510",
+      "cm04OCT2016bhav.csv.zip:cm04OCT2016bhav.csv:509",
+      "cm05OCT2016bhav.csv.zip:cm05OCT2016bhav.csv:510",
+      "cm06OCT2016bhav.csv.zip:cm06OCT2016bhav.csv:510",
+      "cm07OCT2016bhav.csv.zip:cm07OCT2016bhav.csv:516",
+      "cm10OCT2016bhav.csv.zip:cm10OCT2016bhav.csv:512",
+      "cm13OCT2016bhav.csv.zip:cm13OCT2016bhav.csv:510",
+      "cm14OCT2016bhav.csv.zip:cm14OCT2016bhav.csv:505"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE650K01013",
+    "new_isin": "INE650K01021",
+    "date": "2016-10-10",
+    "kind": "split_and_bonus",
+    "share_ratio": 2.6666666666666665,
+    "evidence": [
+      "nse_actions_2014_2020.json:5788",
+      "cm07OCT2016bhav.csv.zip:cm07OCT2016bhav.csv:5",
+      "cm10OCT2016bhav.csv.zip:cm10OCT2016bhav.csv:5",
+      "cm13OCT2016bhav.csv.zip:cm13OCT2016bhav.csv:5",
+      "cm14OCT2016bhav.csv.zip:cm14OCT2016bhav.csv:5",
+      "cm17OCT2016bhav.csv.zip:cm17OCT2016bhav.csv:5",
+      "cm18OCT2016bhav.csv.zip:cm18OCT2016bhav.csv:5",
+      "cm19OCT2016bhav.csv.zip:cm19OCT2016bhav.csv:5",
+      "cm20OCT2016bhav.csv.zip:cm20OCT2016bhav.csv:6"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE475E01018",
+    "new_isin": "INE475E01026",
+    "date": "2016-10-19",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5792",
+      "cm17OCT2016bhav.csv.zip:cm17OCT2016bhav.csv:243",
+      "cm18OCT2016bhav.csv.zip:cm18OCT2016bhav.csv:240",
+      "cm19OCT2016bhav.csv.zip:cm19OCT2016bhav.csv:242",
+      "cm20OCT2016bhav.csv.zip:cm20OCT2016bhav.csv:242",
+      "cm21OCT2016bhav.csv.zip:cm21OCT2016bhav.csv:240",
+      "cm24OCT2016bhav.csv.zip:cm24OCT2016bhav.csv:241",
+      "cm25OCT2016bhav.csv.zip:cm25OCT2016bhav.csv:243",
+      "cm26OCT2016bhav.csv.zip:cm26OCT2016bhav.csv:240",
+      "cm27OCT2016bhav.csv.zip:cm27OCT2016bhav.csv:241",
+      "cm28OCT2016bhav.csv.zip:cm28OCT2016bhav.csv:239"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE483B01018",
+    "new_isin": "INE483B01026",
+    "date": "2016-11-11",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5853",
+      "cm08NOV2016bhav.csv.zip:cm08NOV2016bhav.csv:617",
+      "cm09NOV2016bhav.csv.zip:cm09NOV2016bhav.csv:617",
+      "cm10NOV2016bhav.csv.zip:cm10NOV2016bhav.csv:617",
+      "cm11NOV2016bhav.csv.zip:cm11NOV2016bhav.csv:614",
+      "cm15NOV2016bhav.csv.zip:cm15NOV2016bhav.csv:623",
+      "cm16NOV2016bhav.csv.zip:cm16NOV2016bhav.csv:615",
+      "cm17NOV2016bhav.csv.zip:cm17NOV2016bhav.csv:614",
+      "cm18NOV2016bhav.csv.zip:cm18NOV2016bhav.csv:610",
+      "cm21NOV2016bhav.csv.zip:cm21NOV2016bhav.csv:625"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE036D01010",
+    "new_isin": "INE036D01028",
+    "date": "2016-11-17",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5866",
+      "cm15NOV2016bhav.csv.zip:cm15NOV2016bhav.csv:792",
+      "cm16NOV2016bhav.csv.zip:cm16NOV2016bhav.csv:781",
+      "cm17NOV2016bhav.csv.zip:cm17NOV2016bhav.csv:778",
+      "cm18NOV2016bhav.csv.zip:cm18NOV2016bhav.csv:772",
+      "cm21NOV2016bhav.csv.zip:cm21NOV2016bhav.csv:786",
+      "cm22NOV2016bhav.csv.zip:cm22NOV2016bhav.csv:781",
+      "cm23NOV2016bhav.csv.zip:cm23NOV2016bhav.csv:776",
+      "cm24NOV2016bhav.csv.zip:cm24NOV2016bhav.csv:773",
+      "cm25NOV2016bhav.csv.zip:cm25NOV2016bhav.csv:784"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE180C01018",
+    "new_isin": "INE180C01026",
+    "date": "2016-11-23",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5891",
+      "cm21NOV2016bhav.csv.zip:cm21NOV2016bhav.csv:264",
+      "cm22NOV2016bhav.csv.zip:cm22NOV2016bhav.csv:262",
+      "cm23NOV2016bhav.csv.zip:cm23NOV2016bhav.csv:257",
+      "cm24NOV2016bhav.csv.zip:cm24NOV2016bhav.csv:258",
+      "cm25NOV2016bhav.csv.zip:cm25NOV2016bhav.csv:260",
+      "cm28NOV2016bhav.csv.zip:cm28NOV2016bhav.csv:260",
+      "cm29NOV2016bhav.csv.zip:cm29NOV2016bhav.csv:261",
+      "cm30NOV2016bhav.csv.zip:cm30NOV2016bhav.csv:258",
+      "cm01DEC2016bhav.csv.zip:cm01DEC2016bhav.csv:259",
+      "cm02DEC2016bhav.csv.zip:cm02DEC2016bhav.csv:262"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE930H01015",
+    "new_isin": "INE930H01023",
+    "date": "2016-11-29",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5904",
+      "cm28NOV2016bhav.csv.zip:cm28NOV2016bhav.csv:828",
+      "cm29NOV2016bhav.csv.zip:cm29NOV2016bhav.csv:819",
+      "cm30NOV2016bhav.csv.zip:cm30NOV2016bhav.csv:815",
+      "cm01DEC2016bhav.csv.zip:cm01DEC2016bhav.csv:810",
+      "cm02DEC2016bhav.csv.zip:cm02DEC2016bhav.csv:827",
+      "cm05DEC2016bhav.csv.zip:cm05DEC2016bhav.csv:824",
+      "cm06DEC2016bhav.csv.zip:cm06DEC2016bhav.csv:831",
+      "cm07DEC2016bhav.csv.zip:cm07DEC2016bhav.csv:817",
+      "cm08DEC2016bhav.csv.zip:cm08DEC2016bhav.csv:821",
+      "cm09DEC2016bhav.csv.zip:cm09DEC2016bhav.csv:825"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE634I01011",
+    "new_isin": "INE634I01029",
+    "date": "2016-12-13",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5915",
+      "cm12DEC2016bhav.csv.zip:cm12DEC2016bhav.csv:795",
+      "cm13DEC2016bhav.csv.zip:cm13DEC2016bhav.csv:805",
+      "cm14DEC2016bhav.csv.zip:cm14DEC2016bhav.csv:803",
+      "cm15DEC2016bhav.csv.zip:cm15DEC2016bhav.csv:804",
+      "cm16DEC2016bhav.csv.zip:cm16DEC2016bhav.csv:796",
+      "cm19DEC2016bhav.csv.zip:cm19DEC2016bhav.csv:807",
+      "cm20DEC2016bhav.csv.zip:cm20DEC2016bhav.csv:798",
+      "cm21DEC2016bhav.csv.zip:cm21DEC2016bhav.csv:798",
+      "cm22DEC2016bhav.csv.zip:cm22DEC2016bhav.csv:801",
+      "cm23DEC2016bhav.csv.zip:cm23DEC2016bhav.csv:801"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE019A01020",
+    "new_isin": "INE019A01038",
+    "date": "2017-01-04",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:5949",
+      "cm02JAN2017bhav.csv.zip:cm02JAN2017bhav.csv:761",
+      "cm03JAN2017bhav.csv.zip:cm03JAN2017bhav.csv:760",
+      "cm04JAN2017bhav.csv.zip:cm04JAN2017bhav.csv:761",
+      "cm05JAN2017bhav.csv.zip:cm05JAN2017bhav.csv:765",
+      "cm06JAN2017bhav.csv.zip:cm06JAN2017bhav.csv:759",
+      "cm09JAN2017bhav.csv.zip:cm09JAN2017bhav.csv:770",
+      "cm10JAN2017bhav.csv.zip:cm10JAN2017bhav.csv:761",
+      "cm11JAN2017bhav.csv.zip:cm11JAN2017bhav.csv:766",
+      "cm12JAN2017bhav.csv.zip:cm12JAN2017bhav.csv:774",
+      "cm13JAN2017bhav.csv.zip:cm13JAN2017bhav.csv:750"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE336H01015",
+    "new_isin": "INE336H01023",
+    "date": "2017-02-10",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:6014",
+      "cm07FEB2017bhav.csv.zip:cm07FEB2017bhav.csv:459",
+      "cm08FEB2017bhav.csv.zip:cm08FEB2017bhav.csv:456",
+      "cm09FEB2017bhav.csv.zip:cm09FEB2017bhav.csv:460",
+      "cm10FEB2017bhav.csv.zip:cm10FEB2017bhav.csv:451",
+      "cm13FEB2017bhav.csv.zip:cm13FEB2017bhav.csv:461",
+      "cm14FEB2017bhav.csv.zip:cm14FEB2017bhav.csv:452",
+      "cm15FEB2017bhav.csv.zip:cm15FEB2017bhav.csv:458",
+      "cm16FEB2017bhav.csv.zip:cm16FEB2017bhav.csv:462",
+      "cm17FEB2017bhav.csv.zip:cm17FEB2017bhav.csv:455",
+      "cm20FEB2017bhav.csv.zip:cm20FEB2017bhav.csv:454"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE263A01016",
+    "new_isin": "INE263A01024",
+    "date": "2017-03-16",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:6124",
+      "cm14MAR2017bhav.csv.zip:cm14MAR2017bhav.csv:175",
+      "cm15MAR2017bhav.csv.zip:cm15MAR2017bhav.csv:174",
+      "cm16MAR2017bhav.csv.zip:cm16MAR2017bhav.csv:176",
+      "cm17MAR2017bhav.csv.zip:cm17MAR2017bhav.csv:173",
+      "cm20MAR2017bhav.csv.zip:cm20MAR2017bhav.csv:175",
+      "cm21MAR2017bhav.csv.zip:cm21MAR2017bhav.csv:175",
+      "cm22MAR2017bhav.csv.zip:cm22MAR2017bhav.csv:173",
+      "cm23MAR2017bhav.csv.zip:cm23MAR2017bhav.csv:175",
+      "cm24MAR2017bhav.csv.zip:cm24MAR2017bhav.csv:177"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE837H01012",
+    "new_isin": "INE837H01020",
+    "date": "2017-05-25",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:6204",
+      "cm22MAY2017bhav.csv.zip:cm22MAY2017bhav.csv:32",
+      "cm23MAY2017bhav.csv.zip:cm23MAY2017bhav.csv:31",
+      "cm24MAY2017bhav.csv.zip:cm24MAY2017bhav.csv:32",
+      "cm25MAY2017bhav.csv.zip:cm25MAY2017bhav.csv:31",
+      "cm26MAY2017bhav.csv.zip:cm26MAY2017bhav.csv:32",
+      "cm29MAY2017bhav.csv.zip:cm29MAY2017bhav.csv:33",
+      "cm30MAY2017bhav.csv.zip:cm30MAY2017bhav.csv:32",
+      "cm31MAY2017bhav.csv.zip:cm31MAY2017bhav.csv:32",
+      "cm01JUN2017bhav.csv.zip:cm01JUN2017bhav.csv:33",
+      "cm02JUN2017bhav.csv.zip:cm02JUN2017bhav.csv:32"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE048G01018",
+    "new_isin": "INE048G01026",
+    "date": "2017-07-19",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:6483",
+      "cm17JUL2017bhav.csv.zip:cm17JUL2017bhav.csv:1060",
+      "cm18JUL2017bhav.csv.zip:cm18JUL2017bhav.csv:1054",
+      "cm19JUL2017bhav.csv.zip:cm19JUL2017bhav.csv:1044",
+      "cm20JUL2017bhav.csv.zip:cm20JUL2017bhav.csv:1046",
+      "cm21JUL2017bhav.csv.zip:cm21JUL2017bhav.csv:1044",
+      "cm24JUL2017bhav.csv.zip:cm24JUL2017bhav.csv:1054",
+      "cm25JUL2017bhav.csv.zip:cm25JUL2017bhav.csv:1063",
+      "cm26JUL2017bhav.csv.zip:cm26JUL2017bhav.csv:1048",
+      "cm27JUL2017bhav.csv.zip:cm27JUL2017bhav.csv:1043",
+      "cm28JUL2017bhav.csv.zip:cm28JUL2017bhav.csv:1043"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE805D01026",
+    "new_isin": "INE805D01034",
+    "date": "2017-07-25",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:6567",
+      "cm24JUL2017bhav.csv.zip:cm24JUL2017bhav.csv:1532",
+      "cm25JUL2017bhav.csv.zip:cm25JUL2017bhav.csv:1544",
+      "cm26JUL2017bhav.csv.zip:cm26JUL2017bhav.csv:1519",
+      "cm27JUL2017bhav.csv.zip:cm27JUL2017bhav.csv:1518",
+      "cm28JUL2017bhav.csv.zip:cm28JUL2017bhav.csv:1510",
+      "cm31JUL2017bhav.csv.zip:cm31JUL2017bhav.csv:1547",
+      "cm01AUG2017bhav.csv.zip:cm01AUG2017bhav.csv:1535",
+      "cm02AUG2017bhav.csv.zip:cm02AUG2017bhav.csv:1539",
+      "cm03AUG2017bhav.csv.zip:cm03AUG2017bhav.csv:1511",
+      "cm04AUG2017bhav.csv.zip:cm04AUG2017bhav.csv:1517"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE483S01012",
+    "new_isin": "INE483S01020",
+    "date": "2017-08-31",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:6973",
+      "cm28AUG2017bhav.csv.zip:cm28AUG2017bhav.csv:695",
+      "cm29AUG2017bhav.csv.zip:cm29AUG2017bhav.csv:694",
+      "cm30AUG2017bhav.csv.zip:cm30AUG2017bhav.csv:686",
+      "cm31AUG2017bhav.csv.zip:cm31AUG2017bhav.csv:696",
+      "cm01SEP2017bhav.csv.zip:cm01SEP2017bhav.csv:693",
+      "cm04SEP2017bhav.csv.zip:cm04SEP2017bhav.csv:704",
+      "cm05SEP2017bhav.csv.zip:cm05SEP2017bhav.csv:698",
+      "cm06SEP2017bhav.csv.zip:cm06SEP2017bhav.csv:693",
+      "cm07SEP2017bhav.csv.zip:cm07SEP2017bhav.csv:698",
+      "cm08SEP2017bhav.csv.zip:cm08SEP2017bhav.csv:689"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE317F01027",
+    "new_isin": "INE317F01035",
+    "date": "2017-09-15",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:7371",
+      "cm12SEP2017bhav.csv.zip:cm12SEP2017bhav.csv:1061",
+      "cm13SEP2017bhav.csv.zip:cm13SEP2017bhav.csv:1052",
+      "cm14SEP2017bhav.csv.zip:cm14SEP2017bhav.csv:1048",
+      "cm15SEP2017bhav.csv.zip:cm15SEP2017bhav.csv:1057",
+      "cm18SEP2017bhav.csv.zip:cm18SEP2017bhav.csv:1062",
+      "cm19SEP2017bhav.csv.zip:cm19SEP2017bhav.csv:1067",
+      "cm20SEP2017bhav.csv.zip:cm20SEP2017bhav.csv:1065",
+      "cm21SEP2017bhav.csv.zip:cm21SEP2017bhav.csv:1056",
+      "cm22SEP2017bhav.csv.zip:cm22SEP2017bhav.csv:1064",
+      "cm25SEP2017bhav.csv.zip:cm25SEP2017bhav.csv:1069"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE528G01019",
+    "new_isin": "INE528G01027",
+    "date": "2017-09-21",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:7720",
+      "cm18SEP2017bhav.csv.zip:cm18SEP2017bhav.csv:1769",
+      "cm19SEP2017bhav.csv.zip:cm19SEP2017bhav.csv:1754",
+      "cm20SEP2017bhav.csv.zip:cm20SEP2017bhav.csv:1748",
+      "cm21SEP2017bhav.csv.zip:cm21SEP2017bhav.csv:1749",
+      "cm22SEP2017bhav.csv.zip:cm22SEP2017bhav.csv:1748",
+      "cm25SEP2017bhav.csv.zip:cm25SEP2017bhav.csv:1768",
+      "cm26SEP2017bhav.csv.zip:cm26SEP2017bhav.csv:1743",
+      "cm27SEP2017bhav.csv.zip:cm27SEP2017bhav.csv:1741",
+      "cm28SEP2017bhav.csv.zip:cm28SEP2017bhav.csv:1737",
+      "cm29SEP2017bhav.csv.zip:cm29SEP2017bhav.csv:1744"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE039C01024",
+    "new_isin": "INE039C01032",
+    "date": "2017-10-05",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:7804",
+      "PR060917.zip:Bc060917.csv:246",
+      "PR060917.zip:Bc060917.csv:1227",
+      "PR070917.zip:Bc070917.csv:295",
+      "PR070917.zip:Bc070917.csv:1278",
+      "PR110917.zip:Bc110917.csv:287",
+      "PR110917.zip:Bc110917.csv:1268",
+      "PR130917.zip:Bc130917.csv:285",
+      "PR130917.zip:Bc130917.csv:1270",
+      "PR140917.zip:Bc140917.csv:254",
+      "PR140917.zip:Bc140917.csv:1241",
+      "PR180917.zip:Bc180917.csv:295",
+      "PR180917.zip:Bc180917.csv:878",
+      "PR200917.zip:Bc200917.csv:419",
+      "PR200917.zip:Bc200917.csv:895",
+      "PR210917.zip:Bc210917.csv:172",
+      "PR210917.zip:Bc210917.csv:1027",
+      "PR280917.zip:Bc280917.csv:58",
+      "PR280917.zip:Bc280917.csv:259",
+      "cm03OCT2017bhav.csv.zip:cm03OCT2017bhav.csv:759",
+      "cm04OCT2017bhav.csv.zip:cm04OCT2017bhav.csv:747",
+      "cm05OCT2017bhav.csv.zip:cm05OCT2017bhav.csv:757",
+      "cm06OCT2017bhav.csv.zip:cm06OCT2017bhav.csv:754",
+      "cm09OCT2017bhav.csv.zip:cm09OCT2017bhav.csv:773",
+      "cm10OCT2017bhav.csv.zip:cm10OCT2017bhav.csv:775",
+      "cm11OCT2017bhav.csv.zip:cm11OCT2017bhav.csv:759",
+      "cm12OCT2017bhav.csv.zip:cm12OCT2017bhav.csv:760",
+      "cm13OCT2017bhav.csv.zip:cm13OCT2017bhav.csv:758"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE978A01019",
+    "new_isin": "INE978A01027",
+    "date": "2017-10-10",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:7805",
+      "cm09OCT2017bhav.csv.zip:cm09OCT2017bhav.csv:597",
+      "cm10OCT2017bhav.csv.zip:cm10OCT2017bhav.csv:598",
+      "cm11OCT2017bhav.csv.zip:cm11OCT2017bhav.csv:587",
+      "cm12OCT2017bhav.csv.zip:cm12OCT2017bhav.csv:590",
+      "cm13OCT2017bhav.csv.zip:cm13OCT2017bhav.csv:588",
+      "cm16OCT2017bhav.csv.zip:cm16OCT2017bhav.csv:595",
+      "cm17OCT2017bhav.csv.zip:cm17OCT2017bhav.csv:594",
+      "cm18OCT2017bhav.csv.zip:cm18OCT2017bhav.csv:589",
+      "cm19OCT2017bhav.csv.zip:cm19OCT2017bhav.csv:573"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE477A01012",
+    "new_isin": "INE477A01020",
+    "date": "2017-10-12",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:7806",
+      "cm09OCT2017bhav.csv.zip:cm09OCT2017bhav.csv:254",
+      "cm10OCT2017bhav.csv.zip:cm10OCT2017bhav.csv:256",
+      "cm11OCT2017bhav.csv.zip:cm11OCT2017bhav.csv:248",
+      "cm12OCT2017bhav.csv.zip:cm12OCT2017bhav.csv:248",
+      "cm13OCT2017bhav.csv.zip:cm13OCT2017bhav.csv:249",
+      "cm16OCT2017bhav.csv.zip:cm16OCT2017bhav.csv:253",
+      "cm17OCT2017bhav.csv.zip:cm17OCT2017bhav.csv:251",
+      "cm18OCT2017bhav.csv.zip:cm18OCT2017bhav.csv:247",
+      "cm19OCT2017bhav.csv.zip:cm19OCT2017bhav.csv:243"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE203G01019",
+    "new_isin": "INE203G01027",
+    "date": "2017-11-09",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:7865",
+      "cm06NOV2017bhav.csv.zip:cm06NOV2017bhav.csv:693",
+      "cm07NOV2017bhav.csv.zip:cm07NOV2017bhav.csv:679",
+      "cm08NOV2017bhav.csv.zip:cm08NOV2017bhav.csv:667",
+      "cm09NOV2017bhav.csv.zip:cm09NOV2017bhav.csv:680",
+      "cm10NOV2017bhav.csv.zip:cm10NOV2017bhav.csv:665",
+      "cm13NOV2017bhav.csv.zip:cm13NOV2017bhav.csv:677",
+      "cm14NOV2017bhav.csv.zip:cm14NOV2017bhav.csv:680",
+      "cm15NOV2017bhav.csv.zip:cm15NOV2017bhav.csv:686",
+      "cm16NOV2017bhav.csv.zip:cm16NOV2017bhav.csv:676",
+      "cm17NOV2017bhav.csv.zip:cm17NOV2017bhav.csv:673"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE602A01015",
+    "new_isin": "INE602A01023",
+    "date": "2018-04-19",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:8182",
+      "cm16APR2018bhav.csv.zip:cm16APR2018bhav.csv:1282",
+      "cm17APR2018bhav.csv.zip:cm17APR2018bhav.csv:1256",
+      "cm18APR2018bhav.csv.zip:cm18APR2018bhav.csv:1255",
+      "cm19APR2018bhav.csv.zip:cm19APR2018bhav.csv:1264",
+      "cm20APR2018bhav.csv.zip:cm20APR2018bhav.csv:1260",
+      "cm23APR2018bhav.csv.zip:cm23APR2018bhav.csv:1269",
+      "cm24APR2018bhav.csv.zip:cm24APR2018bhav.csv:1263",
+      "cm25APR2018bhav.csv.zip:cm25APR2018bhav.csv:1263",
+      "cm26APR2018bhav.csv.zip:cm26APR2018bhav.csv:1252",
+      "cm27APR2018bhav.csv.zip:cm27APR2018bhav.csv:1257"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE095N01023",
+    "new_isin": "INE095N01031",
+    "date": "2018-04-25",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:8187",
+      "PR230418.zip:Bc230418.csv:16",
+      "PR230418.zip:Bc230418.csv:36",
+      "cm23APR2018bhav.csv.zip:cm23APR2018bhav.csv:1133",
+      "cm24APR2018bhav.csv.zip:cm24APR2018bhav.csv:1124",
+      "cm25APR2018bhav.csv.zip:cm25APR2018bhav.csv:1127",
+      "cm26APR2018bhav.csv.zip:cm26APR2018bhav.csv:1118",
+      "cm27APR2018bhav.csv.zip:cm27APR2018bhav.csv:1123",
+      "cm30APR2018bhav.csv.zip:cm30APR2018bhav.csv:1131",
+      "cm02MAY2018bhav.csv.zip:cm02MAY2018bhav.csv:1140",
+      "cm03MAY2018bhav.csv.zip:cm03MAY2018bhav.csv:1125",
+      "cm04MAY2018bhav.csv.zip:cm04MAY2018bhav.csv:1123"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE854D01016",
+    "new_isin": "INE854D01024",
+    "date": "2018-06-15",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:8263",
+      "cm12JUN2018bhav.csv.zip:cm12JUN2018bhav.csv:1049",
+      "cm13JUN2018bhav.csv.zip:cm13JUN2018bhav.csv:1040",
+      "cm14JUN2018bhav.csv.zip:cm14JUN2018bhav.csv:1036",
+      "cm15JUN2018bhav.csv.zip:cm15JUN2018bhav.csv:1050",
+      "cm18JUN2018bhav.csv.zip:cm18JUN2018bhav.csv:1040",
+      "cm19JUN2018bhav.csv.zip:cm19JUN2018bhav.csv:1047",
+      "cm20JUN2018bhav.csv.zip:cm20JUN2018bhav.csv:1042",
+      "cm21JUN2018bhav.csv.zip:cm21JUN2018bhav.csv:1036",
+      "cm22JUN2018bhav.csv.zip:cm22JUN2018bhav.csv:1039",
+      "cm25JUN2018bhav.csv.zip:cm25JUN2018bhav.csv:1041"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE111A01017",
+    "new_isin": "INE111A01025",
+    "date": "2018-06-26",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:8311",
+      "cm25JUN2018bhav.csv.zip:cm25JUN2018bhav.csv:321",
+      "cm26JUN2018bhav.csv.zip:cm26JUN2018bhav.csv:321",
+      "cm27JUN2018bhav.csv.zip:cm27JUN2018bhav.csv:318",
+      "cm28JUN2018bhav.csv.zip:cm28JUN2018bhav.csv:321",
+      "cm29JUN2018bhav.csv.zip:cm29JUN2018bhav.csv:320",
+      "cm02JUL2018bhav.csv.zip:cm02JUL2018bhav.csv:317",
+      "cm03JUL2018bhav.csv.zip:cm03JUL2018bhav.csv:317",
+      "cm04JUL2018bhav.csv.zip:cm04JUL2018bhav.csv:320",
+      "cm05JUL2018bhav.csv.zip:cm05JUL2018bhav.csv:316",
+      "cm06JUL2018bhav.csv.zip:cm06JUL2018bhav.csv:315"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE520A01019",
+    "new_isin": "INE520A01027",
+    "date": "2018-09-07",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:9079",
+      "cm04SEP2018bhav.csv.zip:cm04SEP2018bhav.csv:1906",
+      "cm05SEP2018bhav.csv.zip:cm05SEP2018bhav.csv:1896",
+      "cm06SEP2018bhav.csv.zip:cm06SEP2018bhav.csv:1876",
+      "cm07SEP2018bhav.csv.zip:cm07SEP2018bhav.csv:1909",
+      "cm10SEP2018bhav.csv.zip:cm10SEP2018bhav.csv:1903",
+      "cm11SEP2018bhav.csv.zip:cm11SEP2018bhav.csv:1912",
+      "cm12SEP2018bhav.csv.zip:cm12SEP2018bhav.csv:1882",
+      "cm14SEP2018bhav.csv.zip:cm14SEP2018bhav.csv:1890",
+      "cm17SEP2018bhav.csv.zip:cm17SEP2018bhav.csv:1910"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE022Q01012",
+    "new_isin": "INE022Q01020",
+    "date": "2018-10-19",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:9813",
+      "cm16OCT2018bhav.csv.zip:cm16OCT2018bhav.csv:734",
+      "cm17OCT2018bhav.csv.zip:cm17OCT2018bhav.csv:737",
+      "cm19OCT2018bhav.csv.zip:cm19OCT2018bhav.csv:741",
+      "cm22OCT2018bhav.csv.zip:cm22OCT2018bhav.csv:747",
+      "cm23OCT2018bhav.csv.zip:cm23OCT2018bhav.csv:736",
+      "cm24OCT2018bhav.csv.zip:cm24OCT2018bhav.csv:737",
+      "cm25OCT2018bhav.csv.zip:cm25OCT2018bhav.csv:732",
+      "cm26OCT2018bhav.csv.zip:cm26OCT2018bhav.csv:735",
+      "cm29OCT2018bhav.csv.zip:cm29OCT2018bhav.csv:742"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE844O01022",
+    "new_isin": "INE844O01030",
+    "date": "2019-01-15",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:9998",
+      "cm14JAN2019bhav.csv.zip:cm14JAN2019bhav.csv:604",
+      "cm15JAN2019bhav.csv.zip:cm15JAN2019bhav.csv:597",
+      "cm16JAN2019bhav.csv.zip:cm16JAN2019bhav.csv:599",
+      "cm17JAN2019bhav.csv.zip:cm17JAN2019bhav.csv:608",
+      "cm18JAN2019bhav.csv.zip:cm18JAN2019bhav.csv:594",
+      "cm21JAN2019bhav.csv.zip:cm21JAN2019bhav.csv:615",
+      "cm22JAN2019bhav.csv.zip:cm22JAN2019bhav.csv:601",
+      "cm23JAN2019bhav.csv.zip:cm23JAN2019bhav.csv:603",
+      "cm24JAN2019bhav.csv.zip:cm24JAN2019bhav.csv:603",
+      "cm25JAN2019bhav.csv.zip:cm25JAN2019bhav.csv:610"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE121A01016",
+    "new_isin": "INE121A01024",
+    "date": "2019-06-14",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:10357",
+      "cm11JUN2019bhav.csv.zip:cm11JUN2019bhav.csv:308",
+      "cm12JUN2019bhav.csv.zip:cm12JUN2019bhav.csv:307",
+      "cm13JUN2019bhav.csv.zip:cm13JUN2019bhav.csv:308",
+      "cm14JUN2019bhav.csv.zip:cm14JUN2019bhav.csv:308",
+      "cm17JUN2019bhav.csv.zip:cm17JUN2019bhav.csv:311",
+      "cm18JUN2019bhav.csv.zip:cm18JUN2019bhav.csv:309",
+      "cm19JUN2019bhav.csv.zip:cm19JUN2019bhav.csv:308",
+      "cm20JUN2019bhav.csv.zip:cm20JUN2019bhav.csv:305",
+      "cm21JUN2019bhav.csv.zip:cm21JUN2019bhav.csv:306",
+      "cm24JUN2019bhav.csv.zip:cm24JUN2019bhav.csv:305"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE040A01026",
+    "new_isin": "INE040A01034",
+    "date": "2019-09-19",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:11698",
+      "PR040919.zip:Bc040919.csv:104",
+      "PR040919.zip:Bc040919.csv:1046",
+      "PR090919.zip:Bc090919.csv:535",
+      "PR090919.zip:Bc090919.csv:677",
+      "PR110919.zip:Bc110919.csv:543",
+      "PR110919.zip:Bc110919.csv:683",
+      "PR120919.zip:Bc120919.csv:577",
+      "PR120919.zip:Bc120919.csv:716",
+      "PR160819.zip:Bc160819.csv:342",
+      "PR160819.zip:Bc160819.csv:470",
+      "PR160919.zip:Bc160919.csv:480",
+      "PR160919.zip:Bc160919.csv:748",
+      "PR170919.zip:Bc170919.csv:589",
+      "PR170919.zip:Bc170919.csv:729",
+      "PR180919.zip:Bc180919.csv:555",
+      "PR180919.zip:Bc180919.csv:699",
+      "PR190919.zip:Bc190919.csv:519",
+      "PR190919.zip:Bc190919.csv:670",
+      "PR200819.zip:Bc200819.csv:342",
+      "PR200819.zip:Bc200819.csv:471",
+      "PR210819.zip:Bc210819.csv:121",
+      "PR210819.zip:Bc210819.csv:906",
+      "PR220819.zip:Bc220819.csv:403",
+      "PR220819.zip:Bc220819.csv:531",
+      "PR290819.zip:Bc290819.csv:401",
+      "PR290819.zip:Bc290819.csv:538",
+      "cm16SEP2019bhav.csv.zip:cm16SEP2019bhav.csv:637",
+      "cm17SEP2019bhav.csv.zip:cm17SEP2019bhav.csv:633",
+      "cm18SEP2019bhav.csv.zip:cm18SEP2019bhav.csv:643",
+      "cm19SEP2019bhav.csv.zip:cm19SEP2019bhav.csv:633",
+      "cm20SEP2019bhav.csv.zip:cm20SEP2019bhav.csv:639",
+      "cm23SEP2019bhav.csv.zip:cm23SEP2019bhav.csv:640",
+      "cm24SEP2019bhav.csv.zip:cm24SEP2019bhav.csv:638",
+      "cm25SEP2019bhav.csv.zip:cm25SEP2019bhav.csv:632",
+      "cm26SEP2019bhav.csv.zip:cm26SEP2019bhav.csv:628",
+      "cm27SEP2019bhav.csv.zip:cm27SEP2019bhav.csv:630"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE064C01014",
+    "new_isin": "INE064C01022",
+    "date": "2019-12-13",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:12093",
+      "cm10DEC2019bhav.csv.zip:cm10DEC2019bhav.csv:1815",
+      "cm11DEC2019bhav.csv.zip:cm11DEC2019bhav.csv:1797",
+      "cm12DEC2019bhav.csv.zip:cm12DEC2019bhav.csv:1813",
+      "cm13DEC2019bhav.csv.zip:cm13DEC2019bhav.csv:1810",
+      "cm16DEC2019bhav.csv.zip:cm16DEC2019bhav.csv:1830",
+      "cm17DEC2019bhav.csv.zip:cm17DEC2019bhav.csv:1817",
+      "cm18DEC2019bhav.csv.zip:cm18DEC2019bhav.csv:1809",
+      "cm19DEC2019bhav.csv.zip:cm19DEC2019bhav.csv:1779",
+      "cm20DEC2019bhav.csv.zip:cm20DEC2019bhav.csv:1822",
+      "cm23DEC2019bhav.csv.zip:cm23DEC2019bhav.csv:1826"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE285J01010",
+    "new_isin": "INE285J01028",
+    "date": "2020-01-15",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:12140",
+      "cm13JAN2020bhav.csv.zip:cm13JAN2020bhav.csv:1621",
+      "cm14JAN2020bhav.csv.zip:cm14JAN2020bhav.csv:1596",
+      "cm15JAN2020bhav.csv.zip:cm15JAN2020bhav.csv:1597",
+      "cm16JAN2020bhav.csv.zip:cm16JAN2020bhav.csv:1590",
+      "cm17JAN2020bhav.csv.zip:cm17JAN2020bhav.csv:1584",
+      "cm20JAN2020bhav.csv.zip:cm20JAN2020bhav.csv:1607",
+      "cm21JAN2020bhav.csv.zip:cm21JAN2020bhav.csv:1579",
+      "cm22JAN2020bhav.csv.zip:cm22JAN2020bhav.csv:1593",
+      "cm23JAN2020bhav.csv.zip:cm23JAN2020bhav.csv:1595",
+      "cm24JAN2020bhav.csv.zip:cm24JAN2020bhav.csv:1594"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE410B01029",
+    "new_isin": "INE410B01037",
+    "date": "2020-02-05",
+    "kind": "split",
+    "share_ratio": 2.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:12169",
+      "cm03FEB2020bhav.csv.zip:cm03FEB2020bhav.csv:1910",
+      "cm04FEB2020bhav.csv.zip:cm04FEB2020bhav.csv:1885",
+      "cm05FEB2020bhav.csv.zip:cm05FEB2020bhav.csv:1886",
+      "cm06FEB2020bhav.csv.zip:cm06FEB2020bhav.csv:1887",
+      "cm07FEB2020bhav.csv.zip:cm07FEB2020bhav.csv:1873",
+      "cm10FEB2020bhav.csv.zip:cm10FEB2020bhav.csv:1924",
+      "cm11FEB2020bhav.csv.zip:cm11FEB2020bhav.csv:1891",
+      "cm12FEB2020bhav.csv.zip:cm12FEB2020bhav.csv:1891",
+      "cm13FEB2020bhav.csv.zip:cm13FEB2020bhav.csv:1878",
+      "cm14FEB2020bhav.csv.zip:cm14FEB2020bhav.csv:1895"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE962Y01013",
+    "new_isin": "INE962Y01021",
+    "date": "2020-04-03",
+    "kind": "split",
+    "share_ratio": 5.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:12599",
+      "cm31MAR2020bhav.csv.zip:cm31MAR2020bhav.csv:810",
+      "cm01APR2020bhav.csv.zip:cm01APR2020bhav.csv:793",
+      "cm03APR2020bhav.csv.zip:cm03APR2020bhav.csv:812",
+      "cm07APR2020bhav.csv.zip:cm07APR2020bhav.csv:836",
+      "cm08APR2020bhav.csv.zip:cm08APR2020bhav.csv:812",
+      "cm09APR2020bhav.csv.zip:cm09APR2020bhav.csv:807",
+      "cm13APR2020bhav.csv.zip:cm13APR2020bhav.csv:804"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  },
+  {
+    "old_isin": "INE066A01013",
+    "new_isin": "INE066A01021",
+    "date": "2020-08-24",
+    "kind": "split",
+    "share_ratio": 10.0,
+    "evidence": [
+      "nse_actions_2014_2020.json:13077",
+      "cm21AUG2020bhav.csv.zip:cm21AUG2020bhav.csv:458",
+      "cm24AUG2020bhav.csv.zip:cm24AUG2020bhav.csv:463",
+      "cm25AUG2020bhav.csv.zip:cm25AUG2020bhav.csv:453",
+      "cm26AUG2020bhav.csv.zip:cm26AUG2020bhav.csv:453",
+      "cm27AUG2020bhav.csv.zip:cm27AUG2020bhav.csv:457",
+      "cm28AUG2020bhav.csv.zip:cm28AUG2020bhav.csv:457",
+      "cm31AUG2020bhav.csv.zip:cm31AUG2020bhav.csv:461",
+      "cm01SEP2020bhav.csv.zip:cm01SEP2020bhav.csv:445"
+    ],
+    "source": "primary NSE action plus adjacent dated exchange identifiers; obsolete API ISIN requires original bulletin corroboration"
+  }
+]

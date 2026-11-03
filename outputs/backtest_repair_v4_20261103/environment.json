@@ -1,0 +1,7 @@
+{
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.22631-SP0",
+  "pandas": "3.0.6",
+  "replay": "Retained primary/provider bytes; fresh providers may restate history",
+  "runtime": "Use a fresh app process to load changed calculation code; no running app, remote deployment or live checkpoint was advanced"
+}

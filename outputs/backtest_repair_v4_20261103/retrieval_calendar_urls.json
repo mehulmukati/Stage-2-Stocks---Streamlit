@@ -1,0 +1,38 @@
+[
+  {
+    "name": "CMTR25324.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR25324.pdf",
+    "retrieved_at": "2026-11-03T13:30:27.555881+00:00",
+    "status": 200,
+    "bytes": 54259,
+    "content_type": "application/pdf",
+    "sha256": "10bd9f4eebe6a75aba3472c78f498c37650ee477d218a4457c10bcd3b58449bc"
+  },
+  {
+    "name": "CMTR25326.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR25326.pdf",
+    "retrieved_at": "2026-11-03T13:30:27.557874+00:00",
+    "status": 200,
+    "bytes": 196941,
+    "content_type": "application/pdf",
+    "sha256": "1247dc6cb843e6bfaa50c42d416dc021fd55cbbb6420c43e652d2b7a07fd2f35"
+  },
+  {
+    "name": "CMTR28337.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR28337.pdf",
+    "retrieved_at": "2026-11-03T13:30:27.559873+00:00",
+    "status": 200,
+    "bytes": 197048,
+    "content_type": "application/pdf",
+    "sha256": "5733cf3b16cf5cf05879fb28777d0fbf6636c44c8dd204c8fe2f02ef9bb722c4"
+  },
+  {
+    "name": "CMTR31297.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR31297.pdf",
+    "retrieved_at": "2026-11-03T13:30:27.560876+00:00",
+    "status": 200,
+    "bytes": 195966,
+    "content_type": "application/pdf",
+    "sha256": "bf33e9aade8773908fc5d6de105cc731e93bf063cd1564a82fe1998c5aaf6432"
+  }
+]
