@@ -1,0 +1,70 @@
+[
+  {
+    "source": "ind_prs28082017.pdf",
+    "proposal": [
+      "2017-09-29",
+      "RELCAPITAL EXCL",
+      "MFSL INCL"
+    ],
+    "status": "rescheduled",
+    "authority": "ind_prs29082017.pdf",
+    "actual_effective_session": "2017-09-05",
+    "source_hashes": {
+      "ind_prs28082017.pdf": "25aa0b2027aaced424c4ca73e6bf86fd3dea3efa74db2aecf8ada6a3196fb5a8",
+      "ind_prs29082017.pdf": "2c901efcc5c3af6a8b9d353b2de9c91904bab4b40c8e68ef8540267366c46f20"
+    }
+  },
+  {
+    "source": "ind_prs21022018.pdf",
+    "proposal": [
+      "2018-04-02",
+      "VIDEOIND EXCL",
+      "ERIS INCL"
+    ],
+    "status": "accelerated",
+    "authority": "ind_prs06032018.pdf",
+    "actual_effective_session": "2018-03-13",
+    "source_hashes": {
+      "ind_prs21022018.pdf": "a31019896822ef7a28f2229ba5e1552c835f51952ee033d02a5f79c9c7914b3d",
+      "ind_prs06032018.pdf": "8750a37dcd4d2e8fe7eb4301a4b422134d49409e11baf351f0cc7fc48ab0c38b"
+    }
+  },
+  {
+    "source": [
+      "ind_prs18022020.pdf",
+      "ind_prs12032020.pdf",
+      "ind_prs19032020.pdf"
+    ],
+    "proposal_effective_session": "2020-03-27",
+    "status": "deferred then declared null and void; never applied as a delayed copy",
+    "authorities": [
+      "ind_prs23032020.pdf",
+      "ind_prs25032020.pdf",
+      "ind_prs13052020.pdf"
+    ],
+    "replacement_review": "ind_prs10062020.pdf",
+    "replacement_effective_session": "2020-06-26",
+    "preserved_exception": "The already accelerated YESBANK/SWSOLAR replacement on 2020-03-19 remains evidenced by ind_prs16032020.pdf",
+    "source_hashes": {
+      "ind_prs18022020.pdf": "1943215214a0b967333ae4ec9c6aeaec9c5012fb03558c769ad895b7d1081f9e",
+      "ind_prs12032020.pdf": "f268447e9886a9ab107db6049c286aecd425e2de0e4437d5dd79fb69a18bcddb",
+      "ind_prs19032020.pdf": "584a66214db7f8728cdb570bb280e344b8fe90871c54a7dc2c95da182416d031",
+      "ind_prs23032020.pdf": "55a9cd5f11b9036e274b397c1f43f607c632ccb31837339b7ac661de6037ea59",
+      "ind_prs25032020.pdf": "4dd3a6df4bf53b0191cfcdb8575170d2685d742f4bd1055c09643eef5d802703",
+      "ind_prs13052020.pdf": "4bd9b13fe0fdd5fe48358968f335402b77de41f15eb989847216503f14ea9f16",
+      "ind_prs10062020.pdf": "ea83ae30ff9e8d80892e143ebd8f16fedd04c974e77d673539bb663a9f9de49e"
+    }
+  },
+  {
+    "source": "ind_prs23032020.pdf",
+    "proposal": [
+      "2020-03-27 GAYAPROJ EXCL / FLUOROCHEM INCL impact-cost replacement"
+    ],
+    "status": "not applied; also deferred before proposed effective session",
+    "authority": "ind_prs25032020.pdf",
+    "source_hashes": {
+      "ind_prs23032020.pdf": "55a9cd5f11b9036e274b397c1f43f607c632ccb31837339b7ac661de6037ea59",
+      "ind_prs25032020.pdf": "4dd3a6df4bf53b0191cfcdb8575170d2685d742f4bd1055c09643eef5d802703"
+    }
+  }
+]

@@ -1,0 +1,15 @@
+
+
+           1)       NIFTY 500
+
+           The following companies are being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Gujarat Fluorochemicals Ltd.                                GUJFLUORO
+                  2       Monsanto India Ltd.                                         MONSANTO
+
+           The following companies are being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Chalet Hotels Ltd.                                          CHALET
+                  2       Dalmia Bharat Ltd.                                          DALBHARAT

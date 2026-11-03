@@ -1,0 +1,100 @@
+                       DEPARTMENT : CAPITAL MARKET SEGMENT
+
+ Download Ref No : NCL/CMPT/39827                                                  Date : January 01, 2019
+
+ Circular Ref. No : 0002/2019
+
+All Members/Custodians/PCMs
+Sub: - Gujarat Gas Limited (GUJGASLTD) - Face Value Split
+
+This is with reference to Item 11.17 ‘Early Pay-in of Securities for Margin Exemption’ of our
+consolidated circular (Download Ref No: NSCCL/CMPT/34659) dated April 17, 2017.
+    1.   Gujarat  Gas  Limited      (GUJGASLTD)          has  announced  a  record  date  on        January  16,
+         2019   for the purpose of ‘Face Value Split of shares from Rs.                10/- each into Rs. 2/-
+         each’. Accordingly,  the  ex-date  has  been  set  up  by  NSCCL  in  the  Normal  Regular
+         Market  as    January  15,  2019      for  settlement  number        N-2019011.  Due  to  the  sub
+         division  of  shares,  NSDL  shall  issue  new  ISIN  corresponding  to  existing  ISIN  of
+         Gujarat  Gas  Limited  (GUJGASLTD).  This  shall  be  effective  for  all  outstanding
+         balances  of  the  security  as  on      January  16,  2019      in  various  beneficiary  accounts
+         available with the depositories.
+    2.   As per the procedure of the Clearing Corporation, clearing members can claim margin
+         benefits by making early pay-in of securities as per their securities pay-in obligation
+         in  a  given  settlement.  You  are  requested  to       make  early  pay-in  in  the  old/existing
+         INE844O01022         of  Gujarat  Gas  Limited  (GUJGASLTD)                 for  settlement  nos.     N-
+         2019011    and N-2019012 on January 15, 2019 and January 16, 2019 and in the new
+         ISIN on January 17, 2019 to avail the margin benefit.
+    3.   You are advised to make early pay-in of the security for settlement nos. N-2019011
+         and   N-2019012      on  January  15,  2019      and   January  16,  2019      in  old  ISIN  without
+         adjusting for the conversion (one share of old existing ISIN for deliverable obligation
+         of five shares of new ISIN).
+
+         For E.g.  For a sale quantity of 100 shares the early pay-in should be in the old ISIN
+         and for a quantity of 20 shares.
+
+    4.   You are kindly requested to upload client wise early pay-in allocation details as per
+         the actual traded quantity for settlement nos. N-2019011 and N-2019012 (quantity of
+         100 shares in the above example).
+    5.   You are also requested to take a note of the cut off timings for making early pay-in at
+         the depositories’ end.
+
+
+
+
+
+
+
+                                                                                                 Continuation Sheet
+
+    6.   You are further  requested to execute delivery out instructions for settlement no.                        N-
+
+         2019011 in the new ISIN in the depositories.
+
+
+
+
+For and on behalf of
+NSE Clearing Limited
+(Formerly known as National Securities Clearing Corporation Limited)
+
+
+
+Archana Upadhye
+Chief Manager
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Toll Free No                                 Fax No                         Email id
+1800 266 00 57                               022-26598269                   securities_ops@nsccl.co.in
+
+
+
+
+

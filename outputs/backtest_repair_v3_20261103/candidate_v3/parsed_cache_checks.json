@@ -1,0 +1,242 @@
+[
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataApr2018.parquet",
+    "cache_sha256": "dd25448e389c6d14fa32610789d46102ad44f3940779f6e40936b80ce5abe4ee",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataApr2018.zip",
+    "archive_sha256": "93a2452b1f3edc991e9965cdf48b2e10c8ece23c5cb2ecc41fbcda98eb4ea0da"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataApr2019.parquet",
+    "cache_sha256": "8b948889d2f0b44aa726ddade7a2f0e9356a87b410b292431868b77ead6e9c7e",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataApr2019.zip",
+    "archive_sha256": "3c6d0ce5aef58047c2f81ae83690aa9601373a4af9fec14e2c83d474e59ee0bd"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataApr2020.parquet",
+    "cache_sha256": "1fe33ddf1573722e537d960ab39a34f4a07c311b81c9861ad0aca3603b9f6c48",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataApr2020.zip",
+    "archive_sha256": "568cfe3a12c8345657534f58154fdde34504f68120f1b2a332dba4aaa0952911"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataAug2017.parquet",
+    "cache_sha256": "53aa229c214bfe183f41fbcaeab8c000a17e59ba2594d8995ebda2015335d651",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataAug2017.zip",
+    "archive_sha256": "8a87b8341569a4b8482fdce76169b5a14c1672b801347657adada8bff3e886f7"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataAug2018.parquet",
+    "cache_sha256": "4a1dd045e8a07f49da1de419024c0f0b6b9cad949546e6a5ab3cf130010c99e3",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataAug2018.zip",
+    "archive_sha256": "88edd69c7399a2075e6c36b11bf1a6b6d19f915a9011f71549a861f96acd7c62"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataAug2019.parquet",
+    "cache_sha256": "67682da3541f03236b42a20040186d1f9d1f5852bf5f42ff79fccca9040da8f4",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataAug2019.zip",
+    "archive_sha256": "aeeca6ea45457b007b6857bc2b26f304a479bb4239cf7e5c3f420b00843b2120"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataAug2020.parquet",
+    "cache_sha256": "d2c49acda2ae67958f34cb605240508708afbc0696f525c02e2aedf25100b568",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataAug2020.zip",
+    "archive_sha256": "bbc2408d0c3eaae9a2c2421eda33cb383945cd7b7cab7e8d173365c44de88d4f"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataDec2017.parquet",
+    "cache_sha256": "e38d2837b223c9d1d88065133a7fda434b2881f061f9747c809a4769006161e2",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataDec2017.zip",
+    "archive_sha256": "27a47b73a928143c9c0f247f50f07c1373316af6c00f55d75453051219d04db0"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataDec2018.parquet",
+    "cache_sha256": "20675b52635b75493baba93579d65c543c2dcb04725ea0023b830da5355615dd",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataDec2018.zip",
+    "archive_sha256": "b7b2084dd3349be9405e54117362e85c5118d6bbccd5edd2f1e6304a0d7a8d44"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataDec2019.parquet",
+    "cache_sha256": "ea49795811d717bdced6301e8a7285ffacc841d52a7fb6e0237f4ba3f9f19d4d",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataDec2019.zip",
+    "archive_sha256": "5f0f848bd0b5a13bd6a31cb73ceb55f6a99ac16030c9f578fb240acbfd9e7bd3"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataFeb2018.parquet",
+    "cache_sha256": "50f1be63553266d7babcef67849d0babeb7b58e80a0aea0ff723b02e028a8cb7",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataFeb2018.zip",
+    "archive_sha256": "05a681d96562d26d50eecf4b78b797f7cff1feba71693c9380aa28aff0f09cb3"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataFeb2019.parquet",
+    "cache_sha256": "b3e4e5c694c18b10f9dbb5df2132576a81e434489fafb841ae3667c8b57ba276",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataFeb2019.zip",
+    "archive_sha256": "2a4c4743e8b20d2b5f2f11265f631b493b0a9f3250233f22bf5a7a383b4e57ec"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataFeb2020.parquet",
+    "cache_sha256": "af7994cdbd52fa3edb4b6b94f0326f3b7230633b4191f7d44e3e4cc908ebef1b",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataFeb2020.zip",
+    "archive_sha256": "f79792707dbacba304fa94b0006eee80644b4314c4279cebbf2aa2db4f6c12eb"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJan2018.parquet",
+    "cache_sha256": "1d8627ebeacff90f68b94906ec11538feff1b500914708336a1acbf9360e9854",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJan2018.zip",
+    "archive_sha256": "1c1b11039bdf8da7e1125012e81f2be6332f7033de1a9daa6791d762b5e3e684"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJan2019.parquet",
+    "cache_sha256": "69cfd50c829ad6cc6fc7286a94d7dc532ed96d9b60515fda176e348ece4a62be",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJan2019.zip",
+    "archive_sha256": "bf5e8acd6dcba671013874e21058cba19379fb83b221931628ef90d111d81f3d"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJan2020.parquet",
+    "cache_sha256": "e4c083a161ae7b719fc8a0a22939e823511723146dab19bfdb9d76c82ab3c81e",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJan2020.zip",
+    "archive_sha256": "3392685a8c0a3e06ef313354efe174e60c3d4dd62683f7e05cee3c436b62b721"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJul2017.parquet",
+    "cache_sha256": "44d1a1669084236b0499031191e437795dc18840b9e49fc35f701ddb527d1550",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJul2017.zip",
+    "archive_sha256": "92e6642ce5d06d8125e3a5b63e75def5d033c5f748c1caa04e003ca6c6037df3"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJul2018.parquet",
+    "cache_sha256": "259e8cd0808d5eaa548b06057308681ea682471be5d7d386f750e84f1b5e9eea",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJul2018.zip",
+    "archive_sha256": "9fd4ace46b6c1e809f22060576fe7e3e62f1ad746818593c933b2573435e9440"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJul2019.parquet",
+    "cache_sha256": "66a5f50a36e27e6ffbef8d1faed29d7e20953e76414c0a77a16a3d22d4bf5637",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJul2019.zip",
+    "archive_sha256": "2541d6174a3fc92dd6175eacb946acd5260d4cde8f872edc941389fcae4396c7"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJul2020.parquet",
+    "cache_sha256": "617557f6a755547dc53f713d65dca555eea2ee5c460e08fbbf0368a1de29b5f6",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJul2020.zip",
+    "archive_sha256": "d2e69912c30325ef1d15ab51122cbd0d70b8469199051f23ed465b492f4c05a1"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJun2017.parquet",
+    "cache_sha256": "0362a6535ff27e7ec0d4ec35529669aeeea18e698bc4a9143aa5aa631e8f8a27",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJun2017.zip",
+    "archive_sha256": "907fca09784c59d663516fc4b36db89100744c9aab056d222d33adf8a2ef1d6b"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJun2018.parquet",
+    "cache_sha256": "6411b6e6225b988bd0d479faf4f9acba7b3cdfd98f147c0a8e6e5aa2c149857f",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJun2018.zip",
+    "archive_sha256": "35c518e9b77deae7f61f28d4c6f0f312d46d10a7d4e1f41a82f7ce20c9aee01f"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJun2019.parquet",
+    "cache_sha256": "f9671085fff0f8d4c6379d2ee1d24fcf94b180d84441242d09703a50e57e8e54",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJun2019.zip",
+    "archive_sha256": "637818665439d6b836f4f128db18b3df7a89410ec24e5385ea4c37c7cce398e3"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataJun2020.parquet",
+    "cache_sha256": "16d296842bee3c8c33bbc88e62a7b3d50c2e8c5c59ee1a26cac92411d49e541e",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataJun2020.zip",
+    "archive_sha256": "970aa5d345c214482aac2c9fa7bfb6afe572396a404c64c5af1558f309bd3d94"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataMar2018.parquet",
+    "cache_sha256": "4e5e1efbefba48ab6689236e10c8837fe54d4dab7d29cf513866dc76205e3dd9",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataMar2018.zip",
+    "archive_sha256": "305403cfdf38817cf31dc8bf2b22bc69f6d579a11a80d588958b5cf20fd494c7"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataMar2019.parquet",
+    "cache_sha256": "f57bc00db9d3778d647f188faac74201da62669b72c2891004d0bdf5d7085120",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataMar2019.zip",
+    "archive_sha256": "56dc9429612f7a1f5fc4b671343785ff950d465d7e1e8fcef56be9d8fd385a5e"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataMar2020.parquet",
+    "cache_sha256": "af164c8bba26f4479b8fd4dbfc627aa1257247f7aad234f7dca5a466fb9705a2",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataMar2020.zip",
+    "archive_sha256": "00efbdb09265de37ecfc19e85d89e7f78ad3ffb4d003c8694d7a4c9b940d0e6c"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataMay2018.parquet",
+    "cache_sha256": "709617ce8ff1f0337693cdee199ac0538d82ce919d37f78126fbf9ab4bcd5773",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataMay2018.zip",
+    "archive_sha256": "38b09e4d781a102b521485bc0b704744962a0dbce18e92038ed997e2e7f39b2b"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataMay2019.parquet",
+    "cache_sha256": "4533c9e6305f089f819728a5f0b309eee90265a077c79ec4cc572b34281ed843",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataMay2019.zip",
+    "archive_sha256": "87c41b86bcbc38e7a7891817c53f2dd86e789487e991c792fad6907879cadc29"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataMay2020.parquet",
+    "cache_sha256": "9bd6a1dc4b4dc6f290d272a869e667171ebbcb7e452f194c13c0354e61228f02",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataMay2020.zip",
+    "archive_sha256": "e7d2700db2d0fd6502e393ab98641d41f1526753f4458a055acf99153b754a2e"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataNov2017.parquet",
+    "cache_sha256": "4ab7b45e43fadd2871815bddcb08f06c27ae11ceac16b921b24bb83485f91279",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataNov2017.zip",
+    "archive_sha256": "aeffd41c9563e188c885f15efa3d5bc38d08b4dd5e5dd1369fa8b1d894222ef2"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataNov2018.parquet",
+    "cache_sha256": "9b4c2d406afa12873cb99da5eb0d88cdeb87979b156de03ab1fc43aa18225c74",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataNov2018.zip",
+    "archive_sha256": "262c0645ba9a6e1070c0e45b87c675bbea8b1cf5e5da94c6efb8fb0622b62122"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataNov2019.parquet",
+    "cache_sha256": "b6cf146062f24348e09c47dcda1061e2e95de1cee849eb5a20aaabf50f01a93f",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataNov2019.zip",
+    "archive_sha256": "3933aafbffda34e4f1767a4df0f7db6464dede5daecf4e8944387dc680e1464e"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataOct2017.parquet",
+    "cache_sha256": "8f872aa0792a6d16b11c905ab8d181610106aa336253b0ce5bc4497cd534ff46",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataOct2017.zip",
+    "archive_sha256": "aac9c50eeab36b3ecce5e5e198447467d2842bc2ba9ef80a641771462a21c506"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataOct2018.parquet",
+    "cache_sha256": "4342fb2ed49b1e416c8b0b048b4d2f99082020fac28b579ce9e17cb2d4244174",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataOct2018.zip",
+    "archive_sha256": "124f94b04e047ffe18fe80b17b5fea5d8cf92593d3d75b71d0e90cbaae98c195"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataOct2019.parquet",
+    "cache_sha256": "eb27aea97ec861205cdee303839c306677669683945623ceb921b100f664d5df",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataOct2019.zip",
+    "archive_sha256": "efb12285610fb3c0cc07699ad727ab78d5b3d821c68caa9f33dca6e30dc251c2"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataSep2017.parquet",
+    "cache_sha256": "73442b7040fc275baeba55283dcaa2253b95877802b654a997bb58464cfcece3",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataSep2017.zip",
+    "archive_sha256": "230073c2272376dbba6f6a70ee44d4da3e40f78e0270da578b1fa53f0f271c5f"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataSep2018.parquet",
+    "cache_sha256": "d8cbc3a696006fe6ad2127d4a973e80aedcb3f11be33a6f499641d56336ae963",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataSep2018.zip",
+    "archive_sha256": "be9625d29f2c02efe216f538975ad1df950037a29862152fb50db675f785a023"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataSep2019.parquet",
+    "cache_sha256": "cad11d896b370097407c5fa30e0516203c64f262a951a3e86f810c70b8b620c5",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataSep2019.zip",
+    "archive_sha256": "c723c9640bca6c287498568b02b671c07ca589781e07e8f501a113cb6feaa0e2"
+  },
+  {
+    "cache": "outputs\\backtest_repair_v2_20261103\\parsed_monthly\\indices_dataSep2020.parquet",
+    "cache_sha256": "7f895e3e90ad997f7619c5b90348f61ad1bc4bcd76b0b58bd1ddd0840657f225",
+    "archive": "outputs\\backtest_repair_v2_20261103\\evidence\\indices_dataSep2020.zip",
+    "archive_sha256": "effeedd14ea6b036af96dbcba8587ed5d508042dc0f1ac2e20848bc4667e6ca3"
+  }
+]

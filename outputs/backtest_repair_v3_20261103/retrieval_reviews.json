@@ -1,0 +1,282 @@
+[
+  {
+    "name": "ind_prs03012017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs03012017.pdf",
+    "retrieved_at": "2026-11-03T08:15:56.098591+00:00",
+    "status": 200,
+    "bytes": 242018,
+    "sha256": "41c06a470c01450f20a25dc8f77634fb8330aa759aeed9c479e2a16210d1e331"
+  },
+  {
+    "name": "ind_prs03112017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs03112017.pdf",
+    "retrieved_at": "2026-11-03T08:15:56.101586+00:00",
+    "status": 200,
+    "bytes": 156034,
+    "sha256": "3a6333ae5618ff91fdc9d62df121577da716c65256881bf761d39b375f27e912"
+  },
+  {
+    "name": "ind_prs08012018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs08012018.pdf",
+    "retrieved_at": "2026-11-03T08:15:56.100608+00:00",
+    "status": 200,
+    "bytes": 276399,
+    "sha256": "364784c98963a7bc2d28fa19d7b0c5377063178e9215669b1c7b1dfcdc8981f2"
+  },
+  {
+    "name": "ind_prs08042019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs08042019.pdf",
+    "retrieved_at": "2026-11-03T08:15:56.101586+00:00",
+    "status": 200,
+    "bytes": 142412,
+    "sha256": "a4ff43189ea06cc6dbf53f3c5ac615b1b0c030fe0678c6fe38e991a5a05716af"
+  },
+  {
+    "name": "ind_prs09012018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs09012018.pdf",
+    "retrieved_at": "2026-11-03T08:15:57.221535+00:00",
+    "status": 200,
+    "bytes": 204063,
+    "sha256": "179c093107d34c060b1943b7040123d637d4688eefc75a2374bf0089a84dcdf2"
+  },
+  {
+    "name": "ind_prs09012020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs09012020.pdf",
+    "retrieved_at": "2026-11-03T08:15:57.258073+00:00",
+    "status": 200,
+    "bytes": 75585,
+    "sha256": "41b2bbb3dad1498a03965d8d2735db39afe31de24119c5cdfc2cb5fb41b6e8be"
+  },
+  {
+    "name": "ind_prs09052017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs09052017.pdf",
+    "retrieved_at": "2026-11-03T08:15:58.499664+00:00",
+    "status": 200,
+    "bytes": 171569,
+    "sha256": "1c848f0a2b4bf14680bdf0613754991a71072d484dfbed05a7438063f176bf5c"
+  },
+  {
+    "name": "ind_prs10062020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs10062020.pdf",
+    "retrieved_at": "2026-11-03T08:15:58.499664+00:00",
+    "status": 200,
+    "bytes": 782320,
+    "sha256": "ea83ae30ff9e8d80892e143ebd8f16fedd04c974e77d673539bb663a9f9de49e"
+  },
+  {
+    "name": "ind_prs10112017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs10112017.pdf",
+    "retrieved_at": "2026-11-03T08:15:58.498663+00:00",
+    "status": 200,
+    "bytes": 145998,
+    "sha256": "48967e4b62390828177e01666980cb8e065c0c592fcdab849683d1c4a15d5fb6"
+  },
+  {
+    "name": "ind_prs12032020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs12032020.pdf",
+    "retrieved_at": "2026-11-03T08:15:58.500659+00:00",
+    "status": 200,
+    "bytes": 671579,
+    "sha256": "f268447e9886a9ab107db6049c286aecd425e2de0e4437d5dd79fb69a18bcddb"
+  },
+  {
+    "name": "ind_prs13062019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs13062019.pdf",
+    "retrieved_at": "2026-11-03T08:15:59.432699+00:00",
+    "status": 200,
+    "bytes": 255072,
+    "sha256": "b05a59c604e1c29cfa00931c71d6ffd9fbe201f0be60b78235eb6f9635447338"
+  },
+  {
+    "name": "ind_prs14122018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs14122018.pdf",
+    "retrieved_at": "2026-11-03T08:15:59.436692+00:00",
+    "status": 200,
+    "bytes": 799868,
+    "sha256": "0a9fb1a90d69d6d34c7893409ff33806ce153fd464b2ed7809ac132362c6afe0"
+  },
+  {
+    "name": "ind_prs15062017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs15062017.pdf",
+    "retrieved_at": "2026-11-03T08:15:59.605195+00:00",
+    "status": 200,
+    "bytes": 156064,
+    "sha256": "13fd0f5d2514f7d641d80883b8a874af20cbe118bdad95ddfc99c3cfa525f978"
+  },
+  {
+    "name": "ind_prs16012017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs16012017.pdf",
+    "retrieved_at": "2026-11-03T08:15:59.792017+00:00",
+    "status": 200,
+    "bytes": 176015,
+    "sha256": "0acabd9059d5456c115ffceb0231e3ee87df0c9517d312db2e2c2fcd31a74076"
+  },
+  {
+    "name": "ind_prs16022017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs16022017.pdf",
+    "retrieved_at": "2026-11-03T08:15:59.969678+00:00",
+    "status": 200,
+    "bytes": 615299,
+    "sha256": "f5809306fbefc99ab58960276c780b28e6bcf52f9a30e17cae552512a1c79348"
+  },
+  {
+    "name": "ind_prs16102017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs16102017.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.078320+00:00",
+    "status": 200,
+    "bytes": 154686,
+    "sha256": "db77a33e235bb7283c3e8305c7f1b211099a13e2d9d43542a538696a54a4329c"
+  },
+  {
+    "name": "ind_prs17092019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs17092019.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.087315+00:00",
+    "status": 200,
+    "bytes": 223816,
+    "sha256": "4222523b5b00120b597ff1ef2045274f1fcd93df9525660f669180394c376aeb"
+  },
+  {
+    "name": "ind_prs17092019_1.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs17092019_1.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.371548+00:00",
+    "status": 200,
+    "bytes": 155273,
+    "sha256": "befefb0ff804ad2540021442dd782e2dade35e9598fcf2cb2ed799b7f81cbf52"
+  },
+  {
+    "name": "ind_prs18112020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs18112020.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.466850+00:00",
+    "status": 200,
+    "bytes": 147595,
+    "sha256": "2b1e70ef429b10a794af6132a66ded909dedea518be4a395219d182d0aaf4fe9"
+  },
+  {
+    "name": "ind_prs18122017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs18122017.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.474857+00:00",
+    "status": 200,
+    "bytes": 335422,
+    "sha256": "f9bebad6cdd5406fdf033a9186c19e1bd9f005f72f33a8d8c2817187661be968"
+  },
+  {
+    "name": "ind_prs18122019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs18122019.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.604137+00:00",
+    "status": 200,
+    "bytes": 160827,
+    "sha256": "1a82bef95e25f8b6760dc06b4d6d443416193aaa22322627edb7f33784a0fc0e"
+  },
+  {
+    "name": "ind_prs19032020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs19032020.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.623312+00:00",
+    "status": 200,
+    "bytes": 439423,
+    "sha256": "584a66214db7f8728cdb570bb280e344b8fe90871c54a7dc2c95da182416d031"
+  },
+  {
+    "name": "ind_prs19122019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs19122019.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.773664+00:00",
+    "status": 200,
+    "bytes": 162158,
+    "sha256": "2ecb9cf3b60755cf782070bf91726758760ffeaaa6668f5fedb50a8019665de7"
+  },
+  {
+    "name": "ind_prs20062018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs20062018.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.847137+00:00",
+    "status": 200,
+    "bytes": 230213,
+    "sha256": "e4853e8962fd4df7156f7d7077d3df3aba6ba354eb368a771036e3c7a6ec9385"
+  },
+  {
+    "name": "ind_prs21012019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs21012019.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.854146+00:00",
+    "status": 200,
+    "bytes": 252308,
+    "sha256": "ff617ab210bc5a1519e2432ebc03a0737b2a103245b2cab0767442be7edd323d"
+  },
+  {
+    "name": "ind_prs21022018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs21022018.pdf",
+    "retrieved_at": "2026-11-03T08:16:00.864140+00:00",
+    "status": 200,
+    "bytes": 575624,
+    "sha256": "a31019896822ef7a28f2229ba5e1552c835f51952ee033d02a5f79c9c7914b3d"
+  },
+  {
+    "name": "ind_prs24052018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs24052018.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.335427+00:00",
+    "status": 200,
+    "bytes": 270915,
+    "sha256": "bbc4a4c04cae7a1ff924e8b3ef3f7acc6b3a9da069a1d6a36cfe0ae99189e957"
+  },
+  {
+    "name": "ind_prs25022019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs25022019.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.352648+00:00",
+    "status": 200,
+    "bytes": 485706,
+    "sha256": "bb0224baa0a399eb0d2bd86a6b2c06514a1ae68ef3ad2bf5628a4d93423e59ea"
+  },
+  {
+    "name": "ind_prs25102017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs25102017.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.360867+00:00",
+    "status": 200,
+    "bytes": 140408,
+    "sha256": "0436ad2c87da2072650dd946ed5affe2bb8dfa20416192df009e8333faf11cb1"
+  },
+  {
+    "name": "ind_prs26102020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs26102020.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.572399+00:00",
+    "status": 200,
+    "bytes": 393547,
+    "sha256": "74c21eec6a5356d5fc089683fcedae6c2a72b5b2f82c4290fc97a45e6f5e4d65"
+  },
+  {
+    "name": "ind_prs28082017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs28082017.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.652287+00:00",
+    "status": 200,
+    "bytes": 378637,
+    "sha256": "25aa0b2027aaced424c4ca73e6bf86fd3dea3efa74db2aecf8ada6a3196fb5a8"
+  },
+  {
+    "name": "ind_prs28082018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs28082018.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.719296+00:00",
+    "status": 200,
+    "bytes": 604193,
+    "sha256": "5fadad6119356497ef78ce7d062e18e1104eebad707c5850fade491fe47398be"
+  },
+  {
+    "name": "ind_prs28082019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs28082019.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.735309+00:00",
+    "status": 200,
+    "bytes": 383239,
+    "sha256": "f722969a26b18dfe12256669ff35e8b19d14ae03de5715e0e6b148dd61955e50"
+  },
+  {
+    "name": "ind_prs30092020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs30092020.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.802439+00:00",
+    "status": 200,
+    "bytes": 164603,
+    "sha256": "68fa724755849610a8c02a4f422e224ceafe778d4e0420eeb3637a82aca54a79"
+  },
+  {
+    "name": "ind_prs31082018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs31082018.pdf",
+    "retrieved_at": "2026-11-03T08:16:01.931504+00:00",
+    "status": 200,
+    "bytes": 268836,
+    "sha256": "187044ebd7fb2cd2252ea73dfc4d66fe68441e719a2a7662d65a17f4eb840095"
+  }
+]

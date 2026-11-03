@@ -1,0 +1,67 @@
+
+
+
+
+           3)      NIFTY 500
+
+           The following companies are being excluded:
+
+              Sr. No.                      Company Name                                   Symbol
+                 1       Aban Offshore Ltd.                                       ABAN
+                 2       Asahi India Glass Ltd.                                   ASAHIINDIA
+                 3       Bajaj Hindusthan Sugar Ltd.                              BAJAJHIND
+                 4       Ballarpur Industries Ltd.                                BALLARPUR
+                 5       BF Utilities Ltd.                                        BFUTILITIE
+                 6       BGR Energy Systems Ltd                                   BGRENERGY
+                 7       Bhushan Steel Ltd.                                       BHUSANSTL
+                 8       Bombay Rayon Fashions Ltd.                               BRFL
+                 9       D B Realty Ltd.                                          DBREALTY
+                10       Gati Ltd.                                                GATI
+                11       Housing Development and Infrastructure Ltd.              HDIL
+                12       JBF Industries Ltd.                                      JBFIND
+                13       Jindal Poly Films Ltd.                                   JINDALPOLY
+                14       Kesoram Industries Ltd.                                  KESORAMIND
+                15       Kitex Garments Ltd.                                      KITEX
+                16       Kwality Ltd.                                             KWALITY
+                17       Mahanagar Telephone Nigam Ltd.                           MTNL
+                18       Marksans Pharma Ltd.                                     MARKSANS
+                19       Ramco Systems Ltd.                                       RAMCOSYS
+                20       RattanIndia Power Ltd.                                   RTNPOWER
+                21       Religare Enterprises Ltd.                                RELIGARE
+                22       Sheela Foam Ltd.                                         SFL
+                23       SML Isuzu Ltd.                                           SMLISUZU
+                24       Unitech Ltd.                                             UNITECH
+                25       Zee Learn Ltd.                                           ZEELEARN
+
+           The following companies are being included:
+
+              Sr. No.                      Company Name                                   Symbol
+                 1       Bandhan Bank Ltd.                                        BANDHANBNK
+                 2       Elgi Equipments Ltd.                                     ELGIEQUIP
+                 3       Excel Crop Care Ltd.                                     EXCELCROP
+                 4       FDC Ltd.                                                 FDC
+                 5       Galaxy Surfactants Ltd.                                  GALAXYSURF
+                 6       Gayatri Projects Ltd.                                    GAYAPROJ
+                 7       Grindwell Norton Ltd.                                    GRINDWELL
+
+
+
+              Sr. No.                      Company Name                                    Symbol
+                 8       HDFC Standard Life Insurance Company Ltd.                 HDFCLIFE
+                 9       Hindustan Aeronautics Ltd.                                HAL
+                 10      ICICI Securities Ltd.                                     ISEC
+                 11      Lemon Tree Hotels Ltd.                                    LEMONTREE
+                 12      Linde India Ltd.                                          LINDEINDIA
+                 13      Lux Industries Ltd.                                       LUXIND
+                 14      Mahindra Logistics Ltd.                                   MAHLOG
+                 15      Monsanto India Ltd.                                       MONSANTO
+                 16      Phillips Carbon Black Ltd.                                PHILIPCARB
+                 17      Reliance Nippon Life Asset Management Ltd.                RNAM
+                 18      Strides Pharma Science Ltd.                               STAR
+                 19      Sundaram Finance Ltd.                                     SUNDARMFIN
+                 20      Teamlease Services Ltd.                                   TEAMLEASE
+                 21      The New India Assurance Company Ltd.                      NIACL
+                 22      Venky's (India) Ltd.                                      VENKEYS
+                 23      V-Mart Retail Ltd.                                        VMART
+                 24      Zensar Technolgies Ltd.                                   ZENSARTECH
+                 25      Zydus Wellness Ltd.                                       ZYDUSWELL

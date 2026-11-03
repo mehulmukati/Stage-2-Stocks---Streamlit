@@ -1,0 +1,72 @@
+
+
+
+
+
+
+
+           3)      NIFTY 500
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                   Symbol
+                 1       8K Miles Soft Services Ltd.                                8KMILES
+                 2       Aarti Industries Ltd.                                      AARTIIND
+                 3       Den Networks Ltd.                                          DEN
+                 4       Dredging Corporation of India Ltd.                         DREDGECORP
+                 5       Eros Intl Media Ltd.                                       EROSMEDIA
+                 6       Eveready Industries India Ltd.                             EVEREADY
+                 7       Greenply Industries Ltd.                                   GREENPLY
+                 8       GVK Power & Infrastructures Ltd.                           GVKPIL
+                 9       HCL Infosystems Ltd.                                       HCL-INSYS
+                 10      Hindustan Construction Co. Ltd.                            HCC
+                 11      IL&FS Transportation Networks Ltd.                         IL&FSTRANS
+                 12      Indo Count Industries Ltd.                                 ICIL
+                 13      J.Kumar Infraprojects Ltd.                                 JKIL
+                 14      Jaiprakash Power Ventures Ltd.                             JPPOWER
+                         Johnson Controls - Hitachi Air Conditioning India
+                 15      Ltd.                                                       JCHAC
+                 16      Manpasand Beverages Ltd.                                   MANPASAND
+                 17      McLeod Russel India Ltd.                                   MCLEODRUSS
+                 18      Navkar Corporation Ltd.                                    NAVKARCORP
+                 19      PTC India Fin Serv Ltd.                                    PFS
+                 20      Reliance Naval and Engineering Ltd.                        RNAVAL
+                 21      Sadbhav Infrastructure Project Ltd.                        SADBHIN
+                 22      Tata Sponge Iron Ltd.                                      TATASPONGE
+                 23      Texmaco Rail & Eng. Ltd.                                   TEXRAIL
+                 24      TVS Srichakra Ltd.                                         TVSSRICHAK
+                 25      Unichem Laboratories Ltd.                                  UNICHEMLAB
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                   Symbol
+                 1       Aavas Financiers Ltd.                                      AAVAS
+                 2       AstraZenca Pharma India Ltd.                               ASTRAZEN
+                 3       Bank of Maharashtra.                                       MAHABANK
+                 4       CESC Ltd.                                                  CESC
+                 5       Cox & Kings Ltd.                                           COX&KINGS
+                 6       Deepak Nitrite Ltd.                                        DEEPAKNTR
+                 7       Essel Propack Ltd.                                         ESSELPACK
+                 8       Fine Organic Industries Ltd.                               FINEORG
+                 9       HDFC Asset Management Company Ltd.                         HDFCAMC
+
+
+
+
+               Sr. No.                      Company Name                                    Symbol
+                 10      ICRA Ltd.                                                  ICRA
+                 11      Indiabulls Integrated Services Ltd.                        IBULISL
+                 12      IndoStar Capital Finance Ltd.                              INDOSTAR
+                 13      IRCON International Ltd.                                   IRCON
+                 14      Jamna Auto Industries Ltd.                                 JAMNAAUTO
+                 15      JK Paper Ltd.                                              JKPAPER
+                 16      KEI Industries Ltd.                                        KEI
+                 17      Kirloskar Oil Eng Ltd.                                     KIRLOSENG
+                 18      Maharashtra Scooters Ltd.                                  MAHSCOOTER
+                 19      Maharashtra Seamless Ltd.                                  MAHSEAMLES
+                 20      Orient Electric Ltd.                                       ORIENTELEC
+                 21      Sharda Cropchem Ltd.                                       SHARDACROP
+                 22      Suprajit Engineering Ltd.                                  SUPRAJIT
+                 23      TCNS Clothing Co. Ltd.                                     TCNSBRANDS
+                 24      Triveni Turbine Ltd.                                       TRITURBINE
+                 25      VST Industries Ltd.                                        VSTIND

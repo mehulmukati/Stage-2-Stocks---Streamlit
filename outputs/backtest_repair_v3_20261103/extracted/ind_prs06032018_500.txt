@@ -1,0 +1,13 @@
+
+
+1)      NIFTY 500
+
+The following company is being excluded:
+
+   Sr. No.                        Company Name                                       Symbol
+      1        Videocon Industries Ltd.                                      VIDEOIND
+
+The following company is being included:
+
+   Sr. No.                        Company Name                                       Symbol
+      1        Eris Lifesciences Ltd.                                        ERIS

@@ -1,0 +1,314 @@
+                                                     Press Release
+                                                                                                  March 12, 2020
+
+                                                Replacements in Indices
+
+           The Index Maintenance Sub-Committee (IMSC) of NSE Indices Limited has decided to make the
+           following replacements in various indices as given hereunder.
+
+           These changes shall become effective from March 27, 2020 (close of March 26, 2020).
+
+           A.  Replacement on account of non-availability of F&O contracts
+
+           1)      NIFTY Bank
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Yes Bank Ltd.                                               YESBANK
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Bandhan Bank Ltd.                                           BANDHANBNK
+
+
+           B.  Replacement in NIFTY50 Value 20 index
+
+           The following company is being excluded on account of exclusion from NIFTY 50:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Yes Bank Ltd.                                               YESBANK
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      ITC Ltd.                                                    ITC
+
+           C.  Quarterly Review of indices:
+
+           1)      NIFTY Alpha 50
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Axis Bank Ltd.                                              AXISBANK
+                  2      Bajaj Holdings & Investment Ltd.                            BAJAJHLDNG
+                  3      DCB Bank Ltd.                                               DCBBANK
+
+
+
+               Sr. No.                      Company Name                                   Symbol
+                 4       HCL Technologies Ltd.                                      HCLTECH
+                 5       Justdial Ltd.                                              JUSTDIAL
+                 6       Oberoi Realty Ltd.                                         OBEROIRLTY
+                 7       Power Finance Corporation Ltd.                             PFC
+                 8       Procter & Gamble Health Ltd.                               PGHL
+                 9       REC Ltd.                                                   RECLTD
+                 10      Reliance Industries Ltd.                                   RELIANCE
+                 11      UPL Ltd.                                                   UPL
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                   Symbol
+                 1       AU Small Finance Bank Ltd.                                 AUBANK
+                 2       Avenue Supermarts Ltd.                                     DMART
+                 3       Berger Paints India Ltd.                                   BERGEPAINT
+                 4       Bharti Airtel Ltd.                                         BHARTIARTL
+                 5       CreditAccess Grameen Ltd.                                  CREDITACC
+                 6       Deepak Nitrite Ltd.                                        DEEPAKNTR
+                 7       Dixon Technologies (India) Ltd.                            DIXON
+                 8       ICICI Securities Ltd.                                      ISEC
+                 9       Navin Fluorine International Ltd.                          NAVINFLUOR
+                 10      Relaxo Footwears Ltd.                                      RELAXO
+                 11      Tata Consumer Products Ltd.                                TATACONSUM
+
+           2)      NIFTY High Beta 50
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                   Symbol
+                 1       Bank of India                                              BANKINDIA
+                 2       IDFC Ltd.                                                  IDFC
+                 3       Indiabulls Real Estate Ltd.                                IBREALEST
+                 4       Karnataka Bank Ltd.                                        KTKBANK
+                 5       Union Bank of India                                        UNIONBANK
+                 6       V.I.P. Industries Ltd.                                     VIPIND
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                   Symbol
+                 1       Bharat Forge Ltd.                                          BHARATFORG
+                 2       Equitas Holdings Ltd.                                      EQUITAS
+                 3       JSW Steel Ltd.                                             JSWSTEEL
+                 4       LIC Housing Finance Ltd.                                   LICHSGFIN
+
+
+
+
+               Sr. No.                      Company Name                                    Symbol
+                 5       Shriram Transport Finance Co. Ltd.                         SRTRANSFIN
+                 6       Sun TV Network Ltd.                                        SUNTV
+
+
+           3)      NIFTY Low Volatility 50
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Atul Ltd.                                                  ATUL
+                 2       Castrol India Ltd.                                         CASTROLIND
+                 3       Godrej Industries Ltd.                                     GODREJIND
+                 4       Oil India Ltd.                                             OIL
+                 5       Oracle Financial Services Software Ltd.                    OFSS
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Bata India Ltd.                                            BATAINDIA
+                 2       Glaxosmithkline Pharmaceuticals Ltd.                       GLAXO
+                 3       Petronet LNG Ltd.                                          PETRONET
+                 4       The Ramco Cements Ltd.                                     RAMCOCEM
+                 5       United Breweries Ltd.                                      UBL
+
+
+           4)      NIFTY100 Alpha 30
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Axis Bank Ltd.                                             AXISBANK
+                 2       HCL Technologies Ltd.                                      HCLTECH
+                 3       Power Finance Corporation Ltd.                             PFC
+                 4       UPL Ltd.                                                   UPL
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Adani Transmission Ltd.                                    ADANITRANS
+                 2       Avenue Supermarts Ltd.                                     DMART
+                 3       Info Edge (India) Ltd.                                     NAUKRI
+                 4       United Spirits Ltd.                                        MCDOWELL-N
+
+           No change is being made to NIFTY100 Low Volatility 30 index.
+
+
+
+
+            D.  On account of non-compliance of SEBI Portfolio Concentration Norms
+
+            On account of non-compliance of one of the SEBI Portfolio Concentration Norms for Equity
+            Exchange    Traded    Funds    (ETFs)    and    Index    Funds              (SEBI      circular    reference:
+            SEBI/HO/IMD/DF3/CIR/P/2019/011                dated   January  10,  2019)  related  to  the  impact  cost
+            following replacements shall take place:
+
+            1)  NIFTY 500
+
+            The following company is being excluded:
+
+                Sr. No.                        Company Name                                        Symbol
+                   1       Gayatri Projects Ltd.                                          GAYAPROJ
+
+            The following company is being included:
+
+                Sr. No.                        Company Name                                        Symbol
+                   1       Shilpa Medicare Ltd.*                                          SHILPAMED
+            *Earlier announcement (dated February 18, 2020) on exclusion of a company is reversed.
+
+            2)       NIFTY Smallcap 250
+
+            The following company is being excluded:
+
+                Sr. No.                        Company Name                                        Symbol
+                   1       Gayatri Projects Ltd.                                          GAYAPROJ
+
+            The following company is being included:
+
+                Sr. No.                        Company Name                                        Symbol
+                   1       Shilpa Medicare Ltd.*                                          SHILPAMED
+            *Earlier announcement (dated February 18, 2020) on exclusion of a company is reversed.
+
+            3)       NIFTY MidSmallcap 400
+
+            The following company is being excluded:
+
+                Sr. No.                        Company Name                                        Symbol
+                   1       Gayatri Projects Ltd.                                          GAYAPROJ
+
+            The following company is being included:
+
+                Sr. No.                        Company Name                                        Symbol
+                   1       Shilpa Medicare Ltd.*                                          SHILPAMED
+            *Earlier announcement (dated February 18, 2020) on exclusion of a company is reversed.
+
+
+
+
+
+
+            4)       NIFTY500 Value 50
+
+            The following company is being excluded:
+
+                Sr. No.                          Company Name                                         Symbol
+                   1        Magma Fincorp Ltd.                                                MAGMA
+
+            The following company is being included:
+
+                Sr. No.                          Company Name                                         Symbol
+                   1        SJVN Ltd.                                                         SJVN
+
+
+
+            About National Stock Exchange of India Limited (NSE):
+            National Stock Exchange of India Ltd. (NSE) is the world’s largest derivatives exchange by
+            trading volume as per the statistics published by Futures Industry Association (FIA) for 2019
+            and ranked 3rd in the world in the cash equities segment by number of trades as per the statistics
+            published by the World Federation of Exchanges (WFE). NSE was the first exchange in India
+            to implement electronic or screen-based trading. It began operations in 1994 and is ranked as
+            the largest stock exchange in India in terms of total and average daily turnover for equity shares
+            every  year  since  1995,  based  on  SEBI  data.  NSE  has  a  fully-integrated  business  model
+            comprising  exchange  listings,  trading  services,  clearing  and  settlement  services,  indices,
+            market data feeds, technology solutions and financial education offerings. NSE also oversees
+            compliance by trading and clearing members with the rules and regulations of the exchange.
+            NSE  is  a  pioneer  in  technology  and  ensures  the  reliability  and  performance  of  its  systems
+            through a culture of innovation and investment in technology. NSE believes that the scale and
+            breadth of its products and services, sustained leadership positions across multiple asset classes
+            in India and globally enable it to be highly reactive to market demands and changes and deliver
+            innovation in both trading and non-trading businesses to provide high-quality data and services
+            to market participants and clients.
+            For more information, please visit: www.nseindia.com
+
+            About NSE Indices Limited:
+            NSE Indices Limited (formerly known as India Index Services & Products Ltd. - IISL), a subsidiary
+            of  NSE,  provides  a  variety  of  indices  and  index  related  services  for  the  capital  markets.  The
+            company focuses on the index as a core product. The company owns and manages a portfolio of
+            indices under the NIFTY brand of NSE, including the flagship index, the NIFTY 50. NIFTY equity
+            indices comprises of broad-based benchmark indices, sectoral indices, strategy indices, thematic
+            indices and customised indices. NSE Indices Limited also maintains fixed income indices based on
+            Government of India securities, corporate bonds, money market instruments and hybrid indices.
+            Many investment products based on NIFTY indices have been developed within India and abroad.
+            These include index based derivatives traded on NSE, NSE IFSC and Singapore Exchange Ltd.
+            (SGX) and a number of index funds and exchange traded funds. The flagship 'NIFTY 50' index is
+            widely tracked and traded as the benchmark for Indian Capital Markets.
+            For more information, please visit: www.niftyindices.com
+
+
+
+
+
+
+            For any clarifications please contact:
+            Arijit Sengupta                                                    Kumar Kartikey
+            Chief Marketing & Communications Officer          Chief Manager, Corporate Communication
+            Mobile: +91-9820340485                                             Mobile: +91-9819549984
+            Email id: asengupta@nse.co.in                                      Email id: kumark@nse.co.in
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

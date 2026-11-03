@@ -1,0 +1,55 @@
+
+           3)      NIFTY 500
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                  1      Bliss GVS Pharma Ltd.                                       BLISSGVS
+                  2      Dewan Housing Finance Corporation Ltd.                      DHFL
+                  3      IFCI Ltd.                                                   IFCI
+                  4      Indiabulls Integrated Services Ltd.                         IBULISL
+                  5      ITD Cementation India Ltd.                                  ITDCEM
+                  6      Jain Irrigation Systems Ltd.                                JISLJALEQS
+                  7      Kennametal India Ltd.                                       KENNAMET
+                  8      Kirloskar Oil Eng Ltd.                                      KIRLOSENG
+                  9      Lakshmi Vilas Bank Ltd.                                     LAKSHVILAS
+                 10      Magma Fincorp Ltd.                                          MAGMA
+                 11      National Fertilizers Ltd.                                   NFL
+                 12      Parag Milk Foods Ltd.                                       PARAGMILK
+                 13      PC Jeweller Ltd.                                            PCJEWELLER
+
+
+
+
+              Sr. No.                      Company Name                                    Symbol
+                14       Reliance Capital Ltd.                                     RELCAPITAL
+                15       Reliance Infrastructure Ltd.                              RELINFRA
+                16       Reliance Power Ltd.                                       RPOWER
+                17       Shilpa Medicare Ltd.                                      SHILPAMED
+                18       Sundaram Clayton Ltd.                                     SUNCLAYLTD
+                19       Tasty Bite Eatables Ltd.                                  TASTYBITE
+                20       Va Tech Wabag Ltd.                                        WABAG
+
+           The following companies are being included:
+
+              Sr. No.                      Company Name                                    Symbol
+                 1       Bharat Rasayan Ltd.                                       BHARATRAS
+                 2       Century Textile & Industries Ltd.                         CENTURYTEX
+                 3       Future Supply Chain Solutions Ltd.                        FSC
+                 4       Garden Reach Shipbuilders & Engineers Ltd.                GRSE
+                 5       GMM Pfaudler Ltd.                                         GMMPFAUDLR
+                 6       Gujarat Fluorochemicals Ltd.                              FLUOROCHEM
+                 7       Hathway Cable & Datacom Ltd.                              HATHWAY
+                 8       IIFL Wealth Management Ltd.                               IIFLWAM
+                 9       Indian Railway Catering And Tourism Corp. Ltd.            IRCTC
+                10       Ingersoll Rand (India) Ltd.                               INGERRAND
+                11       JTEKT India Ltd.                                          JTEKTINDIA
+                12       Mahindra Lifespace Developers Ltd.                        MAHLIFE
+                13       Navneet Education Ltd.                                    NAVNETEDUL
+                14       Sharda Cropchem Ltd.                                      SHARDACROP
+                15       Shipping Corporation of India Ltd.                        SCI
+                16       Sterling And Wilson Solar Ltd.                            SWSOLAR
+                17       Tata Communications Ltd.                                  TATACOMM
+                18       Tata Steel Long Products Ltd.                             TATASTLLP
+                19       Transport Corporation of India Ltd.                       TCI
+                20       Vesuvius India Ltd.                                       VESUVIUS

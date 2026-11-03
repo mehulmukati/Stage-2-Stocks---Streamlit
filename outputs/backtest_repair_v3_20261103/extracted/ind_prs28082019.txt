@@ -1,0 +1,889 @@
+                                                       Press Release
+
+                                                                                                     August 28, 2019
+
+                                                  Replacements in Indices
+           The Index Maintenance Sub-Committee (IMSC) of NSE Indices Limited has decided to make the
+           following replacement of stocks in various indices as part of its periodic review. These changes
+           shall become effective from September 27, 2019 (close of September 26, 2019).
+
+           1)       NIFTY 50
+
+           The following company is being excluded:
+
+               Sr. No.                        Company Name                                      Symbol
+                  1       Indiabulls Housing Finance Ltd.                               IBULHSGFIN
+
+           The following company is being included:
+
+               Sr. No.                        Company Name                                      Symbol
+                  1       Nestle India Ltd.                                             NESTLEIND
+
+           The above replacement will also be applicable to NIFTY50 Equal Weight Index.
+
+
+           2)       NIFTY Next 50
+
+           The following companies are being excluded:
+
+               Sr. No.                        Company Name                                      Symbol
+                  1       ABB India Ltd.*                                               ABB
+                  2       Bharat Heavy Electricals Ltd.                                 BHEL
+                  3       MRF Ltd.                                                      MRF
+                  4       Steel Authority of India Ltd.                                 SAIL
+           * On account of proposed scheme of arrangement for demerger
+
+           The following companies are being included:
+
+               Sr. No.                        Company Name                                      Symbol
+                  1       Berger Paints India Ltd.                                      BERGEPAINT
+                  2       Indiabulls Housing Finance Ltd.                               IBULHSGFIN
+                  3       Power Finance Corporation Ltd.                                PFC
+                  4       Punjab National Bank                                          PNB
+
+
+
+
+
+
+
+           3)      NIFTY 500
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      ABB India Ltd.*                                             ABB
+                  2      Deepak Fertilisers & Petrochemicals Corp. Ltd.              DEEPAKFERT
+                  3      Gateway Distriparks Ltd.                                    GDL
+                  4      GlaxoSmithkline Consumer Healthcare Ltd.*                   GSKCONS
+                  5      Gruh Finance Ltd.*                                          GRUH
+                  6      Indoco Remedies Ltd.                                        INDOCO
+                  7      Inox Wind Ltd.                                              INOXWIND
+                  8      Jaiprakash Associates Ltd.                                  JPASSOCIAT
+                  9      KIOCL Ltd.                                                  KIOCL
+                 10      Ramkrishna Forgings Ltd.                                    RKFORGE
+                 11      Reliance Communications Ltd.                                RCOM
+                 12      Reliance Home Finance Ltd.                                  RHFL
+                 13      Rupa & Company Ltd.                                         RUPA
+                 14      Shankara Building Products Ltd.                             SHANKARA
+                 15      Sharda Cropchem Ltd.                                        SHARDACROP
+                 16      Shipping Corporation of India Ltd.                          SCI
+                 17      Sintex Plastics Technology Ltd.                             SPTL
+                 18      SREI Infrastructure Finance Ltd.                            SREINFRA
+                 19      Tamil Nadu Newsprint & Papers Ltd.                          TNPL
+                 20      Tata Coffee Ltd.                                            TATACOFFEE
+                 21      Triveni Turbine Ltd.                                        TRITURBINE
+           * On account of proposed scheme of arrangement for demerger/amalgamation
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Abbott India Ltd.                                           ABBOTINDIA
+                  2      Adani Gas Ltd.                                              ADANIGAS
+                  3      Amber Enterprises India Ltd.                                AMBER
+                  4      Arvind Fashions Ltd.                                        ARVINDFASN
+                  5      Bayer Cropscience Ltd.                                      BAYERCROP
+                  6      Birlasoft Ltd.                                              BSOFT
+                  7      Capri Global Capital Ltd.                                   CGCL
+                  8      Den Networks Ltd.                                           DEN
+                  9      Federal-Mogul Goetze (India) Ltd.                           FMGOETZE
+                 10      Garware Technical Fibres Ltd.                               GARFIBRES
+                 11      Johnson Controls - Hitachi Air Conditioning India           JCHAC
+                         Ltd.
+                 12      KPIT Technologies Ltd.                                      KPITTECH
+
+
+
+
+               Sr. No.                       Company Name                                     Symbol
+                 13       Metropolis Healthcare Ltd.                                  METROPOLIS
+                 14       Multi Commodity Exchange of India Ltd.                      MCX
+                 15       Nestle India Ltd.                                           NESTLEIND
+                 16       Orient Refractories Ltd.                                    ORIENTREF
+                 17       Polycab India Ltd.                                          POLYCAB
+                 18       Rail Vikas Nigam Ltd.                                       RVNL
+                 19       Ratnamani Metals & Tubes Ltd.                               RATNAMANI
+                 20       TCI Express Ltd.                                            TCIEXP
+                 21       Techno Electric & Engineering Company Ltd.                  TECHNOE
+
+
+           4)       NIFTY 100
+
+           The following companies are being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       ABB India Ltd.*                                             ABB
+                  2       Bharat Heavy Electricals Ltd.                               BHEL
+                  3       MRF Ltd.                                                    MRF
+                  4       Steel Authority of India Ltd.                               SAIL
+           * On account of proposed scheme of arrangement for demerger
+
+           The following companies are being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Berger Paints India Ltd.                                    BERGEPAINT
+                  2       Nestle India Ltd.                                           NESTLEIND
+                  3       Power Finance Corporation Ltd.                              PFC
+                  4       Punjab National Bank                                        PNB
+
+           The above replacements will also be applicable to NIFTY100 Equal Weight Index.
+
+
+           5)       NIFTY Midcap 150
+
+           The following companies are being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Berger Paints India Ltd.                                    BERGEPAINT
+                  2       Dewan Housing Finance Corporation Ltd.                      DHFL
+                  3       Dilip Buildcon Ltd.                                         DBL
+                  4       Dish TV India Ltd.                                          DISHTV
+                  5       Finolex Cables Ltd.                                         FINCABLES
+                  6       GlaxoSmithkline Consumer Healthcare Ltd.*                   GSKCONS
+
+
+
+
+               Sr. No.                      Company Name                                    Symbol
+                  7      Gruh Finance Ltd.*                                          GRUH
+                  8      JM Financial Ltd.                                           JMFINANCIL
+                  9      KIOCL Ltd.                                                  KIOCL
+                 10      Power Finance Corporation Ltd.                              PFC
+                 11      Punjab National Bank                                        PNB
+                 12      Reliance Capital Ltd.                                       RELCAPITAL
+                 13      Reliance Infrastructure Ltd.                                RELINFRA
+                 14      Reliance Power Ltd.                                         RPOWER
+                 15      Sun Pharma Advanced Research Company Ltd.                   SPARC
+           * On account of proposed scheme of arrangement for amalgamation.
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                  1      Aavas Financiers Ltd.                                       AAVAS
+                  2      Abbott India Ltd.                                           ABBOTINDIA
+                  3      Adani Gas Ltd.                                              ADANIGAS
+                  4      Allahabad Bank                                              ALBK
+                  5      Bayer Cropscience Ltd.                                      BAYERCROP
+                  6      Bharat Heavy Electricals Ltd.                               BHEL
+                  7      CESC Ltd.                                                   CESC
+                  8      Corporation Bank                                            CORPBANK
+                  9      Fortis Healthcare Ltd.                                      FORTIS
+                 10      Indian Overseas Bank                                        IOB
+                 11      MRF Ltd.                                                    MRF
+                 12      Oriental Bank of Commerce                                   ORIENTBANK
+                 13      Steel Authority of India Ltd.                               SAIL
+                 14      UCO Bank                                                    UCOBANK
+                 15      Vinati Organics Ltd.                                        VINATIORGA
+
+
+           6)      NIFTY Smallcap 250
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                  1      Aavas Financiers Ltd.                                       AAVAS
+                  2      Allahabad Bank                                              ALBK
+                  3      CESC Ltd.                                                   CESC
+                  4      Corporation Bank                                            CORPBANK
+                  5      Deepak Fertilisers & Petrochemicals Corp. Ltd.              DEEPAKFERT
+                  6      Fortis Healthcare Ltd.                                      FORTIS
+                  7      Gateway Distriparks Ltd.                                    GDL
+
+
+
+
+               Sr. No.                      Company Name                                   Symbol
+                 8       Indian Overseas Bank                                       IOB
+                 9       Indoco Remedies Ltd.                                       INDOCO
+                 10      Inox Wind Ltd.                                             INOXWIND
+                 11      Jaiprakash Associates Ltd.                                 JPASSOCIAT
+                 12      Oriental Bank of Commerce                                  ORIENTBANK
+                 13      Ramkrishna Forgings Ltd.                                   RKFORGE
+                 14      Reliance Communications Ltd.                               RCOM
+                 15      Reliance Home Finance Ltd.                                 RHFL
+                 16      Rupa & Company Ltd.                                        RUPA
+                 17      Shankara Building Products Ltd.                            SHANKARA
+                 18      Sharda Cropchem Ltd.                                       SHARDACROP
+                 19      Shipping Corporation of India Ltd.                         SCI
+                 20      Sintex Plastics Technology Ltd.                            SPTL
+                 21      SREI Infrastructure Finance Ltd.                           SREINFRA
+                 22      Tamil Nadu Newsprint & Papers Ltd.                         TNPL
+                 23      Tata Coffee Ltd.                                           TATACOFFEE
+                 24      Triveni Turbine Ltd.                                       TRITURBINE
+                 25      UCO Bank                                                   UCOBANK
+                 26      Vinati Organics Ltd.                                       VINATIORGA
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                   Symbol
+                 1       Amber Enterprises India Ltd.                               AMBER
+                 2       Arvind Fashions Ltd.                                       ARVINDFASN
+                 3       Birlasoft Ltd.                                             BSOFT
+                 4       Capri Global Capital Ltd.                                  CGCL
+                 5       Den Networks Ltd.                                          DEN
+                 6       Dewan Housing Finance Corporation Ltd.                     DHFL
+                 7       Dilip Buildcon Ltd.                                        DBL
+                 8       Dish TV India Ltd.                                         DISHTV
+                 9       Federal-Mogul Goetze (India) Ltd.                          FMGOETZE
+                 10      Finolex Cables Ltd.                                        FINCABLES
+                 11      Garware Technical Fibres Ltd.                              GARFIBRES
+                 12      JM Financial Ltd.                                          JMFINANCIL
+                 13      Johnson Controls - Hitachi Air Conditioning India          JCHAC
+                         Ltd.
+                 14      KPIT Technologies Ltd.                                     KPITTECH
+                 15      Metropolis Healthcare Ltd.                                 METROPOLIS
+                 16      Multi Commodity Exchange of India Ltd.                     MCX
+                 17      Orient Refractories Ltd.                                   ORIENTREF
+                 18      Polycab India Ltd.                                         POLYCAB
+
+
+
+
+               Sr. No.                      Company Name                                    Symbol
+                 19      Rail Vikas Nigam Ltd.                                       RVNL
+                 20      Ratnamani Metals & Tubes Ltd.                               RATNAMANI
+                 21      Reliance Capital Ltd.                                       RELCAPITAL
+                 22      Reliance Infrastructure Ltd.                                RELINFRA
+                 23      Reliance Power Ltd.                                         RPOWER
+                 24      Sun Pharma Advanced Research Company Ltd.                   SPARC
+                 25      TCI Express Ltd.                                            TCIEXP
+                 26      Techno Electric & Engineering Company Ltd.                  TECHNOE
+
+
+           7)      NIFTY Midcap 50
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Berger Paints India Ltd.                                    BERGEPAINT
+                 2       Dewan Housing Finance Corporation Ltd.                      DHFL
+                 3       IDBI Bank Ltd.                                              IDBI
+                 4       Power Finance Corporation Ltd.                              PFC
+                 5       Punjab National Bank                                        PNB
+                 6       Reliance Infrastructure Ltd.                                RELINFRA
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Bharat Heavy Electricals Ltd.                               BHEL
+                 2       CESC Ltd.                                                   CESC
+                 3       Escorts Ltd.                                                ESCORTS
+                 4       Mahanagar Gas Ltd.                                          MGL
+                 5       MRF Ltd.                                                    MRF
+                 6       Steel Authority of India Ltd.                               SAIL
+
+
+           8)      NIFTY Midcap 100
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Berger Paints India Ltd.                                    BERGEPAINT
+                 2       Dewan Housing Finance Corporation Ltd.                      DHFL
+                 3       Dilip Buildcon Ltd.                                         DBL
+                 4       Dish TV India Ltd.                                          DISHTV
+                 5       GlaxoSmithkline Consumer Healthcare Ltd.*                   GSKCONS
+                 6       Gruh Finance Ltd.*                                          GRUH
+
+
+
+
+               Sr. No.                      Company Name                                     Symbol
+                  7       Power Finance Corporation Ltd.                             PFC
+                  8       Punjab National Bank                                       PNB
+                  9       Reliance Capital Ltd.                                      RELCAPITAL
+                 10       Reliance Infrastructure Ltd.                               RELINFRA
+                 11       Reliance Power Ltd.                                        RPOWER
+                 12       Sun Pharma Advanced Research Company Ltd.                  SPARC
+           * On account of proposed scheme of arrangement for amalgamation.
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       Allahabad Bank                                             ALBK
+                  2       Bharat Heavy Electricals Ltd.                              BHEL
+                  3       CESC Ltd.                                                  CESC
+                  4       City Union Bank Ltd.                                       CUB
+                  5       Dalmia Bharat Ltd.                                         DALBHARAT
+                  6       Emami Ltd.                                                 EMAMILTD
+                  7       Godrej Properties Ltd.                                     GODREJPROP
+                  8       Ipca Laboratories Ltd.                                     IPCALAB
+                  9       MRF Ltd.                                                   MRF
+                 10       Oriental Bank of Commerce                                  ORIENTBANK
+                 11       Reliance Nippon Life Asset Management Ltd.                 RNAM
+                 12       Steel Authority of India Ltd.                              SAIL
+
+
+           9)      NIFTY Smallcap 50
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       Allahabad Bank                                             ALBK
+                  2       CESC Ltd.                                                  CESC
+                  3       Chennai Petroleum Corporation Ltd.                         CHENNPETRO
+                  4       Fortis Healthcare Ltd.                                     FORTIS
+                  5       Infibeam Avenues Ltd.                                      INFIBEAM
+                  6       Jain Irrigation Systems Ltd.                               JISLJALEQS
+                  7       Oriental Bank of Commerce                                  ORIENTBANK
+                  8       Rain Industries Ltd                                        RAIN
+                  9       Rashtriya Chemicals & Fertilizers Ltd.                     RCF
+                 10       Reliance Communications Ltd.                               RCOM
+
+
+
+
+
+
+
+
+           The following companies are being included:
+
+              Sr. No.                      Company Name                                   Symbol
+                 1       Arvind Fashions Ltd.                                      ARVINDFASN
+                 2       DCM Shriram Ltd.                                          DCMSHRIRAM
+                 3       Dilip Buildcon Ltd.                                       DBL
+                 4       Dish TV India Ltd.                                        DISHTV
+                 5       Metropolis Healthcare Ltd.                                METROPOLIS
+                 6       Polycab India Ltd.                                        POLYCAB
+                 7       Rail Vikas Nigam Ltd.                                     RVNL
+                 8       Sobha Ltd.                                                SOBHA
+                 9       Sunteck Realty Ltd.                                       SUNTECK
+                10       Vakrangee Ltd.                                            VAKRANGEE
+
+
+           10)     NIFTY Smallcap 100
+
+           The following companies are being excluded:
+
+              Sr. No.                      Company Name                                   Symbol
+                 1       Allahabad Bank                                            ALBK
+                 2       Bombay Dyeing & Manufacturing Co. Ltd.                    BOMDYEING
+                 3       CESC Ltd.                                                 CESC
+                 4       CG Power and Industrial Solutions Ltd.                    CGPOWER
+                 5       Fortis Healthcare Ltd.                                    FORTIS
+                 6       Gujarat Mineral Development Corporation Ltd.              GMDCLTD
+                 7       India Tourism Development Corporation Ltd.                ITDC
+                 8       Jain Irrigation Systems Ltd.                              JISLJALEQS
+                 9       Jet Airways (India) Ltd.                                  JETAIRWAYS
+                10       Oriental Bank of Commerce                                 ORIENTBANK
+                11       Phillips Carbon Black Ltd.                                PHILIPCARB
+                12       Reliance Communications Ltd.                              RCOM
+                13       South Indian Bank Ltd.                                    SOUTHBANK
+                14       Swan Energy Ltd.                                          SWANENERGY
+                15       UCO Bank                                                  UCOBANK
+
+           The following companies are being included:
+
+              Sr. No.                      Company Name                                   Symbol
+                 1       Arvind Fashions Ltd.                                      ARVINDFASN
+                 2       Aster DM Healthcare Ltd.                                  ASTERDM
+                 3       Blue Star Ltd.                                            BLUESTARCO
+                 4       Chalet Hotels Ltd.                                        CHALET
+                 5       Dewan Housing Finance Corporation Ltd.                    DHFL
+
+
+
+
+               Sr. No.                      Company Name                                    Symbol
+                 6       Dilip Buildcon Ltd.                                        DBL
+                 7       Dish TV India Ltd.                                         DISHTV
+                 8       J.K. Cement Ltd.                                           JKCEMENT
+                 9       JM Financial Ltd.                                          JMFINANCIL
+                 10      KEI Industries Ltd.                                        KEI
+                 11      Metropolis Healthcare Ltd.                                 METROPOLIS
+                 12      Multi Commodity Exchange of India Ltd.                     MCX
+                 13      Polycab India Ltd.                                         POLYCAB
+                 14      Rail Vikas Nigam Ltd.                                      RVNL
+                 15      Sun Pharma Advanced Research Company Ltd.                  SPARC
+
+
+           11)     NIFTY LargeMidcap 250
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       ABB India Ltd.*                                            ABB
+                 2       Dewan Housing Finance Corporation Ltd.                     DHFL
+                 3       Dilip Buildcon Ltd.                                        DBL
+                 4       Dish TV India Ltd.                                         DISHTV
+                 5       Finolex Cables Ltd.                                        FINCABLES
+                 6       GlaxoSmithkline Consumer Healthcare Ltd.*                  GSKCONS
+                 7       Gruh Finance Ltd.*                                         GRUH
+                 8       JM Financial Ltd.                                          JMFINANCIL
+                 9       KIOCL Ltd.                                                 KIOCL
+                 10      Reliance Capital Ltd.                                      RELCAPITAL
+                 11      Reliance Infrastructure Ltd.                               RELINFRA
+                 12      Reliance Power Ltd.                                        RPOWER
+                 13      Sun Pharma Advanced Research Company Ltd.                  SPARC
+           * On account of proposed scheme of arrangement for demerger/amalgamation
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Aavas Financiers Ltd.                                      AAVAS
+                 2       Abbott India Ltd.                                          ABBOTINDIA
+                 3       Adani Gas Ltd.                                             ADANIGAS
+                 4       Allahabad Bank                                             ALBK
+                 5       Bayer Cropscience Ltd.                                     BAYERCROP
+                 6       CESC Ltd.                                                  CESC
+                 7       Corporation Bank                                           CORPBANK
+                 8       Fortis Healthcare Ltd.                                     FORTIS
+
+
+
+
+               Sr. No.                      Company Name                                    Symbol
+                 9       Indian Overseas Bank                                       IOB
+                 10      Nestle India Ltd.                                          NESTLEIND
+                 11      Oriental Bank of Commerce                                  ORIENTBANK
+                 12      UCO Bank                                                   UCOBANK
+                 13      Vinati Organics Ltd.                                       VINATIORGA
+
+
+           12)     NIFTY MidSmallcap 400
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Berger Paints India Ltd.                                   BERGEPAINT
+                 2       Deepak Fertilisers & Petrochemicals Corp. Ltd.             DEEPAKFERT
+                 3       Gateway Distriparks Ltd.                                   GDL
+                 4       GlaxoSmithkline Consumer Healthcare Ltd.*                  GSKCONS
+                 5       Gruh Finance Ltd.*                                         GRUH
+                 6       Indoco Remedies Ltd.                                       INDOCO
+                 7       Inox Wind Ltd.                                             INOXWIND
+                 8       Jaiprakash Associates Ltd.                                 JPASSOCIAT
+                 9       KIOCL Ltd.                                                 KIOCL
+                 10      Power Finance Corporation Ltd.                             PFC
+                 11      Punjab National Bank                                       PNB
+                 12      Ramkrishna Forgings Ltd.                                   RKFORGE
+                 13      Reliance Communications Ltd.                               RCOM
+                 14      Reliance Home Finance Ltd.                                 RHFL
+                 15      Rupa & Company Ltd.                                        RUPA
+                 16      Shankara Building Products Ltd.                            SHANKARA
+                 17      Sharda Cropchem Ltd.                                       SHARDACROP
+                 18      Shipping Corporation of India Ltd.                         SCI
+                 19      Sintex Plastics Technology Ltd.                            SPTL
+                 20      SREI Infrastructure Finance Ltd.                           SREINFRA
+                 21      Tamil Nadu Newsprint & Papers Ltd.                         TNPL
+                 22      Tata Coffee Ltd.                                           TATACOFFEE
+                 23      Triveni Turbine Ltd.                                       TRITURBINE
+           * On account of proposed scheme of arrangement for amalgamation.
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Abbott India Ltd.                                          ABBOTINDIA
+                 2       Adani Gas Ltd.                                             ADANIGAS
+                 3       Amber Enterprises India Ltd.                               AMBER
+
+
+
+
+               Sr. No.                      Company Name                                     Symbol
+                  4       Arvind Fashions Ltd.                                       ARVINDFASN
+                  5       Bayer Cropscience Ltd.                                     BAYERCROP
+                  6       Bharat Heavy Electricals Ltd.                              BHEL
+                  7       Birlasoft Ltd.                                             BSOFT
+                  8       Capri Global Capital Ltd.                                  CGCL
+                  9       Den Networks Ltd.                                          DEN
+                 10       Federal-Mogul Goetze (India) Ltd.                          FMGOETZE
+                 11       Garware Technical Fibres Ltd.                              GARFIBRES
+                 12       Johnson Controls - Hitachi Air Conditioning India          JCHAC
+                          Ltd.
+                 13       KPIT Technologies Ltd.                                     KPITTECH
+                 14       Metropolis Healthcare Ltd.                                 METROPOLIS
+                 15       MRF Ltd.                                                   MRF
+                 16       Multi Commodity Exchange of India Ltd.                     MCX
+                 17       Orient Refractories Ltd.                                   ORIENTREF
+                 18       Polycab India Ltd.                                         POLYCAB
+                 19       Rail Vikas Nigam Ltd.                                      RVNL
+                 20       Ratnamani Metals & Tubes Ltd.                              RATNAMANI
+                 21       Steel Authority of India Ltd.                              SAIL
+                 22       TCI Express Ltd.                                           TCIEXP
+                 23       Techno Electric & Engineering Company Ltd.                 TECHNOE
+
+
+           13)     NIFTY 200
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       ABB India Ltd.*                                            ABB
+                  2       Dewan Housing Finance Corporation Ltd.                     DHFL
+                  3       Dilip Buildcon Ltd.                                        DBL
+                  4       Dish TV India Ltd.                                         DISHTV
+                  5       GlaxoSmithkline Consumer Healthcare Ltd.*                  GSKCONS
+                  6       Gruh Finance Ltd.*                                         GRUH
+                  7       Reliance Capital Ltd.                                      RELCAPITAL
+                  8       Reliance Infrastructure Ltd.                               RELINFRA
+                  9       Reliance Power Ltd.                                        RPOWER
+                 10       Sun Pharma Advanced Research Company Ltd.                  SPARC
+           * On account of proposed scheme of arrangement for demerger/amalgamation
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       Allahabad Bank                                             ALBK
+
+
+
+               Sr. No.                      Company Name                                     Symbol
+                  2       CESC Ltd.                                                  CESC
+                  3       City Union Bank Ltd.                                       CUB
+                  4       Dalmia Bharat Ltd.                                         DALBHARAT
+                  5       Emami Ltd.                                                 EMAMILTD
+                  6       Godrej Properties Ltd.                                     GODREJPROP
+                  7       Ipca Laboratories Ltd.                                     IPCALAB
+                  8       Nestle India Ltd.                                          NESTLEIND
+                  9       Oriental Bank of Commerce                                  ORIENTBANK
+                 10       Reliance Nippon Life Asset Management Ltd.                 RNAM
+
+
+           14)     NIFTY Financial Services
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       Indiabulls Ventures Ltd.                                   IBVENTURES
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       SBI Life Insurance Company Ltd.                            SBILIFE
+
+
+           15)     NIFTY FMCG
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       GlaxoSmithkline Consumer Healthcare Ltd.*                  GSKCONS
+           * On account of proposed scheme of arrangement for amalgamation.
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       Nestle India Ltd.                                          NESTLEIND
+
+
+           16)     NIFTY IT
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1       Infibeam Avenues Ltd.                                      INFIBEAM
+                  2       Oracle Financial Services Software Ltd.                    OFSS
+
+
+
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Hexaware Technologies Ltd.                                 HEXAWARE
+                 2       Justdial Ltd.                                              JUSTDIAL
+
+
+           17)     NIFTY Metal
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Jindal Stainless (Hisar) Ltd.                              JSLHISAR
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Ratnamani Metals & Tubes Ltd.                              RATNAMANI
+
+
+           18)     NIFTY Media
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Den Networks Ltd.                                          DEN
+                 2       Eros Intl Media Ltd.                                       EROSMEDIA
+                 3       Navneet Education Ltd.                                     NAVNETEDUL
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Balaji Telefilms Ltd.                                      BALAJITELE
+                 2       Music Broadcast Ltd.                                       RADIOCITY
+                 3       Saregama India Ltd                                         SAREGAMA
+
+
+
+           19)     NIFTY Private Bank
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       DCB Bank Ltd.                                              DCBBANK
+
+
+
+
+
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       City Union Bank Ltd.                                        CUB
+
+
+           20)      NIFTY Commodities
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Reliance Infrastructure Ltd.                                RELINFRA
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Dalmia Bharat Ltd.                                          DALBHARAT
+
+
+           21)      NIFTY Energy
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Reliance Infrastructure Ltd.                                RELINFRA
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Adani Transmission Ltd.                                     ADANITRANS
+
+
+           22)      NIFTY India Consumption
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       GlaxoSmithkline Consumer Healthcare Ltd.*                   GSKCONS
+           * On account of proposed scheme of arrangement for amalgamation.
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Nestle India Ltd.                                           NESTLEIND
+
+
+
+
+
+
+           23)     NIFTY MNC
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      ABB India Ltd.*                                             ABB
+                  2      GlaxoSmithkline Consumer Healthcare Ltd.*                   GSKCONS
+                  3      Schaeffler India Ltd.                                       SCHAEFFLER
+           * On account of proposed scheme of arrangement for demerger/amalgamation
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Abbott India Ltd.                                           ABBOTINDIA
+                  2      Nestle India Ltd.                                           NESTLEIND
+                  3      Vodafone Idea Ltd.                                          IDEA
+
+
+           24)     NIFTY Services Sector
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Bank of Baroda                                              BANKBARODA
+                  2      Tata Power Co. Ltd.                                         TATAPOWER
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      HDFC Life Insurance Company Ltd.                            HDFCLIFE
+                  2      SBI Life Insurance Company Ltd.                             SBILIFE
+
+
+           25)     NIFTY100 Liquid 15
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Aurobindo Pharma Ltd.                                       AUROPHARMA
+                  2      Bharti Airtel Ltd.                                          BHARTIARTL
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      IndusInd Bank Ltd.                                          INDUSINDBK
+                  2      Oil & Natural Gas Corporation Ltd.                          ONGC
+
+
+
+
+           26)     NIFTY Midcap Liquid 15
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Dewan Housing Finance Corporation Ltd.                      DHFL
+                  2      Power Finance Corporation Ltd.                              PFC
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Exide Industries Ltd.                                       EXIDEIND
+                  2      Jubilant Foodworks Ltd.                                     JUBLFOOD
+
+
+           27)     NIFTY Growth Sectors 15
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Britannia Industries Ltd.                                   BRITANNIA
+                  2      Divi's Laboratories Ltd.                                    DIVISLAB
+                  3      Yes Bank Ltd.                                               YESBANK
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Cipla Ltd.                                                  CIPLA
+                  2      Housing Development Finance Corporation Ltd.                HDFC
+                  3      ITC Ltd.                                                    ITC
+
+
+           28)     NIFTY SME EMERGE
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Aakash Exploration Services Ltd.                            AAKASH
+                  2      Ace Integrated Solutions Ltd.                               ACEINTEG
+                  3      Ganga Forging Ltd.                                          GANGAFORGE
+                  4      Gretex Industries Ltd.                                      GRETEX
+                  5      Pansari Developers Ltd.                                     PANSARI
+                  6      Rajnandini Metal Ltd.                                       RAJMET
+                  7      Shri Ram Switchgears Ltd                                    SRIRAM
+                  8      Supreme (India) Impex Ltd.                                  SIIL
+                  9      Vera Synthetic Ltd.                                         VERA
+
+
+
+
+            The following companies are being included:
+
+                Sr. No.                          Company Name                                         Symbol
+                   1        A B Infrabuild Ltd.                                               ABINFRA
+                   2        Globe International Carriers Ltd.                                 GICL
+
+
+            No changes are being made to NIFTY Auto, NIFTY Bank, NIFTY PSU Bank, NIFTY Pharma,
+            NIFTY  Realty,       NIFTY  PSE,        NIFTY  Aditya  Birla  Group,           NIFTY  Tata  Group,         NIFTY
+            Mahindra Group and NIFTY Tata Group 25% Cap indices.
+
+
+
+            About National Stock Exchange of India Limited (NSE):
+
+            National Stock Exchange of India Ltd. (NSE) is the leading stock exchange in India and the
+            second largest in the world by nos. of trades in equity shares from January to December 2018,
+            according to World Federation of Exchanges (WFE) report. NSE was the first exchange in
+            India to implement electronic or screen-based trading. It began operations in 1994 and is ranked
+            as the largest stock exchange in India in terms of total and average daily turnover for equity
+            shares every year since 1995, based on SEBI data. NSE has a fully-integrated business model
+            comprising  exchange  listings,  trading  services,  clearing  and  settlement  services,  indices,
+            market data feeds, technology solutions and financial education offerings. NSE also oversees
+            compliance by trading and clearing members with the rules and regulations of the exchange.
+            NSE  is  a  pioneer  in  technology  and  ensures  the  reliability  and  performance  of  its  systems
+            through a culture of innovation and investment in technology.  NSE believes that the scale and
+            breadth of its products and services, sustained leadership positions across multiple asset classes
+            in India and globally enable it to be highly reactive to market demands and changes and deliver
+            innovation in both trading and non-trading businesses to provide high-quality data and services
+            to market participants and clients.
+            For more information, please visit: www.nseindia.com
+
+            About NSE Indices Limited:
+            NSE  Indices  Limited  (formerly  known  as  India  Index  Services  &  Products  Ltd.                  - IISL),  a
+            subsidiary  of  NSE,  provides  a  variety  of  indices  and  index  related  services  for  the  capital
+            markets. The company focuses on the index as a core product. The company owns and manages
+            a portfolio of indices under the NIFTY brand of NSE, including the flagship index, the NIFTY
+            50.  NIFTY  equity  indices  comprises  of  broad-based  benchmark  indices,  sectoral  indices,
+            strategy indices, thematic indices and customised indices. NSE Indices Limited also maintains
+            fixed income indices based on Government of India securities, corporate bonds, money market
+            instruments and hybrid indices. Many investment products based on NIFTY indices have been
+            developed within India and abroad. These include index based derivatives traded on NSE, NSE
+            IFSC, Singapore Exchange Ltd. (SGX) and Taiwan Futures Exchange (TAIFEX) and a number
+
+
+
+
+
+            of index funds and exchange traded funds. The flagship 'NIFTY 50' index is widely tracked
+            and traded as the benchmark for Indian Capital Markets.
+            For more information, please visit: www.niftyindices.com
+
+
+            For any clarifications please contact:
+
+            Kumar Kartikey
+            Chief Manager, Corporate Communication
+            Mobile: +91-9819549984
+            Email id: kumark@nse.co.in
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,13 @@
+
+
+           1)       NIFTY 500
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Allcargo Logistics Ltd.                                     ALLCARGO
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Network18 Media & Investments Ltd.                          NETWORK18

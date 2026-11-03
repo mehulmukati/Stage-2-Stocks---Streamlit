@@ -1,0 +1,14 @@
+
+           1)       NIFTY 500
+
+           The following companies are being excluded:
+
+               Sr. No.                       Company Name                                    Symbol
+                  1       Dena Bank                                                   DENABANK
+                  2       Vijaya Bank                                                 VIJAYABANK
+
+           The following companies are being included:
+
+               Sr. No.                       Company Name                                    Symbol
+                  1       Corporation Bank                                            CORPBANK
+                  2       CreditAccess Grameen Ltd.                                   CREDITACC

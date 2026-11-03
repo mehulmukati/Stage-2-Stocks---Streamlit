@@ -1,0 +1,104 @@
+[
+  {
+    "name": "CML39088.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CML39088.pdf",
+    "retrieved_at": "2026-11-03T08:18:09.438322+00:00",
+    "status": 200,
+    "bytes": 182488,
+    "sha256": "708f9c6a6be565e0338d38b162325955d4cf800ced6f88af329f77f08170a44e"
+  },
+  {
+    "name": "CML39771.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CML39771.pdf",
+    "retrieved_at": "2026-11-03T08:18:09.438322+00:00",
+    "status": 200,
+    "bytes": 182386,
+    "sha256": "0e5b83b5092acc6ddfb3b21953129d2138072f8aae9a5b76c46acb69d348e8d3"
+  },
+  {
+    "name": "CMPT39827.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMPT39827.pdf",
+    "retrieved_at": "2026-11-03T08:18:09.439322+00:00",
+    "status": 200,
+    "bytes": 347721,
+    "sha256": "cf0cb35fcbf7d39d23958eb69fdde3a71fb83f7e45add6abb5ef8fcb76f01040"
+  },
+  {
+    "name": "CML45582.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CML45582.pdf",
+    "retrieved_at": "2026-11-03T08:18:09.441320+00:00",
+    "status": 200,
+    "bytes": 105786,
+    "sha256": "c4d99d18d25f3b58721d9a9a75783a2309d5408491b3f156d6e95cc45b351a0e"
+  },
+  {
+    "name": "INSP43833.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/INSP43833.pdf",
+    "retrieved_at": "2026-11-03T08:18:10.439603+00:00",
+    "status": 200,
+    "bytes": 498374,
+    "sha256": "c8d17de1f2d3e805d0776fc3cfd5d748cabb8a258d57e5eb27abd8138cf808e9"
+  },
+  {
+    "name": "GUJGASLTD_msei_alt.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=GUJGA&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:18:10.477611+00:00",
+    "status": 200,
+    "bytes": 129184,
+    "sha256": "bbb7e72ff1751a18ffa88393c8daffb6680b8d99498eba966cffd7ef1fd18f4a"
+  },
+  {
+    "name": "MCDOWELL_msei_alt.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=MCDOWELL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:18:10.717892+00:00",
+    "status": 200,
+    "bytes": 129190,
+    "sha256": "69f917aded0b1ddfe285c4f4d03e70c75b694349ea10492c529347baf3feb24d"
+  },
+  {
+    "name": "ind_prs25032020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs25032020.pdf",
+    "retrieved_at": "2026-11-03T08:18:11.508507+00:00",
+    "status": 200,
+    "bytes": 358384,
+    "sha256": "4dd3a6df4bf53b0191cfcdb8575170d2685d742f4bd1055c09643eef5d802703"
+  },
+  {
+    "name": "ind_prs23032020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs23032020.pdf",
+    "retrieved_at": "2026-11-03T08:18:11.638193+00:00",
+    "status": 200,
+    "bytes": 361504,
+    "sha256": "55a9cd5f11b9036e274b397c1f43f607c632ccb31837339b7ac661de6037ea59"
+  },
+  {
+    "name": "ind_prs16032020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs16032020.pdf",
+    "retrieved_at": "2026-11-03T08:18:13.181811+00:00",
+    "status": 200,
+    "bytes": 686103,
+    "sha256": "4e7726fa8bfe5dc12f2b42121f69fd29bc7ec1da01c2c26dae84f2f3fe8e9f37"
+  },
+  {
+    "name": "ind_prs17092019_1.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs17092019_1.pdf",
+    "cached": true,
+    "sha256": "befefb0ff804ad2540021442dd782e2dade35e9598fcf2cb2ed799b7f81cbf52"
+  },
+  {
+    "name": "ind_prs07082018.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs07082018.pdf",
+    "retrieved_at": "2026-11-03T08:18:13.246169+00:00",
+    "status": 200,
+    "bytes": 230677,
+    "sha256": "68f20f955a0be542ed81cfc98737f29f35b6a40e56397d84dec4a08ff093f070"
+  },
+  {
+    "name": "FAOP35607.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/FAOP35607.pdf",
+    "retrieved_at": "2026-11-03T08:18:13.648254+00:00",
+    "status": 200,
+    "bytes": 204174,
+    "sha256": "3bcddf8f79e9d9444d1b45257109771093262efe226f6937335e39f3eae2ebef"
+  }
+]

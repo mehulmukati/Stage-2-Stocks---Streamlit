@@ -1,0 +1,18 @@
+[
+  {
+    "name": "EQUITY_L.csv",
+    "url": "https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv",
+    "retrieved_at": "2026-11-03T08:26:46.456457+00:00",
+    "status": 200,
+    "bytes": 185247,
+    "sha256": "f781a532e9f9de4ab78792a703fe208132e8ed67acfc7e957e95d510cc4d4c4a"
+  },
+  {
+    "name": "ABAN_yahoo_chart.json",
+    "url": "https://query1.finance.yahoo.com/v8/finance/chart/ABAN.NS?period1=1498867200&period2=1599004800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+    "retrieved_at": "2026-11-03T08:26:46.457462+00:00",
+    "status": 200,
+    "bytes": 73288,
+    "sha256": "28eed680d3a6081aed214031c24b02c81ecaae6db4fdf9e0e6c7af0368b8012d"
+  }
+]

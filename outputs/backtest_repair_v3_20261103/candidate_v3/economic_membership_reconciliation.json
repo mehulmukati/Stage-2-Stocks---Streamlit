@@ -1,0 +1,26 @@
+{
+  "forward_conflicts": [],
+  "reverse_conflicts": [],
+  "forward_anchor_matches": true,
+  "reverse_initial_matches": true,
+  "forward_anchor_missing": [],
+  "forward_anchor_extra": [],
+  "reverse_initial_missing": [],
+  "reverse_initial_extra": [],
+  "monthly_comparisons": 39,
+  "monthly_mismatches": 0,
+  "observation_policy": "Original raw ISIN rows retained; only evidenced ex-date/raw-identifier lags explicitly projected",
+  "raw_observation_projections": [
+    {
+      "date": "2017-08-31",
+      "matches": true,
+      "raw_source_changed": false,
+      "raw_only": [
+        "ISIN:INE483S01012"
+      ],
+      "projected_only": [
+        "ISIN:INE483S01020"
+      ]
+    }
+  ]
+}

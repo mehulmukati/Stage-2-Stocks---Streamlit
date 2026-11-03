@@ -1,0 +1,16 @@
+
+
+
+
+
+           3)      NIFTY 500
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Yes Bank Ltd.                                              YESBANK
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Sterling And Wilson Solar Ltd.                             SWSOLAR

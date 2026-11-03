@@ -1,0 +1,12 @@
+
+            1)      NIFTY 500
+
+            The following company is being excluded:
+
+               Sr. No.                        Company Name                                      Symbol
+                  1       Jet Airways (India) Ltd.                                      JETAIRWAYS
+
+            The following company is being included:
+
+               Sr. No.                        Company Name                                      Symbol
+                  1       Vaibhav Global Ltd.                                           VAIBHAVGBL

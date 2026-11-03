@@ -1,0 +1,309 @@
+                                                      Press Release
+
+                                                                                                      July 02, 2020
+
+                                               Replacement in Indices
+
+           The Index Maintenance Sub-Committee (IMSC) of NSE Indices Limited has decided to make
+           replacements in various indices as given below:
+
+           A.  Replacement on account of proposed voluntary delisting of Vedanta Ltd.:
+
+           The IMSC has decided to replace Vedanta Ltd. (VEDL) from various indices on account of
+           proposed voluntary delisting. The changes shall become effective from July 31, 2020 (close of
+           July 30, 2020).
+
+           1)       NIFTY 50
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       HDFC Life Insurance Company Ltd.                            HDFCLIFE
+
+           The above replacements will also be applicable to NIFTY50 Equal Weight Index.
+
+           2)       NIFTY Next 50
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       HDFC Life Insurance Company Ltd.                            HDFCLIFE
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       SBI Cards and Payment Services Ltd.                         SBICARD
+
+
+
+
+
+
+
+
+
+
+
+           3)       NIFTY 500
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Vedanta Ltd.                                                VEDL
+
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       SBI Cards and Payment Services Ltd.                         SBICARD
+
+           4)       NIFTY 100
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       SBI Cards and Payment Services Ltd.                         SBICARD
+
+           The above replacements will also be applicable to NIFTY100 Equal Weight Index.
+
+           5)       NIFTY LargeMidcap 250
+
+           The following company is being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       SBI Cards and Payment Services Ltd.                         SBICARD
+
+
+
+
+
+
+
+
+
+
+
+
+
+           6)      NIFTY 200
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      SBI Cards and Payment Services Ltd.                         SBICARD
+
+
+           7)      NIFTY Metal
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Mishra Dhatu Nigam Ltd.                                     MIDHANI
+
+
+           8)      NIFTY Commodities
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                     Symbol
+                  1      Coromandel International Ltd.                               COROMANDEL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+           9)      NIFTY MNC
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Nippon Life India Asset Management Ltd.                     NAM-INDIA
+
+           10)     NIFTY50 Value 20
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Hindalco Industries Ltd.                                    HINDALCO
+
+           11)     NIFTY500 Value 50
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       SJVN Ltd.                                                   SJVN
+
+           12)     NIFTY High Beta 50
+
+           The following company is being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Vedanta Ltd.                                                VEDL
+
+           The following company is being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       IDFC First Bank Ltd.                                        IDFCFIRSTB
+
+
+
+
+            B.   Exclusions from NIFTY SME EMERGE Index:
+
+            The IMSC has decided to make the following exclusions from NIFTY SME EMERGE index
+            on account of proposed shifting of companies from NSE’s SME Emerge platform to NSE’s
+            Capital Market segment (Main Board):
+
+                Sr. No.                          Company Name                                         Symbol
+                   1        Total Transport Systems Ltd.                                      TOTAL
+                   2        Univastu India Ltd.                                               UNIVASTU
+
+            No inclusion is being made in the index.
+
+            The changes in NIFTY SME EMERGE index shall become effective from July 09, 2020 (close
+            of July 08, 2020).
+
+
+            About National Stock Exchange of India Limited (NSE):
+
+            National Stock Exchange of India Ltd. (NSE) is the world’s largest derivatives exchange by
+            trading volume as per the statistics published by Futures Industry Association (FIA) for 2019
+            and ranked 3rd in the world in the cash equities segment by number of trades as per the statistics
+            published by the World Federation of Exchanges (WFE). NSE was the first exchange in India
+            to implement electronic or screen-based trading. It began operations in 1994 and is ranked as
+            the largest stock exchange in India in terms of total and average daily turnover for equity shares
+            every  year  since  1995,  based  on  SEBI  data.  NSE  has  a  fully-integrated  business  model
+            comprising  exchange  listings,  trading  services,  clearing  and  settlement  services,  indices,
+            market data feeds, technology solutions and financial education offerings. NSE also oversees
+            compliance by trading and clearing members with the rules and regulations of the exchange.
+            NSE  is  a  pioneer  in  technology  and  ensures  the  reliability  and  performance  of  its  systems
+            through a culture of innovation and investment in technology. NSE believes that the scale and
+            breadth of its products and services, sustained leadership positions across multiple asset classes
+            in India and globally enable it to be highly reactive to market demands and changes and deliver
+            innovation in both trading and non-trading businesses to provide high-quality data and services
+            to market participants and clients.
+            For more information, please visit: www.nseindia.com
+
+            About NSE Indices Limited:
+            NSE Indices Limited (formerly known as India Index Services & Products Ltd. - IISL), a subsidiary
+            of  NSE,  provides  a  variety  of  indices  and  index  related  services  for  the  capital  markets.  The
+            company focuses on the index as a core product. The company owns and manages a portfolio of
+            indices under the NIFTY brand of NSE, including the flagship index, the NIFTY 50. NIFTY equity
+            indices comprises of broad-based benchmark indices, sectoral indices, strategy indices, thematic
+            indices and customised indices. NSE Indices Limited also maintains fixed income indices based on
+
+
+
+
+            Government of India securities, corporate bonds, money market instruments and hybrid indices.
+            Many investment products based on NIFTY indices have been developed within India and abroad.
+            These include index based derivatives traded on NSE, NSE IFSC and Singapore Exchange Ltd.
+            (SGX) and a number of index funds and exchange traded funds. The flagship 'NIFTY 50' index is
+            widely tracked and traded as the benchmark for Indian Capital Markets.
+            For more information, please visit: www.niftyindices.com
+
+
+            For any clarifications please contact:
+            Arijit Sengupta                                                 Kumar Kartikey
+            Chief Marketing & Communications Officer          Chief Manager, Corporate Communication
+            Mobile: +91-9820340485                                          Mobile: +91-9819549984
+            Email id: asengupta@nse.co.in                                   Email id: kumark@nse.co.in
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

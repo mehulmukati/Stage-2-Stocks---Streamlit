@@ -1,0 +1,18 @@
+
+1)      NIFTY 500 Index
+
+The following companies are being excluded:
+
+   Sr.                           Company Name                                      Symbol
+   No.
+    1      State Bank of Bikaner & Jaipur Ltd.                                SBBJ
+    2      State Bank of Mysore                                               MYSOREBANK
+    3      State Bank of Travancore                                           SBT
+
+The following companies are being included:
+
+   Sr.                           Company Name                                      Symbol
+   No.
+    1      Future Retail Ltd.                                                 FRETAIL
+    2      Max India Ltd.                                                     MAXINDIA
+    3      Mahanagar Gas Ltd.                                                 MGL

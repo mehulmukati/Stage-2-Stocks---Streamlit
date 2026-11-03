@@ -24,6 +24,37 @@ def legal_name_key(value):
     return " ".join(re.sub(r"[^a-z0-9]+", " ", text).split())
 
 
+def parse_primary_holidays(text, year):
+    """Read numbered primary calendar dates using an explicit date format.
+
+    Dateutil can misread `September 13,2018`; normalize punctuation and parse
+    the captured components explicitly. Muhurat dates override holiday rows.
+    """
+    month = "January|February|March|April|May|June|July|August|September|October|November|December"
+    pattern = rf"({month})\s+(\d{{1,2}}),?\s*(20\d{{2}})"
+
+    def convert(match):
+        return pd.to_datetime(f"{match[1]} {match[2]} {match[3]}", format="%B %d %Y")
+
+    closed = set()
+    for match in re.finditer(r"^\s*\d+\s+" + pattern, text, re.M):
+        day = convert(match)
+        if day.year != year:
+            raise ValueError("Mixed primary calendar years")
+        closed.add(day)
+    special = set()
+    for paragraph in re.finditer(r"Muhurat\s+Trading\s+will\s+be\s+conducted(.{0,150})", text, re.I | re.S):
+        match = re.search(pattern, paragraph[1])
+        if match:
+            day = convert(match)
+            if day.year != year:
+                raise ValueError("Mixed primary calendar years")
+            special.add(day)
+    if not closed or not special:
+        raise ValueError("Incomplete primary holiday/Muhurat calendar")
+    return closed, special
+
+
 def read_nifty500_archive(path):
     path = Path(path)
     with zipfile.ZipFile(path) as archive:
@@ -86,9 +117,44 @@ def read_bhavcopy(path):
     required = {"SYMBOL", "ISIN", "SERIES", "TIMESTAMP", "CLOSE"}
     if required - set(frame):
         raise ValueError("Incomplete primary trading identifiers")
-    frame["date"] = pd.to_datetime(frame.TIMESTAMP, format="%d-%b-%Y")
+    dates = pd.to_datetime(frame.TIMESTAMP, format="%d-%b-%Y", errors="coerce")
+    missing = dates.isna()
+    dates.loc[missing] = pd.to_datetime(frame.loc[missing, "TIMESTAMP"], format="%d-%b-%y", errors="coerce")
+    if dates.isna().any() or dates.nunique() != 1:
+        raise ValueError("Invalid/mixed primary trading dates")
+    filename_date = re.fullmatch(r"cm(\d{2}[A-Z]{3}\d{4})bhav\.csv\.zip", Path(path).name, re.I)
+    if filename_date and dates.iloc[0] != pd.to_datetime(filename_date[1], format="%d%b%Y"):
+        raise ValueError("Primary trading date does not match archive date")
+    frame["date"] = dates
     frame["archive"] = Path(path).name
     frame["source_row_id"] = [f"{Path(path).name}:{members[0]}:{i + 2}" for i in range(len(frame))]
+    return frame
+
+
+def validate_constituent_cache(frame, archive_path):
+    """Bind every cached extraction row to the exact raw PDF it claims.
+
+    A digest copied from a different archive, absent bindings, or mixed
+    payloads must fail before any reconstruction is attempted.
+    """
+    required = {"archive", "pdf_member", "pdf_sha256", "date", "symbol", "name", "source_row_id"}
+    if required - set(frame) or frame.empty:
+        raise ValueError("Incomplete constituent cache")
+    path = Path(archive_path)
+    with zipfile.ZipFile(path) as archive:
+        members = [n for n in archive.namelist() if "500" in n and n.lower().endswith(".pdf")]
+        if len(members) != 1:
+            raise ValueError("Expected one explicit Nifty 500 constituent PDF")
+        member = members[0]
+        digest = hashlib.sha256(archive.read(member)).hexdigest()
+    if not frame.archive.eq(path.name).all() or not frame.pdf_member.eq(member).all():
+        raise ValueError("Constituent cache/archive member mismatch")
+    if not frame.pdf_sha256.eq(digest).all():
+        raise ValueError("Constituent cache PDF digest mismatch")
+    if frame.symbol.duplicated().any() or frame.name.isna().any() or frame.name.eq("").any():
+        raise ValueError("Incomplete/duplicate constituent cache rows")
+    if pd.to_datetime(frame.date).nunique() != 1 or frame.source_row_id.duplicated().any():
+        raise ValueError("Mixed dates/duplicate constituent cache references")
     return frame
 
 

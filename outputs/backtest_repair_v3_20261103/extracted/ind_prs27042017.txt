@@ -1,0 +1,398 @@
+                                                                                        Date: 27 April 2017
+
+
+                                            PRESS RELEASE
+
+       Replacements in indices and change in NIFTY100 Equal Weight index
+
+A. Replacements in indices:
+
+The  Index  Maintenance  Sub-Committee  (IMSC)  has  decided  to  make  the  following
+replacement of stocks in various indices on account of scheme of arrangements in the
+following companies:
+
+         1.   Merger of Aditya Birla Nuvo Limited (ABNL) with Grasim Industries Ltd.
+              (Grasim).  Post merger of ABNL with Grasim, Financial Services division
+              of Grasim will be demerged into Aditya Birla Financial Services Ltd.
+         2.   Demerger of Manufacturing Business undertaking of                    Tube Investments of
+              India Limited into TI Financials Holding Ltd.
+
+The changes shall become effective from May 26, 2017 (close of May 25, 2017).
+
+1)       NIFTY 50 Index
+
+The following company is being excluded:
+
+   Sr.                              Company Name                                       Symbol
+   No.
+    1       Grasim Industries Ltd.                                                 GRASIM
+
+The following company is being included:
+
+   Sr.                              Company Name                                       Symbol
+   No.
+    1       Vedanta Ltd.                                                           VEDL
+
+The above replacement will also be applicable to NIFTY50 Equal Weight Index.
+
+2)       NIFTY 500 Index
+
+The following companies are being excluded:
+
+   Sr.                              Company Name                                         Symbol
+   No.
+    1       Aditya Birla Nuvo Ltd.                                                 ABIRLANUVO
+    2       Grasim Industries Ltd.                                                 GRASIM
+    3       Tube Investments of India Ltd.                                         TUBEINVEST
+
+
+
+                                                                                                            1
+
+The following companies are being included:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+    1       Laurus Labs Ltd.                                                     LAURUSLABS
+    2       PNB Housing Finance Ltd.                                             PNBHOUSING
+    3       Varun Beverages Ltd.                                                 VBL
+
+3)       NIFTY 100
+
+The following company is being excluded:
+
+   Sr.                             Company Name                                      Symbol
+   No.
+    1       Grasim Industries Ltd.                                               GRASIM
+
+The following company is being included:
+
+   Sr.                             Company Name                                      Symbol
+   No.
+     1      Sun TV Network Ltd.                                                  SUNTV
+
+The above replacement will also be applicable to NIFTY100 Equal Weight Index.
+
+4)       NIFTY Midcap 150
+
+The following companies are being excluded:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+     1      Aditya Birla Nuvo Ltd.                                               ABIRLANUVO
+     2      Sun TV Network Ltd.                                                  SUNTV
+     3      Tube Investments of India Ltd.                                       TUBEINVEST
+
+The following companies are being included:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+     1      Future Retail Ltd.                                                   FRETAIL
+     2      Mahanagar Gas Ltd.                                                   MGL
+     3      PNB Housing Finance Ltd.                                             PNBHOUSING
+
+5)       NIFTY Smallcap 250
+
+The following companies are being excluded:
+
+   Sr.                             Company Name                                       Symbol
+   No.
+     1      Future Retail Ltd.                                                   FRETAIL
+     2      Mahanagar Gas Ltd.                                                   MGL
+
+
+
+                                                                                                         2
+
+The following companies are being included:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+     1      Laurus Labs Ltd.                                                     LAURUSLABS
+     2      Varun Beverages Ltd.                                                 VBL
+
+6)       NIFTY MidSmallcap 400
+
+The following companies are being excluded:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+     1      Aditya Birla Nuvo Ltd.                                               ABIRLANUVO
+     2      Sun TV Network Ltd.                                                  SUNTV
+     3      Tube Investments of India Ltd.                                       TUBEINVEST
+
+The following companies are being included:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+     1      Laurus Labs Ltd.                                                     LAURUSLABS
+     2      PNB Housing Finance Ltd.                                             PNBHOUSING
+     3      Varun Beverages Ltd.                                                 VBL
+
+7)       NIFTY Next 50
+
+The following company is being excluded:
+
+   Sr.                              Company Name                                       Symbol
+   No.
+     1      Vedanta Ltd.                                                          VEDL
+
+The following company is being included:
+
+   Sr.                             Company Name                                       Symbol
+   No.
+     1      Sun TV Network Ltd.                                                 SUNTV
+
+8)       NIFTY Midcap 50
+
+The following companies are being excluded:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+    1       Aditya Birla Nuvo Ltd.                                               ABIRLANUVO
+    2       Sun TV Network Ltd.                                                  SUNTV
+
+
+
+
+
+
+
+
+
+                                                                                                         3
+
+The following companies are being included:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+     1      Dalmia Bharat Ltd.                                                   DALMIABHA
+     2      Muthoot Finance Ltd.                                                 MUTHOOTFIN
+
+9)       NIFTY Full Midcap 100
+
+The following companies are being excluded:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+    1       Aditya Birla Nuvo Ltd.                                               ABIRLANUVO
+    2       Sun TV Network Ltd.                                                  SUNTV
+
+The following companies are being included:
+
+   Sr.                             Company Name                                       Symbol
+   No.
+    1       Mahanagar Gas Ltd.                                                   MGL
+    2       PNB Housing Finance Ltd.                                             PNBHOUSING
+
+10)      NIFTY 200
+
+The following companies are being excluded:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+     1      Aditya Birla Nuvo Ltd.                                               ABIRLANUVO
+     2      Grasim Industries Ltd.                                               GRASIM
+
+The following companies are being included:
+
+   Sr.                             Company Name                                       Symbol
+   No.
+     1      Mahanagar Gas Ltd.                                                   MGL
+     2      PNB Housing Finance Ltd.                                             PNBHOUSING
+
+11)      NIFTY Smallcap 50
+
+The following company is being excluded:
+
+   Sr.                             Company Name                                       Symbol
+   No.
+     1      Mahanagar Gas Ltd.                                                   MGL
+
+The following company is being included:
+
+ Sr. No.                            Company Name                                       Symbol
+     1      Gujarat Narmada Valley Fertilizers and Chem. Ltd.                     GNFC
+
+
+                                                                                                         4
+
+12)      NIFTY Full Smallcap 100
+
+The following company is being excluded:
+
+   Sr.                              Company Name                                       Symbol
+   No.
+     1      Mahanagar Gas Ltd.                                                    MGL
+
+The following company is being included:
+
+   Sr.                              Company Name                                       Symbol
+   No.
+     1      Laurus Labs Ltd.                                                      LAURUSLABS
+
+13)      NIFTY Free float Midcap 100
+
+The following company is being excluded:
+
+   Sr.                              Company Name                                       Symbol
+   No.
+    1       Aditya Birla Nuvo Ltd.                                                ABIRLANUVO
+
+The following company is being included:
+
+   Sr.                              Company Name                                       Symbol
+   No.
+    1       PNB Housing Finance Ltd.                                              PNBHOUSING
+
+14)      NIFTY Commodities
+
+The following company is being excluded:
+
+   Sr.                              Company Name                                      Symbol
+   No.
+    1       Grasim Industries Ltd.                                                GRASIM
+
+The following company is being included:
+
+   Sr.                              Company Name                                      Symbol
+   No.
+    1       Dalmia Bharat Ltd.                                                    DALMIABHA
+
+15)      NIFTY Aditya Birla Group Index
+
+The following companies are being excluded:
+
+   Sr.                              Company Name                                       Symbol
+   No.
+    1       Aditya Birla Nuvo Ltd.                                                ABIRLANUVO
+    2       Grasim Industries Ltd.                                                GRASIM
+
+No inclusions are being made to NIFTY Aditya Birla Group index.
+
+
+                                                                                                         5
+
+B. Change in NIFTY100 Equal Weight index:
+Currently, each security is assigned equal weight in NIFTY100 Equal Weight index.
+Effective  from  May  26,  2017  (close  of  May  25,  2017),                the  equal  weights  will  be
+assigned to each company in the NIFTY100 Equal Weight index.                             In case, there are
+multiple securities (e.g. DVR) of the same company in the index, all companies will be
+assigned equal weight and each securities of such company will be assigned weights in
+proportion to its free float market capitalization.
+
+
+About National Stock Exchange of India Limited (NSE):
+The   National  Stock  Exchange  (NSE)  is  the  leading  stock  exchange  in  India  and  the
+fourth  largest  in  the  world  by  equity  trading  volume  in  2015,  according  to  World
+Federation  of  Exchanges  (WFE).  NSE  was  the  first  exchange  in  India  to  implement
+electronic  or  screen-based  trading.  It  began  operations  in  1994  and  is  ranked  as  the
+largest stock exchange in India in terms of total and average daily turnover for equity
+shares every year since 1995, based on SEBI data.
+
+NSE has a fully-integrated business model comprising our exchange listings, trading
+services,  clearing  and  settlement  services,  indices,  market  data  feeds,  technology
+solutions and financial education offerings. NSE also oversees compliance by trading
+and clearing members with the rules and regulations of the exchange.
+
+NSE  is  a  pioneer  in  technology  and  ensures  the  reliability  and  performance  of  its
+systems through a culture of innovation and investment in technology. NSE believes
+that the scale and breadth of its products and services, sustained leadership positions
+across  multiple  asset  classes  in  India  and  globally  enable  it  to  be  highly  reactive  to
+market demands and changes and deliver innovation in both trading and non-trading
+businesses to provide high-quality data and services to market participants and clients.
+
+About India Index Services & Products Ltd. (IISL):
+India  Index  Services  &  Products  Ltd.  (IISL),  an  NSE  group  company,  was  setup  in
+May  1998  to  provide  a  variety  of  indices  and  index  related  services  for  the  capital
+markets. IISL is India's specialised company focused upon the index as a core product.
+IISL  maintains  more  than  100  equity  indices  comprising  broad-based  benchmark
+indices,  sectoral  indices,  strategy  indices,  thematic  indices  and  customised  indices.
+IISL  also  maintains  fixed  income  indices  based  on  Government  of  India  securities,
+corporate bonds and money market instruments. Many investment products based on
+IISL indices have been  developed in the recent past, within India and abroad. These
+include  index  based  derivatives  traded  on  NSE,  Singapore  Exchange  Ltd.  (SGX),
+Chicago  Mercantile  Exchange  Inc.  (CME),  Osaka  Exchange  Inc.  (OSE),  Taiwan
+Futures Exchange (TAIFEX) and a number of index funds and exchange traded funds.
+The  flagship  'NIFTY  50'  index  is  widely  tracked  and  traded  as  the  benchmark  for
+Indian Capital Markets.
+
+For more information, please visit: www.nseindia.com
+
+Disclaimer: National Stock Exchange of India Limited is proposing, subject to receipt
+of  requisite  approvals,  market  conditions  and  other  considerations,  an  initial  public
+offer of its equity shares and has filed a draft red herring prospectus dated December
+28,  2016  (“DRHP”)  with  Securities  and  Exchange  Board  of  India  (“SEBI”).  The
+DRHP  is  available  on  the  website  of  SEBI  as  well  as  on  website  of  the  Managers,
+Citigroup           Global           Markets           India           Private           Limited           at
+http://www.online.citibank.co.in/rhtm/citigroupglobalscreen1.htm,       JM       Financial
+Institutional Securities  Limited at www.jmfl.com, Kotak Mahindra Capital Company
+
+                                                                                                               6
+
+Limited  at  http://www.investmentbank.kotak.com,  Morgan  Stanley  India  Company
+Private    Limited    at    http://www.morganstanley.com/about-us/global-offices/india/,
+HDFC    Bank    Limited    at    www.hdfcbank.com,    ICICI    Securities    Limited    at
+www.icicisecurities.com,   IDFC   Bank   Limited   at   www.idfcbank.com   and   IIFL
+Holdings Limited at www.iiflcap.com. Potential investors should note that investment
+in equity shares involves a high degree of risk and for details relating to such risk, see
+“Risk Factors” beginning on page 19 of the DRHP. Potential investors should not rely
+on the DRHP filed with SEBI for making any investment decision.
+
+Any  securities  referred  to  herein  have  not  been  and  will  not  be  registered  under  the
+U.S. Securities Act of 1933, as amended (the “Securities Act”), and may not be offered
+or sold in the United States absent registration or an exemption from registration under
+the Securities Act. There is no intention to register any securities referred to herein in
+the United States or to make a public offering of the securities in the United States.
+
+
+For any clarifications please contact:
+
+Divya Malik Lahiri
+Head, Corporate Communication
+Mobile: 98110 51234
+Email id: cc@nse.co.in / dlahiri@nse.co.in
+
+Kumar Kartikey
+Manager, Corporate Communication
+Mobile: 9819549984
+Email id: kumark@nse.co.in
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                                 7

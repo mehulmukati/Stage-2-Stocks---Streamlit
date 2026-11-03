@@ -1,0 +1,22 @@
+
+2)       NIFTY 500 Index
+
+The following companies are being excluded:
+
+   Sr.                              Company Name                                         Symbol
+   No.
+    1       Aditya Birla Nuvo Ltd.                                                 ABIRLANUVO
+    2       Grasim Industries Ltd.                                                 GRASIM
+    3       Tube Investments of India Ltd.                                         TUBEINVEST
+
+
+
+                                                                                                            1
+
+The following companies are being included:
+
+   Sr.                             Company Name                                        Symbol
+   No.
+    1       Laurus Labs Ltd.                                                     LAURUSLABS
+    2       PNB Housing Finance Ltd.                                             PNBHOUSING
+    3       Varun Beverages Ltd.                                                 VBL

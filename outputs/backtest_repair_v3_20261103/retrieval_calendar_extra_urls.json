@@ -1,0 +1,26 @@
+[
+  {
+    "name": "MSD42319.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/MSD42319.pdf",
+    "retrieved_at": "2026-11-03T08:39:51.376765+00:00",
+    "status": 200,
+    "bytes": 112758,
+    "sha256": "bc49d7698fefa2b9ed3a5fbb2477dd74e5ed04dc69cec3ff5e9aca074fcc1b8a"
+  },
+  {
+    "name": "CD40538.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CD40538.pdf",
+    "retrieved_at": "2026-11-03T08:39:51.378004+00:00",
+    "status": 200,
+    "bytes": 214190,
+    "sha256": "868c862d924eac06b09090cf6690fd8134f2b8cd2cfecf0b2378802e6f99a42d"
+  },
+  {
+    "name": "cm13FEB2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/FEB/cm13FEB2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T08:39:51.379002+00:00",
+    "status": 200,
+    "bytes": 67201,
+    "sha256": "ae076fd6db7cc778863fdfce55cf5736f97423d925a7edb4653de74e0e384ae2"
+  }
+]

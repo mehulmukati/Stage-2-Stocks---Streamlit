@@ -1,0 +1,20 @@
+
+
+1)      NIFTY 500 Index
+
+The following companies are being excluded:
+
+   Sr. No.                        Company Name                                       Symbol
+      1        CESC Ltd.                                                     CESC
+      2        Fortis Healthcare Ltd.                                        FORTIS
+      3        Polaris Consulting & Services Ltd.                            POLARIS
+      4        Strides Shasun Ltd.                                           STAR
+
+
+The following companies are being included:
+
+   Sr. No.                        Company Name                                       Symbol
+      1        Cochin Shipyard Ltd.                                          COCHINSHIP
+      2        Hatsun Agro Product Ltd.                                      HATSUN
+      3        Reliance Capital Ltd.                                         RELCAPITAL
+      4        TI Financial Holdings Ltd.                                    TIFIN

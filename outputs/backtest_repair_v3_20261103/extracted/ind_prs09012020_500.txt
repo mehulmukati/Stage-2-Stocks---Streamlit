@@ -1,0 +1,13 @@
+
+
+           1)       NIFTY 500
+
+           The following company is being excluded:
+
+               Sr. No.                        Company Name                                     Symbol
+                  1       Suven Life Sciences Ltd.                                     SUVEN
+
+           The following company is being included:
+
+               Sr. No.                        Company Name                                     Symbol
+                  1       Tata Steel BSL Ltd.                                          TATASTLBSL

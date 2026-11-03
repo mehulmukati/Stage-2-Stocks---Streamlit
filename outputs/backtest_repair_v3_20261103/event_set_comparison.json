@@ -1,0 +1,294 @@
+[
+  {
+    "date": "2017-09-05",
+    "source_records": 4,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs29082017.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2017-09-29",
+    "source_records": 48,
+    "source_transitions": 48,
+    "official_transitions": 48,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs28082017.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2017-10-30",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs16102017.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2017-11-13",
+    "source_records": 4,
+    "source_transitions": 4,
+    "official_transitions": 4,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs03112017.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2017-11-20",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs10112017.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2018-02-05",
+    "source_records": 8,
+    "source_transitions": 8,
+    "official_transitions": 8,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs08012018.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2018-03-13",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs06032018.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2018-04-02",
+    "source_records": 48,
+    "source_transitions": 48,
+    "official_transitions": 48,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs21022018.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2018-06-29",
+    "source_records": 8,
+    "source_transitions": 8,
+    "official_transitions": 8,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs20062018.pdf",
+      "ind_prs24052018.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2018-08-08",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs01082018.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2018-09-28",
+    "source_records": 52,
+    "source_transitions": 52,
+    "official_transitions": 52,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs28082018.pdf",
+      "ind_prs31082018.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2018-12-28",
+    "source_records": 10,
+    "source_transitions": 10,
+    "official_transitions": 10,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs14122018.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2019-01-28",
+    "source_records": 4,
+    "source_transitions": 4,
+    "official_transitions": 4,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs21012019.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2019-03-29",
+    "source_records": 50,
+    "source_transitions": 50,
+    "official_transitions": 50,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs25022019.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2019-04-15",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs08042019.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2019-06-28",
+    "source_records": 4,
+    "source_transitions": 4,
+    "official_transitions": 4,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs13062019.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2019-09-24",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs17092019_1.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2019-09-27",
+    "source_records": 44,
+    "source_transitions": 44,
+    "official_transitions": 44,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs17092019.pdf",
+      "ind_prs28082019.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2019-12-26",
+    "source_records": 6,
+    "source_transitions": 6,
+    "official_transitions": 6,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs18122019.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2019-12-27",
+    "source_records": 18,
+    "source_transitions": 18,
+    "official_transitions": 18,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs16122019.pdf",
+      "ind_prs19122019.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2020-01-16",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs09012020.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2020-03-19",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs16032020.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2020-06-26",
+    "source_records": 50,
+    "source_transitions": 50,
+    "official_transitions": 50,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs10062020.pdf"
+    ],
+    "exact_match": true
+  },
+  {
+    "date": "2020-07-31",
+    "source_records": 2,
+    "source_transitions": 2,
+    "official_transitions": 2,
+    "source_only": [],
+    "official_only": [],
+    "sources": [
+      "ind_prs02072020_1.pdf"
+    ],
+    "exact_match": true
+  }
+]

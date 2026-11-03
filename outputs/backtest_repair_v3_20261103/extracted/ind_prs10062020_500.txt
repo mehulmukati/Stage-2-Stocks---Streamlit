@@ -1,0 +1,71 @@
+
+           2)       NIFTY 500
+
+           The following companies are being excluded:
+
+              Sr. No.                      Company Name                                     Symbol
+                1       Chalet Hotels Ltd.                                           CHALET
+                2       Dewan Housing Finance Corporation Ltd.                       DHFL
+                3       Federal-Mogul Goetze (India) Ltd.                            FMGOETZE
+                4       Future Lifestyle Fashions Ltd.                               FLFL
+                5       Gayatri Projects Ltd.                                        GAYAPROJ
+                6       Indiabulls Integrated Services Ltd.                          IBULISL
+
+
+
+
+             Sr. No.                     Company Name                                   Symbol
+                7      ITD Cementation India Ltd.                               ITDCEM
+                8      Jain Irrigation Systems Ltd.                             JISLJALEQS
+                9      Kennametal India Ltd.                                    KENNAMET
+               10      Kirloskar Oil Eng Ltd.                                   KIRLOSENG
+               11      Lakshmi Vilas Bank Ltd.                                  LAKSHVILAS
+               12      Magma Fincorp Ltd.                                       MAGMA
+               13      Network18 Media & Investments Ltd.                       NETWORK18
+               14      Parag Milk Foods Ltd.                                    PARAGMILK
+               15      PC Jeweller Ltd.                                         PCJEWELLER
+               16      Reliance Capital Ltd.                                    RELCAPITAL
+               17      Reliance Infrastructure Ltd.                             RELINFRA
+               18      Reliance Power Ltd.                                      RPOWER
+               19      Responsive Industries Ltd.                               RESPONIND
+               20      S H Kelkar and Company Ltd.                              SHK
+               21      Shilpa Medicare Ltd.                                     SHILPAMED
+               22      Sundaram Clayton Ltd.                                    SUNCLAYLTD
+               23      Techno Electric & Engineering Company Ltd.               TECHNOE
+               24      Triveni Turbine Ltd.                                     TRITURBINE
+               25      Va Tech Wabag Ltd.                                       WABAG
+
+           The following companies are being included:
+
+             Sr. No.                     Company Name                                   Symbol
+                1      ABB India Ltd.                                           ABB
+                2      Alkyl Amines Chemicals Ltd.                              ALKYLAMINE
+                3      Bharat Rasayan Ltd.                                      BHARATRAS
+                4      Century Textile & Industries Ltd.                        CENTURYTEX
+                5      CSB Bank Ltd.                                            CSBBANK
+                6      Dhanuka Agritech Ltd.                                    DHANUKA
+                7      ESAB India Ltd.                                          ESABINDIA
+                8      Garden Reach Shipbuilders & Engineers Ltd.               GRSE
+                9      GMM Pfaudler Ltd.                                        GMMPFAUDLR
+               10      Gujarat Fluorochemicals Ltd.                             FLUOROCHEM
+               11      Hathway Cable & Datacom Ltd.                             HATHWAY
+               12      IIFL Wealth Management Ltd.                              IIFLWAM
+                       Indian Railway Catering And Tourism
+               13      Corporation Ltd.                                         IRCTC
+               14      Indoco Remedies Ltd.                                     INDOCO
+               15      Ingersoll Rand (India) Ltd.                              INGERRAND
+               16      KSB Ltd.                                                 KSB
+               17      La Opala RG Ltd.                                         LAOPALA
+               18      Poly Medicure Ltd.                                       POLYMED
+
+
+
+
+             Sr. No.                       Company Name                                   Symbol
+               19       Schneider Electric Infrastructure Ltd.                     SCHNEIDER
+               20       Sequent Scientific Ltd.                                    SEQUENT
+               21       Shipping Corporation of India Ltd.                         SCI
+               22       Sumitomo Chemical India Ltd.                               SUMICHEM
+               23       Tata Communications Ltd.                                   TATACOMM
+               24       Ujjivan Small Finance Bank Ltd.                            UJJIVANSFB
+               25       Vesuvius India Ltd.                                        VESUVIUS

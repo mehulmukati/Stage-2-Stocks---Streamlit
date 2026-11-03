@@ -1,0 +1,159 @@
+                       NATIONAL STOCK EXCHANGE OF INDIA LIMITED
+
+                              DEPARTMENT : FUTURES & OPTIONS
+
+ Download Ref No : NSE/FAOP/37978                                                  Date : June 08, 2018
+
+ Circular Ref. No : 52/2018
+
+
+All Members,
+
+       Adjustment of Futures and Options contracts in the security MCDOWELL-N
+
+In   pursuance    of   SEBI   guidelines   for   adjustments   to   futures   and   options   contracts   on
+announcement of corporate action, the members are informed of the following:
+
+United Spirits Limited has informed the Exchange that the Company has fixed Record Date as
+June 18, 2018 for the purpose of Sub-division of 1 equity shares of face value of Rs.10/- per
+equity shares into 5 equity shares of face value of Rs.2/- per equity share subject to approval by
+the shareholders of the Company by way of special resolution.
+
+Symbol                     : MCDOWELL-N
+Stock split ratio          : 5:1
+Ex-date                    : June 15, 2018
+
+Adjustment factor:
+Adjustment factor for Stock split of A: B is defined as (A/B). In the case of MCDOWELL-N,
+the adjustment factor is (5/1) = 5, since the split ratio is 5:1.
+
+Adjustments for Options Contracts:
+1.  Strike Price: The adjusted strike price shall be arrived at by dividing the old strike price by
+    the adjustment factor.
+2.  Market Lot: The adjusted market lot shall be arrived at by multiplying the old market lot by
+    the adjustment factor. The revised market lot would be 1250.
+
+Adjustments for Futures Contracts:
+1.  Futures price: The adjusted futures price shall be arrived at by dividing the old futures price
+    by the adjustment factor.
+2.  Market Lot: The adjusted market lot shall be arrived at by multiplying the old market lot by
+    the adjustment factor. The revised market lot would be 1250.
+
+An example for deriving the adjustment factor, revised strike /futures base price and lot size is
+given in Annexure-1
+
+The methodology for position adjustments shall be separately intimated by NSCCL.
+
+The above changes shall be effective from June 15, 2018.
+
+
+
+
+Regd. Office : Exchange Plaza, Bandra Kurla Complex, Bandra (E), Mumbai – 400 051            Page 1 of 3
+                Members  are  advised  to  load  the  updated  contract.gz  file  in  the  trading  application  before
+                trading on June 15, 2018. This file can be obtained from the directory faoftp/faocommon on the
+                Extranet server.
+
+                The details of the revised option strike prices, futures prices and quantity freeze limit will be
+                informed to members separately on June 14, 2018.
+
+
+                For and on behalf of
+                National Stock Exchange of India Limited
+
+
+                Abhijeet Sontakke
+                Chief Manager
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  Toll Free No                            Fax No                                  Email id
+                  1800-266-0053                           +91-22-26598155                         msm@nse.co.in
+
+
+
+
+
+                Regd. Office : Exchange Plaza, Bandra Kurla Complex, Bandra (E), Mumbai – 400 051            Page 2 of 3
+
+                                                        Annexure-1
+
+           Option contracts before adjustment:
+
+             Instrument            Symbol              Expiry date        Strike       Type        Market Lot
+               OPTSTK         MCDOWELL-N              28-JUN-2018        3400.00        CE             250
+               OPTSTK         MCDOWELL-N              28-JUN-2018        3400.00        PE             250
+               OPTSTK         MCDOWELL-N              28-JUN-2018        3500.00        CE             250
+               OPTSTK         MCDOWELL-N              28-JUN-2018        3500.00        PE             250
+
+           Options contracts after adjustment:
+
+             Instrument       Symbol                Expiry date          Strike      Type        Market Lot
+               OPTSTK         MCDOWELL-N              28-JUN-2018         680.00        CE            1250
+               OPTSTK         MCDOWELL-N              28-JUN-2018         680.00        PE            1250
+               OPTSTK         MCDOWELL-N              28-JUN-2018         700.00        CE            1250
+               OPTSTK         MCDOWELL-N              28-JUN-2018         700.00        PE            1250
+
+           Futures contract before adjustment:
+
+             Instrument            Symbol            Expiry date        Future Base price          Market Lot
+              FUTSTK          MCDOWELL-N            28-JUN-2018               3364.40                  250
+
+           Futures contract after adjustment:
+
+             Instrument            Symbol            Expiry date        Future Base price#         Market Lot
+              FUTSTK          MCDOWELL-N            28-JUN-2018                672.90                  1250
+
+           If the revised strike/futures prices and the lot size on account of adjustment appear in decimal
+           places, the strike/futures prices shall be rounded off to the nearest tick size and the lot size shall
+           be rounded off to the nearest integer.
+
+           # The figure is only an indicative value for the purpose of example.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+           Regd. Office : Exchange Plaza, Bandra Kurla Complex, Bandra (E), Mumbai – 400 051            Page 3 of 3

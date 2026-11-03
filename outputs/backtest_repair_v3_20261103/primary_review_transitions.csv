@@ -1,0 +1,379 @@
+direction,symbol,company,line,ordinal,effective_date,source,review_note,status
+EXCL,RELCAPITAL,Reliance Capital Ltd.,8,1,2017-09-05,ind_prs29082017.pdf,reschedules RELCAPITAL/MFSL from main review,applicable
+INCL,MFSL,Max Financial Services Ltd.,14,1,2017-09-05,ind_prs29082017.pdf,reschedules RELCAPITAL/MFSL from main review,applicable
+EXCL,AMTEKAUTO,Amtek Auto Ltd.,9,1,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,ANANTRAJ,Anant Raj Ltd.,10,2,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,ASAHIINDIA,Asahi India Glass Ltd.,11,3,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,FDC,FDC Ltd.,12,4,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,FMGOETZE,Federal-Mogul Goetze (India) Ltd.,13,5,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,GRINDWELL,Grindwell Norton Ltd.,14,6,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,HMVL,Hindustan Media Vent Ltd.,15,7,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,HONAUT,Honeywell Automation India Ltd.,16,8,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,JMTAUTOLTD,JMT Auto Ltd.,17,9,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,KNRCON,KNR Constructions Ltd.,18,10,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,NITINFIRE,Nitin Fire Protection Industries Ltd.,19,11,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,ORISSAMINE,Orissa Min Dev Co Ltd.,20,12,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,PUNJLLOYD,Punj Lloyd Ltd.,21,13,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,RATNAMANI,Ratnamani Metals & Tubes Ltd.,22,14,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,RELAXO,Relaxo Footwears Ltd.,23,15,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,RELCAPITAL,Reliance Capital Ltd.,24,16,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,superseded
+EXCL,RIIL,Reliance Industrial Infrastructure Ltd.,25,17,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,ROLTA,Rolta India Ltd.,26,18,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,RUCHISOYA,Ruchi Soya Industries Ltd.,27,19,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,STCINDIA,State Trading Corporation of India Ltd.,28,20,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,TIDEWATER,Tide Water Oil (India) Ltd.,29,21,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,TRITURBINE,Triveni Turbine Ltd.,30,22,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,VSTIND,VST Industries Ltd.,31,23,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,WONDERLA,Wonderla Holidays Ltd.,32,24,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,ZYDUSWELL,Zydus Wellness Ltd.,33,25,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,DMART,Avenue Supermarts Ltd.,40,1,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,BRFL,Bombay Rayon Fashions Ltd.,41,2,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,BRIGADE,Brigade Enterprises Ltd.,42,3,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,BSE,BSE Ltd.,43,4,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,FLFL,Future Lifestyle Fashions Ltd.,44,5,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,HERITGFOOD,Heritage Foods Ltd.,45,6,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,IFBIND,IFB Industries Ltd.,46,7,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,ITDC,India Tourism Development Corporation Ltd.,47,8,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,IBVENTURES,Indiabulls Ventures Ltd.,48,9,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,INGERRAND,Ingersoll Rand (India) Ltd.,49,10,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,ITI,ITI Ltd.,50,11,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,JPPOWER,Jaiprakash Power Ventures Ltd.,51,12,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,JINDALSAW,Jindal Saw Ltd.,52,13,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,JSLHISAR,Jindal Stainless (Hisar) Ltd.,53,14,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,JSL,Jindal Stainless Ltd.,54,15,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,LINDEINDIA,Linde India Ltd.,55,16,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,MFSL,Max Financial Services Ltd.,56,17,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,superseded
+INCL,NFL,National Fertilizers Ltd.,57,18,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,RUPA,Rupa & Company Ltd.,58,19,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,SHOPERSTOP,Shoppers Stop Ltd.,59,20,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,SUPRAJIT,Suprajit Engineering Ltd.,60,21,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,SUPPETRO,Supreme Petrochem Ltd.,61,22,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,TIMETECHNO,Time Technoplast Ltd.,62,23,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,UNITEDBNK,United Bank of India,63,24,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+INCL,VESUVIUS,Vesuvius India Ltd.,64,25,2017-09-29,ind_prs28082017.pdf,main review; RELCAPITAL/MFSL superseded,applicable
+EXCL,FRETAIL,Future Retail Ltd.,8,1,2017-10-30,ind_prs16102017.pdf,ad hoc,applicable
+INCL,HUDCO,Housing & Urban Development Corporation Ltd.,13,1,2017-10-30,ind_prs16102017.pdf,ad hoc,applicable
+EXCL,SUNDARMFIN,Sundaram Finance Ltd.,7,1,2017-11-13,ind_prs03112017.pdf,ad hoc,applicable
+EXCL,SHILPI,Shilpi Cable Tech Ltd.,8,2,2017-11-13,ind_prs03112017.pdf,ad hoc,applicable
+INCL,AUBANK,AU Small Finance Bank Ltd.,13,1,2017-11-13,ind_prs03112017.pdf,ad hoc,applicable
+INCL,RELAXO,Relaxo Footwears Ltd.,14,2,2017-11-13,ind_prs03112017.pdf,ad hoc,applicable
+EXCL,GAYAPROJ,Gayatri Projects Ltd.,8,1,2017-11-20,ind_prs10112017.pdf,ad hoc,applicable
+INCL,STARCEMENT,Star Cement Ltd.,13,1,2017-11-20,ind_prs10112017.pdf,ad hoc,applicable
+EXCL,CESC,CESC Ltd.,8,1,2018-02-05,ind_prs08012018.pdf,ad hoc,applicable
+EXCL,FORTIS,Fortis Healthcare Ltd.,9,2,2018-02-05,ind_prs08012018.pdf,ad hoc,applicable
+EXCL,POLARIS,Polaris Consulting & Services Ltd.,10,3,2018-02-05,ind_prs08012018.pdf,ad hoc,applicable
+EXCL,STAR,Strides Shasun Ltd.,11,4,2018-02-05,ind_prs08012018.pdf,ad hoc,applicable
+INCL,COCHINSHIP,Cochin Shipyard Ltd.,17,1,2018-02-05,ind_prs08012018.pdf,ad hoc,applicable
+INCL,HATSUN,Hatsun Agro Product Ltd.,18,2,2018-02-05,ind_prs08012018.pdf,ad hoc,applicable
+INCL,RELCAPITAL,Reliance Capital Ltd.,19,3,2018-02-05,ind_prs08012018.pdf,ad hoc,applicable
+INCL,TIFIN,TI Financial Holdings Ltd.,20,4,2018-02-05,ind_prs08012018.pdf,ad hoc,applicable
+EXCL,VIDEOIND,Videocon Industries Ltd.,8,1,2018-03-13,ind_prs06032018.pdf,accelerates VIDEOIND/ERIS from main review,applicable
+INCL,ERIS,Eris Lifesciences Ltd.,13,1,2018-03-13,ind_prs06032018.pdf,accelerates VIDEOIND/ERIS from main review,applicable
+EXCL,ADANIENT,Adani Enterprises Ltd.,8,1,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,AHLUCONT,Ahluwalia Contracts (India) Ltd.,9,2,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,APARINDS,Apar Industries Ltd.,10,3,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,ASTRAZEN,AstraZenca Pharma India Ltd.,11,4,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,CORPBANK,Corporation Bank,12,5,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,DALMIABHA,Dalmia Bharat Ltd.,13,6,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,DHANUKA,Dhanuka Agritech Ltd.,14,7,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,ESSELPACK,Essel Propack Ltd.,15,8,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,ICRA,ICRA Ltd.,16,9,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,IGARASHI,Igarashi Motors India Ltd.,17,10,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,INGERRAND,Ingersoll Rand (India) Ltd.,18,11,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,LINDEINDIA,Linde India Ltd.,19,12,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,MONSANTO,Monsanto India Ltd.,20,13,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,NAVNETEDUL,Navneet Education Ltd.,21,14,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,SCHNEIDER,Schneider Electric Infrastructure Ltd.,22,15,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,SHARDACROP,Sharda Cropchem Ltd.,23,16,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,SHILPAMED,Shilpa Medicare Ltd.,24,17,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,SNOWMAN,Snowman Logistics Ltd.,25,18,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,SOMANYCERA,Somany Ceramics Ltd.,26,19,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,SUPRAJIT,Suprajit Engineering Ltd.,27,20,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,SUPPETRO,Supreme Petrochem Ltd.,28,21,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,UNITEDBNK,United Bank of India,29,22,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,VESUVIUS,Vesuvius India Ltd.,30,23,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,VIDEOIND,Videocon Industries Ltd.,31,24,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,superseded
+EXCL,ZENSARTECH,Zensar Technolgies Ltd.,32,25,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,ABCAPITAL,Aditya Birla Capital Ltd.,37,1,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,ASAHIINDIA,Asahi India Glass Ltd.,38,2,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,CDSL,Central Depository Services (India) Ltd.,40,3,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,DCAL,Dishman Carbogen Amcis Ltd.,41,4,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,DIXON,Dixon Technologies (India) Ltd.,42,5,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,ERIS,Eris Lifesciences Ltd.,43,6,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,superseded
+INCL,GICRE,General Insurance Corporation of India,44,7,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,GODREJAGRO,Godrej Agrovet Ltd.,45,8,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,GRAPHITE,Graphite India Ltd.,46,9,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,GRASIM,Grasim Industries Ltd.,47,10,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,HEG,H.E.G. Ltd.,48,11,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,HSCL,Himadri Speciality Chemical Ltd.,49,12,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,HONAUT,Honeywell Automation India Ltd.,50,13,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,ICICIGI,ICICI Lombard General Insurance Company Ltd.,51,14,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,IIFL,IIFL Holdings Ltd.,52,15,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,IEX,Indian Energy Exchange Ltd.,53,16,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,KNRCON,KNR Constructions Ltd.,54,17,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,MASFIN,MAS Financial Services Ltd.,55,18,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,NESCO,NESCO Ltd.,56,19,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,RHFL,Reliance Home Finance Ltd.,57,20,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,SADBHIN,Sadbhav Infrastructure Project Ltd.,58,21,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,SBILIFE,SBI Life Insurance Company Ltd.,59,22,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,SIS,Security and Intelligence Services (India) Ltd.,60,23,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,SHANKARA,Shankara Building Products Ltd.,61,24,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+INCL,SPTL,Sintex Plastics Technology Ltd.,62,25,2018-04-02,ind_prs21022018.pdf,main review; VIDEOIND/ERIS superseded,applicable
+EXCL,ARVIND,Arvind Ltd.,8,1,2018-06-29,ind_prs24052018.pdf,main quarterly review,applicable
+EXCL,COX&KINGS,Cox & Kings Ltd.,9,2,2018-06-29,ind_prs24052018.pdf,main quarterly review,applicable
+EXCL,TATACOMM,Tata Communications Ltd.,10,3,2018-06-29,ind_prs24052018.pdf,main quarterly review,applicable
+INCL,FRETAIL,Future Retail Ltd.,16,1,2018-06-29,ind_prs24052018.pdf,main quarterly review,applicable
+INCL,KIOCL,KIOCL Ltd.,17,2,2018-06-29,ind_prs24052018.pdf,main quarterly review,applicable
+INCL,TIINDIA,Tube Investments of India Ltd.,18,3,2018-06-29,ind_prs24052018.pdf,main quarterly review,applicable
+EXCL,HTMEDIA,HT Media Ltd.,8,1,2018-06-29,ind_prs20062018.pdf,additional HTMEDIA/ASTERDM,applicable
+INCL,ASTERDM,Aster DM Healthcare Ltd.,13,1,2018-06-29,ind_prs20062018.pdf,additional HTMEDIA/ASTERDM,applicable
+EXCL,TECHNO,Techno Electric & Engineering Company Ltd.,7,1,2018-08-08,ind_prs01082018.pdf,ad hoc,applicable
+INCL,BDL,Bharat Dynamics Ltd.,12,1,2018-08-08,ind_prs01082018.pdf,ad hoc,applicable
+EXCL,ABAN,Aban Offshore Ltd.,10,1,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,ASAHIINDIA,Asahi India Glass Ltd.,11,2,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,BAJAJHIND,Bajaj Hindusthan Sugar Ltd.,12,3,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,BALLARPUR,Ballarpur Industries Ltd.,13,4,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,BFUTILITIE,BF Utilities Ltd.,14,5,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,BGRENERGY,BGR Energy Systems Ltd,15,6,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,BHUSANSTL,Bhushan Steel Ltd.,16,7,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,BRFL,Bombay Rayon Fashions Ltd.,17,8,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,DBREALTY,D B Realty Ltd.,18,9,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,GATI,Gati Ltd.,19,10,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,HDIL,Housing Development and Infrastructure Ltd.,20,11,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,JBFIND,JBF Industries Ltd.,21,12,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,JINDALPOLY,Jindal Poly Films Ltd.,22,13,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,KESORAMIND,Kesoram Industries Ltd.,23,14,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,KITEX,Kitex Garments Ltd.,24,15,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,KWALITY,Kwality Ltd.,25,16,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,MTNL,Mahanagar Telephone Nigam Ltd.,26,17,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,MARKSANS,Marksans Pharma Ltd.,27,18,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,RAMCOSYS,Ramco Systems Ltd.,28,19,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,RTNPOWER,RattanIndia Power Ltd.,29,20,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,RELIGARE,Religare Enterprises Ltd.,30,21,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,SFL,Sheela Foam Ltd.,31,22,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,SMLISUZU,SML Isuzu Ltd.,32,23,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,UNITECH,Unitech Ltd.,33,24,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,ZEELEARN,Zee Learn Ltd.,34,25,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,BANDHANBNK,Bandhan Bank Ltd.,39,1,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,ELGIEQUIP,Elgi Equipments Ltd.,40,2,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,EXCELCROP,Excel Crop Care Ltd.,41,3,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,FDC,FDC Ltd.,42,4,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,GALAXYSURF,Galaxy Surfactants Ltd.,43,5,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,GAYAPROJ,Gayatri Projects Ltd.,44,6,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,GRINDWELL,Grindwell Norton Ltd.,45,7,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,HDFCLIFE,HDFC Standard Life Insurance Company Ltd.,50,8,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,HAL,Hindustan Aeronautics Ltd.,51,9,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,ISEC,ICICI Securities Ltd.,52,10,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,LEMONTREE,Lemon Tree Hotels Ltd.,53,11,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,LINDEINDIA,Linde India Ltd.,54,12,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,LUXIND,Lux Industries Ltd.,55,13,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,MAHLOG,Mahindra Logistics Ltd.,56,14,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,MONSANTO,Monsanto India Ltd.,57,15,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,PHILIPCARB,Phillips Carbon Black Ltd.,58,16,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,RNAM,Reliance Nippon Life Asset Management Ltd.,59,17,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,STAR,Strides Pharma Science Ltd.,60,18,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,SUNDARMFIN,Sundaram Finance Ltd.,61,19,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,TEAMLEASE,Teamlease Services Ltd.,62,20,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,NIACL,The New India Assurance Company Ltd.,63,21,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,VENKEYS,Venky's (India) Ltd.,64,22,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,VMART,V-Mart Retail Ltd.,65,23,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,ZENSARTECH,Zensar Technolgies Ltd.,66,24,2018-09-28,ind_prs28082018.pdf,main review,applicable
+INCL,ZYDUSWELL,Zydus Wellness Ltd.,67,25,2018-09-28,ind_prs28082018.pdf,main review,applicable
+EXCL,KPIT,KPIT Technologies Ltd.,7,1,2018-09-28,ind_prs31082018.pdf,additional KPIT/SHILPAMED,applicable
+INCL,SHILPAMED,Shilpa Medicare Ltd.,12,1,2018-09-28,ind_prs31082018.pdf,additional KPIT/SHILPAMED,applicable
+EXCL,BHARATFIN,Bharat Financial Inclusion Ltd.,7,1,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+EXCL,CAPF,Capital First Ltd.,8,2,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+EXCL,CENTURYTEX,Century Textile & Industries Ltd.,9,3,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+EXCL,HSIL,HSIL Ltd.,10,4,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+EXCL,IIFL,IIFL Holdings Ltd.,11,5,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+INCL,ADANIGREEN,Adani Green Energy Ltd.,16,1,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+INCL,FORTIS,Fortis Healthcare Ltd.,17,2,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+INCL,RITES,RITES Ltd.,23,3,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+INCL,SFL,Sheela Foam Ltd.,24,4,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+INCL,VARROC,Varroc Engineering Ltd.,25,5,2018-12-28,ind_prs14122018.pdf,quarterly,applicable
+EXCL,DENABANK,Dena Bank,7,1,2019-01-28,ind_prs21012019.pdf,ad hoc,applicable
+EXCL,VIJAYABANK,Vijaya Bank,8,2,2019-01-28,ind_prs21012019.pdf,ad hoc,applicable
+INCL,CORPBANK,Corporation Bank,13,1,2019-01-28,ind_prs21012019.pdf,ad hoc,applicable
+INCL,CREDITACC,CreditAccess Grameen Ltd.,14,2,2019-01-28,ind_prs21012019.pdf,ad hoc,applicable
+EXCL,8KMILES,8K Miles Soft Services Ltd.,13,1,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,AARTIIND,Aarti Industries Ltd.,14,2,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,DEN,Den Networks Ltd.,15,3,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,DREDGECORP,Dredging Corporation of India Ltd.,16,4,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,EROSMEDIA,Eros Intl Media Ltd.,17,5,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,EVEREADY,Eveready Industries India Ltd.,18,6,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,GREENPLY,Greenply Industries Ltd.,19,7,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,GVKPIL,GVK Power & Infrastructures Ltd.,20,8,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,HCL-INSYS,HCL Infosystems Ltd.,21,9,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,HCC,Hindustan Construction Co. Ltd.,22,10,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,IL&FSTRANS,IL&FS Transportation Networks Ltd.,23,11,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,ICIL,Indo Count Industries Ltd.,24,12,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,JKIL,J.Kumar Infraprojects Ltd.,25,13,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,JPPOWER,Jaiprakash Power Ventures Ltd.,26,14,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,JCHAC,Ltd.,28,15,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,MANPASAND,Manpasand Beverages Ltd.,29,16,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,MCLEODRUSS,McLeod Russel India Ltd.,30,17,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,NAVKARCORP,Navkar Corporation Ltd.,31,18,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,PFS,PTC India Fin Serv Ltd.,32,19,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,RNAVAL,Reliance Naval and Engineering Ltd.,33,20,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,SADBHIN,Sadbhav Infrastructure Project Ltd.,34,21,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,TATASPONGE,Tata Sponge Iron Ltd.,35,22,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,TEXRAIL,Texmaco Rail & Eng. Ltd.,36,23,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,TVSSRICHAK,TVS Srichakra Ltd.,37,24,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,UNICHEMLAB,Unichem Laboratories Ltd.,38,25,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,AAVAS,Aavas Financiers Ltd.,43,1,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,ASTRAZEN,AstraZenca Pharma India Ltd.,44,2,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,MAHABANK,Bank of Maharashtra.,45,3,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,CESC,CESC Ltd.,46,4,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,COX&KINGS,Cox & Kings Ltd.,47,5,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,DEEPAKNTR,Deepak Nitrite Ltd.,48,6,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,ESSELPACK,Essel Propack Ltd.,49,7,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,FINEORG,Fine Organic Industries Ltd.,50,8,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,HDFCAMC,HDFC Asset Management Company Ltd.,51,9,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,ICRA,ICRA Ltd.,57,10,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,IBULISL,Indiabulls Integrated Services Ltd.,58,11,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,INDOSTAR,IndoStar Capital Finance Ltd.,59,12,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,IRCON,IRCON International Ltd.,60,13,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,JAMNAAUTO,Jamna Auto Industries Ltd.,61,14,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,JKPAPER,JK Paper Ltd.,62,15,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,KEI,KEI Industries Ltd.,63,16,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,KIRLOSENG,Kirloskar Oil Eng Ltd.,64,17,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,MAHSCOOTER,Maharashtra Scooters Ltd.,65,18,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,MAHSEAMLES,Maharashtra Seamless Ltd.,66,19,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,ORIENTELEC,Orient Electric Ltd.,67,20,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,SHARDACROP,Sharda Cropchem Ltd.,68,21,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,SUPRAJIT,Suprajit Engineering Ltd.,69,22,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,TCNSBRANDS,TCNS Clothing Co. Ltd.,70,23,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,TRITURBINE,Triveni Turbine Ltd.,71,24,2019-03-29,ind_prs25022019.pdf,main review,applicable
+INCL,VSTIND,VST Industries Ltd.,72,25,2019-03-29,ind_prs25022019.pdf,main review,applicable
+EXCL,EXCELCROP,Excel Crop Care Ltd.,7,1,2019-04-15,ind_prs08042019.pdf,ad hoc,applicable
+INCL,SUNCLAYLTD,Sundaram Clayton Ltd.,12,1,2019-04-15,ind_prs08042019.pdf,ad hoc,applicable
+EXCL,GUJFLUORO,Gujarat Fluorochemicals Ltd.,8,1,2019-06-28,ind_prs13062019.pdf,quarterly,applicable
+EXCL,MONSANTO,Monsanto India Ltd.,9,2,2019-06-28,ind_prs13062019.pdf,quarterly,applicable
+INCL,CHALET,Chalet Hotels Ltd.,14,1,2019-06-28,ind_prs13062019.pdf,quarterly,applicable
+INCL,DALBHARAT,Dalmia Bharat Ltd.,15,2,2019-06-28,ind_prs13062019.pdf,quarterly,applicable
+EXCL,JETAIRWAYS,Jet Airways (India) Ltd.,7,1,2019-09-24,ind_prs17092019_1.pdf,ad hoc JETAIRWAYS/VAIBHAVGBL,applicable
+INCL,VAIBHAVGBL,Vaibhav Global Ltd.,12,1,2019-09-24,ind_prs17092019_1.pdf,ad hoc JETAIRWAYS/VAIBHAVGBL,applicable
+EXCL,ABB,ABB India Ltd.*,13,1,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,DEEPAKFERT,Deepak Fertilisers & Petrochemicals Corp. Ltd.,14,2,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,GDL,Gateway Distriparks Ltd.,15,3,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,GSKCONS,GlaxoSmithkline Consumer Healthcare Ltd.*,16,4,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,GRUH,Gruh Finance Ltd.*,17,5,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,INDOCO,Indoco Remedies Ltd.,18,6,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,INOXWIND,Inox Wind Ltd.,19,7,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,JPASSOCIAT,Jaiprakash Associates Ltd.,20,8,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,KIOCL,KIOCL Ltd.,21,9,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,RKFORGE,Ramkrishna Forgings Ltd.,22,10,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,RCOM,Reliance Communications Ltd.,23,11,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,RHFL,Reliance Home Finance Ltd.,24,12,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,RUPA,Rupa & Company Ltd.,25,13,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,SHANKARA,Shankara Building Products Ltd.,26,14,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,SHARDACROP,Sharda Cropchem Ltd.,27,15,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,SCI,Shipping Corporation of India Ltd.,28,16,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,SPTL,Sintex Plastics Technology Ltd.,29,17,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,SREINFRA,SREI Infrastructure Finance Ltd.,30,18,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,TNPL,Tamil Nadu Newsprint & Papers Ltd.,31,19,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,TATACOFFEE,Tata Coffee Ltd.,32,20,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,TRITURBINE,Triveni Turbine Ltd.,33,21,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,ABBOTINDIA,Abbott India Ltd.,39,1,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,ADANIGAS,Adani Gas Ltd.,40,2,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,AMBER,Amber Enterprises India Ltd.,41,3,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,ARVINDFASN,Arvind Fashions Ltd.,42,4,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,BAYERCROP,Bayer Cropscience Ltd.,43,5,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,BSOFT,Birlasoft Ltd.,44,6,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,CGCL,Capri Global Capital Ltd.,45,7,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,DEN,Den Networks Ltd.,46,8,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,FMGOETZE,Federal-Mogul Goetze (India) Ltd.,47,9,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,GARFIBRES,Garware Technical Fibres Ltd.,48,10,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,JCHAC,Johnson Controls - Hitachi Air Conditioning India,49,11,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,KPITTECH,KPIT Technologies Ltd.,51,12,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,METROPOLIS,Metropolis Healthcare Ltd.,57,13,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,MCX,Multi Commodity Exchange of India Ltd.,58,14,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,NESTLEIND,Nestle India Ltd.,59,15,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,ORIENTREF,Orient Refractories Ltd.,60,16,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,POLYCAB,Polycab India Ltd.,61,17,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,RVNL,Rail Vikas Nigam Ltd.,62,18,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,RATNAMANI,Ratnamani Metals & Tubes Ltd.,63,19,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,TCIEXP,TCI Express Ltd.,64,20,2019-09-27,ind_prs28082019.pdf,main review,applicable
+INCL,TECHNOE,Techno Electric & Engineering Company Ltd.,65,21,2019-09-27,ind_prs28082019.pdf,main review,applicable
+EXCL,THOMASCOOK,Thomas Cook (India) Ltd.,7,1,2019-09-27,ind_prs17092019.pdf,additional THOMASCOOK/IIFL,applicable
+INCL,IIFL,IIFL Finance Ltd.,12,1,2019-09-27,ind_prs17092019.pdf,additional THOMASCOOK/IIFL,applicable
+EXCL,CGPOWER,CG Power and Industrial Solutions Ltd.,7,1,2019-12-26,ind_prs18122019.pdf,ad hoc suspension removals,applicable
+EXCL,COFFEEDAY,Coffee Day Enterprises Ltd.,8,2,2019-12-26,ind_prs18122019.pdf,ad hoc suspension removals,applicable
+EXCL,COX&KINGS,Cox & Kings Ltd.,9,3,2019-12-26,ind_prs18122019.pdf,ad hoc suspension removals,applicable
+INCL,AFFLE,Affle (India) Ltd.,14,1,2019-12-26,ind_prs18122019.pdf,ad hoc suspension removals,applicable
+INCL,MIDHANI,Mishra Dhatu Nigam Ltd.,15,2,2019-12-26,ind_prs18122019.pdf,ad hoc suspension removals,applicable
+INCL,RESPONIND,Responsive Industries Ltd.,16,3,2019-12-26,ind_prs18122019.pdf,ad hoc suspension removals,applicable
+EXCL,ALBK,Allahabad Bank,8,1,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+EXCL,ANDHRABANK,Andhra Bank,9,2,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+EXCL,CORPBANK,Corporation Bank,10,3,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+EXCL,MAXINDIA,Max India Ltd.,11,4,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+EXCL,ORIENTBANK,Oriental Bank of Commerce,12,5,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+EXCL,SYNDIBANK,Syndicate Bank,13,6,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+EXCL,TATACHEM,Tata Chemicals Ltd.,14,7,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+INCL,AARTIIND,Aarti Industries Ltd.,19,1,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+INCL,ASAHIINDIA,Asahi India Glass Ltd.,20,2,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+INCL,INDIAMART,Indiamart Intermesh Ltd.,21,3,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+INCL,SPANDANA,Spandana Sphoorty Financial Ltd.,22,4,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+INCL,SPICEJET,Spicejet Ltd.,23,5,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+INCL,TRITURBINE,Triveni Turbine Ltd.,24,6,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+INCL,WESTLIFE,Westlife Development Ltd.,25,7,2019-12-27,ind_prs16122019.pdf,quarterly review,applicable
+EXCL,DEN,Den Networks Ltd.,8,1,2019-12-27,ind_prs19122019.pdf,additional DEN/HATHWAY,applicable
+EXCL,HATHWAY,Hathway Cable & Datacom Ltd.,9,2,2019-12-27,ind_prs19122019.pdf,additional DEN/HATHWAY,applicable
+INCL,KENNAMET,Kennametal India Ltd.,14,1,2019-12-27,ind_prs19122019.pdf,additional DEN/HATHWAY,applicable
+INCL,TASTYBITE,Tasty Bite Eatables Ltd.,15,2,2019-12-27,ind_prs19122019.pdf,additional DEN/HATHWAY,applicable
+EXCL,SUVEN,Suven Life Sciences Ltd.,8,1,2020-01-16,ind_prs09012020.pdf,ad hoc,applicable
+INCL,TATASTLBSL,Tata Steel BSL Ltd.,13,1,2020-01-16,ind_prs09012020.pdf,ad hoc,applicable
+EXCL,YESBANK,Yes Bank Ltd.,11,1,2020-03-19,ind_prs16032020.pdf,accelerated YESBANK/SWSOLAR,applicable
+INCL,SWSOLAR,Sterling And Wilson Solar Ltd.,16,1,2020-03-19,ind_prs16032020.pdf,accelerated YESBANK/SWSOLAR,applicable
+EXCL,CHALET,Chalet Hotels Ltd.,7,1,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,DHFL,Dewan Housing Finance Corporation Ltd.,8,2,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,FMGOETZE,Federal-Mogul Goetze (India) Ltd.,9,3,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,FLFL,Future Lifestyle Fashions Ltd.,10,4,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,GAYAPROJ,Gayatri Projects Ltd.,11,5,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,IBULISL,Indiabulls Integrated Services Ltd.,12,6,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,ITDCEM,ITD Cementation India Ltd.,18,7,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,JISLJALEQS,Jain Irrigation Systems Ltd.,19,8,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,KENNAMET,Kennametal India Ltd.,20,9,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,KIRLOSENG,Kirloskar Oil Eng Ltd.,21,10,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,LAKSHVILAS,Lakshmi Vilas Bank Ltd.,22,11,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,MAGMA,Magma Fincorp Ltd.,23,12,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,NETWORK18,Network18 Media & Investments Ltd.,24,13,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,PARAGMILK,Parag Milk Foods Ltd.,25,14,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,PCJEWELLER,PC Jeweller Ltd.,26,15,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,RELCAPITAL,Reliance Capital Ltd.,27,16,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,RELINFRA,Reliance Infrastructure Ltd.,28,17,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,RPOWER,Reliance Power Ltd.,29,18,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,RESPONIND,Responsive Industries Ltd.,30,19,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,SHK,S H Kelkar and Company Ltd.,31,20,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,SHILPAMED,Shilpa Medicare Ltd.,32,21,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,SUNCLAYLTD,Sundaram Clayton Ltd.,33,22,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,TECHNOE,Techno Electric & Engineering Company Ltd.,34,23,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,TRITURBINE,Triveni Turbine Ltd.,35,24,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,WABAG,Va Tech Wabag Ltd.,36,25,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,ABB,ABB India Ltd.,41,1,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,ALKYLAMINE,Alkyl Amines Chemicals Ltd.,42,2,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,BHARATRAS,Bharat Rasayan Ltd.,43,3,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,CENTURYTEX,Century Textile & Industries Ltd.,44,4,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,CSBBANK,CSB Bank Ltd.,45,5,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,DHANUKA,Dhanuka Agritech Ltd.,46,6,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,ESABINDIA,ESAB India Ltd.,47,7,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,GRSE,Garden Reach Shipbuilders & Engineers Ltd.,48,8,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,GMMPFAUDLR,GMM Pfaudler Ltd.,49,9,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,FLUOROCHEM,Gujarat Fluorochemicals Ltd.,50,10,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,HATHWAY,Hathway Cable & Datacom Ltd.,51,11,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,IIFLWAM,IIFL Wealth Management Ltd.,52,12,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,IRCTC,Corporation Ltd.,54,13,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,INDOCO,Indoco Remedies Ltd.,55,14,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,INGERRAND,Ingersoll Rand (India) Ltd.,56,15,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,KSB,KSB Ltd.,57,16,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,LAOPALA,La Opala RG Ltd.,58,17,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,POLYMED,Poly Medicure Ltd.,59,18,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,SCHNEIDER,Schneider Electric Infrastructure Ltd.,65,19,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,SEQUENT,Sequent Scientific Ltd.,66,20,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,SCI,Shipping Corporation of India Ltd.,67,21,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,SUMICHEM,Sumitomo Chemical India Ltd.,68,22,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,TATACOMM,Tata Communications Ltd.,69,23,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,UJJIVANSFB,Ujjivan Small Finance Bank Ltd.,70,24,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+INCL,VESUVIUS,Vesuvius India Ltd.,71,25,2020-06-26,ind_prs10062020.pdf,revised review after March deferral,applicable
+EXCL,VEDL,Vedanta Ltd.,17,1,2020-07-31,ind_prs02072020_1.pdf,ad hoc VEDL/SBICARD,applicable
+INCL,SBICARD,SBI Cards and Payment Services Ltd.,23,1,2020-07-31,ind_prs02072020_1.pdf,ad hoc VEDL/SBICARD,applicable

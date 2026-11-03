@@ -1,0 +1,155 @@
+                       NATIONAL STOCK EXCHANGE OF INDIA LIMITED
+
+                                 DEPARTMENT : FUTURES & OPTIONS
+
+ Download Ref No : NSE/FAOP/35607                                                     Date : August 17, 2017
+
+ Circular Ref. No : 83/2017
+
+All Members,
+
+             Adjustment of Futures and Options contracts in the security INFIBEAM
+
+In pursuance of SEBI guidelines for adjustments to futures and options contracts on announcement
+of corporate action, the members are informed of the following:
+
+Infibeam  Incorporation  Limited  has  informed  the  Exchange  that  the              Company  has  fixed  Record
+Date as September 1, 2017 for the purpose of Sub-Division of One Equity Share of Rs 10 each to
+ten equity shares of Rs 1 each and ascertaining the eligibility of shareholders entitled to receive the
+sub-divided equity shares of Rs 1/- each in lieu of existing equity shares of Rs 10/- each.
+
+Symbol                     : INFIBEAM
+Stock split ratio          : 10:1
+Ex-date                    : August 31, 2017
+
+Adjustment factor:
+Adjustment  factor  for  Stock  split  of      A:   B  is  defined  as  (A/B).  In  the  case  of     INFIBEAM,  the
+adjustment factor is (10/1) = 10, since the split ratio is 10:1.
+
+Adjustments for Options Contracts:
+1.  Strike Price: The adjusted strike price shall be arrived at by dividing the old strike price by the
+    adjustment factor.
+2.  Market Lot: The adjusted market lot shall be arrived at by multiplying the old market lot by the
+    adjustment factor. The revised market lot would be 4000.
+
+Adjustments for Futures Contracts:
+1.  Futures price: The adjusted futures price shall be arrived at by dividing the old futures price by
+    the adjustment factor.
+2.  Market Lot: The adjusted market lot shall be arrived at by multiplying the old market lot by the
+    adjustment factor. The revised market lot would be 4000.
+
+An example for deriving the adjustment factor, revised strike /futures base price and lot size is
+given in Annexure-1
+
+The methodology for position adjustments shall be separately intimated by NSCCL.
+
+The above changes shall be effective from August 31, 2017.
+
+
+
+
+Regd. Office : Exchange Plaza, Bandra Kurla Complex, Bandra (E), Mumbai – 400 051                Page 1 of 3
+                Members are advised to load the updated contract.gz file in the trading application before trading
+                on August 31, 2017. This file can be obtained from the directory faoftp/faocommon on the Extranet
+                server.
+
+                The  details  of  the  revised  option  strike  prices,  futures  prices  and  quantity  freeze  limit  will  be
+                informed to members separately on August 30, 2017.
+
+
+                For and on behalf of
+                National Stock Exchange of India Limited
+
+
+                Abhijeet Sontakke
+                Senior Manager
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  Toll Free No                              Fax No                                    Email id
+                  1800-266-0053                             +91-22-26598155                           msm@nse.co.in
+
+
+
+
+
+                Regd. Office : Exchange Plaza, Bandra Kurla Complex, Bandra (E), Mumbai – 400 051                Page 2 of 3
+
+                                                 Annexure-1
+
+Option contracts before adjustment:
+
+ Instrument          Symbol            Expiry date       Strike      Type      Market Lot
+  OPTSTK           INFIBEAM           31-AUG-2017         1450        CE            400
+  OPTSTK           INFIBEAM           31-AUG-2017         1450        PE            400
+  OPTSTK           INFIBEAM           28-SEP-2017         1500        CE            400
+  OPTSTK           INFIBEAM           28-SEP-2017         1500        PE            400
+
+Options contracts after adjustment:
+
+ Instrument      Symbol              Expiry date         Strike     Type       Market Lot
+  OPTSTK           INFIBEAM           31-AUG-2017          145        CE            4000
+  OPTSTK           INFIBEAM           31-AUG-2017          145        PE            4000
+  OPTSTK           INFIBEAM           28-SEP-2017          150        CE            4000
+  OPTSTK           INFIBEAM           28-SEP-2017          150        PE            4000
+
+Futures contract before adjustment:
+
+ Instrument          Symbol            Expiry date          Future Base price         Market Lot
+  FUTSTK           INFIBEAM           31-AUG-2017                 1423.05                  400
+
+Futures contract after adjustment:
+
+ Instrument          Symbol            Expiry date         Future Base price#         Market Lot
+  FUTSTK           INFIBEAM           31-AUG-2017                  142.30                  4000
+
+If  the  revised  strike/futures  prices  and  the  lot  size  on  account  of  adjustment  appear  in  decimal
+places, the strike/futures prices shall be rounded off to the nearest tick size and the lot size shall be
+rounded off to the nearest integer.
+
+# The figure is only an indicative value for the purpose of example.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Regd. Office : Exchange Plaza, Bandra Kurla Complex, Bandra (E), Mumbai – 400 051                Page 3 of 3

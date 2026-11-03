@@ -1,0 +1,62 @@
+
+
+3)      NIFTY 500
+
+The following companies are being excluded:
+
+   Sr. No.                      Company Name                                   Symbol
+      1      Adani Enterprises Ltd.                                    ADANIENT
+      2      Ahluwalia Contracts (India) Ltd.                          AHLUCONT
+      3      Apar Industries Ltd.                                      APARINDS
+      4      AstraZenca Pharma India Ltd.                              ASTRAZEN
+      5      Corporation Bank                                          CORPBANK
+      6      Dalmia Bharat Ltd.                                        DALMIABHA
+      7      Dhanuka Agritech Ltd.                                     DHANUKA
+      8      Essel Propack Ltd.                                        ESSELPACK
+      9      ICRA Ltd.                                                 ICRA
+     10      Igarashi Motors India Ltd.                                IGARASHI
+     11      Ingersoll Rand (India) Ltd.                               INGERRAND
+     12      Linde India Ltd.                                          LINDEINDIA
+     13      Monsanto India Ltd.                                       MONSANTO
+     14      Navneet Education Ltd.                                    NAVNETEDUL
+     15      Schneider Electric Infrastructure Ltd.                    SCHNEIDER
+     16      Sharda Cropchem Ltd.                                      SHARDACROP
+     17      Shilpa Medicare Ltd.                                      SHILPAMED
+     18      Snowman Logistics Ltd.                                    SNOWMAN
+     19      Somany Ceramics Ltd.                                      SOMANYCERA
+     20      Suprajit Engineering Ltd.                                 SUPRAJIT
+     21      Supreme Petrochem Ltd.                                    SUPPETRO
+     22      United Bank of India                                      UNITEDBNK
+     23      Vesuvius India Ltd.                                       VESUVIUS
+     24      Videocon Industries Ltd.                                  VIDEOIND
+     25      Zensar Technolgies Ltd.                                   ZENSARTECH
+
+The following companies are being included:
+
+   Sr. No.                      Company Name                                   Symbol
+      1      Aditya Birla Capital Ltd.                                 ABCAPITAL
+      2      Asahi India Glass Ltd.                                    ASAHIINDIA
+   Sr. No.                       Company Name                                     Symbol
+      3       Central Depository Services (India) Ltd.                    CDSL
+      4       Dishman Carbogen Amcis Ltd.                                 DCAL
+      5       Dixon Technologies (India) Ltd.                             DIXON
+      6       Eris Lifesciences Ltd.                                      ERIS
+      7       General Insurance Corporation of India                      GICRE
+      8       Godrej Agrovet Ltd.                                         GODREJAGRO
+      9       Graphite India Ltd.                                         GRAPHITE
+     10       Grasim Industries Ltd.                                      GRASIM
+     11       H.E.G. Ltd.                                                 HEG
+     12       Himadri Speciality Chemical Ltd.                            HSCL
+     13       Honeywell Automation India Ltd.                             HONAUT
+     14       ICICI Lombard General Insurance Company Ltd.                ICICIGI
+     15       IIFL Holdings Ltd.                                          IIFL
+     16       Indian Energy Exchange Ltd.                                 IEX
+     17       KNR Constructions Ltd.                                      KNRCON
+     18       MAS Financial Services Ltd.                                 MASFIN
+     19       NESCO Ltd.                                                  NESCO
+     20       Reliance Home Finance Ltd.                                  RHFL
+     21       Sadbhav Infrastructure Project Ltd.                         SADBHIN
+     22       SBI Life Insurance Company Ltd.                             SBILIFE
+     23       Security and Intelligence Services (India) Ltd.             SIS
+     24       Shankara Building Products Ltd.                             SHANKARA
+     25       Sintex Plastics Technology Ltd.                             SPTL

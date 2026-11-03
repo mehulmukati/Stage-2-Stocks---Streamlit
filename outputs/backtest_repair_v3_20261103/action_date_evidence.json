@@ -1,0 +1,158 @@
+[
+  {
+    "symbol": "AVANTIFEED",
+    "record_date": "2018-06-27",
+    "ex_date": "2018-06-26",
+    "purpose": "Bonus 1:2/Sub-division Rs. 2/-to Re. 1/- per share",
+    "source": "AVANTIFEED_msei.html"
+  },
+  {
+    "symbol": "BRITANNIA",
+    "record_date": "2018-11-30",
+    "ex_date": "2018-11-29",
+    "purpose": "Sub-division from Rs. 2/- to Re. 1/- per share",
+    "source": "BRITANNIA_msei.html"
+  },
+  {
+    "symbol": "CANFINHOME",
+    "record_date": "2017-10-13",
+    "ex_date": "2017-10-12",
+    "purpose": "Sub-division from Rs. 10/- to Rs. 2/- per share",
+    "source": "CANFINHOME_msei.html"
+  },
+  {
+    "symbol": "CHOLAFIN",
+    "record_date": "2019-06-17",
+    "ex_date": "2019-06-14",
+    "purpose": "Sub-division from Rs. 10/- to Rs. 2/- per share",
+    "source": "CHOLAFIN_msei.html"
+  },
+  {
+    "symbol": "CONCOR",
+    "record_date": "2018-06-27",
+    "ex_date": "2018-06-26",
+    "purpose": "Sub-division from Rs. 10/- to Rs. 5/- per share",
+    "source": "CONCOR_msei.html"
+  },
+  {
+    "symbol": "EICHERMOT",
+    "record_date": "2020-08-25",
+    "ex_date": "2020-08-24",
+    "purpose": "Sub-division from Rs. 10/- to Re. 1/- per share",
+    "source": "EICHERMOT_msei.html"
+  },
+  {
+    "symbol": "HDFCBANK",
+    "record_date": "2019-09-20",
+    "ex_date": "2019-09-19",
+    "purpose": "Sub-division from Rs. 2/- to Re. 1/-",
+    "source": "HDFCBANK_msei.html"
+  },
+  {
+    "symbol": "HERITGFOOD",
+    "record_date": "2017-10-11",
+    "ex_date": "2017-10-10",
+    "purpose": "Sub-division from Rs. 10/- to Rs. 5/- per share",
+    "source": "HERITGFOOD_msei.html"
+  },
+  {
+    "symbol": "IEX",
+    "record_date": "2018-10-22",
+    "ex_date": "2018-10-19",
+    "purpose": "Face Value Split from Rs.10/- to Re. 1/- per share",
+    "source": "IEX_msei.html"
+  },
+  {
+    "symbol": "IGL",
+    "record_date": "2017-11-10",
+    "ex_date": "2017-11-09",
+    "purpose": "Sub-division from Rs. 10/- to Rs. 2/- per share",
+    "source": "IGL_msei.html"
+  },
+  {
+    "symbol": "IRCON",
+    "record_date": "2020-04-07",
+    "ex_date": "2020-04-03",
+    "purpose": "Split/Sub-division from Rs 10 to Rs 2 per share",
+    "source": "IRCON_msei.html"
+  },
+  {
+    "symbol": "NAVINFLUOR",
+    "record_date": "2017-07-20",
+    "ex_date": "2017-07-19",
+    "purpose": "Sub-division from Rs. 10/- to Rs. 2/- per share",
+    "source": "NAVINFLUOR_msei.html"
+  },
+  {
+    "symbol": "NBCC",
+    "record_date": "2018-04-26",
+    "ex_date": "2018-04-25",
+    "purpose": "Sub-division from Rs. 2/- to Re. 1/-.",
+    "source": "NBCC_msei.html"
+  },
+  {
+    "symbol": "SUNTECK",
+    "record_date": "2017-07-26",
+    "ex_date": "2017-07-25",
+    "purpose": "Sub-division from Rs. 2/- to Re. 1/-",
+    "source": "SUNTECK_msei.html"
+  },
+  {
+    "symbol": "TRIDENT",
+    "record_date": "2019-12-16",
+    "ex_date": "2019-12-13",
+    "purpose": "Sub-division from Rs. 10/- to Re. 1/- .",
+    "source": "TRIDENT_msei.html"
+  },
+  {
+    "symbol": "VINATIORGA",
+    "record_date": "2020-02-06",
+    "ex_date": "2020-02-05",
+    "purpose": "Sub-division from Rs. 2/- to Re. 1/- per share",
+    "source": "VINATIORGA_msei.html"
+  },
+  {
+    "symbol": "YESBANK",
+    "record_date": "2017-09-22",
+    "ex_date": "2017-09-21",
+    "purpose": "Sub-division from Rs. 10/- to Rs. 2/-",
+    "source": "YESBANK_msei.html"
+  },
+  {
+    "symbol": "ZENSARTECH",
+    "record_date": "2018-09-10",
+    "ex_date": "2018-09-07",
+    "purpose": "Sub-division from Rs. 10/- to Rs. 2/- per share",
+    "source": "ZENSARTECH_msei.html"
+  },
+  {
+    "symbol": "GUJGASLTD",
+    "ex_date": "2019-01-15",
+    "source": "CML39771.pdf",
+    "share_ratio": 5
+  },
+  {
+    "symbol": "INFIBEAM",
+    "ex_date": "2017-08-31",
+    "source": "FAOP35607.pdf",
+    "share_ratio": 10
+  },
+  {
+    "symbol": "MCDOWELL-N",
+    "ex_date": "2018-06-15",
+    "source": "FAOP37978.pdf",
+    "share_ratio": 5
+  },
+  {
+    "symbol": "SIS",
+    "ex_date": "2020-01-15",
+    "source": "SIS_CMPT43159.pdf",
+    "share_ratio": 2
+  },
+  {
+    "symbol": "LAURUSLABS",
+    "ex_date": "2020-09-29",
+    "source": "CML45582.pdf",
+    "share_ratio": 5
+  }
+]

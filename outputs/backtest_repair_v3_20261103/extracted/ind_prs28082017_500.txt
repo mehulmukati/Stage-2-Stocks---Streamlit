@@ -1,0 +1,64 @@
+
+
+3)      NIFTY 500 Index
+
+The following companies are being excluded:
+
+    Sr.                          Company Name                                   Symbol
+    No.
+     1      Amtek Auto Ltd.                                                AMTEKAUTO
+     2      Anant Raj Ltd.                                                 ANANTRAJ
+     3      Asahi India Glass Ltd.                                         ASAHIINDIA
+     4      FDC Ltd.                                                       FDC
+     5      Federal-Mogul Goetze (India) Ltd.                              FMGOETZE
+     6      Grindwell Norton Ltd.                                          GRINDWELL
+     7      Hindustan Media Vent Ltd.                                      HMVL
+     8      Honeywell Automation India Ltd.                                HONAUT
+     9      JMT Auto Ltd.                                                  JMTAUTOLTD
+    10      KNR Constructions Ltd.                                         KNRCON
+    11      Nitin Fire Protection Industries Ltd.                          NITINFIRE
+    12      Orissa Min Dev Co Ltd.                                         ORISSAMINE
+    13      Punj Lloyd Ltd.                                                PUNJLLOYD
+    14      Ratnamani Metals & Tubes Ltd.                                  RATNAMANI
+    15      Relaxo Footwears Ltd.                                          RELAXO
+    16      Reliance Capital Ltd.                                          RELCAPITAL
+    17      Reliance Industrial Infrastructure Ltd.                        RIIL
+    18      Rolta India Ltd.                                               ROLTA
+    19      Ruchi Soya Industries Ltd.                                     RUCHISOYA
+    20      State Trading Corporation of India Ltd.                        STCINDIA
+    21      Tide Water Oil (India) Ltd.                                    TIDEWATER
+    22      Triveni Turbine Ltd.                                           TRITURBINE
+    23      VST Industries Ltd.                                            VSTIND
+    24      Wonderla Holidays Ltd.                                         WONDERLA
+    25      Zydus Wellness Ltd.                                            ZYDUSWELL
+
+
+The following companies are being included:
+
+    Sr.                           Company Name                                    Symbol
+    No.
+     1      Avenue Supermarts Ltd.                                           DMART
+     2      Bombay Rayon Fashions Ltd.                                       BRFL
+     3      Brigade Enterprises Ltd.                                         BRIGADE
+     4      BSE Ltd.                                                         BSE
+     5      Future Lifestyle Fashions Ltd.                                   FLFL
+     6      Heritage Foods Ltd.                                              HERITGFOOD
+     7      IFB Industries Ltd.                                              IFBIND
+     8      India Tourism Development Corporation Ltd.                       ITDC
+     9      Indiabulls Ventures Ltd.                                         IBVENTURES
+     10     Ingersoll Rand (India) Ltd.                                      INGERRAND
+     11     ITI Ltd.                                                         ITI
+     12     Jaiprakash Power Ventures Ltd.                                   JPPOWER
+     13     Jindal Saw Ltd.                                                  JINDALSAW
+     14     Jindal Stainless (Hisar) Ltd.                                    JSLHISAR
+     15     Jindal Stainless Ltd.                                            JSL
+     16     Linde India Ltd.                                                 LINDEINDIA
+     17     Max Financial Services Ltd.                                      MFSL
+     18     National Fertilizers Ltd.                                        NFL
+     19     Rupa & Company Ltd.                                              RUPA
+     20     Shoppers Stop Ltd.                                               SHOPERSTOP
+     21     Suprajit Engineering Ltd.                                        SUPRAJIT
+     22     Supreme Petrochem Ltd.                                           SUPPETRO
+     23     Time Technoplast Ltd.                                            TIMETECHNO
+     24     United Bank of India                                             UNITEDBNK
+     25     Vesuvius India Ltd.                                              VESUVIUS

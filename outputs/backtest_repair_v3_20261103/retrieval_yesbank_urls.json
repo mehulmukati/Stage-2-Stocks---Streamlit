@@ -1,0 +1,42 @@
+[
+  {
+    "name": "cm12MAR2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/MAR/cm12MAR2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T08:23:56.439783+00:00",
+    "status": 200,
+    "bytes": 71538,
+    "sha256": "687009a396b10c004eed8adb22cff0dcbf060f5b2fe33d759cf5c3562f0da8bb"
+  },
+  {
+    "name": "cm13MAR2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/MAR/cm13MAR2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T08:23:56.441781+00:00",
+    "status": 200,
+    "bytes": 70835,
+    "sha256": "efce5c59f75c63f5289df4d8b9465741a73cf2d2f72f37cccaead79e8fd9f4e8"
+  },
+  {
+    "name": "cm16MAR2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/MAR/cm16MAR2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T08:23:56.442781+00:00",
+    "status": 200,
+    "bytes": 71166,
+    "sha256": "ce8935c3da0f3d65ff4cd014732a8e3b304c7d22720acf8a91eff6df7f5a0fbe"
+  },
+  {
+    "name": "cm17MAR2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/MAR/cm17MAR2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T08:23:56.443796+00:00",
+    "status": 200,
+    "bytes": 70425,
+    "sha256": "ba49fac1039b3efb5694bcef34d2eb0c01ce705cc0486a3f11085bf128088701"
+  },
+  {
+    "name": "cm18MAR2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/MAR/cm18MAR2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T08:23:57.159443+00:00",
+    "status": 200,
+    "bytes": 70726,
+    "sha256": "255cb08713c72a5ce05058d4dbe472794d0083272b0696450a25ed86f67dcfbd"
+  }
+]

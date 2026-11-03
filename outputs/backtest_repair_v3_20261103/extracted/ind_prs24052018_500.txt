@@ -1,0 +1,18 @@
+
+
+1)      NIFTY 500 Index
+
+The following companies are being excluded:
+
+   Sr. No.                        Company Name                                      Symbol
+      1       Arvind Ltd.                                                   ARVIND
+      2       Cox & Kings Ltd.                                              COX&KINGS
+      3       Tata Communications Ltd.                                      TATACOMM
+
+
+The following companies are being included:
+
+   Sr. No.                        Company Name                                      Symbol
+      1       Future Retail Ltd.                                            FRETAIL
+      2       KIOCL Ltd.                                                    KIOCL
+      3       Tube Investments of India Ltd.                                TIINDIA

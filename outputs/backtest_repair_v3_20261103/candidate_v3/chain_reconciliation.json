@@ -1,0 +1,12 @@
+{
+  "forward_conflicts": [],
+  "reverse_conflicts": [],
+  "forward_anchor_matches": true,
+  "reverse_initial_matches": true,
+  "forward_anchor_missing": [],
+  "forward_anchor_extra": [],
+  "reverse_initial_missing": [],
+  "reverse_initial_extra": [],
+  "monthly_comparisons": 39,
+  "monthly_mismatches": 0
+}

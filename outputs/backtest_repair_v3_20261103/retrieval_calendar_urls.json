@@ -1,0 +1,42 @@
+[
+  {
+    "name": "CMTR33746.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR33746.pdf",
+    "retrieved_at": "2026-11-03T08:38:05.758293+00:00",
+    "status": 200,
+    "bytes": 183784,
+    "sha256": "2fd7ee17432434df26154bbdb9de549d3e4a7acd4cf567843513457e9c98fbce"
+  },
+  {
+    "name": "CMTR36475.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR36475.pdf",
+    "retrieved_at": "2026-11-03T08:38:05.759295+00:00",
+    "status": 200,
+    "bytes": 183198,
+    "sha256": "d80ac64d32806f9ada629bc96ba91c6d85546dfde405f4468bbfcb194fdb22fb"
+  },
+  {
+    "name": "CMTR39612.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR39612.pdf",
+    "retrieved_at": "2026-11-03T08:38:05.760294+00:00",
+    "status": 200,
+    "bytes": 205887,
+    "sha256": "3fe8f7356085b75a14efec16e765216d09b99be6f00ff2305d813a864394ab88"
+  },
+  {
+    "name": "CMTR42877.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR42877.pdf",
+    "retrieved_at": "2026-11-03T08:38:05.761296+00:00",
+    "status": 200,
+    "bytes": 192477,
+    "sha256": "635535e35ddc37e79b188d9f21409210cfdef00f44cde1cb980c4f64ed005eaf"
+  },
+  {
+    "name": "ind_prs13052020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs13052020.pdf",
+    "retrieved_at": "2026-11-03T08:38:06.478605+00:00",
+    "status": 200,
+    "bytes": 334047,
+    "sha256": "4bd9b13fe0fdd5fe48358968f335402b77de41f15eb989847216503f14ea9f16"
+  }
+]

@@ -1,0 +1,14 @@
+
+1)      NIFTY 500 Index
+
+The following company is being excluded:
+
+    Sr.                             Company Name                                     Symbol
+    No.
+     1       Reliance Capital Ltd.                                              RELCAPITAL
+
+The following company is being included:
+
+    Sr.                             Company Name                                     Symbol
+    No.
+     1       Max Financial Services Ltd.                                        MFSL

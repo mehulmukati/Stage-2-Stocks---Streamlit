@@ -1,0 +1,41 @@
+
+
+           9)      NIFTY500 Value 50
+
+           The following companies are being excluded:
+
+              Sr. No.                      Company Name                                   Symbol
+                 1       Ashok Leyland Ltd.                                        ASHOKLEY
+                 2       CARE Ratings Ltd.                                         CARERATING
+                 3       DCM Shriram Ltd.                                          DCMSHRIRAM
+                 4       Edelweiss Financial Services Ltd.                         EDELWEISS
+                 5       GHCL Ltd.                                                 GHCL
+                 6       Hindustan Zinc Ltd.                                       HINDZINC
+                 7       IIFL Finance Ltd.                                         IIFL
+                 8       Indiabulls Real Estate Ltd.                               IBREALEST
+                 9       NLC India Ltd.                                            NLCINDIA
+
+
+
+
+              Sr. No.                      Company Name                                    Symbol
+                 10      Rajesh Exports Ltd.                                       RAJESHEXPO
+                 11      SJVN Ltd.                                                 SJVN
+
+           The following companies are being included:
+
+              Sr. No.                      Company Name                                    Symbol
+                 1       Bank of Baroda                                            BANKBARODA
+                 2       Bank of India                                             BANKINDIA
+                 3       Federal Bank Ltd.                                         FEDERALBNK
+                 4       Future Retail Ltd.                                        FRETAIL
+                 5       GAIL (India) Ltd.                                         GAIL
+                 6       Great Eastern Shipping Co. Ltd.                           GESHIP
+                 7       LIC Housing Finance Ltd.                                  LICHSGFIN
+                 8       Punjab National Bank                                      PNB
+                 9       Tata Chemicals Ltd.                                       TATACHEM
+                 10      Tata Motors Ltd.                                          TATAMOTORS
+                 11      Welspun Corp Ltd.                                         WELCORP
+
+
+           C.  Replacements on account of quarterly review of indices:

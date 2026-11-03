@@ -1,0 +1,25 @@
+
+            1)      NIFTY 500
+
+            The following companies are being excluded:
+
+                Sr. No.                        Company Name                                      Symbol
+                  1        Bharat Financial Inclusion Ltd.                               BHARATFIN
+                  2        Capital First Ltd.                                            CAPF
+                  3        Century Textile & Industries Ltd.                             CENTURYTEX
+                  4        HSIL Ltd.                                                     HSIL
+                  5        IIFL Holdings Ltd.                                            IIFL
+
+            The following companies are being included:
+
+                Sr. No.                        Company Name                                      Symbol
+                  1        Adani Green Energy Ltd.                                       ADANIGREEN
+                  2        Fortis Healthcare Ltd.                                        FORTIS
+
+
+
+
+               Sr. No.                      Company Name                                    Symbol
+                 3       RITES Ltd.                                                 RITES
+                 4       Sheela Foam Ltd.                                           SFL
+                 5       Varroc Engineering Ltd.                                    VARROC

@@ -1,0 +1,14 @@
+
+1)      NIFTY 500 Index
+
+The following companies are being excluded:
+
+   Sr. No.                           Company Name                                     Symbol
+      1       Sundaram Finance Ltd.                                              SUNDARMFIN
+      2       Shilpi Cable Tech Ltd.                                             SHILPI
+
+The following companies are being included:
+
+   Sr. No.                           Company Name                                     Symbol
+      1       AU Small Finance Bank Ltd.                                         AUBANK
+      2       Relaxo Footwears Ltd.                                              RELAXO

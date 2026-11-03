@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "vendor_payloads": 72,
+  "vendor_rows_checked": 55756,
+  "raw_source_rows_checked": 300,
+  "raw_archives_sampled": 242,
+  "eligible_daily_price_source_counts": {
+    "protected_local_same_dated_exchange_label": 320918,
+    "staged_identity_supported_vendor_history": 37608,
+    "unavailable": 33754
+  },
+  "unsupported_adjusted_rows": 33754,
+  "ohlc_discrepancy_rows": 246,
+  "double_split_or_distribution_credit": false,
+  "production_price_parser_imported": false,
+  "accepted": false
+}

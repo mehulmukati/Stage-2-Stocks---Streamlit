@@ -15,7 +15,13 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import market_data as md
 from backtest_provenance import sha256, write_manifest_exclusive
-from historical_universe import legal_name_key, match_event_identity, read_bhavcopy, read_nifty500_archive
+from historical_universe import (
+    legal_name_key,
+    match_event_identity,
+    read_bhavcopy,
+    read_nifty500_archive,
+    validate_constituent_cache,
+)
 
 
 def build(evidence, source_events, output, parsed=None):
@@ -24,6 +30,7 @@ def build(evidence, source_events, output, parsed=None):
     for path in sorted(evidence.glob("indices*.zip")):
         cache = parsed / (path.stem + ".parquet") if parsed else None
         frame = pd.read_parquet(cache) if cache and cache.exists() else read_nifty500_archive(path)
+        validate_constituent_cache(frame, path)
         frame["archive_sha256"] = sha256(path)
         observations.append(frame)
     observations = pd.concat(observations, ignore_index=True)
@@ -46,6 +53,13 @@ def build(evidence, source_events, output, parsed=None):
     lifecycle[lifecycle.distinct_security_ids.gt(1)].to_csv(output / "security_lifecycle_worklist.csv")
     src = pd.read_csv(source_events)
     events = src[src.INDEX_NAME.eq("NIFTY 500") & src.EVENT_DATE.between("2017-07-01", "2020-09-01")].copy()
+    # Retain inherited proposal scores for provenance without presenting them as
+    # the status of newly verified identities or of the unaccepted daily chain.
+    events = events.rename(
+        columns={
+            key: "LEGACY_" + key for key in ["CONFIDENCE", "MATCH_SCORE", "RECONSTRUCTION_ALLOWED"] if key in events
+        }
+    )
     decisions = []
     aliases = []
     for event in events.to_dict("records"):
@@ -56,6 +70,8 @@ def build(evidence, source_events, output, parsed=None):
                 "SYMBOL": alias["exchange_symbol"] if alias else None,
                 "SECURITY_ID": alias["security_id"] if alias else None,
                 "IDENTITY_STATUS": "verified" if alias else "unresolved",
+                "EVENT_CHAIN_STATUS": "unverified",
+                "DAILY_RECONSTRUCTION_ACCEPTED": False,
                 "IDENTITY_EVIDENCE": json.dumps(alias, sort_keys=True) if alias else "",
                 "REASON": reason,
                 "RETRIEVED_AT": "2026-11-03",

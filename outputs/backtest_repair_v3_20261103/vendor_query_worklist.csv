@@ -1,0 +1,145 @@
+historical_symbol,historical_isins,vendor_query_symbol,identity_basis,possible_aliases
+8KMILES,INE650K01021,SECURKLOUD,current NSE master exact ISIN,SECURKLOUD
+ABAN,INE421A01028,ABAN,current NSE master exact ISIN,ABAN
+ADANIGAS,INE399L01023,ATGL,current NSE master exact ISIN,ATGL
+ADANITRANS,INE931S01010,ADANIENSOL,current NSE master exact ISIN,ADANIENSOL
+AEGISCHEM,INE208C01025,AEGISLOG,current NSE master exact ISIN,AEGISLOG
+AKZOINDIA,INE133A01011,AKZOINDIA,historical exchange label query; identity not certified,
+ALBK,INE428A01015,ALBK,historical exchange label query; identity not certified,
+AMARAJABAT,INE885A01032,ARE&M,current NSE master exact ISIN,ARE&M
+AMTEKAUTO,INE130C01021,AMTEKAUTO,historical exchange label query; identity not certified,
+ANDHRABANK,INE434A01013,ANDHRABANK,historical exchange label query; identity not certified,
+BAJAJCORP,INE933K01021,BAJAJCON,current NSE master exact ISIN,BAJAJCON
+BALLARPUR,INE294A01037,BALLARPUR,historical exchange label query; identity not certified,
+BGRENERGY,INE661I01014,BGRENERGY,current NSE master exact ISIN,BGRENERGY
+BHARATFIN,INE180K01011,BHARATFIN,historical exchange label query; identity not certified,
+BHUSANSTL,INE824B01021,BHUSANSTL,historical exchange label query; identity not certified,
+BRFL,INE589G01011,BRFL,historical exchange label query; identity not certified,
+CADILAHC,INE010B01027,ZYDUSLIFE,current NSE master exact ISIN,ZYDUSLIFE
+CAPF,INE688I01017,CAPF,historical exchange label query; identity not certified,
+CENTURYTEX,INE055A01016,ABREL,current NSE master exact ISIN,ABREL
+COFFEEDAY,INE335K01011,COFFEEDAY,current NSE master exact ISIN,COFFEEDAY
+CORPBANK,INE112A01023,CORPBANK,historical exchange label query; identity not certified,
+COX&KINGS,INE008I01026,COX&KINGS,historical exchange label query; identity not certified,
+DALMIABHA,INE439L01019,DALMIABHA,historical exchange label query; identity not certified,
+DENABANK,INE077A01010,DENABANK,historical exchange label query; identity not certified,
+DHFL,INE202B01012,DHFL,historical exchange label query; identity not certified,
+EQUITAS,INE988K01017,EQUITAS,historical exchange label query; identity not certified,
+EROSMEDIA,INE416L01017,EROSMEDIA,historical exchange label query; identity not certified,
+ESSELPACK,INE255A01020,EPL,current NSE master exact ISIN,EPL
+EXCELCROP,INE223G01017,EXCELCROP,historical exchange label query; identity not certified,
+FAGBEARING,INE513A01014,SCHAEFFLER,bounded historical exact ISIN exchange alias,SCHAEFFLER
+GATI,INE152B01027,GATI,historical exchange label query; identity not certified,
+GAYAPROJ,INE336H01023,GAYAPROJ,current NSE master exact ISIN,GAYAPROJ
+GDL,INE852F01015,GDL,historical exchange label query; identity not certified,
+GEPIL,INE878A01011,GVPIL,current NSE master exact ISIN,GVPIL
+GET&D,INE200A01026,GVT&D,current NSE master exact ISIN,GVT&D
+GMRINFRA,INE776C01039,GMRAIRPORT,current NSE master exact ISIN,GMRAIRPORT
+GRUH,INE580B01029,GRUH,historical exchange label query; identity not certified,
+GSKCONS,INE264A01014,GSKCONS,historical exchange label query; identity not certified,
+GSPL,INE246F01010,GSPL,historical exchange label query; identity not certified,
+GUJFLUORO,INE538A01037,GFLLIMITED,current NSE master exact ISIN,GFLLIMITED
+GUJGASLTD,INE844O01022|INE844O01030,GUJENERGY,current NSE master exact ISIN,GUJENERGY
+GVKPIL,INE251H01024,GVKPIL,current NSE master exact ISIN,GVKPIL
+HCL-INSYS,INE236A01020,HCL-INSYS,current NSE master exact ISIN,HCL-INSYS
+HDFC,INE001A01036,HDFC,historical exchange label query; identity not certified,
+HDIL,INE191I01012,HDIL,current NSE master exact ISIN,HDIL
+HEXAWARE,INE093A01033,HEXAWARE,historical exchange label query; identity not certified,
+HMVL,INE871K01015,HMVL,current NSE master exact ISIN,HMVL
+HSIL,INE415A01038,AGI,current NSE master exact ISIN,AGI
+HTMEDIA,INE501G01024,HTMEDIA,current NSE master exact ISIN,HTMEDIA
+IBREALEST,INE069I01010,EMBDL,current NSE master exact ISIN,EMBDL
+IBULHSGFIN,INE148I01020,SAMMAANCAP,current NSE master exact ISIN,SAMMAANCAP
+IBULISL,INE126M01010,IBULLSLTD,current NSE master exact ISIN,IBULLSLTD
+IBVENTURES,INE274G01010,IBVENTURES,historical exchange label query; identity not certified,
+IDFC,INE043D01016,IDFC,historical exchange label query; identity not certified,
+IDFCBANK,INE092T01019,IDFCFIRSTB,current NSE master exact ISIN,IDFCFIRSTB
+IIFLWAM,INE466L01020,IIFLWAM,historical exchange label query; identity not certified,
+IL&FSTRANS,INE975G01012,IL&FSTRANS,current NSE master exact ISIN,IL&FSTRANS
+INFIBEAM,INE483S01012|INE483S01020,INFIBEAM,historical exchange label query; identity not certified,
+INFRATEL,INE121J01017,INDUSTOWER,current NSE master exact ISIN,INDUSTOWER
+INOXLEISUR,INE312H01016,INOXLEISUR,historical exchange label query; identity not certified,
+ISEC,INE763G01038,ISEC,historical exchange label query; identity not certified,
+ITDCEM,INE686A01026,CEMPRO,current NSE master exact ISIN,CEMPRO
+JBCHEPHARM,INE572A01028,JBCHEPHARM,historical exchange label query; identity not certified,
+JBFIND,INE187A01017,JBFIND,historical exchange label query; identity not certified,
+JCHAC,INE782A01015,BOSCH-HCIL,current NSE master exact ISIN,BOSCH-HCIL
+JETAIRWAYS,INE802G01018,JETAIRWAYS,historical exchange label query; identity not certified,
+JMTAUTOLTD,INE988E01036,JMTAUTOLTD,historical exchange label query; identity not certified,
+JPASSOCIAT,INE455F01025,JPASSOCIAT,historical exchange label query; identity not certified,
+JSLHISAR,INE455T01018,JSLHISAR,historical exchange label query; identity not certified,
+JUBILANT,INE700A01033,JUBLPHARMA,current NSE master exact ISIN,JUBLPHARMA
+KALPATPOWR,INE220B01022,KPIL,current NSE master exact ISIN,KPIL
+KIOCL,INE880L01014,KIOCL,current NSE master exact ISIN,KIOCL
+KPIT,INE836A01035,BSOFT,current NSE master exact ISIN,BSOFT
+KWALITY,INE775B01025,KWALITY,historical exchange label query; identity not certified,
+L&TFH,INE498L01015,LTF,current NSE master exact ISIN,LTF
+LAKSHVILAS,INE694C01018,LAKSHVILAS,historical exchange label query; identity not certified,
+LAXMIMACH,INE269B01029,LMW,current NSE master exact ISIN,LMW
+LTI,INE214T01019,LTM,current NSE master exact ISIN,LTM
+MAGMA,INE511C01022,POONAWALLA,current NSE master exact ISIN,POONAWALLA
+MAHINDCIE,INE536H01010,CIEINDIA,current NSE master exact ISIN,CIEINDIA
+MANPASAND,INE122R01018,MANPASAND,historical exchange label query; identity not certified,
+MAXINDIA,INE153U01017,MAXINDIA,historical exchange label query; identity not certified,
+MCDOWELL-N,INE854D01016|INE854D01024,UNITDSPR,current NSE master exact ISIN,UNITDSPR
+MCLEODRUSS,INE942G01012,MCLEODRUSS,current NSE master exact ISIN,MCLEODRUSS
+MERCK,INE199A01012,PGHL,current NSE master exact ISIN,PGHL
+MINDAIND,INE405E01023,UNOMINDA,current NSE master exact ISIN,UNOMINDA
+MINDTREE,INE018I01017,MINDTREE,historical exchange label query; identity not certified,
+MONSANTO,INE274B01011,MONSANTO,historical exchange label query; identity not certified,
+MOTHERSUMI,INE775A01035,MOTHERSON,current NSE master exact ISIN,MOTHERSON
+NAVKARCORP,INE278M01019,NAVKARCORP,current NSE master exact ISIN,NAVKARCORP
+NBVENTURES,INE725A01022,NBVENTURES,historical exchange label query; identity not certified,
+NIITTECH,INE591G01017,COFORGE,bounded historical exact ISIN exchange alias,COFORGE
+NITINFIRE,INE489H01020,NITINFIRE,historical exchange label query; identity not certified,
+ORIENTBANK,INE141A01014,ORIENTBANK,historical exchange label query; identity not certified,
+ORIENTREF,INE743M01012,RHIM,current NSE master exact ISIN,RHIM
+PEL,INE140A01024,PEL,historical exchange label query; identity not certified,
+PHILIPCARB,INE602A01015|INE602A01023,PHILIPCARB,historical exchange label query; identity not certified,
+POLARIS,INE763A01023,POLARIS,historical exchange label query; identity not certified,
+PRISMCEM,INE010A01011,PRSMJOHNSN,current NSE master exact ISIN,PRSMJOHNSN
+PUNJLLOYD,INE701B01021,PUNJLLOYD,historical exchange label query; identity not certified,
+PVR,INE191H01014,PVRINOX,current NSE master exact ISIN,PVRINOX
+RCOM,INE330H01018,RCOM,current NSE master exact ISIN,RCOM
+RDEL,INE542F01012,RDEL,historical exchange label query; identity not certified,
+RELCAPITAL,INE013A01015,RELCAPITAL,historical exchange label query; identity not certified,
+RHFL,INE217K01011,RHFL,current NSE master exact ISIN,RHFL
+RIIL,INE046A01015,RIIL,current NSE master exact ISIN,RIIL
+RNAM,INE298J01013,NAM-INDIA,current NSE master exact ISIN,NAM-INDIA
+RNAVAL,INE542F01012,RNAVAL,historical exchange label query; identity not certified,
+ROLTA,INE293A01013,ROLTA,historical exchange label query; identity not certified,
+RUCHISOYA,INE619A01027,RUCHISOYA,historical exchange label query; identity not certified,
+SADBHIN,INE764L01010,SADBHIN,current NSE master exact ISIN,SADBHIN
+SEQUENT,INE807F01027,VIYASH,current NSE master exact ISIN,VIYASH
+SHILPI,INE510K01019,SHILPI,historical exchange label query; identity not certified,
+SHRIRAMCIT,INE722A01011,SHRIRAMCIT,historical exchange label query; identity not certified,
+SMLISUZU,INE294B01019,SMLMAH,current NSE master exact ISIN,SMLMAH
+SPICEJET,INE285B01017,SPICEJET,historical exchange label query; identity not certified,
+SPTL,INE501W01021,SPTL,historical exchange label query; identity not certified,
+SREINFRA,INE872A01014,SREINFRA,historical exchange label query; identity not certified,
+SRTRANSFIN,INE721A01013,SRTRANSFIN,historical exchange label query; identity not certified,
+STCINDIA,INE655A01013,STCINDIA,current NSE master exact ISIN,STCINDIA
+STRTECH,INE089C01029,STLTECH,current NSE master exact ISIN,STLTECH
+SUNCLAYLTD,INE105A01035,TVSHLTD,current NSE master exact ISIN,TVSHLTD
+SUPPETRO,INE663A01017,SUPPETRO,historical exchange label query; identity not certified,
+SWANENERGY,INE665A01038,SWANCORP,current NSE master exact ISIN,SWANCORP
+SYNDIBANK,INE667A01018,SYNDIBANK,historical exchange label query; identity not certified,
+TATACOFFEE,INE493A01027,TATACOFFEE,historical exchange label query; identity not certified,
+TATAGLOBAL,INE192A01025,TATACONSUM,current NSE master exact ISIN,TATACONSUM
+TATAMOTORS,INE155A01022,TMPV,current NSE master exact ISIN,TMPV
+TATAMTRDVR,IN9155A01020,TATAMTRDVR,historical exchange label query; identity not certified,
+TATASPONGE,INE674A01014,TATASPONGE,historical exchange label query; identity not certified,
+TATASTLBSL,INE824B01021,TATASTLBSL,historical exchange label query; identity not certified,
+TCNSBRANDS,INE778U01029,TCNSBRANDS,historical exchange label query; identity not certified,
+TECHNO,INE286K01024,TECHNO,historical exchange label query; identity not certified,
+TIDEWATER,INE484C01022,TIDEWATER,historical exchange label query; identity not certified,
+TIFIN,INE149A01033,CHOLAHLDNG,current NSE master exact ISIN,CHOLAHLDNG
+TV18BRDCST,INE886H01027,TV18BRDCST,historical exchange label query; identity not certified,
+UJJIVAN,INE334L01012,UJJIVAN,historical exchange label query; identity not certified,
+UNITECH,INE694A01020,UNITECH,current NSE master exact ISIN,UNITECH
+UNITEDBNK,INE695A01019,UNITEDBNK,historical exchange label query; identity not certified,
+VIDEOIND,INE703A01011,VIDEOIND,historical exchange label query; identity not certified,
+VIJAYABANK,INE705A01016,VIJAYABANK,historical exchange label query; identity not certified,
+WABCOINDIA,INE342J01019,ZFCVINDIA,current NSE master exact ISIN,ZFCVINDIA
+WELSPUNIND,INE192B01031,WELSPUNLIV,current NSE master exact ISIN,WELSPUNLIV
+ZEELEARN,INE565L01011,ZEELEARN,current NSE master exact ISIN,ZEELEARN

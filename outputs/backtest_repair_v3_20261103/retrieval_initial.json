@@ -1,0 +1,202 @@
+[
+  {
+    "name": "press_release.html",
+    "url": "https://www.niftyindices.com/press-release",
+    "retrieved_at": "2026-11-03T08:14:56.208441+00:00",
+    "status": 200,
+    "bytes": 666745,
+    "sha256": "6e5c8f15978ff7a7c2811ca96f29d7896482138eaaf977657066643118fba564"
+  },
+  {
+    "name": "AVANTIFEED_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=AVANTIFEED&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:14:56.209441+00:00",
+    "status": 200,
+    "bytes": 155422,
+    "sha256": "9d576a1f73b463e0f3583388b990090196859ac19ec030f0bcf8682de66b658f"
+  },
+  {
+    "name": "BRITANNIA_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=BRITANNIA&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:14:56.212445+00:00",
+    "status": 200,
+    "bytes": 156818,
+    "sha256": "42fe7ea9db97d67e8c0b76b776731871daadd3949d3008d20760de239b0bea22"
+  },
+  {
+    "name": "CANFINHOME_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=CANFINHOME&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:14:56.213436+00:00",
+    "status": 200,
+    "bytes": 153973,
+    "sha256": "c02dc141126abc389008573bd71fba3a2aedad8723fd6dccbe8ae28e9f7d8c94"
+  },
+  {
+    "name": "CHOLAFIN_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=CHOLAFIN&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:14:57.127585+00:00",
+    "status": 200,
+    "bytes": 165431,
+    "sha256": "aaf710b13147c803869af0ab0192b1665cfd0af878a70b61356f478f95be8905"
+  },
+  {
+    "name": "CONCOR_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=CONCOR&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:01.570410+00:00",
+    "status": 200,
+    "bytes": 178182,
+    "sha256": "7ea41b73f9a0a6bffb1a8119be6140011f713651a42b847274509cb1da86d1d8"
+  },
+  {
+    "name": "EICHERMOT_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=EICHERMOT&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:02.433774+00:00",
+    "status": 200,
+    "bytes": 151637,
+    "sha256": "2728a32fcc286db3331361e3c93465cdb8ca0b08e07b914812150b7210b67b0d"
+  },
+  {
+    "name": "GUJGASLTD_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=GUJGASLTD&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:03.721529+00:00",
+    "status": 200,
+    "bytes": 129192,
+    "sha256": "32674f7bc78bc087cfbb5978359ca64cdfd8183836c6da806e30a14ddeb467f2"
+  },
+  {
+    "name": "HDFCBANK_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=HDFCBANK&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:03.738533+00:00",
+    "status": 200,
+    "bytes": 153482,
+    "sha256": "780b2330f238135366b7658db73d51d93fee161bba4bea542b6f676600c398d3"
+  },
+  {
+    "name": "HERITGFOOD_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=HERITGFOOD&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:04.035829+00:00",
+    "status": 200,
+    "bytes": 149226,
+    "sha256": "f3a5a54150ef2c10dcf8a4448a61f3ca0c4865ec92a2ab801a8f3ef1b6b4f714"
+  },
+  {
+    "name": "IEX_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=IEX&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:04.115273+00:00",
+    "status": 200,
+    "bytes": 149987,
+    "sha256": "4301b368e489d5cf9f3f793542f7580661f7a45142922fb67b154908cb9b0e13"
+  },
+  {
+    "name": "IGL_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=IGL&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:04.119006+00:00",
+    "status": 200,
+    "bytes": 157449,
+    "sha256": "f09cc3362829d22c9a875ac9adb50f1c7053c921f97e9b9c3a5cfda057cd01fa"
+  },
+  {
+    "name": "INFIBEAM_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=INFIBEAM&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:04.264254+00:00",
+    "status": 200,
+    "bytes": 129190,
+    "sha256": "d0da553baa092f8d165ef25ee94dc26c8481792bd9fa420d5bff7375aca8f363"
+  },
+  {
+    "name": "IRCON_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=IRCON&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:04.538393+00:00",
+    "status": 200,
+    "bytes": 147818,
+    "sha256": "dfe93808ac1c59a758daf51fef80a19a50a1f19b7ca20145e88a8cc7a566eefd"
+  },
+  {
+    "name": "LAURUSLABS_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=LAURUSLABS&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:04.831379+00:00",
+    "status": 200,
+    "bytes": 143992,
+    "sha256": "5c7383392f619289b201152a664bf66252cfdaec41153205c63b7e72e64d6bd8"
+  },
+  {
+    "name": "MCDOWELL-N_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=MCDOWELL-N&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:04.849370+00:00",
+    "status": 200,
+    "bytes": 129194,
+    "sha256": "154bed7baee0dd122311066fc420402db6cb2085af57551433b7914a294eca0f"
+  },
+  {
+    "name": "NAVINFLUOR_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=NAVINFLUOR&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:05.120433+00:00",
+    "status": 200,
+    "bytes": 171089,
+    "sha256": "7c95595fcd822307cbf5d79ddaa7b3f5dc67084d3c8a20b98c98a5b5d386ddf6"
+  },
+  {
+    "name": "NBCC_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=NBCC&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:05.217060+00:00",
+    "status": 200,
+    "bytes": 155988,
+    "sha256": "92e5b2ba6e0ec73124abe65ba6af55b827af682a85a748f475b10b6ea2cb596b"
+  },
+  {
+    "name": "SIS_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SIS&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:05.261416+00:00",
+    "status": 200,
+    "bytes": 139979,
+    "sha256": "4c226b7b9135ec6ca5bd4be0646da723a2cb95f8400758fbaeaca1672cbd2d7d"
+  },
+  {
+    "name": "SUNTECK_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=SUNTECK&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:05.301969+00:00",
+    "status": 200,
+    "bytes": 146679,
+    "sha256": "fcf679a7ee785426623f1146a555f23cbbe511a20ad1f09b5a6f81812f249e7e"
+  },
+  {
+    "name": "TRIDENT_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=TRIDENT&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:05.355554+00:00",
+    "status": 200,
+    "bytes": 169309,
+    "sha256": "a968efd33938c00b30d459801d309cd39ac07a89ae5680ba54e47ef4c898833d"
+  },
+  {
+    "name": "VINATIORGA_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=VINATIORGA&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:05.755118+00:00",
+    "status": 200,
+    "bytes": 151634,
+    "sha256": "b4f88e62f4eadf5f701b8f20001ceed540d1e67d9165c6a675c9ad241ef3c6b4"
+  },
+  {
+    "name": "YESBANK_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=YESBANK&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:05.845388+00:00",
+    "status": 200,
+    "bytes": 142837,
+    "sha256": "34187a6b758661c8b14a701e312913612af84d00160f253e9e6b116c31b676a0"
+  },
+  {
+    "name": "ZENSARTECH_msei.html",
+    "url": "https://www.msei.in/corporates/corporate-securities-information/corporate-update/default?symbol=ZENSARTECH&type=4&vmode=vm",
+    "retrieved_at": "2026-11-03T08:15:06.772046+00:00",
+    "status": 200,
+    "bytes": 167889,
+    "sha256": "bd6e663d4d91f6bd8ac5e204e81084524cfd332e524f1e387dfc5773f3bb276d"
+  },
+  {
+    "name": "SIS_CMPT43159.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMPT43159.pdf",
+    "retrieved_at": "2026-11-03T08:15:06.817132+00:00",
+    "status": 200,
+    "bytes": 379690,
+    "sha256": "f2c6a183942d4bf286dabecf9a48e711c66752b860f3833a8283316cc7b1dfd6"
+  }
+]

@@ -1,0 +1,25 @@
+
+
+1)       NIFTY 500 Index
+
+The following companies are being excluded:
+
+ Sr. No.     Company Name                                                 Symbol
+     1       Dishman Pharmaceuticals & Chemicals Ltd.                     DISHMAN
+     2       Max Financial Services Ltd.                                  MFSL
+     3       OCL India Ltd.                                               OCL
+     4       Star Ferro & Cement Ltd.                                     SFCL
+
+The following companies are being included:
+
+  Sr. No.    Company Name                                                 Symbol
+     1       Advanced Enzyme Tech Ltd.                                    ADVENZYMES
+     2       Asahi India Glass Ltd.                                       ASAHIINDIA
+     3       RBL Bank Ltd.                                                RBLBANK
+     4       Ujjivan Financial Services Ltd.                              UJJIVAN
+
+
+
+
+
+                                                                                                        1

@@ -1,0 +1,25 @@
+
+
+           1)      NIFTY 500
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Allahabad Bank                                             ALBK
+                 2       Andhra Bank                                                ANDHRABANK
+                 3       Corporation Bank                                           CORPBANK
+                 4       Max India Ltd.                                             MAXINDIA
+                 5       Oriental Bank of Commerce                                  ORIENTBANK
+                 6       Syndicate Bank                                             SYNDIBANK
+                 7       Tata Chemicals Ltd.                                        TATACHEM
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Aarti Industries Ltd.                                      AARTIIND
+                 2       Asahi India Glass Ltd.                                     ASAHIINDIA
+                 3       Indiamart Intermesh Ltd.                                   INDIAMART
+                 4       Spandana Sphoorty Financial Ltd.                           SPANDANA
+                 5       Spicejet Ltd.                                              SPICEJET
+                 6       Triveni Turbine Ltd.                                       TRITURBINE
+                 7       Westlife Development Ltd.                                  WESTLIFE

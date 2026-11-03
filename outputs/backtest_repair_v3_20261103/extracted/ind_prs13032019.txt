@@ -1,0 +1,362 @@
+                                                     Press Release
+
+                                                                                                   March 13, 2019
+
+                                Replacements and revision in criteria of indices
+
+           The Index Maintenance Sub-Committee (IMSC) of NSE Indices Limited has decided to make the
+           replacements of stocks in various indices as part of its periodic review along with revision in the
+           selection criteria of NIFTY Growth Sectors 15 and NIFTY CPSE indices as given hereunder.
+
+           These changes shall become effective from March 29, 2019 (close of March 28, 2019).
+
+           A.  Quarterly Review of indices:
+
+           1)       NIFTY Alpha 50
+
+           The following companies are being excluded:
+
+               Sr. No.                       Company Name                                    Symbol
+                  1       Adani Transmission Ltd.                                     ADANITRANS
+                  2       Biocon Ltd.                                                 BIOCON
+                  3       Godrej Consumer Products Ltd.                               GODREJCP
+                  4       Graphite India Ltd.                                         GRAPHITE
+                  5       Gruh Finance Ltd.                                           GRUH
+                  6       H.E.G. Ltd.                                                 HEG
+                  7       Housing Development Finance Corporation Ltd.                HDFC
+                  8       JSW Steel Ltd.                                              JSWSTEEL
+                  9       Jubilant Life Sciences Ltd.                                 JUBILANT
+                 10       Page Industries Ltd.                                        PAGEIND
+                 11       Sonata Software Ltd.                                        SONATSOFTW
+                 12       Sterlite Technologies Ltd.                                  STRTECH
+                 13       Tata Elxsi Ltd.                                             TATAELXSI
+
+           The following companies are being included:
+
+               Sr. No.                       Company Name                                    Symbol
+                  1       Adani Power Ltd.                                            ADANIPOWER
+                  2       Aditya Birla Fashion and Retail Ltd.                        ABFRL
+                  3       Asian Paints Ltd.                                           ASIANPAINT
+                  4       Astral Poly Technik Ltd.                                    ASTRAL
+                  5       Aurobindo Pharma Ltd.                                       AUROPHARMA
+                  6       Axis Bank Ltd.                                              AXISBANK
+                  7       Gujarat Fluorochemicals Ltd.                                GUJFLUORO
+
+
+
+
+               Sr. No.                      Company Name                                    Symbol
+                 8       ICICI Lombard General Insurance Company Ltd.               ICICIGI
+                 9       Justdial Ltd.                                              JUSTDIAL
+                 10      Muthoot Finance Ltd.                                       MUTHOOTFIN
+                 11      RBL Bank Ltd.                                              RBLBANK
+                 12      UPL Ltd.                                                   UPL
+                 13      Wipro Ltd.                                                 WIPRO
+
+           2)      NIFTY High Beta 50
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Adani Transmission Ltd.                                    ADANITRANS
+                 2       Indian Bank                                                INDIANB
+                 3       Infibeam Avenues Ltd.                                      INFIBEAM
+                 4       IRB Infrastructure Developers Ltd.                         IRB
+                 5       Jain Irrigation Systems Ltd.                               JISLJALEQS
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Adani Power Ltd.                                           ADANIPOWER
+                 2       Cholamandalam Investment and Finance Co. Ltd.              CHOLAFIN
+                 3       Escorts Ltd.                                               ESCORTS
+                 4       Justdial Ltd.                                              JUSTDIAL
+                 5       V.I.P. Industries Ltd.                                     VIPIND
+
+           3)      NIFTY Low Volatility 50
+
+           The following companies are being excluded:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       Eicher Motors Ltd.                                         EICHERMOT
+                 2       Indraprastha Gas Ltd.                                      IGL
+                 3       TVS Motor Company Ltd.                                     TVSMOTOR
+                 4       Zee Entertainment Enterprises Ltd.                         ZEEL
+
+           The following companies are being included:
+
+               Sr. No.                      Company Name                                    Symbol
+                 1       ABB India Ltd.                                             ABB
+                 2       Alkem Laboratories Ltd.                                    ALKEM
+                 3       Mahanagar Gas Ltd.                                         MGL
+                 4       PI Industries Ltd.                                         PIIND
+
+
+
+
+             4)       NIFTY100 Low Volatility 30: No Change
+
+
+             B.   Revision in the criteria and semi-annual review of NIFTY Growth Sectors 15 index
+
+              Sector and stock review: (Periodicity: once in 2 years)
+                                      Existing                                                      Revised
+                  For   2   year   period,   there   will   be   4          No Change.
+                   observations (i.e. 2 yearly P/E numbers and
+                   2 P/B numbers for each index). Out of 4
+                   observations, sectors that have higher P/E
+                   and P/B in at least 3 out of 4 observations
+                   are selected for inclusion in index.
+                  From   selected   sectors,   stocks   having
+                   derivatives available are identified.
+                  The    stocks    are    then    ranked    in    the
+                   descending   order   of   average   free   float
+                   market  capitalization  and  top  50%  of  the
+                   stocks   are   carried   forward   for   further
+                   scrutiny.
+                  Stocks   having   positive   EPS   are   only
+                   considered.
+
+                  The remaining securities after above step                    The remaining stocks after above step are
+                   are then ranked by EPS growth frequency.                      then  ranked  in  the  descending  order  of
+                                                                                 EPS growth frequency and then free-float
+                                                                                 market capitalization.
+                                                                                EPS  growth  frequency  is  measured  as
+                                                                                 number  of  instances,  a  company  would
+                                                                                 have reported positive quarter on quarter
+                                                                                 growth in preceding 4 quarters.
+                  All securities that are not there in the index               From  the  above  list,  include  one  stock
+                   due   to   sector   exclusion,   shall   then   be            each  from  the  eligible  sectors  based  on
+                   replaced  by  the  securities  in  replacement                greater EPS growth frequency (subject to
+                   pool  having  EPS  growth  frequency  of  4,                  minimum  EPS  growth  frequency  of  3)
+                   better free float market capitalization (For                  and within same EPS growth frequency,
+                   calculation of EPS growth, quarterly EPS                      based on free float market capitalization
+                   for last 4 quarters are compared).                            across all eligible sectors.
+                                                                                Remaining stocks shall be selected based
+                                                                                 on  greater  EPS  growth  frequency  and
+                                                                                 within   same   EPS   growth   frequency,
+                                                                                 based on free float market capitalization
+                                                                                 across all eligible sectors.
+                  Effective   3rd   March   2014   companies                   Effective 3rd March 2014 at the time of
+                   which are IRDA dividend norms compliant                       review,  stocks  meeting  dividend  norms
+                   are considered eligible to be included in the                 specified    by    IRDA    are    considered
+                   index.                                                        eligible.
+
+
+
+
+              Index Review: Stock review: (Periodicity: semi-annual)
+                                       Existing                                                     Revised
+                  Once in six months, stocks are reviewed in                No Change.
+                   order  to  find  out  the  better  replacement
+                   available from the selected sectors.
+                  From selected (eligible) sectors, stocks on
+                   which derivatives are available with
+                   positive EPS in latest quarter shall form
+                   part of replacement pool.
+
+                  Replacement shall be carried out, if better                   At   the   time   of   semi-annual   review,
+                   security  is  available  in  replacement  pool                 replacement shall be made from the same
+                   from  same  sector  with       1.5  times  the  free           sector     with     greater     EPS     growth
+                   float market capitalization and better EPS                     frequency  and  greater  free  float  market
+                   growth     frequency     than     any     index                capitalization than the stock that is being
+                   constituent.                                                   replaced.
+                                                                                 Further, replacement shall also be made
+                                                                                  from  the  same  sector  with  same  EPS
+                                                                                  growth  frequency  and  free  float  market
+                                                                                  capitalization  1.5  times  higher  than  the
+                                                                                  stock that is being replaced.
+
+                  In   case   of   replacement   due   to   non-                In case of scheme of arrangement or non             -
+                   availability  of  derivatives  or  Scheme  of                  availability of F&O in any of the index
+                   arrangement   or   negative   EPS   of   any                   constituent, a replacement shall be made
+                   security,  then  security  from  any  sector                   from   the   list   of   stocks   arranged   in
+                   having highest EPS growth frequency and                        descending    order    of    EPS    growth
+                   free     float     market     capitalization     in            frequency      and      free-float      market
+                                                                                  capitalization   within   the   same   secto        r
+                   replacement pool shall be included in the                      subject    to    minimum    EPS    growth
+                   index.                                                         frequency of 3.
+                                                                                 In   case   of   non-availability   of   stocks
+                                                                                  meeting      the      above      requirement,
+                                                                                  replacement   shall   be   made   based   on
+                                                                                  greater  EPS  growth  frequency  and  free
+                                                                                  float   market   capitalization   across   all
+                                                                                  eligible sectors.
+                                                                                 At  the  time  of  review,  stocks  meeting
+                                                                                  dividend  norms  specified  by  IRDA  are
+                                                                                  considered eligible.
+
+             In accordance with the revised criteria, semi-annual review of NIFTY Growth Sectors 15 index
+             has been conducted as given hereunder:
+
+             The following companies are being excluded:
+
+                 Sr. No.                           Company Name                                            Symbol
+                    1        Dabur India Ltd.                                                     DABUR
+                    2        Eicher Motors Ltd.                                                   EICHERMOT
+
+
+
+
+
+                Sr. No.                         Company Name                                        Symbol
+                   3       Hero MotoCorp Ltd.                                               HEROMOTOCO
+                   4       I T C Ltd.                                                       ITC
+                   5       Lupin Ltd.                                                       LUPIN
+                   6       Mahindra & Mahindra Ltd.                                         M&M
+                   7       Marico Ltd.                                                      MARICO
+                   8       Sun Pharmaceutical Industries Ltd.                               SUNPHARMA
+
+            The following companies are being included:
+
+                Sr. No.                         Company Name                                        Symbol
+                   1       Bajaj Finance Ltd.                                               BAJFINANCE
+                   2       Divi's Laboratories Ltd.                                         DIVISLAB
+                   3       Exide Industries Ltd.                                            EXIDEIND
+                   4       HDFC Bank Ltd.                                                   HDFCBANK
+                   5       IndusInd Bank Ltd.                                               INDUSINDBK
+                   6       Kotak Mahindra Bank Ltd.                                         KOTAKBANK
+                   7       RBL Bank Ltd.                                                    RBLBANK
+                   8       Yes Bank Ltd.                                                    YESBANK
+
+            C.  Revision in the criteria for NIFTY CPSE index
+
+            The IMSC has decided to make the following change in criteria for selection of stocks in NIFTY
+            CPSE index with immediate effect:
+
+                                    Existing                                                  Revised
+             Eligible Universe:                                         Eligible Universe:
+
+                 Stocks having more than 53% government                   Stocks     having     more     than     52%
+                  holding   (stake   via   Govt.   of   India   or          government  holding  (stake  via Govt.  of
+                  President    of    India)    under    promoter            India   or   President   of   India)   under
+                  category would be eligible.                               promoter category would be eligible.
+
+
+            About National Stock Exchange of India Limited (NSE):
+            The National Stock Exchange of India Ltd. (NSE) is the leading stock exchange in India and the
+            second largest in the world by nos. of trades in equity shares from January to June 2018, according
+            to  World  Federation  of  Exchanges  (WFE)  report.  NSE  was  the  first  exchange  in  India  to
+            implement electronic or screen-based trading. It began operations in 1994 and is ranked as the
+            largest stock exchange in India in terms of total and average daily turnover for equity shares every
+            year  since  1995,  based  on  SEBI  data.  NSE  has  a  fully-integrated  business  model  comprising
+            exchange listings, trading services, clearing and settlement services, indices, market data feeds,
+            technology solutions and financial education offerings. NSE also oversees compliance by trading
+            and  clearing  members  with  the  rules  and  regulations  of  the  exchange.  NSE  is  a  pioneer  in
+            technology  and  ensures  the  reliability  and  performance  of  its  systems  through  a  culture  of
+            innovation and investment in technology. NSE believes that the scale and breadth of its products
+
+
+
+            and services, sustained leadership positions across multiple asset classes in India and globally
+            enable it to be highly reactive to market demands and changes and deliver innovation in both
+            trading and non-trading businesses to provide high-quality data and services to market participants
+            and clients.
+
+            For more information, please visit: www.nseindia.com
+
+            About NSE Indices Limited:
+            NSE  Indices  Limited  (formerly  known  as  India  Index  Services  &  Products                     Ltd.   - IISL),  a
+            subsidiary of NSE, provides a variety of indices and index related services for the capital markets.
+            The company focuses on the index as a core product. The company owns and manages a portfolio
+            of indices under the NIFTY brand of NSE, including the flagship index, the NIFTY 50. NIFTY
+            equity indices  comprises of broad-based benchmark indices, sectoral indices, strategy indices,
+            thematic  indices  and  customised  indices.  NSE  Indices  Limited  also  maintains  fixed  income
+            indices based on Government of India securities, corporate bonds, money market instruments and
+            hybrid indices. Many investment products based on NIFTY indices have been developed within
+            India and abroad. These include index based derivatives traded on NSE, NSE IFSC, Singapore
+            Exchange Ltd. (SGX) and Taiwan Futures Exchange (TAIFEX) and a number of index funds and
+            exchange  traded  funds.  The  flagship  'NIFTY  50'  index  is  widely  tracked  and  traded  as  the
+            benchmark for Indian Capital Markets.
+
+            For more information, please visit: www.niftyindices.com
+
+            Disclaimer: National Stock Exchange of India Limited is proposing, subject to receipt of requisite
+            approvals, market conditions and other considerations, an initial public offer of its equity shares
+            and has filed a draft red herring prospectus dated December 28, 2016 (“DRHP”) with Securities
+            and Exchange Board of India (“SEBI”). The DRHP is available on the website of SEBI as well as
+            on    website    of    the    Managers,    Citigroup    Global    Markets    India    Private    Limited    at
+            http://www.online.citibank.co.in/rhtm/citigroupglobalscreen1.htm,   JM   Financial   Institutional
+            Securities   Limited   at   www.jmfl.com,   Kotak   Mahindra   Capital   Company   Limited   at
+            http://www.investmentbank.kotak.com,  Morgan  Stanley  India  Company  Private  Limited  at
+            http://www.morganstanley.com/about-us/global-offices/india/,     HDFC     Bank     Limited     at
+            www.hdfcbank.com, ICICI Securities Limited at www.icicisecurities.com, IDFC Bank Limited
+            at www.idfcbank.com and IIFL Holdings Limited at www.iiflcap.com. Potential investors should
+            note that investment in equity shares involves a high degree of risk and for details relating to such
+            risk, see “Risk Factors” beginning on page 19 of the DRHP. Potential investors should not rely
+            on the DRHP filed with SEBI for making any investment decision.
+
+            Any securities referred to herein have not been and will not be registered under the U.S. Securities
+            Act of 1933, as amended (the “Securities Act”), and may not be offered or sold in the United
+            States absent registration or an exemption from registration under the Securities Act. There is no
+            intention to register any securities referred to herein in the United States or to make  a public
+            offering of the securities in the United States.
+
+
+
+
+
+
+
+            For any clarifications please contact:
+
+            Kumar Kartikey
+            Senior Manager, Corporate Communication
+            Mobile: +91-9819549984
+            Email id: kumark@nse.co.in
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

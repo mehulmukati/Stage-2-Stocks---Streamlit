@@ -1,0 +1,293 @@
+                                                                                       Date: May 24, 2018
+
+                                           PRESS RELEASE
+
+                                     Replacements in Indices
+
+The Index Maintenance Sub-Committee has decided to make the following replacements in
+various indices on account of proposed schemes of arrangement as given hereunder:
+
+A.  Scheme of Arrangement for the demerger of the forex division of Cox & Kings Ltd. into
+    Cox & Kings Financial Services Ltd.
+
+B.  Scheme of Arrangement for demerger of Branded apparel undertaking and Engineering
+    undertaking     from   Arvind   Ltd.   into   Arvind   Fashions   Ltd.   and   Anveshan   Heavy
+    Engineering Ltd. respectively.
+
+C.  Scheme  of  Arrangement  &  Reconstruction  for  demerger  of  Surplus  Land  of  Tata
+    Communications Ltd. into Hemisphere Properties India Ltd.
+
+The changes shall become effective from June 29, 2018 (close of June 28, 2018).
+
+
+1)      NIFTY 500 Index
+
+The following companies are being excluded:
+
+   Sr. No.                        Company Name                                      Symbol
+      1       Arvind Ltd.                                                   ARVIND
+      2       Cox & Kings Ltd.                                              COX&KINGS
+      3       Tata Communications Ltd.                                      TATACOMM
+
+
+The following companies are being included:
+
+   Sr. No.                        Company Name                                      Symbol
+      1       Future Retail Ltd.                                            FRETAIL
+      2       KIOCL Ltd.                                                    KIOCL
+      3       Tube Investments of India Ltd.                                TIINDIA
+
+
+2)      NIFTY Midcap 150 Index
+
+The following companies are being excluded:
+
+   Sr. No.                        Company Name                                      Symbol
+      1       Arvind Ltd.                                                   ARVIND
+      2       Tata Communications Ltd.                                      TATACOMM
+
+
+The following companies are being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Future Retail Ltd.                                         FRETAIL
+      2       KIOCL Ltd.                                                 KIOCL
+
+
+3)      NIFTY Smallcap 250 Index
+
+The following company is being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Cox & Kings Ltd.                                           COX&KINGS
+
+
+The following company is being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Tube Investments of India Ltd.                             TIINDIA
+
+
+4)      NIFTY Midcap 50 Index
+
+The following companies are being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Arvind Ltd.                                                ARVIND
+      2       Tata Communications Ltd.                                   TATACOMM
+
+
+The following companies are being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Indian Bank                                                INDIANB
+      2       National Aluminium Co. Ltd.                                NATIONALUM
+
+
+5)      NIFTY Midcap 100 Index
+
+The following companies are being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Arvind Ltd.                                                ARVIND
+      2       Tata Communications Ltd.                                   TATACOMM
+
+
+The following companies are being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Future Retail Ltd.                                        FRETAIL
+      2       Quess Corp Ltd.                                           QUESS
+
+
+6)      NIFTY 200 Index
+
+The following companies are being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Arvind Ltd.                                               ARVIND
+      2       Tata Communications Ltd.                                  TATACOMM
+
+
+The following companies are being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Future Retail Ltd.                                        FRETAIL
+      2       Quess Corp Ltd.                                           QUESS
+
+
+7)      NIFTY LargeMidcap 250 Index
+
+The following companies are being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Arvind Ltd.                                               ARVIND
+      2       Tata Communications Ltd.                                  TATACOMM
+
+ The following companies are being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Future Retail Ltd.                                        FRETAIL
+      2       KIOCL Ltd.                                                KIOCL
+
+
+8)      NIFTY Smallcap 50 Index
+
+The following company is being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Cox & Kings Ltd.                                          COX&KINGS
+
+The following company is being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Bombay Dyeing & Manufacturing Co. Ltd.                    BOMDYEING
+9)      NIFTY Smallcap 100 Index
+
+The following company is being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Cox & Kings Ltd.                                          COX&KINGS
+
+The following company is being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Radico Khaitan Ltd                                        RADICO
+
+
+10)     NIFTY MidSmallcap 400 Index
+
+The following companies are being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Arvind Ltd.                                               ARVIND
+      2       Cox & Kings Ltd.                                          COX&KINGS
+      3       Tata Communications Ltd.                                  TATACOMM
+
+
+The following companies are being included:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Future Retail Ltd.                                        FRETAIL
+      2       KIOCL Ltd.                                                KIOCL
+      3       Tube Investments of India Ltd.                            TIINDIA
+
+
+11)     NIFTY Tata Group Index
+
+The following company is being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Tata Communications Ltd.                                  TATACOMM
+ No inclusion is being made in the index.
+
+
+12)     NIFTY Tata Group 25% Cap Index
+
+The following company is being excluded:
+
+   Sr. No.                      Company Name                                    Symbol
+      1       Tata Communications Ltd.                                  TATACOMM
+The following company is being included:
+
+   Sr. No.                         Company Name                                        Symbol
+      1        Trent Ltd.                                                     TRENT
+
+
+
+13)     NIFTY Infrastructure Index
+
+The following company is being excluded:
+
+   Sr. No.                         Company Name                                        Symbol
+      1        Tata Communications Ltd.                                       TATACOMM
+
+The following company is being included:
+
+   Sr. No.                         Company Name                                        Symbol
+      1        Torrent Power Ltd.                                             TORNTPOWER
+
+
+14)     NIFTY Midcap Liquid 15 Index
+
+The following company is being excluded:
+
+   Sr. No.                         Company Name                                        Symbol
+      1        Tata Communications Ltd.                                       TATACOMM
+
+The following company is being included:
+
+   Sr. No.                         Company Name                                        Symbol
+      1        Federal Bank Ltd.                                              FEDERALBNK
+
+
+About National Stock Exchange of India Limited (NSE):
+
+The National Stock Exchange of India Ltd. (NSE) is the leading stock exchange in India and
+the third largest in the world by nos. of trades in equity shares in 2017, according to World
+Federation of Exchanges (WFE) report. NSE was the first exchange in India to implement
+electronic or screen based trading. It began operations in 1994 and is ranked as the largest
+stock exchange in India in terms of total and average daily turnover for equity shares every
+year since 1995, based on SEBI data. NSE has a fully-integrated business model comprising
+exchange  listings,  trading  services,  clearing  and  settlement  services,  indices,  market  data
+feeds, technology solutions and financial education offerings. NSE also oversees compliance
+by trading and clearing members with the rules and regulations of the exchange. NSE is a
+pioneer in technology and ensures the reliability and performance of its systems through a
+culture of innovation and investment in technology. NSE believes that the scale and breadth
+of its products and services, sustained leadership positions across multiple asset classes in
+India and globally enable it to be highly reactive to market demands and changes and deliver
+innovation  in  both  trading  and  non-trading  businesses  to  provide  high               quality  data  and
+services to market participants and clients.
+
+For more information, please visit: www.nseindia.com
+
+About India Index Services & Products Ltd. (IISL):
+
+India  Index  Services  &  Products  Ltd.  (IISL),  a  subsidiary  of  NSE,  provides  a  variety  of
+indices and index related services for the capital markets. IISL focuses on the index as a core
+product.  IISL  owns  and  manages  a  portfolio  of  indices  under  the            NIFTY brand  of  NSE,
+including  the  flagship  index,  the      NIFTY 50.  IISL  equity  Indices  comprises  broad-based
+benchmark  indices,  sectoral  indices,  strategy  indices,  thematic  indices  and  customised
+indices. IISL also maintains fixed income indices based on Government of India securities,
+corporate bonds, money market instruments and hybrid indices.  Many investment products
+based on IISL indices have been developed within India and abroad. These include index
+based  derivatives  traded  on  NSE,  Singapore  Exchange  Ltd.  (SGX),  Chicago  Mercantile
+Exchange Inc. (CME), Osaka Exchange Inc. (OSE), Taiwan Futures Exchange (TAIFEX)
+and a number of index funds and exchange traded funds. The flagship 'NIFTY 50' index is
+widely tracked and traded as the benchmark for Indian Capital Markets.
+
+For more information, please visit: www.niftyindices.com
+
+Disclaimer: National Stock Exchange of India Limited is proposing, subject to receipt of
+requisite approvals, market conditions and other considerations, an initial public offer of its
+equity shares and has filed a draft red herring prospectus dated December 28, 2016 (“DRHP”)
+with Securities and Exchange Board of India (“SEBI”). The DRHP is available on the website
+of  SEBI  as  well  as  on  website  of  the  Managers,  Citigroup  Global  Markets  India  Private
+Limited at http://www.online.citibank.co.in/rhtm/citigroupglobalscreen1.htm, JM Financial
+Institutional  Securities  Limited  at  www.jmfl.com,  Kotak  Mahindra  Capital  Company
+Limited at http://www.investmentbank.kotak.com, Morgan Stanley India Company Private
+Limited   at   http://www.morganstanley.com/about-us/global-offices/india/,   HDFC   Bank
+Limited at www.hdfcbank.com, ICICI Securities Limited at www.icicisecurities.com, IDFC
+Bank  Limited  at  www.idfcbank.com  and  IIFL  Holdings  Limited  at  www.iiflcap.com.
+Potential investors should note that investment in equity shares involves a high degree of risk
+and for details relating to such risk, see “Risk Factors” beginning on page 19 of the DRHP.
+Potential investors should not rely on the DRHP filed with SEBI for making any investment
+decision.
+
+Any securities referred to herein have not been and will not be registered under the U.S.
+Securities Act of 1933, as amended (the “Securities Act”), and may not be offered or sold in
+the United States absent registration or an exemption from registration under the Securities
+Act. There is no intention to register any securities referred to herein in the United States or
+to make a public offering of the securities in the United States.
+
+
+For any clarifications please contact:
+
+Debojyoti Chatterjee
+Head, Corporate Communication & Media Relations
+Mobile: +91-9833368337
+Email id: dchatterjee@nse.co.in / cc@nse.co.in
+Kumar Kartikey
+Manager, Corporate Communication
+Mobile: +91-9819549984
+Email id: kumark@nse.co.in

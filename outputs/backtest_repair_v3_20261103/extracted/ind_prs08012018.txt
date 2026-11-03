@@ -1,0 +1,310 @@
+                                                                                    Date: January 08, 2018
+
+                                           PRESS RELEASE
+
+                                    Replacements in Indices
+
+
+The Index Maintenance Sub-Committee has decided to make the following replacements in
+various  indices  on  account  of  proposed  schemes  of  arrangement           and  delisting   as  given
+hereunder:
+
+A.  Scheme of Arrangement in CESC Ltd. for demerger of                  generation undertaking, retail
+    undertaking and IT undertaking to Haldia Energy Ltd., RP-SG Retail Ltd. and RP-SG
+    Business Process Services Ltd. respectively.
+
+B.  Scheme of Arrangement for demerger of diagnostic business of Fortis Healthcare Ltd.
+    into Fortis Malar Fortis Malar Hospitals Ltd.
+
+C.  Scheme of Arrangement for demerger of Commodities API business of Strides Shasun
+    Ltd. into Solara Active Pharma Sciences Ltd.
+
+D.  Voluntary delisting of Shares for Polaris Consulting & Services Ltd. from NSE.
+
+The changes shall become effective from February 05, 2018 (close of February 02, 2018).
+
+
+1)      NIFTY 500 Index
+
+The following companies are being excluded:
+
+   Sr. No.                        Company Name                                       Symbol
+      1        CESC Ltd.                                                     CESC
+      2        Fortis Healthcare Ltd.                                        FORTIS
+      3        Polaris Consulting & Services Ltd.                            POLARIS
+      4        Strides Shasun Ltd.                                           STAR
+
+
+The following companies are being included:
+
+   Sr. No.                        Company Name                                       Symbol
+      1        Cochin Shipyard Ltd.                                          COCHINSHIP
+      2        Hatsun Agro Product Ltd.                                      HATSUN
+      3        Reliance Capital Ltd.                                         RELCAPITAL
+      4        TI Financial Holdings Ltd.                                    TIFIN
+
+
+2)      NIFTY Midcap 150 Index
+
+The following companies are being excluded:
+   Sr. No.                       Company Name                                     Symbol
+      1       CESC Ltd.                                                   CESC
+      2       Fortis Healthcare Ltd.                                      FORTIS
+      3       Strides Shasun Ltd.                                         STAR
+
+
+The following companies are being included:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       Hatsun Agro Product Ltd.                                    HATSUN
+      2       Reliance Capital Ltd.                                       RELCAPITAL
+      3       TI Financial Holdings Ltd.                                  TIFIN
+
+
+3)      NIFTY Smallcap 250 Index
+
+The following company is being excluded:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       Polaris Consulting & Services Ltd.                          POLARIS
+
+
+The following company is being included:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       Cochin Shipyard Ltd.                                        COCHINSHIP
+
+
+4)      NIFTY Midcap 50 Index
+
+The following companies are being excluded:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       CESC Ltd.                                                   CESC
+      2       Strides Shasun Ltd.                                         STAR
+
+
+The following companies are being included:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       Balkrishna Industries Ltd.                                  BALKRISIND
+      2       Cholamandalam Investment and Finance Co. Ltd.               CHOLAFIN
+
+
+5)      NIFTY Full Midcap 100 Index
+
+The following companies are being excluded:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       CESC Ltd.                                                   CESC
+      2       Fortis Healthcare Ltd.                                      FORTIS
+      3       Strides Shasun Ltd.                                         STAR
+
+
+The following companies are being included:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       AU Small Finance Bank Ltd.                                  AUBANK
+      2       Reliance Capital Ltd.                                       RELCAPITAL
+      3       V-Guard Industries Ltd.                                     VGUARD
+
+
+6)      NIFTY 200 Index
+
+The following companies are being excluded:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       CESC Ltd.                                                   CESC
+      2       Fortis Healthcare Ltd.                                      FORTIS
+      3       Strides Shasun Ltd.                                         STAR
+
+
+The following companies are being included:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       AU Small Finance Bank Ltd.                                  AUBANK
+      2       Reliance Capital Ltd.                                       RELCAPITAL
+      3       V-Guard Industries Ltd.                                     VGUARD
+
+
+7)      NIFTY MidSmallcap 400 Index
+
+The following companies are being excluded:
+
+   Sr. No.                       Company Name                                     Symbol
+      1       CESC Ltd.                                                   CESC
+      2       Fortis Healthcare Ltd.                                      FORTIS
+      3       Polaris Consulting & Services Ltd.                          POLARIS
+      4       Strides Shasun Ltd.                                         STAR
+
+
+The following companies are being included:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       Cochin Shipyard Ltd.                                       COCHINSHIP
+      2       Hatsun Agro Product Ltd.                                   HATSUN
+      3       Reliance Capital Ltd.                                      RELCAPITAL
+      4       TI Financial Holdings Ltd.                                 TIFIN
+
+
+8)      NIFTY LargeMidcap 250 Index
+
+The following companies are being excluded:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       CESC Ltd.                                                  CESC
+      2       Fortis Healthcare Ltd.                                     FORTIS
+      3       Strides Shasun Ltd.                                        STAR
+
+ The following companies are being included:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       Hatsun Agro Product Ltd.                                   HATSUN
+      2       Reliance Capital Ltd.                                      RELCAPITAL
+      3       TI Financial Holdings Ltd.                                 TIFIN
+
+
+9)      NIFTY Free Float Midcap 100 Index
+
+The following companies are being excluded:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       CESC Ltd.                                                  CESC
+      2       Fortis Healthcare Ltd.                                     FORTIS
+      3       Strides Shasun Ltd.                                        STAR
+
+The following companies are being included:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       BEML Ltd.                                                  BEML
+      2       Graphite India Ltd.                                        GRAPHITE
+      3       Reliance Capital Ltd.                                      RELCAPITAL
+
+10)     NIFTY Commodities Index
+
+The following company is being excluded:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       CESC Ltd.                                                  CESC
+
+The following company is being included:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       Grasim Industries Ltd.                                     GRASIM
+
+
+11)     NIFTY Infrastructure Index
+
+The following company is being excluded:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       CESC Ltd.                                                  CESC
+
+The following company is being included:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       NBCC (India) Ltd.                                          NBCC
+
+
+12)     NIFTY Midcap Liquid 15 Index
+
+The following company is being excluded:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       Strides Shasun Ltd.                                        STAR
+
+The following company is being included:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       L&T Finance Holdings Ltd.                                  L&TFH
+
+
+13)     NIFTY Alpha Low-Volatility 30 Index
+
+The following company is being excluded:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       CESC Ltd.                                                  CESC
+
+The following company is being included:
+
+   Sr. No.                       Company Name                                    Symbol
+      1       Asian Paints Ltd.                                          ASIANPAINT
+
+
+
+
+
+About National Stock Exchange of India Limited (NSE):
+
+The National Stock Exchange (NSE) is the leading stock exchange in  India and the fifth
+largest  in  the  world  by  equity  trading  volume  Year  to  Date  (YTD),  according  to  World
+Federation of Exchanges (WFE) data as on August 2017. NSE was the first exchange in India
+to implement electronic or screen-based trading. It began operations in 1994 and is ranked as
+the largest stock exchange in India in terms of total and average daily turnover for equity
+shares every year since 1995, based on SEBI data.
+
+NSE  has  a  fully-integrated  business  model  comprising  our  exchange  listings,  trading
+services, clearing and settlement services, indices, market data feeds, technology solutions
+and financial  education  offerings. NSE also oversees compliance by trading and  clearing
+members with the rules and regulations of the exchange.
+
+NSE is a pioneer in technology and ensures the reliability and performance of its systems
+through a culture of innovation and investment in technology. NSE believes that the scale
+and breadth of its products and services, sustained leadership positions across multiple asset
+classes in India and globally enable it to be highly reactive to market demands and changes
+and deliver innovation in both trading and non-trading businesses to provide high-quality
+data and services to market participants and clients.
+
+For more information, please visit: www.nseindia.com
+
+About India Index Services & Products Ltd. (IISL):
+
+India  Index  Services  &      Products  Ltd.  (IISL),  a  subsidiary  of  NSE,  provides  a  variety  of
+indices and index related services for the capital markets. IISL focuses on the index as a core
+product.  IISL  owns  and  manages  a  portfolio  of  indices  under  the           NIFTY brand  of  NSE,
+including   the  flagship  index,  the     NIFTY 50.  IISL  equity  Indices  comprises  broad-based
+benchmark  indices,  sectoral  indices,  strategy  indices,  thematic  indices  and  customised
+indices. IISL also maintains fixed income indices based on Government of India securities,
+corporate bonds and money market instruments. Many investment products based on IISL
+indices have been developed within India and abroad. These include index based derivatives
+traded on NSE, Singapore Exchange Ltd. (SGX), Chicago Mercantile Exchange Inc. (CME),
+Osaka Exchange Inc. (OSE), Taiwan Futures Exchange (TAIFEX) and a number of index
+funds and exchange traded funds. The flagship 'NIFTY 50' index is widely tracked and traded
+as the benchmark for Indian Capital Markets.
+
+For more information, please visit: www.niftyindices.com
+
+Disclaimer: National Stock Exchange of India Limited is proposing, subject to receipt of
+requisite approvals, market conditions and other considerations, an initial public offer of its
+equity shares and has filed a draft red herring prospectus dated December 28, 2016 (“DRHP”)
+with Securities and Exchange Board of India (“SEBI”). The DRHP is available on the website
+of  SEBI  as  well  as  on  website  of  the  Managers,  Citigroup  Global  Markets  India  Private
+Limited at http://www.online.citibank.co.in/rhtm/citigroupglobalscreen1.htm, JM Financial
+Institutional  Securities  Limited  at  www.jmfl.com,  Kotak  Mahindra  Capital  Company
+Limited at http://www.investmentbank.kotak.com, Morgan Stanley India Company Private
+Limited   at   http://www.morganstanley.com/about-us/global-offices/india/,   HDFC   Bank
+Limited at www.hdfcbank.com, ICICI Securities Limited at www.icicisecurities.com, IDFC
+Bank  Limited  at  www.idfcbank.com  and  IIFL  Holdings  Limited  at  www.iiflcap.com.
+Potential investors should note that investment in equity shares involves a high degree of risk
+and for details relating to such risk, see “Risk Factors” beginning on page 19 of the DRHP.
+Potential investors should not rely on the DRHP filed with SEBI for making any investment
+decision.
+
+Any securities referred to herein have not been and will not be registered under the U.S.
+Securities Act of 1933, as amended (the “Securities Act”), and may not be offered or sold in
+the United States absent registration or an exemption from registration under the Securities
+Act. There is no intention to register any securities referred to herein in the United States or
+to make a public offering of the securities in the United States.
+
+For any clarifications please contact:
+
+Debojyoti Chatterjee
+Head, Corporate Communication & Media Relations
+Mobile: +91-9833368337
+Email id: dchatterjee@nse.co.in / cc@nse.co.in
+
+Kumar Kartikey
+Manager, Corporate Communication
+Mobile: +91-9819549984
+Email id: kumark@nse.co.in

@@ -1,0 +1,17 @@
+[
+  {
+    "name": "CMTR40535.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR40535.pdf",
+    "retrieved_at": "2026-11-03T08:40:34.509272+00:00",
+    "status": 404,
+    "bytes": 3815
+  },
+  {
+    "name": "CMTR40536.pdf",
+    "url": "https://nsearchives.nseindia.com/content/circulars/CMTR40536.pdf",
+    "retrieved_at": "2026-11-03T08:40:34.510270+00:00",
+    "status": 200,
+    "bytes": 214283,
+    "sha256": "0ffd5d5c6f2e967947b0fafc45f285c2eff70abbde138b06e35d4ac8169ebc65"
+  }
+]

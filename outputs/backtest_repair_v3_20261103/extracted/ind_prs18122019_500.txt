@@ -1,0 +1,16 @@
+
+           1)       NIFTY 500
+
+           The following companies are being excluded:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       CG Power and Industrial Solutions Ltd.                      CGPOWER
+                  2       Coffee Day Enterprises Ltd.                                 COFFEEDAY
+                  3       Cox & Kings Ltd.                                            COX&KINGS
+
+           The following companies are being included:
+
+               Sr. No.                       Company Name                                     Symbol
+                  1       Affle (India) Ltd.                                          AFFLE
+                  2       Mishra Dhatu Nigam Ltd.                                     MIDHANI
+                  3       Responsive Industries Ltd.                                  RESPONIND

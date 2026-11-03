@@ -1,5 +1,7 @@
 # Backtest accuracy follow-up — 3 November 2026
 
+See [Round 3 historical data policy](backtest_accuracy_round3.md) and the versioned `outputs/backtest_repair_v3_20261103/implementation_report.md`. Membership now reconciles; price/model validation remains unaccepted. The Round 2 accounting and publication repairs below remain in force.
+
 The second repair retains the quantity/cash/FIFO foundation and fixes the remaining execution boundaries. These changes do not tune ranking, quality filters, rebalance frequencies or defaults. The adjusted-unit, simplified-tax, volume, stale-mark and benchmark limitations in [the original policy](backtest_accuracy_repair.md) still apply.
 
 ## Each portfolio makes its own decision

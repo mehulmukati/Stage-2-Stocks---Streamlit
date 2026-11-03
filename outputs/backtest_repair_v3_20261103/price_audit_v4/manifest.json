@@ -1,0 +1,28 @@
+{
+  "historical_missing_labels": 144,
+  "vendor_payloads": 72,
+  "identity_supported_acquired": 72,
+  "acquired_identity_unresolved": 0,
+  "unavailable": 72,
+  "rejected_payloads": 0,
+  "staged_vendor_rows": 55756,
+  "primary_sessions": 783,
+  "primary_security_quote_rows": 477660,
+  "eligible_missing_positive_quote_rows": 3,
+  "eligible_daily_quote_rows": 392280,
+  "eligible_daily_source_counts": {
+    "protected_local_same_dated_exchange_label": 320918,
+    "staged_identity_supported_vendor_history": 37608,
+    "unavailable": 33754
+  },
+  "ohlc_discrepancy_rows": 246,
+  "accepted_adjusted_histories": 0,
+  "accepted": false,
+  "raw_and_adjusted_separate": true,
+  "source_hashes": {
+    "outputs\\backtest_repair_v3_20261103\\audit_prices.py": "99582bfc4589ae70c1d0e426f959ad47c23b2725760d46485acdc100f90efd92",
+    "historical_price_evidence.py": "98162323afbdcd9aec679b18b97682a084380fae6ca02774236c19fb296d558c",
+    "outputs\\backtest_repair_v3_20261103\\vendor_query_worklist.csv": "bba4bb799fb4d64429cffaf86f98cd367169307447b3bd5fce16c83c3c9be4c2",
+    "outputs\\backtest_repair_v3_20261103\\candidate_v3\\provisional_membership.parquet": "592d5cc0736000c59223f605f4ba57e5f406b3993bcbd430c3fa7d709995cd7e"
+  }
+}
