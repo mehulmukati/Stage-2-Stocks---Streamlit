@@ -1,0 +1,31 @@
+{
+  "_comment": "Effective-dated portfolio identity changes. Index eligibility remains in compositions.parquet.",
+  "actions": [
+    {
+      "old_symbol": "JBCHEPHARM",
+      "event_type": "merger",
+      "successor_symbol": "TORNTPHARM",
+      "effective_date": "2026-07-17",
+      "last_trading_date": "2026-07-16",
+      "share_ratio": 0.51,
+      "source": "NSE Indices / Torrent Pharmaceuticals exchange filing",
+      "notes": "51 Torrent Pharmaceuticals shares for every 100 JB Chemicals shares"
+    }
+  ],
+  "index_replacements": [
+    {
+      "index_name": "NIFTY SMALLCAP 250",
+      "removed_symbol": "JBCHEPHARM",
+      "added_symbol": "PFOCUS",
+      "effective_date": "2026-07-17",
+      "source": "NSE Indices press release dated 2026-07-13"
+    },
+    {
+      "index_name": "NIFTY MICROCAP 250",
+      "removed_symbol": "PFOCUS",
+      "added_symbol": "GRINDWELL",
+      "effective_date": "2026-07-17",
+      "source": "NSE Indices press release dated 2026-07-13"
+    }
+  ]
+}

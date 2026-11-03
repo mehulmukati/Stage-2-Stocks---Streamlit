@@ -1,5 +1,7 @@
 # Backtest accuracy repair — 2 November 2026
 
+**Follow-up:** [3 November boundary repairs and bounded historical evidence](backtest_accuracy_followup.md) supersede the selection, cap-basis and holdings-statistic details below. The new candidate resolves the relevant old event identities but remains unaccepted pending lifecycle and price evidence.
+
 This revision repairs execution and accounting. It does **not** certify the existing historical constituent universe. Strategy defaults are unchanged. Existing results, source inputs, accepted parquets and Live Signal checkpoints are preserved.
 
 ## Supported research behavior

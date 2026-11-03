@@ -1,0 +1,117 @@
+FF.FFFFFFFFFF                                                            [100%]
+================================== FAILURES ===================================
+_______________ test_failed_buy_actual_holdings_average_is_zero _______________
+tests\test_backtest_boundaries.py:21: in test_failed_buy_actual_holdings_average_is_zero
+    assert (result['stats']['Avg Holdings']==0).all()
+E   assert np.False_
+E    +  where np.False_ = all()
+E    +    where all = Full Rebalance        1.0\nMarginal Rebalance    1.0\nProp Rebalance        1.0\nName: Avg Holdings, dtype: float64 == 0.all
+_____ test_blocked_displacement_exits_occupy_real_slots_across_signals[A] _____
+tests\test_backtest_boundaries.py:35: in test_blocked_displacement_exits_occupy_real_slots_across_signals
+    assert set(actual)==expected
+E   AssertionError: assert {'A', 'C', 'D'} == {'A', 'C'}
+E     
+E     Extra items in the left set:
+E     'D'
+E     Use -v to get more diff
+_________________ test_divergent_incumbents_are_book_specific _________________
+tests\test_backtest_boundaries.py:42: in test_divergent_incumbents_are_book_specific
+    assert result['holdings_log'][0]['holdings_by_variant']=={
+E   AssertionError: assert {'Full Rebala...lance': ['A']} == {'Full Rebala...lance': ['A']}
+E     
+E     Omitting 2 identical items, use -vv to show
+E     Differing items:
+E     {'Full Rebalance': ['A', 'B']} != {'Full Rebalance': ['A']}
+E     Use -v to get more diff
+_________ test_taxable_cap_has_independently_solved_final_quantities __________
+tests\test_backtest_boundaries.py:52: in test_taxable_cap_has_independently_solved_final_quantities
+    assert ledger.quantities()['A']==pytest.approx(9/19)
+E   assert 0.5 == 0.47368421052631576 � 4.7e-07
+E     
+E     comparison failed
+E     Obtained: 0.5
+E     Expected: 0.47368421052631576 � 4.7e-07
+____________________ test_public_engine_taxable_final_cap _____________________
+tests\test_backtest_boundaries.py:64: in test_public_engine_taxable_final_cap
+    assert max(result['holdings_log'][-1][weights].values())<=50+1e-6
+E   AssertionError: assert 50.8463 <= (50 + 1e-06)
+E    +  where 50.8463 = max(dict_values([50.8463, 49.1537]))
+E    +    where dict_values([50.8463, 49.1537]) = <built-in method values of dict object at 0x000002B58F6316C0>()
+E    +      where <built-in method values of dict object at 0x000002B58F6316C0> = {'A': 50.8463, 'B': 49.1537}.values
+______________ test_cap_with_fees_all_cash_and_partial_cash[0.0] ______________
+tests\test_backtest_boundaries.py:73: in test_cap_with_fees_all_cash_and_partial_cash
+    assert max(ledger.weights().values())<=.3+1e-8
+E   AssertionError: assert 0.32258064516129037 <= (0.3 + 1e-08)
+E    +  where 0.32258064516129037 = max(dict_values([0.32258064516129037, 0.3225806451612903]))
+E    +    where dict_values([0.32258064516129037, 0.3225806451612903]) = <built-in method values of dict object at 0x000002B58F663840>()
+E    +      where <built-in method values of dict object at 0x000002B58F663840> = {'A': 0.32258064516129037, 'B': 0.3225806451612903}.values
+E    +        where {'A': 0.32258064516129037, 'B': 0.3225806451612903} = weights()
+E    +          where weights = QuantityLedger(cash=80.0, lots={'A': [{'date': Timestamp('2024-07-01 00:00:00'), 'price': 100.0, 'shares': 0.300000000...024, gains=[70.0, 0.0, 0.0, 0.0], cf_st=[], cf_lt=[], payable=0.0, accrued=14.0, fees=0.0, brokerage=0.0, tax_paid=0.0).weights
+_____________ test_cap_with_fees_all_cash_and_partial_cash[0.001] _____________
+tests\test_backtest_boundaries.py:73: in test_cap_with_fees_all_cash_and_partial_cash
+    assert max(ledger.weights().values())<=.3+1e-8
+E   AssertionError: assert 0.3225667470087621 <= (0.3 + 1e-08)
+E    +  where 0.3225667470087621 = max(dict_values([0.3225667470087621, 0.32256674700876203]))
+E    +    where dict_values([0.3225667470087621, 0.32256674700876203]) = <built-in method values of dict object at 0x000002B58F660F40>()
+E    +      where <built-in method values of dict object at 0x000002B58F660F40> = {'A': 0.3225667470087621, 'B': 0.32256674700876203}.values
+E    +        where {'A': 0.3225667470087621, 'B': 0.32256674700876203} = weights()
+E    +          where weights = QuantityLedger(cash=79.91997600000721, lots={'A': [{'date': Timestamp('2024-07-01 00:00:00'), 'price': 100.0, 'shares'....0], cf_st=[], cf_lt=[], payable=0.0, accrued=13.97798979639946, fees=0.20005999998198198, brokerage=0.0, tax_paid=0.0).weights
+_____________ test_cap_with_fees_all_cash_and_partial_cash[0.04] ______________
+tests\test_backtest_boundaries.py:73: in test_cap_with_fees_all_cash_and_partial_cash
+    assert max(ledger.weights().values())<=.3+1e-8
+E   AssertionError: assert 0.32198557772933084 <= (0.3 + 1e-08)
+E    +  where 0.32198557772933084 = max(dict_values([0.32198557772933084, 0.32198557772933084]))
+E    +    where dict_values([0.32198557772933084, 0.32198557772933084]) = <built-in method values of dict object at 0x000002B58F656900>()
+E    +      where <built-in method values of dict object at 0x000002B58F656900> = {'A': 0.32198557772933084, 'B': 0.32198557772933084}.values
+E    +        where {'A': 0.32198557772933084, 'B': 0.32198557772933084} = weights()
+E    +          where weights = QuantityLedger(cash=76.76161919040482, lots={'A': [{'date': Timestamp('2024-07-01 00:00:00'), 'price': 100.0, 'shares'...0.0], cf_st=[], cf_lt=[], payable=0.0, accrued=13.103448275862071, fees=8.095952023988005, brokerage=0.0, tax_paid=0.0).weights
+___ test_actual_publisher_preserves_every_outside_calendar_date[True-True] ____
+tests\test_publication_intervals.py:34: in test_actual_publisher_preserves_every_outside_calendar_date
+    assert md.constituents_at(actual,day,['X'])==expected,day
+E   AssertionError: Timestamp('2025-01-11 00:00:00')
+E   assert {'X': ['NEW']} == {'X': ['OLD']}
+E     
+E     Differing items:
+E     {'X': ['NEW']} != {'X': ['OLD']}
+E     Use -v to get more diff
+___ test_actual_publisher_preserves_every_outside_calendar_date[True-False] ___
+tests\test_publication_intervals.py:34: in test_actual_publisher_preserves_every_outside_calendar_date
+    assert md.constituents_at(actual,day,['X'])==expected,day
+E   AssertionError: Timestamp('2025-01-11 00:00:00')
+E   assert {'X': ['NEW']} == {'X': ['OLD']}
+E     
+E     Differing items:
+E     {'X': ['NEW']} != {'X': ['OLD']}
+E     Use -v to get more diff
+___ test_actual_publisher_preserves_every_outside_calendar_date[False-True] ___
+tests\test_publication_intervals.py:34: in test_actual_publisher_preserves_every_outside_calendar_date
+    assert md.constituents_at(actual,day,['X'])==expected,day
+E   AssertionError: Timestamp('2025-01-11 00:00:00')
+E   assert {'X': ['NEW']} == {'X': ['OLD']}
+E     
+E     Differing items:
+E     {'X': ['NEW']} != {'X': ['OLD']}
+E     Use -v to get more diff
+__ test_actual_publisher_preserves_every_outside_calendar_date[False-False] ___
+tests\test_publication_intervals.py:34: in test_actual_publisher_preserves_every_outside_calendar_date
+    assert md.constituents_at(actual,day,['X'])==expected,day
+E   AssertionError: Timestamp('2025-01-11 00:00:00')
+E   assert {'X': ['NEW']} == {'X': ['OLD']}
+E     
+E     Differing items:
+E     {'X': ['NEW']} != {'X': ['OLD']}
+E     Use -v to get more diff
+=========================== short test summary info ===========================
+FAILED tests/test_backtest_boundaries.py::test_failed_buy_actual_holdings_average_is_zero
+FAILED tests/test_backtest_boundaries.py::test_blocked_displacement_exits_occupy_real_slots_across_signals[A]
+FAILED tests/test_backtest_boundaries.py::test_divergent_incumbents_are_book_specific
+FAILED tests/test_backtest_boundaries.py::test_taxable_cap_has_independently_solved_final_quantities
+FAILED tests/test_backtest_boundaries.py::test_public_engine_taxable_final_cap
+FAILED tests/test_backtest_boundaries.py::test_cap_with_fees_all_cash_and_partial_cash[0.0]
+FAILED tests/test_backtest_boundaries.py::test_cap_with_fees_all_cash_and_partial_cash[0.001]
+FAILED tests/test_backtest_boundaries.py::test_cap_with_fees_all_cash_and_partial_cash[0.04]
+FAILED tests/test_publication_intervals.py::test_actual_publisher_preserves_every_outside_calendar_date[True-True]
+FAILED tests/test_publication_intervals.py::test_actual_publisher_preserves_every_outside_calendar_date[True-False]
+FAILED tests/test_publication_intervals.py::test_actual_publisher_preserves_every_outside_calendar_date[False-True]
+FAILED tests/test_publication_intervals.py::test_actual_publisher_preserves_every_outside_calendar_date[False-False]
+12 failed, 1 passed in 5.02s

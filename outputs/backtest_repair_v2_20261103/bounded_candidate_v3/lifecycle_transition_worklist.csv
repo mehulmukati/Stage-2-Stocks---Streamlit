@@ -1,0 +1,25 @@
+symbol,old_isin,new_isin,last_observed_old,first_observed_new,effective_date,share_ratio,decision,affected_event_row_ids,affected_event_count,scope_relation
+AVANTIFEED,INE871C01020,INE871C01038,2018-05-31,2018-06-29,,,unresolved; dated action evidence required,,0,observed_within_scope
+BRITANNIA,INE216A01022,INE216A01030,2018-10-31,2018-11-30,,,unresolved; dated action evidence required,,0,observed_within_scope
+CANFINHOME,INE477A01012,INE477A01020,2017-09-29,2017-10-31,,,unresolved; dated action evidence required,,0,observed_within_scope
+CHOLAFIN,INE121A01016,INE121A01024,2019-05-31,2019-06-28,,,unresolved; dated action evidence required,,0,observed_within_scope
+CONCOR,INE111A01017,INE111A01025,2018-05-31,2018-06-29,,,unresolved; dated action evidence required,,0,observed_within_scope
+EICHERMOT,INE066A01013,INE066A01021,2020-07-31,2020-08-31,,,unresolved; dated action evidence required,,0,observed_within_scope
+GUJGASLTD,INE844O01022,INE844O01030,2018-12-31,2019-01-31,,,unresolved; dated action evidence required,,0,observed_within_scope
+HDFCBANK,INE040A01026,INE040A01034,2019-08-30,2019-09-30,,,unresolved; dated action evidence required,,0,observed_within_scope
+HERITGFOOD,INE978A01019,INE978A01027,2017-09-29,2017-10-31,,,unresolved; dated action evidence required,IndexInclExcl - Upto 2020.xls:Nifty 500:2151,1,observed_within_scope
+IEX,INE022Q01012,INE022Q01020,2018-09-28,2018-10-31,,,unresolved; dated action evidence required,IndexInclExcl - Upto 2020.xls:Nifty 500:2227,1,observed_within_scope
+IGL,INE203G01019,INE203G01027,2017-10-31,2017-11-30,,,unresolved; dated action evidence required,,0,observed_within_scope
+INFIBEAM,INE483S01012,INE483S01020,2017-08-31,2017-09-29,,,unresolved; dated action evidence required,,0,observed_within_scope
+IRCON,INE962Y01013,INE962Y01021,2020-03-31,2020-04-30,,,unresolved; dated action evidence required,IndexInclExcl - Upto 2020.xls:Nifty 500:2350,1,observed_within_scope
+LAURUSLABS,INE947Q01010,INE947Q01028,2020-08-31,2020-09-30,,,unresolved; dated action evidence required,,0,bounds_straddle_scope_end; review applicability
+MCDOWELL-N,INE854D01016,INE854D01024,2018-05-31,2018-06-29,,,unresolved; dated action evidence required,,0,observed_within_scope
+NAVINFLUOR,INE048G01018,INE048G01026,2017-06-30,2017-07-31,,,unresolved; dated action evidence required,,0,observed_within_scope
+NBCC,INE095N01023,INE095N01031,2018-03-28,2018-04-30,,,unresolved; dated action evidence required,,0,observed_within_scope
+SIS,INE285J01010,INE285J01028,2019-12-31,2020-01-31,,,unresolved; dated action evidence required,IndexInclExcl - Upto 2020.xls:Nifty 500:2234,1,observed_within_scope
+SUNTECK,INE805D01026,INE805D01034,2017-06-30,2017-07-31,,,unresolved; dated action evidence required,,0,observed_within_scope
+TRIDENT,INE064C01014,INE064C01022,2019-11-29,2019-12-31,,,unresolved; dated action evidence required,,0,observed_within_scope
+VINATIORGA,INE410B01029,INE410B01037,2020-01-31,2020-02-28,,,unresolved; dated action evidence required,,0,observed_within_scope
+YESBANK,INE528G01019,INE528G01027,2017-08-31,2017-09-29,,,unresolved; dated action evidence required,IndexInclExcl - Upto 2020.xls:Nifty 500:2442,1,observed_within_scope
+YESBANK,INE528G01027,INE528G01035,2020-02-28,2020-09-30,,,unresolved; dated action evidence required,IndexInclExcl - Upto 2020.xls:Nifty 500:2442,1,bounds_straddle_scope_end; review applicability
+ZENSARTECH,INE520A01019,INE520A01027,2018-03-28,2018-09-28,,,unresolved; dated action evidence required,IndexInclExcl - Upto 2020.xls:Nifty 500:2212|IndexInclExcl - Upto 2020.xls:Nifty 500:2297,2,observed_within_scope

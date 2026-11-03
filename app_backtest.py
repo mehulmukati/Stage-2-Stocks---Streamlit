@@ -137,7 +137,9 @@ def backtest_results(params: dict):
         "CAGR uses elapsed calendar years. Drawdown covers the full run; risk-free return is zero. "
         "Equities use vendor-adjusted prices; supplied index benchmarks may be price-only. "
         "Taxes use a simplified adjusted-unit model, not historical statutory tax accounting. "
-        "Cash earns zero; unfilled orders wait for the next scheduled decision. Caps apply to rebalance targets."
+        "Cash earns zero; unfilled orders wait for the next scheduled decision. "
+        "Caps use each portfolio's value after trading costs and tax liabilities. "
+        "Later market drift or blocked trades can exceed the cap."
     )
     if result.get("coverage_report"):
         with st.expander("Historical membership and price coverage"):
@@ -247,7 +249,14 @@ def backtest_results(params: dict):
             "Max Drawdown (%)": st.column_config.NumberColumn("Max DD (%)", format="%.2f%%"),
             "Calmar": st.column_config.NumberColumn("Calmar", format="%.3f"),
             "Sortino": st.column_config.NumberColumn("Sortino", format="%.3f"),
-            "Avg Holdings": st.column_config.NumberColumn("Avg Holdings", format="%.1f"),
+            "Avg Holdings": st.column_config.NumberColumn(
+                "Avg Holdings",
+                format="%.1f",
+                help=(
+                    "Average actual holdings at each session close, including all-cash sessions; "
+                    "calculated separately for each portfolio."
+                ),
+            ),
             "Avg Turnover (%)": st.column_config.NumberColumn("Avg Turnover (%)", format="%.1f"),
             "Cost Drag (%)": st.column_config.NumberColumn("Sum of cost/NAV ratios (%)", format="%.3f"),
             "Tax Drag (%)": st.column_config.NumberColumn("Tax paid + liabilities / initial NAV (%)", format="%.3f"),
@@ -278,6 +287,10 @@ def backtest_results(params: dict):
                         "Date": entry["date"].date(),
                         "Band Rule": rule_name,
                         "#Holdings": len(holdings),
+                        "Holdings view": "Union across portfolios",
+                        "#Full Holdings": len(fw),
+                        "#Marginal Holdings": len(mw),
+                        "#Prop Holdings": len(pw),
                         "#Entries": len(entry["entries"]),
                         "#Exits": len(entry["exits"]),
                         "Full Turnover %": entry.get("full_turnover_pct", ""),
@@ -314,7 +327,7 @@ def backtest_results(params: dict):
                     ins = ", ".join(entry["entries"]) or "—"
                     outs = ", ".join(entry["exits"]) or "—"
                     st.markdown(
-                        f"**{entry['date'].date()}** · {len(entry['holdings'])} stocks · "
+                        f"**{entry['date'].date()}** · {len(entry['holdings'])} stocks across portfolios · "
                         f"**In:** {ins} · **Out:** {outs}"
                     )
 
@@ -823,7 +836,7 @@ def _render_debug_tab(result: dict | None) -> None:
                 {
                     "Rank": i + 1,
                     "Symbol": sym,
-                    "Held": "✅" if sym in holdings else "",
+                    "Held in any portfolio": "✅" if sym in holdings else "",
                 }
                 for i, sym in enumerate(top10)
             ]

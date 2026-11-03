@@ -1,0 +1,520 @@
+[
+  {
+    "notice": "ind_prs29082017.pdf",
+    "effective_date": "2017-09-05",
+    "effective_basis": "effective on stated date; close of previous session",
+    "covered_source_records": [
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2119",
+        "symbol": "RELCAPITAL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2120",
+        "symbol": "MFSL",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2136",
+        "symbol": "RELCAPITAL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2162",
+        "symbol": "MFSL",
+        "direction": "INCL"
+      }
+    ],
+    "source_records_not_covered_by_this_specific_notice": [],
+    "completeness": "not asserted; notice can amend an earlier main review"
+  },
+  {
+    "notice": "ind_prs17092019.pdf",
+    "effective_date": "2019-09-27",
+    "effective_basis": "effective on stated date; close of previous session",
+    "covered_source_records": [
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2386",
+        "symbol": "IIFL",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2413",
+        "symbol": "THOMASCOOK",
+        "direction": "EXCL"
+      }
+    ],
+    "source_records_not_covered_by_this_specific_notice": [
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2371",
+        "symbol": "ABB",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2372",
+        "symbol": "ABBOTINDIA",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2373",
+        "symbol": "ADANIGAS",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2374",
+        "symbol": "AMBER",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2375",
+        "symbol": "ARVINDFASN",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2376",
+        "symbol": "BAYERCROP",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2377",
+        "symbol": "BSOFT",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2378",
+        "symbol": "CGCL",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2379",
+        "symbol": "DEEPAKFERT",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2380",
+        "symbol": "DEN",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2381",
+        "symbol": "FMGOETZE",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2382",
+        "symbol": "GARFIBRES",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2383",
+        "symbol": "GDL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2384",
+        "symbol": "GSKCONS",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2385",
+        "symbol": "GRUH",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2387",
+        "symbol": "INDOCO",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2388",
+        "symbol": "INOXWIND",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2389",
+        "symbol": "JPASSOCIAT",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2390",
+        "symbol": "JCHAC",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2391",
+        "symbol": "KIOCL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2392",
+        "symbol": "KPITTECH",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2393",
+        "symbol": "METROPOLIS",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2394",
+        "symbol": "MCX",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2395",
+        "symbol": "NESTLEIND",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2396",
+        "symbol": "ORIENTREF",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2397",
+        "symbol": "POLYCAB",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2398",
+        "symbol": "RVNL",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2399",
+        "symbol": "RKFORGE",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2400",
+        "symbol": "RATNAMANI",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2401",
+        "symbol": "RCOM",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2402",
+        "symbol": "RHFL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2403",
+        "symbol": "RUPA",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2404",
+        "symbol": "SREINFRA",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2405",
+        "symbol": "SHANKARA",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2406",
+        "symbol": "SHARDACROP",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2407",
+        "symbol": "SCI",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2408",
+        "symbol": "SPTL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2409",
+        "symbol": "TCIEXP",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2410",
+        "symbol": "TNPL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2411",
+        "symbol": "TATACOFFEE",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2412",
+        "symbol": "TECHNOE",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2414",
+        "symbol": "TRITURBINE",
+        "direction": "EXCL"
+      }
+    ],
+    "completeness": "not asserted; notice can amend an earlier main review"
+  },
+  {
+    "notice": "ind_prs10062020.pdf",
+    "effective_date": "2020-06-26",
+    "effective_basis": "effective on stated date; close of previous session",
+    "covered_source_records": [
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2443",
+        "symbol": "ALKYLAMINE",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2444",
+        "symbol": "ABB",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2445",
+        "symbol": "BHARATRAS",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2446",
+        "symbol": "RELINFRA",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2447",
+        "symbol": "CENTURYTEX",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2448",
+        "symbol": "DHFL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2449",
+        "symbol": "ESABINDIA",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2450",
+        "symbol": "FMGOETZE",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2451",
+        "symbol": "INGERRAND",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2452",
+        "symbol": "KSB",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2453",
+        "symbol": "RELCAPITAL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2454",
+        "symbol": "SCI",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2455",
+        "symbol": "VESUVIUS",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2456",
+        "symbol": "TATACOMM",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2457",
+        "symbol": "LAKSHVILAS",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2458",
+        "symbol": "ITDCEM",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2459",
+        "symbol": "JISLJALEQS",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2460",
+        "symbol": "MAGMA",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2461",
+        "symbol": "INDOCO",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2462",
+        "symbol": "NETWORK18",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2463",
+        "symbol": "LAOPALA",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2464",
+        "symbol": "RPOWER",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2465",
+        "symbol": "SHILPAMED",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2466",
+        "symbol": "HATHWAY",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2467",
+        "symbol": "WABAG",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2468",
+        "symbol": "RESPONIND",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2469",
+        "symbol": "KIRLOSENG",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2470",
+        "symbol": "DHANUKA",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2471",
+        "symbol": "IBULISL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2472",
+        "symbol": "GAYAPROJ",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2473",
+        "symbol": "TRITURBINE",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2474",
+        "symbol": "POLYMED",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2475",
+        "symbol": "SCHNEIDER",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2476",
+        "symbol": "SUNCLAYLTD",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2477",
+        "symbol": "PCJEWELLER",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2478",
+        "symbol": "FLFL",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2479",
+        "symbol": "SHK",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2480",
+        "symbol": "SEQUENT",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2481",
+        "symbol": "PARAGMILK",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2482",
+        "symbol": "GMMPFAUDLR",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2483",
+        "symbol": "GRSE",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2484",
+        "symbol": "TECHNOE",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2485",
+        "symbol": "CHALET",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2486",
+        "symbol": "KENNAMET",
+        "direction": "EXCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2487",
+        "symbol": "IIFLWAM",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2488",
+        "symbol": "IRCTC",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2489",
+        "symbol": "FLUOROCHEM",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2490",
+        "symbol": "CSBBANK",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2491",
+        "symbol": "UJJIVANSFB",
+        "direction": "INCL"
+      },
+      {
+        "source_row_id": "IndexInclExcl - Upto 2020.xls:Nifty 500:2492",
+        "symbol": "SUMICHEM",
+        "direction": "INCL"
+      }
+    ],
+    "source_records_not_covered_by_this_specific_notice": [],
+    "completeness": "not asserted; notice can amend an earlier main review"
+  }
+]

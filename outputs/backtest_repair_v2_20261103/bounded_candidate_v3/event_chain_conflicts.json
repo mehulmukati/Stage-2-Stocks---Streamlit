@@ -1,0 +1,30 @@
+{
+  "conflicts": [
+    {
+      "date": "2019-03-29",
+      "excluded_still_present": [],
+      "missing_inclusions": [
+        "ISIN:INE962Y01013"
+      ],
+      "same_day_collision": []
+    },
+    {
+      "date": "2018-04-02",
+      "excluded_still_present": [],
+      "missing_inclusions": [
+        "ISIN:INE022Q01012",
+        "ISIN:INE285J01010"
+      ],
+      "same_day_collision": []
+    },
+    {
+      "date": "2017-09-29",
+      "excluded_still_present": [],
+      "missing_inclusions": [
+        "ISIN:INE978A01019"
+      ],
+      "same_day_collision": []
+    }
+  ],
+  "round_trip": false
+}

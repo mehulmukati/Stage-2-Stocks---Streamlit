@@ -1,0 +1,42 @@
+[
+  {
+    "name": "indices_dataSep2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataSep2020.zip",
+    "status": 200,
+    "bytes": 5343967,
+    "retrieved_at": "2026-11-03T06:16:52.279143+00:00",
+    "sha256": "effeedd14ea6b036af96dbcba8587ed5d508042dc0f1ac2e20848bc4667e6ca3"
+  },
+  {
+    "name": "indices_dataJun2017.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJun2017.zip",
+    "status": 200,
+    "bytes": 1944534,
+    "retrieved_at": "2026-11-03T06:16:50.699732+00:00",
+    "sha256": "907fca09784c59d663516fc4b36db89100744c9aab056d222d33adf8a2ef1d6b"
+  },
+  {
+    "name": "indices_dataAug2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataAug2020.zip",
+    "status": 200,
+    "bytes": 5343444,
+    "retrieved_at": "2026-11-03T06:16:51.176947+00:00",
+    "sha256": "bbc2408d0c3eaae9a2c2421eda33cb383945cd7b7cab7e8d173365c44de88d4f"
+  },
+  {
+    "name": "cm29SEP2017bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2017/SEP/cm29SEP2017bhav.csv.zip",
+    "status": 200,
+    "bytes": 64841,
+    "retrieved_at": "2026-11-03T06:16:51.313311+00:00",
+    "sha256": "02c7a906d55e08a0d3fde86d440577b23a47f21cd09581ef953e90ccc79f752e"
+  },
+  {
+    "name": "cm31AUG2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/AUG/cm31AUG2020bhav.csv.zip",
+    "status": 200,
+    "bytes": 73310,
+    "retrieved_at": "2026-11-03T06:16:51.596102+00:00",
+    "sha256": "8140b9f8cea524172bf603fa274ba8a5f21b91584c54a2c0eb4dfa975f805204"
+  }
+]

@@ -1,0 +1,522 @@
+[
+  {
+    "name": "indices_dataJun2017.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJun2017.zip",
+    "retrieved_at": "2026-11-03T06:19:18.472962+00:00",
+    "cached": true,
+    "status": 200,
+    "sha256": "907fca09784c59d663516fc4b36db89100744c9aab056d222d33adf8a2ef1d6b"
+  },
+  {
+    "name": "indices_dataJul2017.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJul2017.zip",
+    "retrieved_at": "2026-11-03T06:19:18.472962+00:00",
+    "status": 200,
+    "bytes": 2693636,
+    "sha256": "92e6642ce5d06d8125e3a5b63e75def5d033c5f748c1caa04e003ca6c6037df3"
+  },
+  {
+    "name": "indices_dataAug2017.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataAug2017.zip",
+    "retrieved_at": "2026-11-03T06:19:18.474961+00:00",
+    "status": 200,
+    "bytes": 2693707,
+    "sha256": "8a87b8341569a4b8482fdce76169b5a14c1672b801347657adada8bff3e886f7"
+  },
+  {
+    "name": "indices_dataSep2017.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataSep2017.zip",
+    "retrieved_at": "2026-11-03T06:19:18.475964+00:00",
+    "status": 200,
+    "bytes": 2693561,
+    "sha256": "230073c2272376dbba6f6a70ee44d4da3e40f78e0270da578b1fa53f0f271c5f"
+  },
+  {
+    "name": "indices_dataOct2017.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataOct2017.zip",
+    "retrieved_at": "2026-11-03T06:19:18.480961+00:00",
+    "status": 200,
+    "bytes": 2693737,
+    "sha256": "aac9c50eeab36b3ecce5e5e198447467d2842bc2ba9ef80a641771462a21c506"
+  },
+  {
+    "name": "indices_dataNov2017.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataNov2017.zip",
+    "retrieved_at": "2026-11-03T06:19:20.473388+00:00",
+    "status": 200,
+    "bytes": 2694151,
+    "sha256": "aeffd41c9563e188c885f15efa3d5bc38d08b4dd5e5dd1369fa8b1d894222ef2"
+  },
+  {
+    "name": "indices_dataDec2017.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataDec2017.zip",
+    "retrieved_at": "2026-11-03T06:19:20.509906+00:00",
+    "status": 200,
+    "bytes": 2694409,
+    "sha256": "27a47b73a928143c9c0f247f50f07c1373316af6c00f55d75453051219d04db0"
+  },
+  {
+    "name": "indices_dataJan2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJan2018.zip",
+    "retrieved_at": "2026-11-03T06:19:20.552917+00:00",
+    "status": 200,
+    "bytes": 2694161,
+    "sha256": "1c1b11039bdf8da7e1125012e81f2be6332f7033de1a9daa6791d762b5e3e684"
+  },
+  {
+    "name": "indices_dataFeb2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataFeb2018.zip",
+    "retrieved_at": "2026-11-03T06:19:20.558911+00:00",
+    "status": 200,
+    "bytes": 2694649,
+    "sha256": "05a681d96562d26d50eecf4b78b797f7cff1feba71693c9380aa28aff0f09cb3"
+  },
+  {
+    "name": "indices_dataMar2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataMar2018.zip",
+    "retrieved_at": "2026-11-03T06:19:21.131641+00:00",
+    "status": 200,
+    "bytes": 2694245,
+    "sha256": "305403cfdf38817cf31dc8bf2b22bc69f6d579a11a80d588958b5cf20fd494c7"
+  },
+  {
+    "name": "indices_dataApr2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataApr2018.zip",
+    "retrieved_at": "2026-11-03T06:19:21.383785+00:00",
+    "status": 200,
+    "bytes": 2558172,
+    "sha256": "93a2452b1f3edc991e9965cdf48b2e10c8ece23c5cb2ecc41fbcda98eb4ea0da"
+  },
+  {
+    "name": "indices_dataMay2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataMay2018.zip",
+    "retrieved_at": "2026-11-03T06:19:21.918105+00:00",
+    "status": 200,
+    "bytes": 2557849,
+    "sha256": "38b09e4d781a102b521485bc0b704744962a0dbce18e92038ed997e2e7f39b2b"
+  },
+  {
+    "name": "indices_dataJun2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJun2018.zip",
+    "retrieved_at": "2026-11-03T06:19:21.921101+00:00",
+    "status": 200,
+    "bytes": 2556227,
+    "sha256": "35c518e9b77deae7f61f28d4c6f0f312d46d10a7d4e1f41a82f7ce20c9aee01f"
+  },
+  {
+    "name": "indices_dataJul2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJul2018.zip",
+    "retrieved_at": "2026-11-03T06:19:22.031715+00:00",
+    "status": 200,
+    "bytes": 2498478,
+    "sha256": "9fd4ace46b6c1e809f22060576fe7e3e62f1ad746818593c933b2573435e9440"
+  },
+  {
+    "name": "indices_dataAug2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataAug2018.zip",
+    "retrieved_at": "2026-11-03T06:19:22.165918+00:00",
+    "status": 200,
+    "bytes": 5339739,
+    "sha256": "88edd69c7399a2075e6c36b11bf1a6b6d19f915a9011f71549a861f96acd7c62"
+  },
+  {
+    "name": "indices_dataSep2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataSep2018.zip",
+    "retrieved_at": "2026-11-03T06:19:22.643802+00:00",
+    "status": 200,
+    "bytes": 5342692,
+    "sha256": "be9625d29f2c02efe216f538975ad1df950037a29862152fb50db675f785a023"
+  },
+  {
+    "name": "indices_dataOct2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataOct2018.zip",
+    "retrieved_at": "2026-11-03T06:19:22.873340+00:00",
+    "status": 200,
+    "bytes": 5342734,
+    "sha256": "124f94b04e047ffe18fe80b17b5fea5d8cf92593d3d75b71d0e90cbaae98c195"
+  },
+  {
+    "name": "indices_dataNov2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataNov2018.zip",
+    "retrieved_at": "2026-11-03T06:19:23.045667+00:00",
+    "status": 200,
+    "bytes": 5342774,
+    "sha256": "262c0645ba9a6e1070c0e45b87c675bbea8b1cf5e5da94c6efb8fb0622b62122"
+  },
+  {
+    "name": "indices_dataDec2018.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataDec2018.zip",
+    "retrieved_at": "2026-11-03T06:19:23.676450+00:00",
+    "status": 200,
+    "bytes": 5342763,
+    "sha256": "b7b2084dd3349be9405e54117362e85c5118d6bbccd5edd2f1e6304a0d7a8d44"
+  },
+  {
+    "name": "indices_dataJan2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJan2019.zip",
+    "retrieved_at": "2026-11-03T06:19:24.082259+00:00",
+    "status": 200,
+    "bytes": 5342606,
+    "sha256": "bf5e8acd6dcba671013874e21058cba19379fb83b221931628ef90d111d81f3d"
+  },
+  {
+    "name": "indices_dataFeb2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataFeb2019.zip",
+    "retrieved_at": "2026-11-03T06:19:24.913563+00:00",
+    "status": 200,
+    "bytes": 5342636,
+    "sha256": "2a4c4743e8b20d2b5f2f11265f631b493b0a9f3250233f22bf5a7a383b4e57ec"
+  },
+  {
+    "name": "indices_dataMar2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataMar2019.zip",
+    "retrieved_at": "2026-11-03T06:19:25.244901+00:00",
+    "status": 200,
+    "bytes": 5342092,
+    "sha256": "56dc9429612f7a1f5fc4b671343785ff950d465d7e1e8fcef56be9d8fd385a5e"
+  },
+  {
+    "name": "indices_dataApr2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataApr2019.zip",
+    "retrieved_at": "2026-11-03T06:19:26.143751+00:00",
+    "status": 200,
+    "bytes": 5341947,
+    "sha256": "3c6d0ce5aef58047c2f81ae83690aa9601373a4af9fec14e2c83d474e59ee0bd"
+  },
+  {
+    "name": "indices_dataMay2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataMay2019.zip",
+    "retrieved_at": "2026-11-03T06:19:26.300492+00:00",
+    "status": 200,
+    "bytes": 5341785,
+    "sha256": "87c41b86bcbc38e7a7891817c53f2dd86e789487e991c792fad6907879cadc29"
+  },
+  {
+    "name": "indices_dataJun2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJun2019.zip",
+    "retrieved_at": "2026-11-03T06:19:26.843043+00:00",
+    "status": 200,
+    "bytes": 5341139,
+    "sha256": "637818665439d6b836f4f128db18b3df7a89410ec24e5385ea4c37c7cce398e3"
+  },
+  {
+    "name": "indices_dataJul2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJul2019.zip",
+    "retrieved_at": "2026-11-03T06:19:27.937059+00:00",
+    "status": 200,
+    "bytes": 5341057,
+    "sha256": "2541d6174a3fc92dd6175eacb946acd5260d4cde8f872edc941389fcae4396c7"
+  },
+  {
+    "name": "indices_dataAug2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataAug2019.zip",
+    "retrieved_at": "2026-11-03T06:19:30.759057+00:00",
+    "status": 200,
+    "bytes": 5341199,
+    "sha256": "aeeca6ea45457b007b6857bc2b26f304a479bb4239cf7e5c3f420b00843b2120"
+  },
+  {
+    "name": "indices_dataSep2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataSep2019.zip",
+    "retrieved_at": "2026-11-03T06:19:30.935230+00:00",
+    "status": 200,
+    "bytes": 5342994,
+    "sha256": "c723c9640bca6c287498568b02b671c07ca589781e07e8f501a113cb6feaa0e2"
+  },
+  {
+    "name": "indices_dataOct2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataOct2019.zip",
+    "retrieved_at": "2026-11-03T06:19:31.616687+00:00",
+    "status": 200,
+    "bytes": 5343113,
+    "sha256": "efb12285610fb3c0cc07699ad727ab78d5b3d821c68caa9f33dca6e30dc251c2"
+  },
+  {
+    "name": "indices_dataNov2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataNov2019.zip",
+    "retrieved_at": "2026-11-03T06:19:32.131145+00:00",
+    "status": 200,
+    "bytes": 5344801,
+    "sha256": "3933aafbffda34e4f1767a4df0f7db6464dede5daecf4e8944387dc680e1464e"
+  },
+  {
+    "name": "indices_dataDec2019.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataDec2019.zip",
+    "retrieved_at": "2026-11-03T06:19:34.633078+00:00",
+    "status": 200,
+    "bytes": 5218026,
+    "sha256": "5f0f848bd0b5a13bd6a31cb73ceb55f6a99ac16030c9f578fb240acbfd9e7bd3"
+  },
+  {
+    "name": "indices_dataJan2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJan2020.zip",
+    "retrieved_at": "2026-11-03T06:19:35.496412+00:00",
+    "status": 200,
+    "bytes": 5344762,
+    "sha256": "3392685a8c0a3e06ef313354efe174e60c3d4dd62683f7e05cee3c436b62b721"
+  },
+  {
+    "name": "indices_dataFeb2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataFeb2020.zip",
+    "retrieved_at": "2026-11-03T06:19:35.810229+00:00",
+    "status": 200,
+    "bytes": 5344877,
+    "sha256": "f79792707dbacba304fa94b0006eee80644b4314c4279cebbf2aa2db4f6c12eb"
+  },
+  {
+    "name": "indices_dataMar2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataMar2020.zip",
+    "retrieved_at": "2026-11-03T06:19:35.914069+00:00",
+    "status": 200,
+    "bytes": 5343814,
+    "sha256": "00efbdb09265de37ecfc19e85d89e7f78ad3ffb4d003c8694d7a4c9b940d0e6c"
+  },
+  {
+    "name": "indices_dataApr2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataApr2020.zip",
+    "retrieved_at": "2026-11-03T06:19:37.045229+00:00",
+    "status": 200,
+    "bytes": 5344181,
+    "sha256": "568cfe3a12c8345657534f58154fdde34504f68120f1b2a332dba4aaa0952911"
+  },
+  {
+    "name": "indices_dataMay2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataMay2020.zip",
+    "retrieved_at": "2026-11-03T06:19:37.217872+00:00",
+    "status": 200,
+    "bytes": 5343694,
+    "sha256": "e7d2700db2d0fd6502e393ab98641d41f1526753f4458a055acf99153b754a2e"
+  },
+  {
+    "name": "indices_dataJun2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJun2020.zip",
+    "retrieved_at": "2026-11-03T06:19:38.801212+00:00",
+    "status": 200,
+    "bytes": 5343271,
+    "sha256": "970aa5d345c214482aac2c9fa7bfb6afe572396a404c64c5af1558f309bd3d94"
+  },
+  {
+    "name": "indices_dataJul2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataJul2020.zip",
+    "retrieved_at": "2026-11-03T06:19:39.057254+00:00",
+    "status": 200,
+    "bytes": 5343323,
+    "sha256": "d2e69912c30325ef1d15ab51122cbd0d70b8469199051f23ed465b492f4c05a1"
+  },
+  {
+    "name": "indices_dataAug2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataAug2020.zip",
+    "retrieved_at": "2026-11-03T06:19:39.456542+00:00",
+    "cached": true,
+    "status": 200,
+    "sha256": "bbc2408d0c3eaae9a2c2421eda33cb383945cd7b7cab7e8d173365c44de88d4f"
+  },
+  {
+    "name": "indices_dataSep2020.zip",
+    "url": "https://www.niftyindices.com/Indices_-_Market_Capitalisation_and_Weightage/indices_dataSep2020.zip",
+    "retrieved_at": "2026-11-03T06:19:39.464402+00:00",
+    "cached": true,
+    "status": 200,
+    "sha256": "effeedd14ea6b036af96dbcba8587ed5d508042dc0f1ac2e20848bc4667e6ca3"
+  },
+  {
+    "name": "cm05SEP2017bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2017/SEP/cm05SEP2017bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:39.472432+00:00",
+    "status": 200,
+    "bytes": 64931,
+    "sha256": "de460f59d65fb2f768e78fa857d0d6710d37f54fdc260b8a283cf782b2bd6f8f"
+  },
+  {
+    "name": "cm29SEP2017bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2017/SEP/cm29SEP2017bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:39.862171+00:00",
+    "cached": true,
+    "status": 200,
+    "sha256": "02c7a906d55e08a0d3fde86d440577b23a47f21cd09581ef953e90ccc79f752e"
+  },
+  {
+    "name": "cm30OCT2017bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2017/OCT/cm30OCT2017bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:39.863175+00:00",
+    "status": 200,
+    "bytes": 67340,
+    "sha256": "a2ae5c25e6355a4039ee1bd894212109db8071f7fc62eef701ad6d68ebe5b040"
+  },
+  {
+    "name": "cm13NOV2017bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2017/NOV/cm13NOV2017bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:39.931380+00:00",
+    "status": 200,
+    "bytes": 66497,
+    "sha256": "2534ad815ca57757fc2c935aed05e0cb1b54ddebb343a594f59593177c9d686b"
+  },
+  {
+    "name": "cm20NOV2017bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2017/NOV/cm20NOV2017bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.169431+00:00",
+    "status": 200,
+    "bytes": 67464,
+    "sha256": "272fba51dd2a7d9fb4bf378951a1b8e95bae0f3160da5fcf9ea7b4442bc49d30"
+  },
+  {
+    "name": "cm05FEB2018bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2018/FEB/cm05FEB2018bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.297735+00:00",
+    "status": 200,
+    "bytes": 70044,
+    "sha256": "0b8e0f6f22c6e1175de4b87a14a81ae382e154d910bbf8be462435fcbc7e100e"
+  },
+  {
+    "name": "cm13MAR2018bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2018/MAR/cm13MAR2018bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.358432+00:00",
+    "status": 200,
+    "bytes": 69011,
+    "sha256": "d0cd591f09ca46a0a26c556a056efdeaccc31461f127412e4329bec1abfc3d9f"
+  },
+  {
+    "name": "cm02APR2018bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2018/APR/cm02APR2018bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.461056+00:00",
+    "status": 200,
+    "bytes": 67993,
+    "sha256": "0ce5fd92a0adebad19a13bf5e614dac6d60d692b9f7363a84c19fee1455a8bf4"
+  },
+  {
+    "name": "cm29JUN2018bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2018/JUN/cm29JUN2018bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.511069+00:00",
+    "status": 200,
+    "bytes": 68329,
+    "sha256": "aa795d0ce670f06140837f43c89794fec9a3d551c7ee4f265fcc5acac468fb9f"
+  },
+  {
+    "name": "cm08AUG2018bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2018/AUG/cm08AUG2018bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.573226+00:00",
+    "status": 200,
+    "bytes": 68681,
+    "sha256": "2b7c8cb45d64ca312c1708826b4cc6fc3a11cd7e8fdb275188154fa6a7e20249"
+  },
+  {
+    "name": "cm28SEP2018bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2018/SEP/cm28SEP2018bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.612236+00:00",
+    "status": 200,
+    "bytes": 70749,
+    "sha256": "57a874ce0a52a392cb7f615be8778a3f508180a87e864aadc604fa935a12384b"
+  },
+  {
+    "name": "cm28DEC2018bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2018/DEC/cm28DEC2018bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.656289+00:00",
+    "status": 200,
+    "bytes": 67924,
+    "sha256": "cb4d13b9f09d28655e75490a7bd52f25cc101b13ac72a8aea20fdbd5acd51968"
+  },
+  {
+    "name": "cm28JAN2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/JAN/cm28JAN2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.742940+00:00",
+    "status": 200,
+    "bytes": 68133,
+    "sha256": "fa4241c91d632db7402ce13dcce48bbda08fc262ee76cf848540fe5552afcb60"
+  },
+  {
+    "name": "cm29MAR2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/MAR/cm29MAR2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.786490+00:00",
+    "status": 200,
+    "bytes": 69539,
+    "sha256": "bc4f1c5a82dfc96d24061f8a7a11d72482988813feffcb776af804e1960ac9a9"
+  },
+  {
+    "name": "cm15APR2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/APR/cm15APR2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.801487+00:00",
+    "status": 200,
+    "bytes": 68439,
+    "sha256": "72f7ac36a39d276270b1d84fcf04c094a8a0b72fc49c39ec16a5d3c09d9fbdd6"
+  },
+  {
+    "name": "cm28JUN2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/JUN/cm28JUN2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:41.856579+00:00",
+    "status": 200,
+    "bytes": 67547,
+    "sha256": "1c4ea040b39742827eec88755db0d8567cb66b7b8258b41a1e881a7c18e454ce"
+  },
+  {
+    "name": "cm24SEP2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/SEP/cm24SEP2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:42.085800+00:00",
+    "status": 200,
+    "bytes": 69147,
+    "sha256": "bacfb8dd2c17ae39a77fd73996f7964b549d62bec8f329a0d159de69c108c5a8"
+  },
+  {
+    "name": "cm27SEP2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/SEP/cm27SEP2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:42.208477+00:00",
+    "status": 200,
+    "bytes": 68644,
+    "sha256": "9de66cc4931b269fc1c66242ba443520f1d8ea82f9bc761575b8e666b73d7f07"
+  },
+  {
+    "name": "cm26DEC2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/DEC/cm26DEC2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:42.208477+00:00",
+    "status": 200,
+    "bytes": 69073,
+    "sha256": "fc0cbe32bbac9ed44f450bf93d69b8ad58145d0104c79b6a576f1744b9041661"
+  },
+  {
+    "name": "cm27DEC2019bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2019/DEC/cm27DEC2019bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:42.493450+00:00",
+    "status": 200,
+    "bytes": 69427,
+    "sha256": "bfff98fd90e3d1eeb87c61a1f2145850c95c36943a63328b0d08ba95fcfa6fad"
+  },
+  {
+    "name": "cm16JAN2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/JAN/cm16JAN2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:42.821692+00:00",
+    "status": 200,
+    "bytes": 69877,
+    "sha256": "179f4d2c27a4b860606631874aeececde4237f0c4dcf5e55eb718f1a9963445b"
+  },
+  {
+    "name": "cm19MAR2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/MAR/cm19MAR2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:43.071730+00:00",
+    "status": 200,
+    "bytes": 70621,
+    "sha256": "9c590311f613e0c1f33d07ab52a3ba4426bd867ac3a258f7dce38748d6db55b7"
+  },
+  {
+    "name": "cm26JUN2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/JUN/cm26JUN2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:43.322201+00:00",
+    "status": 200,
+    "bytes": 69845,
+    "sha256": "c4c1f555bc63ccffc102e3d265ac77edcea2d15e87feae995429e9d2613f19eb"
+  },
+  {
+    "name": "cm31JUL2020bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2020/JUL/cm31JUL2020bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:43.924804+00:00",
+    "status": 200,
+    "bytes": 69395,
+    "sha256": "26cbb9286efe0123d66c0e988f90107e32b6f3ea8a2e63701ec97d73a20dd306"
+  },
+  {
+    "name": "cm30JUN2017bhav.csv.zip",
+    "url": "https://nsearchives.nseindia.com/content/historical/EQUITIES/2017/JUN/cm30JUN2017bhav.csv.zip",
+    "retrieved_at": "2026-11-03T06:19:44.161582+00:00",
+    "status": 200,
+    "bytes": 63817,
+    "sha256": "dd3bf785d7a4c0a839c582fdfdc075f8a8526f2155683bb954b86d93b5c80816"
+  }
+]

@@ -45,11 +45,27 @@ def load_aliases(path=REGISTRY):
             raise ValueError("Missing stable identity/source")
         if pd.Timestamp(a["valid_from"]) > pd.Timestamp(a["valid_to"]):
             raise ValueError("Reversed alias validity")
+        for date in a.get("verified_effective_dates", []):
+            if not pd.Timestamp(a["valid_from"]) <= pd.Timestamp(date) <= pd.Timestamp(a["valid_to"]):
+                raise ValueError("Verified effective date falls outside alias span")
     for i, a in enumerate(aliases):
         for b in aliases[i + 1 :]:
             if name_key(a["name"]) == name_key(b["name"]) and max(a["valid_from"], b["valid_from"]) <= min(
                 a["valid_to"], b["valid_to"]
             ):
+                points_a = a.get("verified_effective_dates")
+                points_b = b.get("verified_effective_dates")
+                if points_a is not None or points_b is not None:
+                    overlap = (
+                        any(
+                            b["valid_from"] <= d <= b["valid_to"] and (points_b is None or d in points_b)
+                            for d in points_a
+                        )
+                        if points_a is not None
+                        else any(a["valid_from"] <= d <= a["valid_to"] for d in points_b)
+                    )
+                    if not overlap:
+                        continue
                 if (a["security_id"], a["exchange_symbol"]) != (b["security_id"], b["exchange_symbol"]):
                     raise ValueError("Conflicting overlapping alias decisions")
     return aliases
@@ -60,7 +76,9 @@ def resolve_name(name, effective_date, aliases):
     matches = [
         a
         for a in aliases
-        if name_key(a["name"]) == name_key(name) and pd.Timestamp(a["valid_from"]) <= day <= pd.Timestamp(a["valid_to"])
+        if name_key(a["name"]) == name_key(name)
+        and pd.Timestamp(a["valid_from"]) <= day <= pd.Timestamp(a["valid_to"])
+        and ("verified_effective_dates" not in a or str(day.date()) in a["verified_effective_dates"])
     ]
     return matches[0].copy() if matches else None
 

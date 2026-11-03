@@ -1,0 +1,162 @@
+{
+  "original_missing_buy_fixed": {
+    "ending_nav": 100.0,
+    "passed": true,
+    "trades": 0
+  },
+  "average_holdings_after_failed_buy": {
+    "reported": 0.0,
+    "actual_held_every_day": 0,
+    "passed": true
+  },
+  "original_missing_sell_fixed": {
+    "ending_nav": 200.0,
+    "passed": true,
+    "held": [
+      "A"
+    ]
+  },
+  "original_gap_fixed": {
+    "ending_nav": 300.0,
+    "passed": true
+  },
+  "original_exit_cost_and_quantity_fixed": {
+    "ending_nav": 199.6002,
+    "passed": true,
+    "remaining": {}
+  },
+  "original_infeasible_cap_fixed": {
+    "ending_nav": 140.0,
+    "cash": 60.0,
+    "passed": true
+  },
+  "blocked_exit_position_count": {
+    "requested_M": 2,
+    "holdings": {
+      "Full Rebalance": [
+        "A",
+        "C"
+      ],
+      "Marginal Rebalance": [
+        "A",
+        "C"
+      ],
+      "Prop Rebalance": [
+        "A",
+        "C"
+      ]
+    },
+    "passed": true,
+    "fill_failures": [
+      {
+        "date": "2024-07-15 00:00:00",
+        "symbol": "A",
+        "side": "SELL",
+        "reason": "unfilled exit retains occupied displacement slot"
+      },
+      {
+        "date": "2024-07-15 00:00:00",
+        "symbol": "A",
+        "side": "SELL",
+        "reason": "unfilled exit retains occupied displacement slot"
+      },
+      {
+        "date": "2024-07-15 00:00:00",
+        "symbol": "A",
+        "side": "SELL",
+        "reason": "unfilled exit retains occupied displacement slot"
+      }
+    ]
+  },
+  "ordinary_taxable_cap": {
+    "requested_cap": 0.5,
+    "actual_weights": {
+      "A": 0.5000000000000001,
+      "B": 0.49999999999999994
+    },
+    "cash": 10.514666590247444,
+    "tax_accrued": 10.514666590247444,
+    "passed": true,
+    "failures": []
+  },
+  "engine_ordinary_taxable_cap": {
+    "requested_cap_pct": 50,
+    "actual_weights": {
+      "A": 50.0,
+      "B": 50.0
+    },
+    "cap_violations": {
+      "Full Rebalance": {},
+      "Marginal Rebalance": {},
+      "Prop Rebalance": {}
+    },
+    "passed": true,
+    "failures": []
+  },
+  "independent_variant_states": {
+    "initial_full": [
+      "A"
+    ],
+    "initial_marginal": [
+      "B"
+    ],
+    "ranking": [
+      "A",
+      "B"
+    ],
+    "M": 1,
+    "N": 3,
+    "result": {
+      "Full Rebalance": [
+        "A"
+      ],
+      "Marginal Rebalance": [
+        "B"
+      ],
+      "Prop Rebalance": [
+        "A"
+      ]
+    },
+    "expected_full": [
+      "A"
+    ],
+    "expected_marginal": [
+      "B"
+    ],
+    "passed": true
+  },
+  "publication_interval_isolation": {
+    "reviewed_interval": [
+      "2025-01-05",
+      "2025-01-10"
+    ],
+    "outside_date": "2025-01-13",
+    "before": {
+      "X": [
+        "OLD"
+      ]
+    },
+    "after": {
+      "X": [
+        "OLD"
+      ]
+    },
+    "passed": true
+  },
+  "baseline_manifest_top_keys": [
+    "files",
+    "revision",
+    "created"
+  ],
+  "identity_work_completed": {
+    "alias_records": 1,
+    "verified_event_rows": 0,
+    "event_rows": 9179,
+    "unresolved_event_rows": 9179
+  },
+  "existing_diagnostic_variant_divergence": {
+    "events": 486,
+    "different_holdings_events": 0,
+    "cap_violations": 0
+  }
+}

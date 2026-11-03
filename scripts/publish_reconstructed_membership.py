@@ -61,6 +61,8 @@ def publish(candidate_path, certificate_path, backup_dir):
     for interval in intervals:
         idx = md.index_key(interval["index"])
         start, end = pd.Timestamp(interval["start"]), pd.Timestamp(interval["end"])
+        if start != start.normalize() or end != end.normalize() or start.tzinfo or end.tzinfo:
+            raise ValueError("Repair scopes must be timezone-free inclusive calendar dates")
         if start > end:
             raise ValueError("Reversed coverage interval")
         for prior_idx, lo, hi in scopes:
@@ -85,14 +87,40 @@ def publish(candidate_path, certificate_path, backup_dir):
         price_rev, membership_rev = md.source_revisions()
         if (price_rev, membership_rev) != (certificate["price_revision"], certificate["membership_revision"]):
             raise RuntimeError("Accepted sources changed since review; rebuild and revalidate")
+        if (
+            sha256(candidate_path) != certificate["candidate_sha256"]
+            or sha256(observed_path) != certificate["observed_snapshots_sha256"]
+            or sha256(REGISTRY) != certificate["identity_registry_sha256"]
+        ):
+            raise RuntimeError("Review evidence changed before publication")
         history, metadata = md._read(md.MEMBERSHIP_PATH)
         keep = pd.Series(True, index=history.index)
         for idx, start, end in scopes:
             keep &= ~(history.INDEX_NAME.eq(idx) & history.TIME_STAMP.between(start, end))
-        combined = md.normalize_membership(pd.concat([history.loc[keep], candidate], ignore_index=True))
+        # Scopes are inclusive calendar days. Restore the ORIGINAL effective
+        # state on end+1 calendar day (including weekends), not the next market
+        # session. Another scope starting there takes precedence. Existing
+        # snapshots at that boundary already supply the authoritative state.
+        restorations = []
+        for idx, start, end in scopes:
+            boundary = end + pd.Timedelta(days=1)
+            if any(i == idx and lo <= boundary <= hi for i, lo, hi in scopes):
+                continue
+            original = history[history.INDEX_NAME.eq(idx) & history.TIME_STAMP.le(boundary)]
+            if original.empty:
+                raise ValueError("Cannot restore unknown outside-scope state; include a prior anchor")
+            state = original[original.TIME_STAMP.eq(original.TIME_STAMP.max())].copy()
+            if (history.INDEX_NAME.eq(idx) & history.TIME_STAMP.eq(boundary)).any():
+                continue
+            state["TIME_STAMP"] = boundary
+            restorations.append(state)
+        combined = md.normalize_membership(pd.concat([history.loc[keep], candidate, *restorations], ignore_index=True))
         backup_dir.mkdir(parents=True, exist_ok=False)
         shutil.copy2(md.MEMBERSHIP_PATH, backup_dir / md.MEMBERSHIP_PATH.name)
         shutil.copy2(certificate_path, backup_dir / "certificate.json")
+        shutil.copy2(candidate_path, backup_dir / "candidate.parquet")
+        shutil.copy2(observed_path, backup_dir / "observed_snapshots.parquet")
+        shutil.copy2(REGISTRY, backup_dir / "identity_registry.json")
         (backup_dir / "recovery.json").write_text(
             json.dumps(
                 dict(
@@ -100,6 +128,7 @@ def publish(candidate_path, certificate_path, backup_dir):
                     membership=membership_rev,
                     previous_sha256=sha256(md.MEMBERSHIP_PATH),
                     candidate_sha256=sha256(candidate_path),
+                    scope_semantics="inclusive timezone-free calendar dates; original state restored on end+1 day",
                 ),
                 indent=2,
             )

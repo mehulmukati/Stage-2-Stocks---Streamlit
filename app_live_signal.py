@@ -53,7 +53,7 @@ _SORT_OPTIONS = [
 ]
 
 _REPLAY_BUFFER_WEEKS = 52
-_LIVE_SIGNAL_VERSION = 3
+_LIVE_SIGNAL_VERSION = 4
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -193,6 +193,30 @@ def _classify_weight_changes(
             }
         )
     return changes
+
+
+def _variant_event_view(event: dict, variant: str) -> dict:
+    """Adapt a multi-book research event to the selected replay book only.
+
+    Legacy/actual-position checkpoint events already describe one book. This
+    read-only adapter never confirms, rewrites or advances a checkpoint.
+    """
+    books = event.get("holdings_by_variant")
+    if not books:
+        return dict(event)
+    label = (
+        "Prop Rebalance" if "Prop" in variant else "Marginal Rebalance" if "Marginal" in variant else "Full Rebalance"
+    )
+    key = "prop_weights" if "Prop" in label else "marg_weights" if "Marginal" in label else "full_weights"
+    result = dict(event)
+    held = set(books[label])
+    prior = {s for s, w in event.get("pre_rebalance_" + key, {}).items() if w > 0}
+    entry_reasons = dict(_parse_ticker_reason(item) for item in event.get("entries", []))
+    exit_reasons = dict(_parse_ticker_reason(item) for item in event.get("exits", []))
+    result["holdings"] = sorted(held)
+    result["entries"] = [f"{s} ({entry_reasons.get(s, 'entered selected portfolio')})" for s in sorted(held - prior)]
+    result["exits"] = [f"{s} ({exit_reasons.get(s, 'left selected portfolio')})" for s in sorted(prior - held)]
+    return result
 
 
 def _comparison_weights_for_live_event(
@@ -1199,7 +1223,7 @@ def _run_signal(params: dict) -> dict:
         return {"error": result["error"]}
 
     # Collect close prices for all tickers that appear in the last two rebalance events
-    holdings_log = result["holdings_log"]
+    holdings_log = [_variant_event_view(event, params["variant"]) for event in result["holdings_log"]]
     signal_sessions = shared_snapshot.trading_calendar()
     signal_sessions = signal_sessions[signal_sessions <= pd.Timestamp(signal_date)]
     if holdings_log and len(signal_sessions) and pd.Timestamp(holdings_log[-1]["date"]) != signal_sessions[-1]:

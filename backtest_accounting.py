@@ -8,13 +8,14 @@ Tax is a simplified constant-rate FY model on adjusted units, not nominal law.
 
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-ACCOUNTING_VERSION = "quantity-cash-v1"
+ACCOUNTING_VERSION = "quantity-cash-v2"
 POLICIES = {
     "accounting": ACCOUNTING_VERSION,
     "execution": "verified-contemporaneous-close; skip-unfilled-until-next-signal-v1",
@@ -23,7 +24,9 @@ POLICIES = {
     "cost": "buy-budget-rate-sell-proceeds-rate-all-orders-v1",
     "tax": "simplified-adjusted-unit-FY-accrual-cash-funded-v1",
     "prices": "vendor-auto-adjusted-research-no-extra-dividends-v1",
-    "cap": "rebalance-target-cash-if-infeasible-locked-holdings-disclosed-v1",
+    "cap": "final-net-NAV-after-fees-and-realized-tax-locked-holdings-disclosed-v2",
+    "selection": "independent-books-actual-displacement-slots-v2",
+    "holdings_statistics": "actual-end-of-session-count-including-initial-cash-v2",
     "calendar": "completed-exchange-periods-fixed-biweekly-parity-v1",
     "annualization": "elapsed-calendar-days/365.25; risk-free-zero; full-period-drawdown",
     "identity": "dated-evidence-only-v1; legacy-history-uncertified",
@@ -230,28 +233,42 @@ class QuantityLedger:
                 desired = {s: v * available / total for s, v in desired.items()}
             return desired
 
-        def costs(net):
-            desired = plan(net)
-            fees = 0.0
-            for s in set(desired) | (set(values) - locked):
-                delta = desired.get(s, 0.0) - values.get(s, 0.0)
-                fees += delta * rate / (1 - rate) if delta > 0 else -delta * rate + (flat if delta < -1e-10 else 0.0)
-            return fees
+        def sell_to_plan(book, desired):
+            for s in sorted(set(values) - locked):
+                value = desired.get(s, 0.0)
+                qty = quantities[s] if value <= 1e-10 else max(0.0, quantities[s] - value / quotes[s])
+                book.sell(day, s, qty, quotes[s], rate, flat)
+            book.accrue_tax(day, tax_fn, st, lt)
 
-        lo, hi = 0.0, max(0.0, before)
+        def final_nav(net):
+            # Simulate only mutable accounting state, never copy historical
+            # daily/trade exports. Trial sales use the same real FIFO basis,
+            # fee allocation and FY offsets as execution; no trial is a fill.
+            trial = copy.copy(self)
+            trial.lots = {s: [dict(lot) for lot in lots] for s, lots in self.lots.items()}
+            trial.gains = list(self.gains)
+            trial.trades = []
+            trial.closed_lots = []
+            desired = plan(net)
+            sell_to_plan(trial, desired)
+            remaining = trial.quantities()
+            buy_fee = sum(
+                max(0.0, v - remaining.get(s, 0.0) * quotes[s]) * rate / (1 - rate) for s, v in desired.items()
+            )
+            return trial.nav() - buy_fee
+
+        # A realized loss can release an existing accrual, so the upper bound
+        # is gross equity less already-payable tax, not prior net NAV alone.
+        lo, hi = 0.0, max(0.0, before + self.accrued)
         for _ in range(60):
             mid = (lo + hi) / 2
-            if mid + costs(mid) > before:
+            if mid > final_nav(mid):
                 hi = mid
             else:
                 lo = mid
         desired = plan(lo)
         start = len(self.trades)
-        for s in sorted(set(values) - locked):
-            value = desired.get(s, 0.0)
-            qty = quantities[s] if value <= 1e-10 else max(0.0, quantities[s] - value / quotes[s])
-            self.sell(day, s, qty, quotes[s], rate, flat)
-        self.accrue_tax(day, tax_fn, st, lt)
+        sell_to_plan(self, desired)
         buys = {
             s: max(0.0, value - self.quantities().get(s, 0.0) * quotes[s]) / (1 - rate) for s, value in desired.items()
         }

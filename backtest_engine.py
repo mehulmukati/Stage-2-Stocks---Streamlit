@@ -942,6 +942,8 @@ def _compute_holdings_displacement(
     stage2_entry_threshold: int,
     stage2_drop_threshold: int,
     rebalance_freq: str,
+    blocked_exits: set[str] | None = None,
+    executable_entries: set[str] | None = None,
 ) -> tuple[set[str], set[str], dict[str, str], dict[str, str]]:
     """
     Displacement band rule: N is the Worst Rank Held (WRH).
@@ -978,7 +980,7 @@ def _compute_holdings_displacement(
                 s2_exits.add(sym)
                 exit_reasons[sym] = f"S2 -{int(prev_score - curr_score)}"
 
-    exits = wrh_exits | s2_exits
+    exits = (wrh_exits | s2_exits) - (blocked_exits or set())
     holdings_after_exits = current_holdings - exits
 
     # Step 3 — build candidate pool: top-M new entrants + Stage 2 score jumpers
@@ -1004,6 +1006,8 @@ def _compute_holdings_displacement(
 
     # Step 4 — fill freed slots from combined candidates, best rank first
     entries_wanted = sorted(candidates, key=lambda s: rank_of.get(s, _worst))
+    if executable_entries is not None:
+        entries_wanted = [s for s in entries_wanted if s in executable_entries]
     free_slots = max(0, m - len(holdings_after_exits))
     entries: set[str] = set(entries_wanted[:free_slots])
     entry_reasons: dict[str, str] = {
@@ -1292,7 +1296,6 @@ def run_backtest(
 
     # ── initialise portfolios ──
     full_weights: dict[str, float] = {}
-    full_weights_prev: dict[str, float] = {}  # drift-adjusted full weights from prior rebalance
     marg_weights: dict[str, float] = {}  # starter-capped marginal weights
     prop_weights: dict[str, float] = {}  # prop-fill marginal weights
     current_holdings: set[str] = set()
@@ -1312,7 +1315,6 @@ def run_backtest(
     cost_log_full: list[float] = []
     cost_log_marg: list[float] = []
     cost_log_prop: list[float] = []
-    holdings_sizes: list[int] = []
 
     tax_log_full: list[float] = []
     tax_log_marg: list[float] = []
@@ -1339,7 +1341,6 @@ def run_backtest(
             ledger.accrue_tax(day, _compute_fy_tax, stcg_rate, ltcg_rate)
         nav_full, nav_marg, nav_prop = [ledger.nav() for ledger in ledgers]
         full_weights, marg_weights, prop_weights = [ledger.weights() for ledger in ledgers]
-        full_weights_prev = dict(full_weights)
         current_holdings = set().union(*(ledger.quantities() for ledger in ledgers))
 
         # ── rebalance ──
@@ -1348,7 +1349,6 @@ def run_backtest(
                 # Begin the real portfolio here.  Earlier events are only
                 # warm-up calculations and must not become live incumbents.
                 full_weights = {}
-                full_weights_prev = {}
                 marg_weights = {}
                 prop_weights = {}
                 current_holdings = set()
@@ -1403,23 +1403,82 @@ def run_backtest(
                 stage2_drop_threshold=stage2_drop_threshold,
                 rebalance_freq=rebalance_freq,
             )
-            if band_rule == "displacement":
-                entries, exits, entry_reasons, exit_reasons = _compute_holdings_displacement(
-                    current_holdings, top_m, top_n, ranked, m, **_s2_kwargs
+            # Ranks and score history are immutable inputs shared by the books.
+            # Incumbents, occupied slots, fills and targets belong to each book.
+            quotes.update(
+                {
+                    s: _close_price(all_ohlcv, s, day)
+                    for s in ranked
+                    if s not in quotes and (s in top_m or stage2_entry_filter)
+                }
+            )
+            targets = []
+            selections = {}
+            entry_reasons = {}
+            exit_reasons = {}
+            for k, (label, ledger) in enumerate(zip(labels, ledgers)):
+                held = set(ledger.quantities())
+                if band_rule == "displacement":
+                    planned = _compute_holdings_displacement(held, top_m, top_n, ranked, m, **_s2_kwargs)
+                    blocked = {
+                        s
+                        for s in planned[1]
+                        if quotes.get(s) is None
+                        or ledger.quantities()[s] * quotes[s] * (1 - transaction_cost_pct) <= flat_fee
+                    }
+                    for symbol in sorted(blocked):
+                        ledger.failures.append(
+                            dict(
+                                date=day,
+                                symbol=symbol,
+                                side="SELL",
+                                reason="unfilled exit retains occupied displacement slot",
+                            )
+                        )
+                    entries, exits, er, xr = _compute_holdings_displacement(
+                        held,
+                        top_m,
+                        top_n,
+                        ranked,
+                        m,
+                        **_s2_kwargs,
+                        blocked_exits=blocked,
+                        executable_entries={s for s, p in quotes.items() if p is not None},
+                    )
+                    if len(held - exits) < m:
+                        for symbol in sorted(top_m - held):
+                            if quotes.get(symbol) is None:
+                                ledger.failures.append(
+                                    dict(
+                                        date=day,
+                                        symbol=symbol,
+                                        side="BUY",
+                                        reason="no executable contemporaneous quote; slot not consumed",
+                                    )
+                                )
+                else:
+                    entries, exits, er, xr = _compute_holdings_classic(held, top_m, top_n, ranked, **_s2_kwargs)
+                wanted = (held - exits) | entries
+                for symbol in exits:
+                    if symbol not in ranked and (valid_syms is None or symbol in valid_syms):
+                        xr[symbol] = "excluded: " + _excluded_reasons.get(symbol, "unrankable")
+                weights = ledger.weights()
+                target = _compute_weight_variants(wanted, entries, exits, weights, weights, len(wanted))[k]
+                selections[label] = dict(
+                    planned_holdings=sorted(wanted),
+                    planned_count=len(wanted),
+                    planned_entries=sorted(entries),
+                    planned_exits=sorted(exits),
                 )
-            else:
-                entries, exits, entry_reasons, exit_reasons = _compute_holdings_classic(
-                    current_holdings, top_m, top_n, ranked, **_s2_kwargs
-                )
+                targets.append(target)
+                entry_reasons.update(er)
+                exit_reasons.update(xr)
+            old_full_weights, old_marg_weights, old_prop_weights = [ledger.weights() for ledger in ledgers]
+            pre_cap_full, pre_cap_slot, pre_cap_prop = [{s: round(w * 100, 4) for s, w in t.items()} for t in targets]
+            if max_position_pct:
+                targets = [_apply_weight_cap(t, max_position_pct / 100.0) for t in targets]
+            new_full, new_slot, new_prop = targets
 
-            new_holdings = (current_holdings - exits) | entries
-            for symbol in exits:
-                if symbol not in ranked and (valid_syms is None or symbol in valid_syms):
-                    exit_reasons[symbol] = "excluded: " + _excluded_reasons.get(symbol, "unrankable")
-
-            # Update Stage 2 score baseline for next rebalance.
-            # Track full ranked universe (not just holdings) so entry-jump signal
-            # can detect score rises on stocks we don't yet own.
             if (stage2_drop_exit or stage2_entry_filter) and stage2_precomputed:
                 prev_stage2_scores.clear()
                 for sym in ranked:
@@ -1428,30 +1487,6 @@ def run_backtest(
                         score = s2_series.asof(rank_as_of)
                         if not pd.isna(score):
                             prev_stage2_scores[sym] = float(score)
-
-            size = len(new_holdings)
-            holdings_sizes.append(size)
-            quotes.update({s: _close_price(all_ohlcv, s, day) for s in new_holdings if s not in quotes})
-
-            # ── save drift-adjusted weights before assignment (needed for turnover diff + CGT) ──
-            old_full_weights = dict(full_weights_prev)
-            old_marg_weights = dict(marg_weights)
-            old_prop_weights = dict(prop_weights)
-
-            # ── compute new weights for all three tracks ──
-            new_full, new_slot, new_prop = _compute_weight_variants(
-                new_holdings, entries, exits, marg_weights, prop_weights, size
-            )
-
-            # ── position cap: trim any overweight position, redistribute to smaller positions ──
-            pre_cap_full = {s: round(w * 100, 4) for s, w in new_full.items()}
-            pre_cap_slot = {s: round(w * 100, 4) for s, w in new_slot.items()}
-            pre_cap_prop = {s: round(w * 100, 4) for s, w in new_prop.items()}
-            if max_position_pct:
-                _cap = max_position_pct / 100.0
-                new_full = _apply_weight_cap(new_full, _cap)
-                new_slot = _apply_weight_cap(new_slot, _cap)
-                new_prop = _apply_weight_cap(new_prop, _cap)
 
             turnovers = []
             costs_before = [ledger.fees for ledger in ledgers]
@@ -1466,7 +1501,6 @@ def run_backtest(
                 )
             nav_full, nav_marg, nav_prop = [ledger.nav() for ledger in ledgers]
             full_weights, marg_weights, prop_weights = [ledger.weights() for ledger in ledgers]
-            full_weights_prev = dict(full_weights)
             traded_w_full, traded_w_marg, traded_w_prop = turnovers
             for log, value in zip([turnover_log_full, turnover_log_marg, turnover_log_prop], turnovers):
                 log.append(value)
@@ -1482,7 +1516,8 @@ def run_backtest(
             holdings_log.append(
                 {
                     "date": day,
-                    "holdings": sorted(current_holdings),
+                    "holdings": sorted(current_holdings),  # compatibility union, never selection input
+                    "selection_by_variant": selections,
                     "holdings_by_variant": {
                         label: sorted(ledger.quantities()) for label, ledger in zip(labels, ledgers)
                     },
@@ -1567,7 +1602,10 @@ def run_backtest(
     total_cost_full = round(sum(cost_log_full) * 100, 3) if cost_log_full else 0.0
     total_cost_marg = round(sum(cost_log_marg) * 100, 3) if cost_log_marg else 0.0
     total_cost_prop = round(sum(cost_log_prop) * 100, 3) if cost_log_prop else 0.0
-    avg_holdings = round(float(np.mean(holdings_sizes)), 1) if holdings_sizes else 0.0
+    avg_actual = [
+        round(float(np.mean([len(row["quantities"]) for row in ledger.daily])), 1) if ledger.daily else 0.0
+        for ledger in ledgers
+    ]
     total_tax_full = round(sum(tax_log_full) * 100, 3) if tax_log_full else 0.0
     total_tax_marg = round(sum(tax_log_marg) * 100, 3) if tax_log_marg else 0.0
     total_tax_prop = round(sum(tax_log_prop) * 100, 3) if tax_log_prop else 0.0
@@ -1576,19 +1614,19 @@ def run_backtest(
     total_brok_prop = round(sum(brok_log_prop) * 100, 3) if brok_log_prop else 0.0
 
     if "Full Rebalance" in stats_df.index:
-        stats_df.loc["Full Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Full Rebalance", "Avg Holdings"] = avg_actual[0]
         stats_df.loc["Full Rebalance", "Avg Turnover (%)"] = avg_turnover_full
         stats_df.loc["Full Rebalance", "Cost Drag (%)"] = total_cost_full
         stats_df.loc["Full Rebalance", "Tax Drag (%)"] = total_tax_full
         stats_df.loc["Full Rebalance", "Brokerage Drag (%)"] = total_brok_full
     if "Marginal Rebalance" in stats_df.index:
-        stats_df.loc["Marginal Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Marginal Rebalance", "Avg Holdings"] = avg_actual[1]
         stats_df.loc["Marginal Rebalance", "Avg Turnover (%)"] = avg_turnover_marg
         stats_df.loc["Marginal Rebalance", "Cost Drag (%)"] = total_cost_marg
         stats_df.loc["Marginal Rebalance", "Tax Drag (%)"] = total_tax_marg
         stats_df.loc["Marginal Rebalance", "Brokerage Drag (%)"] = total_brok_marg
     if "Prop Rebalance" in stats_df.index:
-        stats_df.loc["Prop Rebalance", "Avg Holdings"] = avg_holdings
+        stats_df.loc["Prop Rebalance", "Avg Holdings"] = avg_actual[2]
         stats_df.loc["Prop Rebalance", "Avg Turnover (%)"] = avg_turnover_prop
         stats_df.loc["Prop Rebalance", "Cost Drag (%)"] = total_cost_prop
         stats_df.loc["Prop Rebalance", "Tax Drag (%)"] = total_tax_prop

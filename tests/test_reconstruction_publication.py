@@ -75,8 +75,12 @@ def test_repair_conflict_check_and_interval_replacement_with_backup(market, tmp_
     certificate.write_text(json.dumps(cert))
     publish(path, certificate, tmp_path / "backup")
     published = md.load_snapshot().membership
-    assert "WRONG" not in set(published.SYMBOL)
-    assert {"A", "B", "OTHER"} == set(published.SYMBOL)
+    # WRONG was repaired only within the approved dates; the old effective
+    # state must resume immediately afterwards until the next old snapshot.
+    assert md.constituents_at(published, "2025-01-02", ["X"]) == {"X": ["A"]}
+    assert md.constituents_at(published, "2025-01-03", ["X"]) == {"X": ["B"]}
+    assert md.constituents_at(published, "2025-01-04", ["X"]) == {"X": ["WRONG"]}
+    assert {"A", "B", "OTHER", "WRONG"} == set(published.SYMBOL)
     assert sha256(tmp_path / "backup" / md.MEMBERSHIP_PATH.name) == original
     current = md.source_revisions()[1]
     with pytest.raises(RuntimeError, match="changed"):

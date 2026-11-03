@@ -1,0 +1,18 @@
+{
+  "decisions": [
+    {
+      "symbol": "IRCON",
+      "issuer_id": "CIN:L45203DL1976GOI008171",
+      "event_type": "split",
+      "old_isin": "INE962Y01013",
+      "new_isin": "INE962Y01021",
+      "share_ratio": 5.0,
+      "announcement_date": "2020-03-31",
+      "effective_date": null,
+      "effective_date_status": "not established by this filing",
+      "source": "https://www.ircon.org/sites/default/files/2025-05/64_0.pdf",
+      "artifact": "evidence/ircon_20200331_new_isin.pdf",
+      "scope": "identity lineage and ratio verified; no dated portfolio conversion or reconstructed-state change authorized"
+    }
+  ]
+}

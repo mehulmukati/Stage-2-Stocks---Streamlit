@@ -1,0 +1,653 @@
+symbol,primary_isins,primary_observations,local_adjusted_observations,local_first,local_last,missing_adjusted_prices,vendor_identity,lineage
+3MINDIA,INE470A01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+8KMILES,INE650K01021,43,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+AARTIIND,INE769A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AAVAS,INE216P01012,34,467,2018-10-08 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ABAN,INE421A01028,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ABB,INE117A01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ABBOTINDIA,INE358A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ABCAPITAL,INE674K01013,55,739,2017-09-01 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ABFRL,INE647O01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ACC,INE012A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ADANIENT,INE423A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ADANIGAS,INE399L01023,33,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ADANIGREEN,INE364U01010,39,542,2018-06-18 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ADANIPORTS,INE742F01042,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ADANIPOWER,INE814H01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ADANITRANS,INE931S01010,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ADVENZYMES,INE837H01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AEGISCHEM,INE208C01025,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+AFFLE,INE00WC01019,21,262,2019-08-08 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AHLUCONT,INE758C01029,58,326,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AIAENG,INE212H01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AJANTPHARM,INE031B01049,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AKZOINDIA,INE133A01011,58,0,2024-04-24 00:00:00,2026-05-06 00:00:00,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ALBK,INE428A01015,50,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ALKEM,INE540L01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ALKYLAMINE,INE150B01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ALLCARGO,INE418H01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AMARAJABAT,INE885A01032,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+AMBER,INE371P01015,47,636,2018-01-30 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AMBUJACEM,INE079A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AMTEKAUTO,INE130C01021,25,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ANANTRAJ,INE242C01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ANDHRABANK,INE434A01013,50,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+APARINDS,INE372A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+APLAPOLLO,INE702C01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+APLLTD,INE901L01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+APOLLOHOSP,INE437A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+APOLLOTYRE,INE438A01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ARVIND,INE034A01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ARVINDFASN,INE955V01021,27,364,2019-03-08 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ASAHIINDIA,INE439A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ASHOKA,INE442H01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ASHOKLEY,INE208A01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ASIANPAINT,INE021A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ASTERDM,INE914M01019,45,618,2018-02-26 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ASTRAL,INE006I01046,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ASTRAZEN,INE203A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ATUL,INE100A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AUBANK,INE949L01017,57,775,2017-07-11 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AUROPHARMA,INE406A01037,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+AVANTIFEED,INE871C01020|INE871C01038,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+AXISBANK,INE238A01034,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BAJAJ-AUTO,INE917I01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BAJAJCON,INE933K01021,30,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BAJAJCORP,INE933K01021,28,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+BAJAJELEC,INE193E01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BAJAJFINSV,INE918I01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BAJAJHIND,INE306A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BAJAJHLDNG,INE118A01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BAJFINANCE,INE296A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BALKRISIND,INE787D01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BALLARPUR,INE294A01037,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+BALMLAWRIE,INE164A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BALRAMCHIN,INE119A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BANDHANBNK,INE545U01014,43,598,2018-03-27 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BANKBARODA,INE028A01039,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BANKINDIA,INE084A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BASF,INE373A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BATAINDIA,INE176A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BAYERCROP,INE462A01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BBTC,INE050A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BDL,INE171Z01018,43,600,2018-03-23 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BEL,INE263A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BEML,INE258A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BERGEPAINT,INE463A01038,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BFUTILITIE,INE243D01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BGRENERGY,INE661I01014,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+BHARATFIN,INE180K01011,36,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+BHARATFORG,INE465A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BHARATRAS,INE838B01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BHARTIARTL,INE397D01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BHEL,INE257A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BHUSANSTL,INE824B01021,26,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+BIOCON,INE376G01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BIRLACORPN,INE340A01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BLISSGVS,INE416D01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BLUEDART,INE233B01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BLUESTARCO,INE472A01039,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BOMDYEING,INE032A01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BOSCHLTD,INE323A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BPCL,INE029A01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BRFL,INE589G01011,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+BRIGADE,INE791I01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BRITANNIA,INE216A01022|INE216A01030,58,780,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+BSE,INE118H01025,58,781,2017-02-03 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+BSOFT,INE836A01035,28,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CADILAHC,INE010B01027,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+CANBK,INE476A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CANFINHOME,INE477A01012|INE477A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+CAPF,INE688I01017,26,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+CAPLIPOINT,INE475E01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CARBORUNIV,INE120A01034,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CARERATING,INE752H01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CASTROLIND,INE172A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CCL,INE421D01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CDSL,INE736A01011,58,781,2017-06-30 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CEATLTD,INE482A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CENTRALBK,INE483A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CENTURYPLY,INE348B01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CENTURYTEX,INE055A01016,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+CERA,INE739E01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CESC,INE486A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CGCL,INE180C01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CGPOWER,INE067A01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CHALET,INE427F01016,28,383,2019-02-07 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CHAMBLFERT,INE085A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CHENNPETRO,INE178A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CHOLAFIN,INE121A01016|INE121A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+CHOLAHLDNG,INE149A01033,26,760,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CIPLA,INE059A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+COALINDIA,INE522F01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+COCHINSHIP,INE704P01017,56,752,2017-08-11 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+COFFEEDAY,INE335K01011,48,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+COFORGE,INE591G01017,2,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+COLPAL,INE259A01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CONCOR,INE111A01017|INE111A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+COROMANDEL,INE169A01031,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CORPBANK,INE112A01023,50,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+COX&KINGS,INE008I01026,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+CREDITACC,INE741K01010,36,496,2018-08-23 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CRISIL,INE007A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CROMPTON,INE299U01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CSBBANK,INE679A01013,15,186,2019-12-04 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CUB,INE491A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CUMMINSIND,INE298A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+CYIENT,INE136B01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DABUR,INE016A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DALBHARAT,INE00R701025,30,404,2018-12-21 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DALMIABHA,INE439L01019,25,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+DBCORP,INE950I01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DBL,INE917M01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DBREALTY,INE879I01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DCAL,INE385W01011,54,724,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DCBBANK,INE503A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DCMSHRIRAM,INE499A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DEEPAKFERT,INE501A01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DEEPAKNTR,INE288B01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DELTACORP,INE124G01033,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DEN,INE947J01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DENABANK,INE077A01010,31,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+DHANUKA,INE435G01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DHFL,INE202B01012,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+DISHTV,INE836F01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DIVISLAB,INE361B01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DIXON,INE935N01012,54,728,2017-09-18 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DLF,INE271C01023,58,779,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DMART,INE192R01011,58,781,2017-03-21 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DREDGECORP,INE506A01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+DRREDDY,INE089A01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ECLERX,INE738I01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+EDELWEISS,INE532F01054,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+EICHERMOT,INE066A01013|INE066A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+EIDPARRY,INE126A01031,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+EIHOTEL,INE230A01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ELGIEQUIP,INE285A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+EMAMILTD,INE548C01032,58,780,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ENDURANCE,INE913H01037,58,781,2016-10-19 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ENGINERSIN,INE510A01028,58,780,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+EQUITAS,INE988K01017,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ERIS,INE406M01024,58,781,2017-06-30 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+EROSMEDIA,INE416L01017,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ESABINDIA,INE284A01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ESCORTS,INE042A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ESSELPACK,INE255A01020,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+EVEREADY,INE128A01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+EXCELCROP,INE223G01017,37,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+EXIDEIND,INE302A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FAGBEARING,INE513A01014,2,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+FCONSUMER,INE220J01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FDC,INE258B01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FEDERALBNK,INE171A01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FINCABLES,INE235A01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FINEORG,INE686Y01026,38,532,2018-07-02 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FINPIPE,INE183A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FLFL,INE452O01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FLUOROCHEM,INE09N301011,17,219,2019-10-16 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FMGOETZE,INE529A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FORTIS,INE061F01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FRETAIL,INE752P01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+FSL,INE684F01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GAIL,INE129A01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GALAXYSURF,INE600K01018,45,629,2018-02-08 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GARFIBRES,INE276A01018,36,770,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GATI,INE152B01027,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GAYAPROJ,INE336H01023,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GDL,INE852F01015,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GEPIL,INE878A01011,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GESHIP,INE017A01032,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GET&D,INE200A01026,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GHCL,INE539A01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GICRE,INE481Y01014,53,703,2017-10-25 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GILLETTE,INE322A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GLAXO,INE159A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GLENMARK,INE935A01035,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GMDCLTD,INE131A01031,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GMMPFAUDLR,INE541A01023,44,614,2018-03-05 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GMRINFRA,INE776C01039,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GNFC,INE113A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GODFRYPHLP,INE260B01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GODREJAGRO,INE850D01014,53,709,2017-10-16 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GODREJCP,INE102D01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GODREJIND,INE233A01035,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GODREJPROP,INE484J01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GPPL,INE517F01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GRANULES,INE101D01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GRAPHITE,INE371A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GRASIM,INE047A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GREAVESCOT,INE224A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GREENPLY,INE461C01038,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GRINDWELL,INE536A01023,58,780,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GRSE,INE382Z01011,34,456,2018-10-24 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GRUH,INE580B01029,41,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GSFC,INE026A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GSKCONS,INE264A01014,51,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GSPL,INE246F01010,58,0,2024-04-24 00:00:00,2026-05-11 00:00:00,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GUJALKALI,INE186A01019,58,780,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GUJFLUORO,INE538A01037,36,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+GUJGASLTD,INE844O01022|INE844O01030,58,0,2026-04-27 00:00:00,2026-08-25 00:00:00,True,not certified; no current ticker substitution,requires review
+GULFOILLUB,INE635Q01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+GVKPIL,INE251H01024,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+HAL,INE066F01012,43,596,2018-04-02 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HATHWAY,INE982F01036,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HATSUN,INE473B01035,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HAVELLS,INE176B01034,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HCC,INE549A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HCL-INSYS,INE236A01020,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+HCLTECH,INE860A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HDFC,INE001A01036,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+HDFCAMC,INE127D01025,37,507,2018-08-06 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HDFCBANK,INE040A01026|INE040A01034,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+HDFCLIFE,INE795G01014,50,686,2017-11-17 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HDIL,INE191I01012,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+HEG,INE545A01016,58,781,2016-09-09 00:00:00,2026-10-06 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HEIDELBERG,INE578A01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HERITGFOOD,INE978A01019|INE978A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+HEROMOTOCO,INE158A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HEXAWARE,INE093A01033,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+HFCL,INE548A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HIMATSEIDE,INE049A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HINDALCO,INE038A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HINDCOPPER,INE531E01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HINDPETRO,INE094A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HINDUNILVR,INE030A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HINDZINC,INE267A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HMVL,INE871K01015,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+HONAUT,INE671A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HSCL,INE019C01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+HSIL,INE415A01038,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+HTMEDIA,INE501G01024,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+HUDCO,INE031A01017,58,781,2017-05-19 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IBREALEST,INE069I01010,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+IBULHSGFIN,INE148I01020,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+IBULISL,INE126M01010,39,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+IBVENTURES,INE274G01010,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ICICIBANK,INE090A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ICICIGI,INE765G01017,54,721,2017-09-27 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ICICIPRULI,INE726G01019,58,781,2016-09-29 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ICIL,INE483B01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ICRA,INE725G01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IDBI,INE008A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IDEA,INE669E01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IDFC,INE043D01016,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+IDFCBANK,INE092T01019,28,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+IDFCFIRSTB,INE092T01019,30,780,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IEX,INE022Q01012|INE022Q01020,53,705,2017-10-23 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+IFBIND,INE559A01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IFCI,INE039A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IGARASHI,INE188B01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IGL,INE203G01019|INE203G01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+IIFL,INE530B01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IIFLWAM,INE466L01020,20,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+IL&FSTRANS,INE975G01012,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+INDHOTEL,INE053A01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INDIACEM,INE383A01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INDIAMART,INE933S01016,22,287,2019-07-04 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INDIANB,INE562A01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INDIGO,INE646L01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INDOCO,INE873D01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INDOSTAR,INE896L01010,40,562,2018-05-21 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INDUSINDBK,INE095A01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INFIBEAM,INE483S01012|INE483S01020,58,0,,,True,not certified; no current ticker substitution,requires review
+INFRATEL,INE121J01017,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+INFY,INE009A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INGERRAND,INE177A01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INOXLEISUR,INE312H01016,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+INOXWIND,INE066P01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+INTELLECT,INE306R01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IOB,INE565A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IOC,INE242A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IPCALAB,INE571A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IRB,INE821I01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+IRCON,INE962Y01013|INE962Y01021,35,472,2018-09-28 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+IRCTC,INE335Y01012,17,221,2019-10-14 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ISEC,INE763G01038,41,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ITC,INE154A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ITDC,INE353K01014,58,781,2016-12-30 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ITDCEM,INE686A01026,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ITI,INE248A01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+J&KBANK,INE168A01041,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JAGRAN,INE199G01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JAICORPLTD,INE070D01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JAMNAAUTO,INE039C01024|INE039C01032,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+JBCHEPHARM,INE572A01028,58,0,2024-04-24 00:00:00,2026-07-23 00:00:00,True,not certified; no current ticker substitution,no cross-security lineage assumed
+JBFIND,INE187A01017,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+JCHAC,INE782A01015,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+JETAIRWAYS,INE802G01018,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+JINDALPOLY,INE197D01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JINDALSAW,INE324A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JINDALSTEL,INE749A01030,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JISLJALEQS,INE175A01038,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JKCEMENT,INE823G01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JKIL,INE576I01022,58,778,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JKLAKSHMI,INE786A01032,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JKPAPER,INE789E01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JKTYRE,INE573A01042,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JMFINANCIL,INE780C01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JMTAUTOLTD,INE988E01036,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+JPASSOCIAT,INE455F01025,58,0,2026-04-27 00:00:00,2026-05-06 00:00:00,True,not certified; no current ticker substitution,no cross-security lineage assumed
+JPPOWER,INE351F01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JSL,INE220G01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JSLHISAR,INE455T01018,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+JSWENERGY,INE121E01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JSWSTEEL,INE019A01038,58,780,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JUBILANT,INE700A01033,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+JUBLFOOD,INE797F01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JUSTDIAL,INE599M01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+JYOTHYLAB,INE668F01031,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KAJARIACER,INE217B01036,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KALPATPOWR,INE220B01022,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+KANSAINER,INE531A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KARURVYSYA,INE036D01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KEC,INE389H01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KEI,INE878B01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KENNAMET,INE717A01029,21,257,2019-08-19 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KESORAMIND,INE087A01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KIOCL,INE880L01014,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+KIRLOSENG,INE146L01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KITEX,INE602G01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KNRCON,INE634I01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KOLTEPATIL,INE094I01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KOTAKBANK,INE237A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KPIT,INE836A01035,30,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+KPITTECH,INE04I401011,25,337,2019-04-22 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KPRMILL,INE930H01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KRBL,INE001B01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KSB,INE999A01015,34,779,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KSCL,INE455I01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KTKBANK,INE614B01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+KWALITY,INE775B01025,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+L&TFH,INE498L01015,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+LAKSHVILAS,INE694C01018,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+LALPATHLAB,INE600L01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+LAOPALA,INE059D01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+LAURUSLABS,INE947Q01010|INE947Q01028,58,781,2016-12-19 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+LAXMIMACH,INE269B01029,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+LEMONTREE,INE970X01018,41,591,2018-04-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+LICHSGFIN,INE115A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+LINDEINDIA,INE473A01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+LT,INE018A01030,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+LTI,INE214T01019,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+LTTS,INE010V01017,58,781,2016-09-23 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+LUPIN,INE326A01037,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+LUXIND,INE150G01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+M&M,INE101A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+M&MFIN,INE774D01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MAGMA,INE511C01022,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MAHABANK,INE457A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MAHINDCIE,INE536H01010,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MAHLOG,INE766P01016,51,691,2017-11-10 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MAHSCOOTER,INE288A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MAHSEAMLES,INE271B01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MANAPPURAM,INE522D01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MANPASAND,INE122R01018,43,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MARICO,INE196A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MARKSANS,INE750C01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MARUTI,INE585B01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MASFIN,INE348L01012,53,706,2017-10-18 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MAXINDIA,INE153U01017,53,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MCDOWELL-N,INE854D01016|INE854D01024,58,0,,,True,not certified; no current ticker substitution,requires review
+MCLEODRUSS,INE942G01012,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MCX,INE745G01035,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MERCK,INE199A01012,35,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+METROPOLIS,INE112L01020,26,340,2019-04-15 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MFSL,INE180A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MGL,INE002S01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MHRIL,INE998I01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MIDHANI,INE099Z01011,41,594,2018-04-04 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MINDACORP,INE842C01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MINDAIND,INE405E01023,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MINDTREE,INE018I01017,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MMTC,INE123F01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MOIL,INE490G01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MONSANTO,INE274B01011,39,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MOTHERSUMI,INE775A01035,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+MOTILALOFS,INE338I01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MPHASIS,INE356A01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MRF,INE883A01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MRPL,INE103A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MTNL,INE153A01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+MUTHOOTFIN,INE414G01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NAM-INDIA,INE298J01013,11,695,2017-11-06 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NATCOPHARM,INE987B01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NATIONALUM,INE139A01034,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NAUKRI,INE663F01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NAVINFLUOR,INE048G01018|INE048G01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+NAVKARCORP,INE278M01019,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+NAVNETEDUL,INE060A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NBCC,INE095N01023|INE095N01031,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+NBVENTURES,INE725A01022,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+NCC,INE868B01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NESCO,INE317F01027|INE317F01035,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+NESTLEIND,INE239A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NETWORK18,INE870H01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NFL,INE870D01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NH,INE410P01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NHPC,INE848E01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NIACL,INE470Y01017,51,690,2017-11-13 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NIITTECH,INE591G01017,56,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+NILKAMAL,INE310A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NITINFIRE,INE489H01020,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+NLCINDIA,INE589A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NMDC,INE584A01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+NTPC,INE733E01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+OBEROIRLTY,INE093I01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+OFSS,INE881D01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+OIL,INE274J01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+OMAXE,INE800H01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ONGC,INE213A01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ORIENTBANK,INE141A01014,50,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ORIENTCEM,INE876N01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ORIENTELEC,INE142Z01019,40,567,2018-05-14 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ORIENTREF,INE743M01012,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ORISSAMINE,INE725E01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PAGEIND,INE761H01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PARAGMILK,INE883N01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PCJEWELLER,INE785M01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PEL,INE140A01024,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+PERSISTENT,INE262H01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PETRONET,INE347G01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PFC,INE134E01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PFIZER,INE182A01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PFS,INE560K01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PGHH,INE179A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PGHL,INE199A01012,23,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PHILIPCARB,INE602A01015|INE602A01023,58,0,,,True,not certified; no current ticker substitution,requires review
+PHOENIXLTD,INE211B01039,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PIDILITIND,INE318A01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PIIND,INE603J01030,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PNB,INE160A01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PNBHOUSING,INE572E01012,58,781,2016-11-07 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PNCINFRA,INE195J01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+POLARIS,INE763A01023,20,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+POLYCAB,INE455K01017,25,338,2019-04-16 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+POLYMED,INE205C01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+POWERGRID,INE752E01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PRAJIND,INE074A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PRESTIGE,INE811K01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PRISMCEM,INE010A01011,18,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+PRSMJOHNSN,INE010A01011,40,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PTC,INE877F01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+PUNJLLOYD,INE701B01021,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+PVR,INE191H01014,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+QUESS,INE615P01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RADICO,INE944F01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RAIN,INE855B01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RAJESHEXPO,INE343B01030,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RALLIS,INE613A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RAMCOCEM,INE331A01037,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RAMCOSYS,INE246B01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RATNAMANI,INE703B01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RAYMOND,INE301A01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RBLBANK,INE976G01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RCF,INE027A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RCOM,INE330H01018,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+RDEL,INE542F01012,4,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+RECLTD,INE020B01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+REDINGTON,INE891D01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RELAXO,INE131B01039,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RELCAPITAL,INE013A01015,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+RELIANCE,INE002A01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RELIGARE,INE621H01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RELINFRA,INE036A01016,58,779,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RENUKA,INE087H01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+REPCOHOME,INE612J01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RESPONIND,INE688D01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RHFL,INE217K01011,54,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+RIIL,INE046A01015,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+RITES,INE320J01015,38,531,2018-07-03 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RKFORGE,INE399G01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RNAM,INE298J01013,40,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+RNAVAL,INE542F01012,54,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ROLTA,INE293A01013,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+RPOWER,INE614G01033,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RTNPOWER,INE399K01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RUCHISOYA,INE619A01027,42,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+RUPA,INE895B01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+RVNL,INE415G01027,26,342,2019-04-11 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SADBHAV,INE226H01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SADBHIN,INE764L01010,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SAIL,INE114A01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SANOFI,INE058A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SBICARD,INE018E01016,9,116,2020-03-16 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SBILIFE,INE123W01016,53,718,2017-10-03 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SBIN,INE062A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SCHAEFFLER,INE513A01014,56,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SCHNEIDER,INE839M01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SCI,INE109A01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SEQUENT,INE807F01027,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SFL,INE916U01025,58,781,2016-12-12 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SHANKARA,INE274V01019,58,781,2017-04-05 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SHARDACROP,INE221J01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SHILPAMED,INE790G01031,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SHILPI,INE510K01019,34,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SHK,INE500L01026,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SHOPERSTOP,INE498B01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SHREECEM,INE070A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SHRIRAMCIT,INE722A01011,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SIEMENS,INE003A01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SIS,INE285J01010|INE285J01028,56,753,2017-08-10 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+SJVN,INE002L01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SKFINDIA,INE640A01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SMLISUZU,INE294B01019,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SNOWMAN,INE734N01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SOBHA,INE671H01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SOLARINDS,INE343H01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SOMANYCERA,INE355A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SONATSOFTW,INE269A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SOUTHBANK,INE683A01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SPANDANA,INE572J01011,21,257,2019-08-19 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SPARC,INE232I01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SPICEJET,INE285B01017,21,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SPTL,INE501W01021,56,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SREINFRA,INE872A01014,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SRF,INE647A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SRTRANSFIN,INE721A01013,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+STAR,INE939A01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+STARCEMENT,INE460H01021,58,781,2017-06-19 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+STCINDIA,INE655A01013,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+STRTECH,INE089C01029,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SUDARSCHEM,INE659A01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUMICHEM,INE258G01013,11,149,2020-01-27 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUNCLAYLTD,INE105A01035,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SUNDARMFIN,INE660A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUNDRMFAST,INE387A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUNPHARMA,INE044A01036,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUNTECK,INE805D01026|INE805D01034,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+SUNTV,INE424H01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUPPETRO,INE663A01017,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SUPRAJIT,INE399C01030,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUPREMEIND,INE195A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUVEN,INE495B01038,58,781,2016-10-07 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SUZLON,INE040H01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SWANENERGY,INE665A01038,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SWSOLAR,INE00M201021,21,256,2019-08-20 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SYMPHONY,INE225D01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+SYNDIBANK,INE667A01018,50,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+SYNGENE,INE398R01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TAKE,INE142I01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TASTYBITE,INE488B01017,58,781,2017-03-23 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TATACHEM,INE092A01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TATACOFFEE,INE493A01027,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TATACOMM,INE151A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TATACONSUM,INE192A01025,10,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TATAELXSI,INE670A01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TATAGLOBAL,INE192A01025,48,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TATAINVEST,INE672A01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TATAMOTORS,INE155A01022,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TATAMTRDVR,IN9155A01020,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TATAPOWER,INE245A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TATASPONGE,INE674A01014,38,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TATASTEEL,INE081A01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TATASTLBSL,INE824B01021,32,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TCIEXP,INE586V01016,58,781,2016-12-15 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TCNSBRANDS,INE778U01029,38,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TCS,INE467B01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TEAMLEASE,INE985S01024,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TECHM,INE669C01036,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TECHNO,INE286K01024,21,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TECHNOE,INE285K01026,32,705,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TEXRAIL,INE621L01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+THERMAX,INE152A01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+THOMASCOOK,INE332A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+THYROCARE,INE594H01019,58,779,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TIDEWATER,INE484C01022,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TIFIN,INE149A01033,28,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TIINDIA,INE974X01010,51,697,2017-11-02 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TIMETECHNO,INE508G01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TIMKEN,INE325A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TITAN,INE280A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TNPL,INE107A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TORNTPHARM,INE685A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TORNTPOWER,INE813H01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TRENT,INE849A01020,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TRIDENT,INE064C01014|INE064C01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+TRITURBINE,INE152M01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TTKPRESTIG,INE690A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TV18BRDCST,INE886H01027,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+TVSMOTOR,INE494B01023,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TVSSRICHAK,INE421C01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+TVTODAY,INE038F01029,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+UBL,INE686F01025,58,779,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+UCOBANK,INE691A01018,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+UFLEX,INE516A01017,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+UJJIVAN,INE334L01012,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+UJJIVANSFB,INE551W01018,15,180,2019-12-12 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ULTRACEMCO,INE481G01011,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+UNICHEMLAB,INE351A01035,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+UNIONBANK,INE692A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+UNITECH,INE694A01020,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+UNITEDBNK,INE695A01019,50,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+UPL,INE628A01036,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VAIBHAVGBL,INE884A01019,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VAKRANGEE,INE051B01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VARROC,INE665L01035,38,527,2018-07-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VBL,INE200M01013,58,781,2016-11-08 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VEDL,INE205A01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VENKEYS,INE398A01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VESUVIUS,INE386A01015,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VGUARD,INE951I01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VIDEOIND,INE703A01011,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+VIJAYABANK,INE705A01016,31,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+VINATIORGA,INE410B01029|INE410B01037,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+VIPIND,INE054A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VMART,INE665J01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VOLTAS,INE226A01021,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VRLLOG,INE366I01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VSTIND,INE710A01016,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+VTL,INE825A01012,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+WABAG,INE956G01038,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+WABCOINDIA,INE342J01019,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+WELCORP,INE191B01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+WELSPUNIND,INE192B01031,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+WESTLIFE,INE274F01020,21,257,2019-08-19 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+WHIRLPOOL,INE716A01013,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+WIPRO,INE075A01022,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+WOCKPHARMA,INE049B01025,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+WONDERLA,INE066O01014,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+YESBANK,INE528G01019|INE528G01027|INE528G01035,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+ZEEL,INE256A01028,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed
+ZEELEARN,INE565L01011,58,0,,,True,not certified; no current ticker substitution,no cross-security lineage assumed
+ZENSARTECH,INE520A01019|INE520A01027,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,requires review
+ZYDUSWELL,INE768C01010,58,781,2016-09-09 00:00:00,2026-10-30 00:00:00,False,not certified; no current ticker substitution,no cross-security lineage assumed

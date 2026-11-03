@@ -1,0 +1,23 @@
+[
+  {
+    "name": "ind_prs29082017.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs29082017.pdf",
+    "status": 200,
+    "retrieved_at": "2026-11-03",
+    "sha256": "2c901efcc5c3af6a8b9d353b2de9c91904bab4b40c8e68ef8540267366c46f20"
+  },
+  {
+    "name": "ind_prs17092019.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs17092019.pdf",
+    "status": 200,
+    "retrieved_at": "2026-11-03",
+    "sha256": "4222523b5b00120b597ff1ef2045274f1fcd93df9525660f669180394c376aeb"
+  },
+  {
+    "name": "ind_prs10062020.pdf",
+    "url": "https://www.niftyindices.com/Press_Release/ind_prs10062020.pdf",
+    "status": 200,
+    "retrieved_at": "2026-11-03",
+    "sha256": "ea83ae30ff9e8d80892e143ebd8f16fedd04c974e77d673539bb663a9f9de49e"
+  }
+]
