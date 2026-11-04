@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pandas as pd
 import pytest
 
@@ -55,6 +57,30 @@ def test_screener_worker_is_bound_to_current_data_schema():
     assert data.SCREENER_DATA_VERSION == 7
     assert workers.SCREENER_WORKER_VERSION == 11
     assert workers.resolve_screener_data is data.resolve_screener_data
+
+
+def test_stage2_uses_last_accepted_close_when_target_session_is_missing():
+    calendar = pd.bdate_range("2025-01-01", periods=261)
+    target = calendar[-1]
+    prices = pd.DataFrame(
+        {"Close": range(100, 360), "Volume": 1_000_000},
+        index=calendar[:-1],
+    )
+    snapshot = SimpleNamespace(
+        ohlcv=lambda symbols, as_of: {
+            "RECENT": prices,
+            "STALE": prices.iloc[:-3],
+            "GAP": prices.drop(calendar[-10]),
+        },
+        trading_calendar=lambda as_of: calendar,
+        revisions=("prices", "members"),
+    )
+
+    result = data._load_and_score({"Index": ["RECENT", "STALE", "GAP"]}, False, as_of_date=target, snapshot=snapshot)
+
+    assert result["Symbol"].tolist() == ["RECENT"]
+    assert result["Price Date"].tolist() == [str(calendar[-2].date())]
+    assert data.screener_freshness(result, target)["outdated_count"] == 1
 
 
 def _screener_baseline() -> pd.DataFrame:
