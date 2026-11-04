@@ -328,6 +328,38 @@ def test_continuation_is_default_and_missing_checkpoint_disables_generation(monk
     assert any(b.label == "Create starting checkpoint" for b in app.button)
 
 
+def test_replay_action_reruns_with_the_historical_signal_date(monkeypatch):
+    from streamlit.testing.v1 import AppTest
+
+    import app_live_signal as live
+
+    replay_date = date(2026, 10, 27)
+    calls = []
+
+    def run_signal(params):
+        calls.append(params["signal_date"])
+        if params["signal_date"] == replay_date:
+            return {"error": "Historical run reached"}
+        return {"schedule_status": "not_due", "message": "No decision due", "replay_date": replay_date}
+
+    monkeypatch.setattr(live, "_run_signal", run_signal)
+    monkeypatch.setattr(live, "check_data_freshness", lambda: [])
+    monkeypatch.setattr(live.shared_market, "source_revisions", lambda: ("test", "test"))
+    app = AppTest.from_string(
+        "from app_live_signal import _live_signal_inputs, live_signal_results\n"
+        "live_signal_results(_live_signal_inputs(['Nifty 50']))"
+    )
+    app.run()
+    app.radio[0].set_value("Replay from start date (research)").run()
+    app.date_input(key="ls_signal_date").set_value(date(2026, 11, 2)).run()
+    app.button(key="ls_run_btn").click().run()
+    next(button for button in app.button if "Run historical replay" in button.label).click().run()
+
+    assert not app.exception
+    assert app.date_input(key="ls_signal_date").value == replay_date
+    assert calls == [date(2026, 11, 2), replay_date]
+
+
 def test_real_shared_snapshot_continues_without_replay_or_vendor_calls(market, monkeypatch):
     import app_live_signal as live
 

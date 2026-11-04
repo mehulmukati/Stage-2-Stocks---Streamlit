@@ -332,10 +332,16 @@ def _load_and_score(constituents, for_momentum, emit=_NOOP_EMIT, as_of_date=None
                 or trading_session_age(trades.index[-1], target, calendar) > 3
             ):
                 continue
+            # Score through the last accepted close while keeping gaps within
+            # that history on the fixed session grid.
+            price_date = aligned.Close.last_valid_index()
+            if price_date is None:
+                continue
+            aligned = aligned.loc[:price_date]
             metrics = score_stage2(aligned)
             if metrics is None:
                 continue
-            metrics["Price Date"] = str(aligned.Close.dropna().index[-1].date())
+            metrics["Price Date"] = str(price_date.date())
             metrics["Retest"] = check_weinstein_retest(aligned)
             metrics.update(current_stage2_run(aligned))
         metrics["Trading Coverage"] = coverage

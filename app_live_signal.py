@@ -959,6 +959,16 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
     snapshot_missing = portfolio_source != "replay" and broker_snapshot.empty and cash_balance <= 0
     if snapshot_missing:
         st.warning("Enter at least one broker position or a positive cash balance.")
+    checkpoint_missing = (
+        portfolio_source == "continuation" and continuation_action == "continue" and continuation_checkpoint is None
+    )
+    if checkpoint_missing and not broker_errors:
+        st.warning(
+            "Upload your last confirmed continuation checkpoint to enable Generate Signal. "
+            "For a first run, choose Initialize or reset starting checkpoint under Checkpoint action."
+        )
+    if broker_errors:
+        st.error("Resolve the portfolio input errors above to enable this action.")
     if st.button(
         (
             "Create starting checkpoint"
@@ -968,12 +978,7 @@ def _live_signal_inputs(idx_options: list[str]) -> dict:
         type="primary",
         width="stretch",
         key="ls_run_btn",
-        disabled=live_data_blocked
-        or bool(broker_errors)
-        or snapshot_missing
-        or (
-            portfolio_source == "continuation" and continuation_action == "continue" and continuation_checkpoint is None
-        ),
+        disabled=live_data_blocked or bool(broker_errors) or snapshot_missing or checkpoint_missing,
     ):
         st.session_state["ls_run_triggered"] = True
         st.session_state["ls_result"] = None  # invalidate cached result
@@ -1136,6 +1141,9 @@ def _run_signal(params: dict) -> dict:
                 "An empty ranking from missing data is not a portfolio exit signal. "
                 "Run the Refresh Shared Market Data workflow, then Generate Signal."
             ),
+            "replay_date": observed_session.date()
+            if params.get("portfolio_source") == "replay" and observed_session is not None
+            else None,
             "data_freshness": freshness,
         }
 
@@ -1204,6 +1212,7 @@ def _run_signal(params: dict) -> dict:
     if holdings_log and len(signal_sessions) and pd.Timestamp(holdings_log[-1]["date"]) != signal_sessions[-1]:
         return {
             "schedule_status": "not_due",
+            "replay_date": _to_date(holdings_log[-1]["date"]) if params.get("portfolio_source") == "replay" else None,
             "message": (
                 f"No scheduled decision closes at the selected signal date. Last decision: {holdings_log[-1]['date']}. "
                 "Select its decision date to review historical orders; "
@@ -1411,6 +1420,12 @@ def _audit_method_comparison() -> pd.DataFrame:
 # ── results renderer ──────────────────────────────────────────────────────────
 
 
+def _rerun_replay_at(signal_date: date) -> None:
+    st.session_state["ls_signal_date"] = signal_date
+    st.session_state["ls_result"] = None
+    st.session_state["ls_run_triggered"] = True
+
+
 def live_signal_results(params: dict) -> None:
     if not st.session_state.get("ls_run_triggered", False):
         st.info("Configure the portfolio and strategy in **Input**, then click **Generate Signal**.")
@@ -1498,6 +1513,13 @@ def live_signal_results(params: dict) -> None:
             if benchmark_missing:
                 benchmark_text += " · missing: " + ", ".join(benchmark_missing)
             st.caption(benchmark_text)
+
+    if replay_date := result.get("replay_date"):
+        st.button(
+            f"Run historical replay for {replay_date:%d %b %Y}",
+            on_click=_rerun_replay_at,
+            args=(replay_date,),
+        )
 
     if "error" in result:
         st.error(f"Signal failed: {result['error']}")
