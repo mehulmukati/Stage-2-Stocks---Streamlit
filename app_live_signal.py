@@ -1141,9 +1141,11 @@ def _run_signal(params: dict) -> dict:
                 "An empty ranking from missing data is not a portfolio exit signal. "
                 "Run the Refresh Shared Market Data workflow, then Generate Signal."
             ),
-            "replay_date": observed_session.date()
-            if params.get("portfolio_source") == "replay" and observed_session is not None
-            else None,
+            "replay_date": (
+                observed_session.date()
+                if params.get("portfolio_source") == "replay" and observed_session is not None
+                else None
+            ),
             "data_freshness": freshness,
         }
 

@@ -76,9 +76,7 @@ def test_stage2_uses_last_accepted_close_when_target_session_is_missing():
         revisions=("prices", "members"),
     )
 
-    result = data._load_and_score(
-        {"Index": ["RECENT", "STALE", "GAP"]}, False, as_of_date=target, snapshot=snapshot
-    )
+    result = data._load_and_score({"Index": ["RECENT", "STALE", "GAP"]}, False, as_of_date=target, snapshot=snapshot)
 
     assert result["Symbol"].tolist() == ["RECENT"]
     assert result["Price Date"].tolist() == [str(calendar[-2].date())]
