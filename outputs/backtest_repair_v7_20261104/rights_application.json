@@ -1,0 +1,26 @@
+[
+  {
+    "family": "INE036D01028",
+    "ex": "2017-10-12",
+    "prior_close": 145.7,
+    "factor": 0.9316599666633983,
+    "prior_quote": "cm11OCT2017bhav.csv.zip:cm11OCT2017bhav.csv:823",
+    "changed_rows": 932
+  },
+  {
+    "family": "INE191H01014",
+    "ex": "2020-07-09",
+    "prior_close": 1060.35,
+    "factor": 0.9819371242542275,
+    "prior_quote": "cm08JUL2020bhav.csv.zip:cm08JUL2020bhav.csv:1385",
+    "changed_rows": 1606
+  },
+  {
+    "family": "INE476A01014",
+    "ex": "2017-02-17",
+    "prior_close": 296.05,
+    "factor": 0.9726551104696687,
+    "prior_quote": "cm16FEB2017bhav.csv.zip:cm16FEB2017bhav.csv:236",
+    "changed_rows": 772
+  }
+]

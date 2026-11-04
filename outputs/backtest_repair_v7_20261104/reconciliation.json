@@ -1,0 +1,151 @@
+[
+  {
+    "frequency": "weekly",
+    "variant": "Full Rebalance",
+    "taxed": false,
+    "maxima": {
+      "daily": 0,
+      "trades": 0,
+      "closed_lots": 5.551115123125783e-16,
+      "lots": 0,
+      "total_tax_paid": 0
+    }
+  },
+  {
+    "frequency": "weekly",
+    "variant": "Full Rebalance",
+    "taxed": true,
+    "maxima": {
+      "daily": 2.842170943040401e-14,
+      "trades": 6.5503158452884236e-15,
+      "closed_lots": 8.770761894538737e-15,
+      "tax_events": 0,
+      "lots": 0,
+      "total_tax_paid": 0
+    }
+  },
+  {
+    "frequency": "weekly",
+    "variant": "Marginal Rebalance",
+    "taxed": false,
+    "maxima": {
+      "daily": 0,
+      "trades": 0,
+      "closed_lots": 6.661338147750939e-16,
+      "lots": 0,
+      "total_tax_paid": 0
+    }
+  },
+  {
+    "frequency": "weekly",
+    "variant": "Marginal Rebalance",
+    "taxed": true,
+    "maxima": {
+      "daily": 8.526512829121202e-14,
+      "trades": 1.9539925233402755e-14,
+      "closed_lots": 1.9539925233402755e-14,
+      "tax_events": 4.260480856999038e-15,
+      "lots": 4.547473508864641e-13,
+      "total_tax_paid": 1.9984014443252818e-15
+    }
+  },
+  {
+    "frequency": "weekly",
+    "variant": "Prop Rebalance",
+    "taxed": false,
+    "maxima": {
+      "daily": 0,
+      "trades": 0,
+      "closed_lots": 6.106226635438361e-16,
+      "lots": 0,
+      "total_tax_paid": 0
+    }
+  },
+  {
+    "frequency": "weekly",
+    "variant": "Prop Rebalance",
+    "taxed": true,
+    "maxima": {
+      "daily": 5.684341886080802e-14,
+      "trades": 2.220446049250313e-14,
+      "closed_lots": 2.042810365310288e-14,
+      "tax_events": 8.881784197001252e-16,
+      "lots": 1.1368683772161603e-13,
+      "total_tax_paid": 8.881784197001252e-16
+    }
+  },
+  {
+    "frequency": "monthly",
+    "variant": "Full Rebalance",
+    "taxed": false,
+    "maxima": {
+      "daily": 0,
+      "trades": 0,
+      "closed_lots": 6.661338147750939e-16,
+      "lots": 0,
+      "total_tax_paid": 0
+    }
+  },
+  {
+    "frequency": "monthly",
+    "variant": "Full Rebalance",
+    "taxed": true,
+    "maxima": {
+      "daily": 2.842170943040401e-14,
+      "trades": 3.552713678800501e-15,
+      "closed_lots": 3.552713678800501e-15,
+      "tax_events": 6.661338147750939e-16,
+      "lots": 0,
+      "total_tax_paid": 6.661338147750939e-16
+    }
+  },
+  {
+    "frequency": "monthly",
+    "variant": "Marginal Rebalance",
+    "taxed": false,
+    "maxima": {
+      "daily": 0,
+      "trades": 0,
+      "closed_lots": 8.881784197001252e-16,
+      "lots": 0,
+      "total_tax_paid": 0
+    }
+  },
+  {
+    "frequency": "monthly",
+    "variant": "Marginal Rebalance",
+    "taxed": true,
+    "maxima": {
+      "daily": 4.263256414560601e-14,
+      "trades": 1.4939438575112263e-14,
+      "closed_lots": 1.4922091340352495e-14,
+      "lots": 4.547473508864641e-13,
+      "total_tax_paid": 0
+    }
+  },
+  {
+    "frequency": "monthly",
+    "variant": "Prop Rebalance",
+    "taxed": false,
+    "maxima": {
+      "daily": 0,
+      "trades": 0,
+      "closed_lots": 8.881784197001252e-16,
+      "lots": 0,
+      "total_tax_paid": 0
+    }
+  },
+  {
+    "frequency": "monthly",
+    "variant": "Prop Rebalance",
+    "taxed": true,
+    "maxima": {
+      "daily": 8.526512829121202e-14,
+      "trades": 9.769962616701378e-15,
+      "closed_lots": 1.0658141036401503e-14,
+      "tax_events": 1.0824674490095276e-15,
+      "lots": 4.547473508864641e-13,
+      "total_tax_paid": 1.0824674490095276e-15
+    }
+  }
+]

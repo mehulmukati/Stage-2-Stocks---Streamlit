@@ -1,0 +1,113 @@
+{
+  "accepted": false,
+  "config": {
+    "m": 15,
+    "n": 30,
+    "rebalance_freq": "weekly",
+    "sort_method": "Average of 3/6/9/12 months",
+    "start_date": "2017-07-01",
+    "end_date": "2020-09-01",
+    "compositions_df": null,
+    "index_names": [
+      "NIFTY 500"
+    ],
+    "min_history_days": 252,
+    "apply_volume_filter": true,
+    "minimum_median_volume": 100000.0,
+    "max_stale_sessions": 3,
+    "market_calendar": null,
+    "max_position_pct": null,
+    "corporate_actions": [
+      {
+        "old_symbol": "JBCHEPHARM",
+        "event_type": "merger",
+        "successor_symbol": "TORNTPHARM",
+        "effective_date": "2026-07-17 00:00:00",
+        "last_trading_date": "2026-07-16 00:00:00",
+        "share_ratio": 0.51,
+        "source": "NSE Indices / Torrent Pharmaceuticals exchange filing",
+        "notes": "51 Torrent Pharmaceuticals shares for every 100 JB Chemicals shares"
+      }
+    ],
+    "band_rule": "classic",
+    "rebalance_anchor_date": null,
+    "portfolio_start_date": null,
+    "rank_on_rebalance_date": false,
+    "transaction_cost_pct": 0.001,
+    "brokerage_per_sale": 0.0,
+    "initial_capital": 1000000.0,
+    "ltcg_rate": 0.125,
+    "stcg_rate": 0.2,
+    "stage2_drop_exit": false,
+    "stage2_drop_threshold": 2,
+    "stage2_entry_filter": false,
+    "stage2_entry_threshold": 2,
+    "min_annual_return": 0.0,
+    "pct_from_52w_high": 100.0,
+    "max_circuits": 999,
+    "close_above_100dma": false,
+    "close_above_200dma": false,
+    "pos_days_3m_min": 0.0,
+    "pos_days_6m_min": 0.0,
+    "pos_days_12m_min": 0.0,
+    "universe_mode": "legacy_partial"
+  },
+  "ownership_actions": [
+    {
+      "effective_date": "2018-08-08",
+      "old_symbol": "INE286K01024",
+      "successor_symbol": "CLAIM:INE286K01024",
+      "share_ratio": 1.0
+    },
+    {
+      "effective_date": "2018-12-04",
+      "old_symbol": "CLAIM:INE286K01024",
+      "successor_symbol": "INE285K01026",
+      "share_ratio": 1.0
+    },
+    {
+      "effective_date": "2018-12-28",
+      "old_symbol": "INE688I01017",
+      "successor_symbol": "CLAIM:INE688I01017",
+      "share_ratio": 1.0
+    },
+    {
+      "effective_date": "2019-01-16",
+      "old_symbol": "CLAIM:INE688I01017",
+      "successor_symbol": "INE092T01019",
+      "share_ratio": 13.9
+    }
+  ],
+  "warmup_start": "2014-01-01",
+  "observed_sessions": 783,
+  "schedules": {
+    "weekly": 165,
+    "monthly": 38
+  },
+  "scope": "Full dated NIFTY 500 candidate, adjusted Close and nominal Volume",
+  "nav_normalization": "100 units equal INR 1,000,000; fees 0.1% per side, zero flat and extra slippage",
+  "tax": "app fiscal-year FIFO rates, offsets and liability; pretax rates set to zero",
+  "missing_policy": "ordinary missing sells assumed at latest eligible completed close; locked claims never executable",
+  "economic_convention": "unresolved events left unadjusted; no invented entitlement mark or cash; results conditional",
+  "files": {
+    "outputs\\backtest_repair_v5_20261103\\reviewed_model_v2\\primary_adjusted_research_candidate.parquet": "eb77f7123b165f18fa2a4a62807c5b6b8fb2231b1805428256a057e3ce8bdecb",
+    "outputs\\backtest_repair_v5_20261103\\reviewed_model_v2\\action_decisions.csv": "8f82e9ae42f6d1aea5e85c707547b0d44f5d2b89c380a98cbb1afad7b55e88e1",
+    "outputs\\backtest_repair_v6_20261103\\finite_economic_review.json": "48800b1b4a0d6fd201e58c4f94084cf4645e10a6f3ce91142e2ef357d9ac0536",
+    "outputs\\backtest_repair_v3_20261103\\candidate_v3\\economic_provisional_membership.parquet": "068b2aade08c041d28b422921dadb8062f2fa66b5bc4f0918e29b51465299d57",
+    "outputs\\backtest_repair_v4_20261103\\primary_model_v8\\identity_families.json": "aef1cc113830e513270bcb95a41ba9f1429523576e0e2246a6180ea226c3d46f",
+    "outputs\\backtest_repair_v5_20261103\\ownership_replay.json": "ee6efceaa29fe0c914f52f9ce5928f53e2e8106d40337e934d5079a308901f10",
+    "outputs\\backtest_repair_v4_20261103\\frozen_comparison_plan_v4.json": "26cd598b61ed6767542d4c4375312183f1f65f95b3ba377bd34921849bea40ae",
+    "outputs\\backtest_repair_v5_20261103\\completed_schedule_v3.csv": "781906161b1cdfedc0093821b5bcc05f659f54b19087a08cf08c029cec9c6d9b",
+    "MoMo\\backtest\\available_observations\\run_backtest.py": "02186a5b6cb56a34d4586aa47e6b0a971a847a2ba0f643e7d7c4cb34006d8141",
+    "MoMo\\backtest\\MISSING_DATA_POLICY.md": "5b1ff1d86e9312aec7d1de9559d694a21fcb5f004436490c6cafb68d65533c39",
+    "outputs\\backtest_repair_v7_20261104\\provisional_close_revision.parquet": "eab77599b19d6e5ebc7449437d249b1e14b233c70dac1dd28e906a9f7f58e322",
+    "backtest_engine.py": "babb5890c67434c00c82c2fd226d101ee1b8d6b24ace7a92b6a143e360641eaf",
+    "backtest_accounting.py": "4738329a56a6833484b4de89797e614ea672f5a7f482451b137d93279c3bdedb",
+    "research_execution.py": "366de45cb7aa8adb71e2fc322a2eee8fc64dc4692897488bbc5153c3160115a9",
+    "research_ownership.py": "025e0d7a660428c521b2c3a87cb915c44d6f9ed4ca1957cc8fc6196dc467b029",
+    "momentum_engine.py": "e6bcf8bb31b9c96dc33599130367fe0d664e665c41cbffc6c72eb1b201e094d0",
+    "equity_data.py": "7c4a792c8d303014a91dee3f9821696af23f6927e55beab4b36d4349c5175391",
+    "data\\nse_session_calendar.json": "c4ea7ae1ee92037b632da7310a6069a91499a20137e5335ddfa9b3eaf5f05699",
+    "outputs\\backtest_repair_v7_20261104\\run_matched.py": "c2109334e44acbda44cec60cdc6c023b7fca638f34e0ffef060e9aa4858831f7"
+  }
+}

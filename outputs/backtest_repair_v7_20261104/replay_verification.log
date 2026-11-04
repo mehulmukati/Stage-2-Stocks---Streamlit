@@ -1,0 +1,42 @@
+{
+  "monthly_0_0_app": {
+    "sessions": 783,
+    "trade_rows": 980,
+    "realised_lots": 709
+  },
+  "monthly_0_0_momo": {
+    "sessions": 783,
+    "trade_rows": 981,
+    "realised_lots": 690
+  },
+  "monthly_0_1_app": {
+    "sessions": 783,
+    "trade_rows": 980,
+    "realised_lots": 709
+  },
+  "monthly_0_1_momo": {
+    "sessions": 783,
+    "trade_rows": 981,
+    "realised_lots": 690
+  },
+  "weekly_0_0_app": {
+    "sessions": 783,
+    "trade_rows": 3765,
+    "realised_lots": 3324
+  },
+  "weekly_0_0_momo": {
+    "sessions": 783,
+    "trade_rows": 3866,
+    "realised_lots": 3341
+  },
+  "weekly_0_1_app": {
+    "sessions": 783,
+    "trade_rows": 3765,
+    "realised_lots": 3324
+  },
+  "weekly_0_1_momo": {
+    "sessions": 783,
+    "trade_rows": 3866,
+    "realised_lots": 3341
+  }
+}

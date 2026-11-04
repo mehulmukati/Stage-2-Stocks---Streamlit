@@ -1,0 +1,26 @@
+{
+  "ownership": [
+    {
+      "case": "TECHNO",
+      "locked_mark": 100,
+      "release_ratio": 1.0,
+      "sale_quantity": 0.9990000000000001
+    },
+    {
+      "case": "CAPF",
+      "locked_mark": 100,
+      "release_ratio": 13.9,
+      "sale_quantity": 6.943050000000001
+    }
+  ],
+  "missing_muhurat": {
+    "date": "2019-10-27 00:00:00",
+    "symbol": "A",
+    "source_day": "2019-10-25 00:00:00",
+    "available_at": "2019-10-25T15:30:00+05:30",
+    "cutoff": "2019-10-27T19:15:00+05:30",
+    "age_seconds": 186300.0,
+    "price": 100.0,
+    "reason": "ordinary held security missing executable close"
+  }
+}

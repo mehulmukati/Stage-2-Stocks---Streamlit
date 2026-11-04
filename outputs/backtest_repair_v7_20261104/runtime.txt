@@ -1,0 +1,2 @@
+3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]
+pandas 3.0.6 numpy 2.5.3 pyarrow 25.0.1
