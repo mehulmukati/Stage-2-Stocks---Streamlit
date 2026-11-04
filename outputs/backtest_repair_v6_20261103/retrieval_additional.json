@@ -1,0 +1,38 @@
+[
+  {
+    "name": "PVR_offer.pdf",
+    "url": "https://www.sebi.gov.in/sebi_data/attachdocs/jul-2020/1594192456627.pdf",
+    "retrieved_at": "2026-11-03T17:47:35.238718+00:00",
+    "transport": "Windows curl/Schannel; certificate verification enabled",
+    "return_code": 0,
+    "sha256": "c5844c6c64cb0a803951efba5d7ede85481781561e254c352c3db3da7f79d242",
+    "bytes": 4252301
+  },
+  {
+    "name": "CANBK_BSE_offer.pdf",
+    "url": "https://www.bseindia.com/downloads/ipo/finalletterofoffercanarabankclean_160220171440.pdf",
+    "retrieved_at": "2026-11-03T17:47:35.239716+00:00",
+    "transport": "Windows curl/Schannel; certificate verification enabled",
+    "return_code": 0,
+    "sha256": "e6a1d505e58199fe02adc392c3cb2a02fe21901a258b927570dffcbba7928f6a",
+    "bytes": 23314432
+  },
+  {
+    "name": "ARVINDFASN_final_terms.pdf",
+    "url": "https://www.arvindfashions.com/wp-content/uploads/2020/06/FAQ.pdf",
+    "retrieved_at": "2026-11-03T17:47:35.240720+00:00",
+    "transport": "Windows curl/Schannel; certificate verification enabled",
+    "return_code": 0,
+    "sha256": "ebaa3e375e69aff6dc71628efb3bd6f227019d5455fe6238191c0b6c6cbc0b1d",
+    "bytes": 420420
+  },
+  {
+    "name": "RELIANCE_calls.pdf",
+    "url": "https://www.ril.com/sites/default/files/2023-01/UpdateonRI17052020.pdf",
+    "retrieved_at": "2026-11-03T17:47:40.247826+00:00",
+    "transport": "Windows curl/Schannel; certificate verification enabled",
+    "return_code": 0,
+    "sha256": "77ad502d543830877acb76ae132f202c32d35c0fda125347f3b3c310e50e01d4",
+    "bytes": 104044
+  }
+]

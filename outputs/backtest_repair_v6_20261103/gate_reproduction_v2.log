@@ -1,0 +1,21 @@
+2026-11-04 06:33:23.395 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+{
+  "omitted_traded_member": {
+    "baseline": {
+      "reviewed_label": true,
+      "fills": 3
+    },
+    "round6": {
+      "rejected": "Research certificate lacks required security coverage: A"
+    }
+  },
+  "empty_invalid": {
+    "baseline": {
+      "reviewed_label": true,
+      "fills": 3
+    },
+    "round6": {
+      "rejected": "Research scope has unresolved acceptance conditions"
+    }
+  }
+}

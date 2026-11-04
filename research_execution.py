@@ -15,11 +15,25 @@ class FillQuote:
     age: pd.Timedelta
 
 
-def daily_close_quotes(frame, source):
-    """Daily exchange closes are available at 15:30 IST, never at session open."""
-    dates = pd.DatetimeIndex(frame.index)
+# Normal-market end as the close-price research cutoff, in IST.
+# NSE/CMTR/35993, NSE/CMTR/39216, NSE/CMTR/42403 respectively.
+_SPECIAL_CLOSE_MINUTES = {
+    "2017-10-19": 19 * 60 + 30,
+    "2018-11-07": 18 * 60 + 30,
+    "2019-10-27": 19 * 60 + 15,
+}
+
+
+def session_close_times(sessions):
+    dates = pd.DatetimeIndex(sessions)
     dates = dates.tz_localize("Asia/Kolkata") if dates.tz is None else dates.tz_convert("Asia/Kolkata")
-    return intraday_quotes(frame, dates.normalize() + pd.Timedelta(hours=15, minutes=30), source)
+    minutes = [_SPECIAL_CLOSE_MINUTES.get(day, 15 * 60 + 30) for day in dates.strftime("%Y-%m-%d")]
+    return dates.normalize() + pd.to_timedelta(minutes, unit="min")
+
+
+def daily_close_quotes(frame, source):
+    """Stamp close observations at the research cutoff for each session."""
+    return intraday_quotes(frame, session_close_times(frame.index), source)
 
 
 def intraday_quotes(frame, available_at, source):

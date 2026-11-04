@@ -135,3 +135,47 @@ def test_dependency_boundary_distinguishes_source_high_from_close_based_stage2_a
     assert consumed_fields(cfg) == {"Close", "Volume"}
     assert consumed_fields(dataclasses.replace(cfg, max_circuits=18, stage2_entry_filter=True)) == {"Close", "Volume"}
     assert consumed_fields(dataclasses.replace(cfg, pct_from_52w_high=25)) == {"Close", "Volume", "High"}
+
+
+@pytest.mark.parametrize("empty", [False, True])
+def test_catalogue_cannot_self_define_required_coverage(empty):
+    _, reviewed, cfg, cert = inputs()
+    if empty:
+        cert["price_field_hashes"].clear()
+        cert["economics_validated"] = False
+        expected = "unresolved acceptance conditions"
+    else:
+        del cert["price_field_hashes"]["A"]
+        expected = "required security coverage: A"
+    frames = data_backtest.load_ohlcv_for_backtest(snapshot=reviewed).symbol_data
+    with pytest.raises(ValueError, match=expected):
+        run_backtest(frames, {}, cfg)
+
+
+@pytest.mark.parametrize("incoming", ["2014-01-01", "2015-02-02"])
+def test_catalogue_requires_nonmember_ownership_chain(incoming):
+    _, reviewed, cfg, cert = inputs()
+    actions = [
+        dict(old_symbol="A", successor_symbol="CLAIM:A", effective_date=incoming),
+        dict(old_symbol="CLAIM:A", successor_symbol="NEW", effective_date="2015-03-02"),
+    ]
+    cfg = dataclasses.replace(cfg, corporate_actions=actions)
+    cert["profile_sha256"] = [profile_digest(cfg)]
+    with pytest.raises(ValueError, match="required security coverage: CLAIM:A, NEW"):
+        run_backtest(reviewed.ohlcv(), {}, cfg)
+
+
+def test_verified_unpriced_claim_can_only_carry_an_existing_mark():
+    _, reviewed, cfg, cert = inputs()
+    actions = [
+        dict(old_symbol="A", successor_symbol="CLAIM:A", effective_date="2015-02-02"),
+        dict(old_symbol="CLAIM:A", successor_symbol="B", effective_date="2015-03-02"),
+    ]
+    cfg = dataclasses.replace(cfg, corporate_actions=actions)
+    cert["profile_sha256"] = [profile_digest(cfg)]
+    cert["unpriced_locked_claims"] = {"CLAIM:A": hashlib.sha256(b"fixture proof").hexdigest()}
+    result = run_backtest(reviewed.ohlcv(), {}, cfg)
+    assert result["run_manifest"]["reviewed_field_scope_sha256"]
+    cert["unpriced_locked_claims"]["A"] = cert["unpriced_locked_claims"]["CLAIM:A"]
+    with pytest.raises(ValueError, match="Invalid no-observation ownership proof for A"):
+        run_backtest(reviewed.ohlcv(), {}, cfg)

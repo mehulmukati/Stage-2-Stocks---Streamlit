@@ -1,0 +1,25 @@
+{
+  "fixture_only": true,
+  "native_source_sha256": "02186a5b6cb56a34d4586aa47e6b0a971a847a2ba0f643e7d7c4cb34006d8141",
+  "ownership": [
+    {
+      "case": "TECHNO",
+      "outcome": "native sale of obsolete identity on synthetic suspension",
+      "symbol": "INE286K01024",
+      "sale_date": "2018-08-08",
+      "price_available_at_IST": "2018-08-07 15:30:00",
+      "price_age_days": 1.0,
+      "assumed": true
+    },
+    {
+      "case": "CAPF",
+      "outcome": "native sale of obsolete identity on synthetic suspension",
+      "symbol": "INE688I01017",
+      "sale_date": "2018-12-28",
+      "price_available_at_IST": "2018-12-27 15:30:00",
+      "price_age_days": 1.0,
+      "assumed": true
+    }
+  ],
+  "native_muhurat_daily_timestamp_IST": "2019-10-27 15:30:00"
+}
