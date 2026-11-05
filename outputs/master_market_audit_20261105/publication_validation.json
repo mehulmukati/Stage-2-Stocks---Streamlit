@@ -1,0 +1,32 @@
+{
+  "parent_revisions": [
+    "d9949bb9d150445f81b7449a88bbc219",
+    "680cc0bfb2e9416f92fd2a92f8d9cb80"
+  ],
+  "accepted_revisions": [
+    "eebad01193da465190ca8b6495b5a243",
+    "680cc0bfb2e9416f92fd2a92f8d9cb80"
+  ],
+  "parent_price_sha256": "1b1611ae7733cf15fcbcdd497cf38fe108066f16db4f22c5ffe88a0477a8e9be",
+  "accepted_price_sha256": "5a6836a2c0b06a3e0f0b4e33530e7d6b6cf2c0a52a2aad4b983a21f115f20c74",
+  "membership_sha256": "1095fa621b6a546ac4a2d6a4fd0f3b15b11d3bbc9d574a46581bbd19b37a83ef",
+  "patch_manifest_sha256": "df46b1f4a0be753fc2a4733db20c437c8bbe626e1b501c1b8ba6bf6c8de81fe2",
+  "repaired_rows": 1190,
+  "refreshed_rows_with_changed_original_values": 16,
+  "publication_target": "2026-11-04",
+  "coverage": {
+    "missing_target_symbols": [
+      "ABLBL",
+      "BAGMANE",
+      "IGIL",
+      "JAINREC",
+      "RRKABEL"
+    ],
+    "current_symbol_count": 752,
+    "target_session_symbol_count": 747,
+    "actual_latest_date": null,
+    "max_price_date": "2026-11-04",
+    "missing_target_benchmarks": [],
+    "publication_status": "partial"
+  }
+}
