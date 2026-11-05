@@ -12,7 +12,6 @@ __pycache__/
 htmlcov/
 .pytest_cache/
 .codex-runtime/
-outputs/equity_policy_v2/archive/
 data/.market-publisher.lock
 data/*.parquet.tmp
 
@@ -40,6 +39,7 @@ data/backtest_delta.parquet
 data/benchmarks_delta.parquet
 
 # Backtest batch run outputs (CSVs, logs, checkpoints)
+/outputs/
 batch_*.csv
 batch_*.log
 batch_*.py
