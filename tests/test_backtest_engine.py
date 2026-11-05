@@ -621,7 +621,10 @@ def test_marginal_uses_smaller_freed_pool_when_below_starter_cap():
         size=5,
     )
 
-    assert marginal == {"A": 0.40, "B": 0.30, "C": 0.20, "E": 0.05, "F": 0.05}
+    expected = {"A": 0.40, "B": 0.30, "C": 0.20, "E": 0.05, "F": 0.05}
+    assert marginal.keys() == expected.keys()
+    for ticker, weight in expected.items():
+        assert math.isclose(marginal[ticker], weight, rel_tol=1e-12)
 
 
 def test_marginal_entry_only_starts_neutral_and_trims_survivors_proportionally():
