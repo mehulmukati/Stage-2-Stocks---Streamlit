@@ -175,21 +175,23 @@ def history_is_complete(previous, replacement):
 
     Yahoo omits zero-volume holiday/suspension rows carried by legacy files.
     Those rows must not permanently prevent a full adjusted-history rebuild.
-    A missing weekend trading session may retain its accepted quote only when
-    both surrounding observations confirm an unchanged adjustment basis.
+    An omitted trading quote may be retained when nearby overlapping
+    observations on both sides confirm an unchanged adjustment basis.
     Unknown-volume close-only history still requires replacement coverage.
     """
     if replacement.empty:
         return False
-    required = previous.loc[previous.Volume.ne(0), "date"]
-    missing = sorted(set(required) - set(replacement.date))
-    if not missing:
+    required = previous[previous.Volume.ne(0)]
+    missing = required.loc[~required.date.isin(replacement.date)]
+    if missing.empty:
         return True
-    overlap = previous[previous.Volume.ne(0)].merge(replacement, on="date", suffixes=("_old", "_new"))
+    if not missing.Volume.gt(0).all():
+        return False
+    overlap = required.loc[required.Volume.gt(0)].merge(
+        replacement.loc[replacement.Volume.gt(0)], on="date", suffixes=("_old", "_new")
+    )
     overlap = overlap.sort_values("date")
-    for day in missing:
-        if day.weekday() < 5:
-            return False
+    for day in missing.date:
         before = overlap[overlap.date.lt(day)].tail(1)
         after = overlap[overlap.date.gt(day)].head(1)
         if before.empty or after.empty:

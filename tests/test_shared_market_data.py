@@ -311,18 +311,23 @@ def test_partial_download_records_lag_instead_of_silently_reporting_success(mark
 
 
 @pytest.mark.parametrize("neighbor_factor", [1.0, 0.5])
-def test_omitted_special_session_is_retained_only_with_unchanged_surrounding_prices(
-    market, monkeypatch, neighbor_factor
+@pytest.mark.parametrize("omitted_date", ["2025-01-30", "2025-02-01"])
+def test_omitted_trading_quote_is_retained_only_with_unchanged_surrounding_prices(
+    market, monkeypatch, neighbor_factor, omitted_date
 ):
     from apps.dual_momentum import config
 
     monkeypatch.setattr(config, "ETF_UNIVERSE", {})
     frame, _, days = market
-    special = frame[(frame.symbol == "A") & (frame.date == pd.Timestamp("2025-01-31"))].copy()
-    special.date = pd.Timestamp("2025-02-01")
-    previous = pd.concat([frame, special], ignore_index=True)
+    omitted_day = pd.Timestamp(omitted_date)
+    previous = frame.copy()
+    if omitted_day.weekday() >= 5:
+        special = frame[(frame.symbol == "A") & (frame.date == pd.Timestamp("2025-01-31"))].copy()
+        special.date = omitted_day
+        previous = pd.concat([previous, special], ignore_index=True)
+    assert ((previous.symbol == "A") & (previous.date == omitted_day)).any()
     md.write_source(previous, md.PRICE_PATH, {"history_rebuild_required": ["A"]})
-    replacement = frame[frame.symbol == "A"].copy()
+    replacement = frame[(frame.symbol == "A") & (frame.date != omitted_day)].copy()
     replacement[["Open", "High", "Low", "Close"]] *= neighbor_factor
     replacement.loc[replacement.date.ge(days[-5]), ["Open", "High", "Low", "Close"]] *= 0.5
     b = frame[(frame.symbol == "B") & (frame.date == days[-1])].copy()
