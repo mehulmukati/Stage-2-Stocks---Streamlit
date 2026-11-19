@@ -307,16 +307,26 @@ def _load_and_score(constituents, for_momentum, emit=_NOOP_EMIT, as_of_date=None
     snapshot = snapshot or shared_market.load_snapshot(as_of_date or _get_target_key())
     target = pd.Timestamp(as_of_date or _get_target_key())
     all_symbols = {s for values in constituents.values() for s in values}
+    emit("info", f"Preparing price histories for {len(all_symbols):,} stocks.")
     data = snapshot.ohlcv(all_symbols, as_of=target)
     calendar = snapshot.trading_calendar(target)
     results = []
-    for symbol, sub in data.items():
+    emit("info", f"Scoring {len(data):,} stocks with price history.")
+    for processed, (symbol, sub) in enumerate(data.items()):
+        if processed and processed % 100 == 0:
+            emit("info", f"Processed {processed:,} of {len(data):,} stocks.")
+        if not for_momentum and len(sub) < 250:
+            continue
         trades = tradable_equity_rows(sub)
         coverage = recent_coverage(trades.index, target, calendar, first_observation=sub.index[0])
+        if not for_momentum and (
+            coverage < MIN_RECENT_COVERAGE
+            or trades.empty
+            or trading_session_age(trades.index[-1], target, calendar) > 3
+        ):
+            continue
         aligned = session_frame(sub, calendar, target)
         if aligned.empty:
-            continue
-        if not for_momentum and len(sub) < 250:
             continue
         if for_momentum:
             metrics = precompute_metrics(sub, calendar).iloc[-1].to_dict()
@@ -326,12 +336,6 @@ def _load_and_score(constituents, for_momentum, emit=_NOOP_EMIT, as_of_date=None
             trusted = aligned.Close.dropna()
             metrics["Price Date"] = str(trusted.index[-1].date()) if not trusted.empty else None
         else:
-            if (
-                coverage < MIN_RECENT_COVERAGE
-                or trades.empty
-                or trading_session_age(trades.index[-1], target, calendar) > 3
-            ):
-                continue
             # Score through the last accepted close while keeping gaps within
             # that history on the fixed session grid.
             price_date = aligned.Close.last_valid_index()
@@ -519,6 +523,7 @@ def resolve_screener_data(for_momentum=False, emit=_NOOP_EMIT, as_of_date=None):
         hit = _score_cache[kind]
         if hit.get("key") == key and hit.get("data") is not None:
             return hit["data"], target_key, "memory"
+    emit("info", f"Loading index constituents for {target_key}.")
     constituents = snapshot.constituents()
     result = _load_and_score(constituents, for_momentum, emit, target_key, snapshot)
     with _cache_lock:

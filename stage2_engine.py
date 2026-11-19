@@ -28,8 +28,7 @@ def _rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
     return rsi.where(avg_loss != 0, 100.0)
 
 
-def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
-    """Vectorised daily Stage 2 score; returns df with Close/MA cols, Score (0-8), and Phase."""
+def _rolling_stage2_score(df: pd.DataFrame):
     c, v = df["Close"], df["Volume"].astype(float)
     ma50 = c.rolling(50).mean()
     ma150 = c.rolling(150).mean()
@@ -58,6 +57,12 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
         + consolidation
     )
 
+    return ma50, ma150, ma200, score
+
+
+def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
+    """Vectorised daily Stage 2 score; returns df with Close/MA cols, Score (0-8), and Phase."""
+    ma50, ma150, ma200, score = _rolling_stage2_score(df)
     phase = pd.cut(
         score,
         bins=[-1, 1, 3, 5, 8],
@@ -65,7 +70,7 @@ def compute_rolling_stage2(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     result = pd.DataFrame(
-        {"Close": c, "MA50": ma50, "MA150": ma150, "MA200": ma200, "Score": score, "Phase": phase},
+        {"Close": df["Close"], "MA50": ma50, "MA150": ma150, "MA200": ma200, "Score": score, "Phase": phase},
         index=df.index,
     )
     return result
@@ -77,14 +82,15 @@ def current_stage2_run(df: pd.DataFrame) -> dict[str, int | str]:
     Zone changes within Stage 2 are deliberately not breaks: an Early setup
     that becomes Likely and then Strong remains one continuous Stage 2 run.
     """
-    rolled = compute_rolling_stage2(df)
-    valid = rolled.iloc[250:]
-    ready = valid[["Close", "MA50", "MA150", "MA200"]].notna().all(axis=1)
-    if valid.empty or not ready.iloc[-1] or int(valid["Score"].iloc[-1]) < 2:
+    if len(df) <= 250:
         return {"Stage 2 Days": 0, "Stage 2 Since": ""}
-    in_stage2 = (valid["Score"].ge(2) & ready).iloc[::-1]
+    ma50, ma150, ma200, score = _rolling_stage2_score(df)
+    ready = df["Close"].notna() & ma50.notna() & ma150.notna() & ma200.notna()
+    in_stage2 = (score.ge(2) & ready).iloc[:249:-1]
+    if not in_stage2.iloc[0]:
+        return {"Stage 2 Days": 0, "Stage 2 Since": ""}
     days = int(in_stage2.cumprod().sum())
-    return {"Stage 2 Days": days, "Stage 2 Since": str(pd.Timestamp(valid.index[-days]).date())}
+    return {"Stage 2 Days": days, "Stage 2 Since": str(pd.Timestamp(df.index[-days]).date())}
 
 
 def score_stage2(df: pd.DataFrame) -> dict | None:

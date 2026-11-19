@@ -208,7 +208,8 @@ def constituents_at(frame: pd.DataFrame, as_of=None, indices=None) -> dict[str, 
         selected = selected[selected.TIME_STAMP <= pd.Timestamp(as_of)]
     if indices:
         keys = {index_key(i) for i in indices}
-        selected = selected[selected.INDEX_NAME.map(index_key).isin(keys)]
+        names = {name for name in selected.INDEX_NAME.unique() if index_key(name) in keys}
+        selected = selected[selected.INDEX_NAME.isin(names)]
     result = {}
     for name, group in selected.groupby("INDEX_NAME", sort=True):
         latest = group[group.TIME_STAMP == group.TIME_STAMP.max()]

@@ -41,8 +41,13 @@ def calendar_provenance() -> dict:
     }
 
 
+@lru_cache(maxsize=1)
+def _parse_cash_holidays(closed_sessions: tuple[str, ...]) -> frozenset:
+    return frozenset(pd.to_datetime(closed_sessions))
+
+
 def _cash_holidays() -> frozenset:
-    return frozenset(pd.to_datetime(calendar_definition()["closed_sessions"]))
+    return _parse_cash_holidays(tuple(calendar_definition()["closed_sessions"]))
 
 
 def holiday_placeholder_mask(frame: pd.DataFrame) -> pd.Series:
