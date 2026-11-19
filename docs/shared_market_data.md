@@ -7,6 +7,35 @@ The application has two authoritative market-data files:
 | `data/screener_ohlcv.parquet` | Full retained equity OHLCV, adjusted ETF quotes, price indices, imported TRI and labeled cash proxy | `scripts/refresh_market_data.py` |
 | `data/constituents.parquet` | Complete dated membership snapshots, including historical membership | `scripts/refresh_constituents.py`; explicit historical reconstruction |
 
+## Dhan price publication
+
+Dhan is the default price provider. Local refreshes read `DHAN_CLIENT_ID` and
+`DHAN_ACCESS_TOKEN` from the environment or the ignored project `.env` file.
+GitHub Actions reads the same names from its `market-data` environment. It renews
+the token before downloads and at six-hour keepalive slots, then saves the new
+token in that environment. Activation requires an active Web token and a GitHub
+credential that can update environment secrets. Setup and recovery are described
+in [Dhan token renewal](../doc/dhan_token_renewal.md).
+
+```sh
+python scripts/refresh_market_data.py --target-date 2026-11-18 --require-coverage
+```
+
+Instrument matching uses exact NSE symbols and rejects ambiguous matches. Daily
+candles use the Indian session date and include the requested target session.
+Authentication failures stop the refresh. Per-symbol mapping and data failures
+remain in the publication diagnostics. The existing 94% constituent coverage and
+three required benchmarks must pass when `--require-coverage` is supplied, as in
+the scheduled recovery workflow.
+
+Each series records its provider and adjustment policy in Parquet metadata.
+Changing provider requires a full history response even when the overlap agrees.
+An incomplete replacement retains the prior series. History previously accepted
+from Yahoo may remain for unmapped, delisted or rejected instruments. An explicit
+`--provider yahoo` refresh uses the same provider-change checks. Dhan's dividend
+and demerger treatment should be evaluated before comparing new rankings with
+earlier Yahoo-based strategy results.
+
 `market_data.load_snapshot(as_of)` pins both file revisions for a calculation. Screeners, charts, Momentum replay, Live Signal, breadth and Quant Portfolio use these readers. Dual Momentum reads its explicitly typed series from the same price file. Page reads never fetch vendor data or fall back to another price/membership file.
 
 ## Date and revision contract

@@ -7,6 +7,7 @@ on:
     - cron: "15 17 * * *" # 10:45 PM IST retry for delayed vendor prices
     - cron: "15 3 * * *" # 8:45 AM IST recovery of the prior session
     - cron: "15 9 * * *" # 2:45 PM IST final recovery for delayed prior-session prices
+    - cron: "35 1,7,13,19 * * *" # Token keepalive every six hours, including holidays
   workflow_dispatch:
     inputs:
       target_date:
@@ -34,6 +35,8 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    # Environment secrets are read at job start, after the shared concurrency lock.
+    environment: market-data
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -59,10 +62,22 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Renew Dhan token and persist its replacement
+        id: dhan_token
+        env:
+          DHAN_CLIENT_ID: ${{ secrets.DHAN_CLIENT_ID }}
+          DHAN_ACCESS_TOKEN: ${{ secrets.DHAN_ACCESS_TOKEN }}
+          DHAN_TOKEN_WRITER: ${{ secrets.DHAN_TOKEN_WRITER }}
+          DHAN_GITHUB_ENVIRONMENT: market-data
+        run: python scripts/renew_dhan_token.py --github
+
       - name: Recover target session unless it is already accepted
         id: recovery
+        if: github.event.schedule != '35 1,7,13,19 * * *'
         env:
           RECOVERY_RUN_CREATED_AT: ${{ steps.clock.outputs.result }}
+          DHAN_CLIENT_ID: ${{ secrets.DHAN_CLIENT_ID }}
+          # DHAN_ACCESS_TOKEN comes from the renewal step via GITHUB_ENV.
         run: python scripts/recover_market_data.py
 
       - name: Commit refreshed parquet
@@ -85,12 +100,33 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: market-refresh-${{ github.run_id }}
-          path: outputs/market_refresh_status.json
+          path: |
+            outputs/market_refresh_status.json
+            outputs/dhan_token_status.json
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Alert on final failure or close recovered alerts
+      - name: Preserve encrypted token recovery after persistence failure
+        if: failure() && steps.dhan_token.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dhan-token-recovery-${{ github.run_id }}
+          path: outputs/dhan_token_recovery.json
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Alert on Dhan token failure or close recovered alerts
         if: always() && !cancelled()
+        uses: actions/github-script@v8
+        env:
+          DHAN_RENEWAL_STATUS: ${{ steps.dhan_token.outcome }}
+        with:
+          script: |
+            const notify = require('./.github/scripts/dhan_token_alert.cjs');
+            await notify({ github, context, core });
+
+      - name: Alert on final failure or close recovered alerts
+        if: always() && !cancelled() && steps.dhan_token.outcome == 'success' && github.event.schedule != '35 1,7,13,19 * * *'
         uses: actions/github-script@v8
         env:
           REFRESH_JOB_STATUS: ${{ job.status }}
