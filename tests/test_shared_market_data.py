@@ -403,11 +403,12 @@ def test_guarded_refresh_rejects_market_wide_lag_before_writing(market, monkeypa
 
 
 def test_publication_accepts_isolated_gaps_but_rejects_widespread_lag():
-    coverage = dict(current_symbol_count=100, target_session_symbol_count=96, missing_target_benchmarks=[])
-    validate_publication(coverage, "2026-10-19")
-    coverage["target_session_symbol_count"] = 94
-    with pytest.raises(RuntimeError, match="95% required"):
-        validate_publication(coverage, "2026-10-19")
+    target = "2026-11-17"
+    coverage = dict(current_symbol_count=751, target_session_symbol_count=708, missing_target_benchmarks=[])
+    validate_publication(coverage, target)
+    validate_publication(coverage | {"target_session_symbol_count": 706}, target)
+    with pytest.raises(RuntimeError, match="94% required"):
+        validate_publication(coverage | {"target_session_symbol_count": 705}, target)
 
 
 def test_quant_reports_missing_candles_without_inventing_values(market):

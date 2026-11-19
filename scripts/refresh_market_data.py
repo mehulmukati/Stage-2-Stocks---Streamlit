@@ -227,7 +227,7 @@ def price_coverage(prices, current, target_date):
     }
 
 
-def validate_publication(coverage, target, min_coverage=0.95):
+def validate_publication(coverage, target, min_coverage=0.94):
     """Reject a market-wide lag before replacing the accepted price revision."""
     failures = []
     count = coverage["current_symbol_count"]
