@@ -51,8 +51,10 @@ def test_automatic_attempts_stop_after_next_afternoon_even_across_weekend():
 def test_outage_then_recovery_then_skip_without_repeated_source_requests(market, monkeypatch):
     """Exercise real validation and writes while only replacing the provider boundary."""
     from apps.dual_momentum import config
+    from scripts import refresh_market_data as publisher
 
     monkeypatch.setattr(config, "ETF_UNIVERSE", {})
+    monkeypatch.setattr(publisher, "INDEX_TICKERS", {name: name for name in ["Nifty 50", "Nifty 100", "Nifty 500"]})
     frame, _, days = market
     target = str((days[-1] + pd.offsets.BDay()).date())
     plan = dict(target_date=target, final_attempt=False)

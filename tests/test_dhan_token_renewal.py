@@ -184,5 +184,6 @@ def test_workflow_uses_fresh_environment_secret_and_serializes_all_slots():
     assert 'cron: "35 1,7,13,19 * * *"' in text
     assert "group: shared-market-publisher" in text
     download = text.split("- name: Recover target session", 1)[1].split("- name:", 1)[0]
-    assert "DHAN_ACCESS_TOKEN: ${{" not in download
+    assert "DHAN_ACCESS_TOKEN: ${{ env.DHAN_ACCESS_TOKEN || secrets.DHAN_ACCESS_TOKEN }}" in download
+    assert "steps.dependencies.outcome == 'success'" in download
     assert "dhan_token_recovery.json" in text

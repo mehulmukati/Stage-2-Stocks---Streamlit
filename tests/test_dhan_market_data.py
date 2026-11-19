@@ -82,6 +82,7 @@ def test_provider_change_requires_full_history_even_when_overlap_prices_agree(ma
 
     frame, _, days = market
     monkeypatch.setattr(config, "ETF_UNIVERSE", {})
+    monkeypatch.setattr(publisher, "download", lambda *args: (pd.DataFrame(columns=md.PRICE_COLUMNS), "offline"))
     benchmarks = ["Nifty 50", "Nifty 100", "Nifty 500"]
     monkeypatch.setattr(publisher, "INDEX_TICKERS", {name: name for name in benchmarks})
     index_rows = pd.concat(

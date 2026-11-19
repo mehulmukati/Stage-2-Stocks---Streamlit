@@ -12,7 +12,7 @@ module.exports = async ({ github, context, core }) => {
     }
     return;
   }
-  core.setFailed('Dhan token renewal failed. Market downloads were skipped.');
+  core.setFailed('Dhan token renewal failed. Yahoo fallback remains enabled for market downloads.');
   if (alerts.length) return;
   const runUrl = `${context.serverUrl}/${repo.owner}/${repo.repo}/actions/runs/${context.runId}`;
   await github.rest.issues.create({

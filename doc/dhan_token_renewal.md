@@ -37,8 +37,9 @@ credential. Environment secrets are read when the job starts, so jobs queued
 behind a previous renewal receive its newly saved token.
 
 The newly renewed token reaches the current download step through `GITHUB_ENV`.
-The download step must not override it with a secrets expression. Later jobs
-read it from the environment secret. The token is masked before export, and no
+The download step prefers that exported token and uses the bootstrap secret only
+if no renewed token was exported. Later jobs read it from the environment secret.
+The token is masked before export, and no
 plaintext token is put in a commit, status report, issue or uploaded artifact.
 
 ## Failures and recovery
@@ -47,6 +48,11 @@ Token or persistence failures fail the workflow and open one bot-owned repositor
 issue. Repeated failures do not create duplicate issues. The next successful
 renewal closes that alert. Notification delivery follows GitHub notification
 settings. Status diagnostics are in the workflow artifact.
+
+Price recovery still runs after a renewal failure. It tries Dhan with the available
+token and uses yfinance for unresolved series if Dhan is unavailable. Validated
+fallback prices may be published and committed while the token failure remains
+visible in the workflow and its separate alert.
 
 Renewal invalidates the previous token. The publisher retries transient GitHub
 save failures using the same replacement token. It never repeats an ambiguous

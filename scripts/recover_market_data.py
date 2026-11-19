@@ -14,6 +14,8 @@ from config import IST  # noqa: E402
 from scripts.refresh_market_data import (  # noqa: E402
     check_publication,
     completed_session,
+    market_requests,
+    missing_requested_series,
     price_coverage,
     refresh_prices,
 )
@@ -53,6 +55,7 @@ def run_attempt(plan, force=False):
 
     target = plan["target_date"]
     report = dict(plan)
+    accepted = False
     try:
         if not force:
             try:
@@ -60,8 +63,15 @@ def run_attempt(plan, force=False):
             except RuntimeError:
                 pass
             else:
-                return report | {"status": "already_current"}
+                accepted = True
+                snapshot = md.load_snapshot()
+                missing = missing_requested_series(snapshot.prices, market_requests(snapshot, target), target)
+                report["missing_target_series"] = sorted(missing)
+                if not missing:
+                    return report | {"status": "already_current"}
         if not force and not plan.get("attempt_allowed", True):
+            if accepted:
+                return report | {"status": "already_current", "recovery_window_exhausted": True}
             raise RuntimeError("Scheduled recovery window exhausted; no further provider requests for this session")
         refresh_constituents()
         report.update(refresh_prices(target_date=target, require_coverage=True))
@@ -93,7 +103,7 @@ def describe_report(report):
         if candidate
         else ""
     )
-    errors = report.get("provider_errors", {})
+    errors = report.get("provider_errors", report.get("errors", {}))
     details = "".join(f"- {symbol}: {reason}\n" for symbol, reason in sorted(errors.items())[:20])
     diagnostics = (
         f"\nProvider/symbol diagnostics ({len(errors)}; full list in artifact):\n\n{details}" if errors else ""
@@ -112,6 +122,10 @@ def describe_report(report):
         f"Missing benchmarks: {', '.join(report.get('missing_target_benchmarks', [])) or 'none'}\n\n"
         f"Missing stocks ({len(missing)}): {', '.join(missing[:40]) or 'none'}"
         f"{' (full list in recovery artifact)' if len(missing) > 40 else ''}\n\n"
+        f"Yahoo fallback: {len(report.get('fallback_accepted_series', []))} accepted / "
+        f"{len(report.get('fallback_requested_series', []))} requested series\n\n"
+        f"Remaining requested series: "
+        f"{len(report['missing_target_series']) if 'missing_target_series' in report else 'not evaluated'}\n\n"
         f"{attempted}{retry}"
         f"Failure reason: {report.get('error', 'none')}\n{diagnostics}"
     )

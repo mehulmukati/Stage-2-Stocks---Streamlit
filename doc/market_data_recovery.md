@@ -9,9 +9,9 @@ downloads prices from the vendor.
 | Scheduled slot (IST) | Target |
 | --- | --- |
 | 7:45 PM | Latest completed NSE cash-equity session |
-| 8:45 PM | Same session, if coverage still fails |
-| 10:45 PM | Same session, if coverage still fails |
-| 8:45 AM next morning | Prior completed session, if coverage still fails |
+| 8:45 PM | Same session, if any requested series remain missing |
+| 10:45 PM | Same session, if any requested series remain missing |
+| 8:45 AM next morning | Prior completed session, if any requested series remain missing |
 | 2:45 PM next afternoon | Prior completed session; final recovery attempt |
 
 The afternoon slot allows for the provider delay observed on October 27, 2026:
@@ -29,15 +29,22 @@ not a guarantee of exact execution times. See
 [GitHub's scheduling limitations](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
 
 Before contacting the vendor, the runner checks accepted target-session coverage.
-At least 95% of current stocks and all three core benchmarks (Nifty 50, Nifty 100,
-Nifty 500) must cover the target. A successful check skips constituent verification,
-price downloads, and source writes. Isolated missing stocks remain recorded and
-visible in the app; passing this gate does not claim every stock is current.
+At least 94% of current stocks and all three core benchmarks (Nifty 50, Nifty 100,
+Nifty 500) must cover the target for publication. Passing this gate does not stop
+recovery: within the retry window, later runs still seek every requested stock,
+ETF and price index. Constituent verification, downloads and writes are skipped
+only when all requested series already cover the target. After the retry window,
+passing coverage is accepted with remaining gaps explicitly recorded.
 
-When coverage fails, the runner verifies constituents once and invokes the shared
-price publisher once. Its adapter batches series and retries incomplete responses
-twice. Validation happens before the atomic, revision-checked price write. A rejected
-response preserves the previous price file; a failed run never commits source files.
+When any series is missing, the runner verifies constituents once and invokes the
+shared price publisher once. Dhan is attempted first; yfinance then retries series
+still missing usable target-session data. Yahoo's adapter retries incomplete
+responses twice. A Dhan authentication or connection failure also permits fallback.
+Provider switches require complete compatible history; stale fallback cannot
+replace newer accepted prices. Validation happens before the atomic,
+revision-checked price write. A rejected price response preserves the previous
+price file. A valid fallback publication can be committed even if token renewal
+failed; that failure still raises its separate alert and fails the workflow.
 The workflow concurrency group serializes scheduled publications. A conflicting Git
 push fails rather than overwriting newer repository changes.
 
@@ -54,8 +61,9 @@ candidate coverage separately and includes up to 20 symbol diagnostics. Accepted
 coverage describes the file still serving the app; candidate coverage describes
 the merged response rejected by validation.
 
-Every failed recovery marks its workflow run failed, so a green run means recovery
-succeeded or accepted coverage already passed (and any required commit succeeded).
+Every failed recovery marks its workflow run failed. A green run means recovery
+and token renewal succeeded, or no further price attempt was needed (and any
+required commit succeeded).
 Intermediate failures do not open repository issues; Actions notifications still
 follow the user's GitHub settings. The final afternoon failure opens one dated
 GitHub issue. Repeated failures for the same target do not
@@ -82,8 +90,8 @@ preserved; a date that was following the latest session advances with that sessi
 
 | Flow | Upstream requests | Shared writes |
 | --- | --- | --- |
-| Accepted target / later retry after success | None | None |
-| Missing target / scheduled recovery | One constituent verification and batched price adapter calls | Validated atomic price publication, then Git commit |
+| All requested series current / exhausted window with accepted coverage | None | None |
+| Any requested series missing / scheduled recovery within window | One constituent verification, Dhan calls, then Yahoo for unresolved series | Validated atomic price publication, then Git commit |
 | Page open / periodic revision check | None | None |
 | Automatic screener recalculation | None | None; revision-keyed result cache only |
 | Final failed attempt | GitHub issue API; no extra vendor retry | Diagnostic artifact and one deduplicated alert |

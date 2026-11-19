@@ -15,7 +15,7 @@ on:
         required: false
         type: string
       force:
-        description: "Download even when accepted coverage already passes"
+        description: "Download even when all requested series already cover the target"
         default: false
         type: boolean
       final_attempt:
@@ -59,6 +59,7 @@ jobs:
             return run.data.created_at;
 
       - name: Install dependencies
+        id: dependencies
         run: |
           pip install -r requirements.txt
 
@@ -71,17 +72,18 @@ jobs:
           DHAN_GITHUB_ENVIRONMENT: market-data
         run: python scripts/renew_dhan_token.py --github
 
-      - name: Recover target session unless it is already accepted
+      - name: Recover target session until all requested series are current
         id: recovery
-        if: github.event.schedule != '35 1,7,13,19 * * *'
+        if: always() && !cancelled() && steps.dependencies.outcome == 'success' && github.event.schedule != '35 1,7,13,19 * * *'
         env:
           RECOVERY_RUN_CREATED_AT: ${{ steps.clock.outputs.result }}
           DHAN_CLIENT_ID: ${{ secrets.DHAN_CLIENT_ID }}
-          # DHAN_ACCESS_TOKEN comes from the renewal step via GITHUB_ENV.
+          # Prefer the newly persisted token; on renewal failure the publisher can fall back to Yahoo.
+          DHAN_ACCESS_TOKEN: ${{ env.DHAN_ACCESS_TOKEN || secrets.DHAN_ACCESS_TOKEN }}
         run: python scripts/recover_market_data.py
 
       - name: Commit refreshed parquet
-        if: steps.recovery.outcome == 'success'
+        if: always() && !cancelled() && steps.recovery.outcome == 'success'
         run: |
           if git diff --quiet -- data/screener_ohlcv.parquet data/constituents.parquet; then
             echo "No screener parquet changes to commit."

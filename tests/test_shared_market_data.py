@@ -270,7 +270,9 @@ def test_rebuild_omitting_placeholder_repairs_prices_but_preserves_required_hist
 
     def fetch(requests, start, end):
         if "A.NS" in requests:
-            return pd.concat([replacement, b], ignore_index=True), None
+            return replacement, None
+        if "B.NS" in requests:
+            return b, None
         return pd.DataFrame(columns=md.PRICE_COLUMNS), "offline"
 
     report = refresh_prices(target_date=str(days[-1].date()), fetch=fetch)
@@ -334,7 +336,9 @@ def test_omitted_trading_quote_is_retained_only_with_unchanged_surrounding_price
 
     def fetch(requests, start, end):
         if "A.NS" in requests:
-            return pd.concat([replacement, b], ignore_index=True), None
+            return replacement, None
+        if "B.NS" in requests:
+            return b, None
         return pd.DataFrame(columns=md.PRICE_COLUMNS), "offline"
 
     report = refresh_prices(target_date=str(days[-1].date()), fetch=fetch)

@@ -18,7 +18,12 @@ import yfinance as yf
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import market_data as md  # noqa: E402 -- repo imports need the script's parent on sys.path
-from equity_data import observation_diagnostics, prepare_publication, tradable_equity_rows  # noqa: E402
+from equity_data import (  # noqa: E402
+    classify_equity_rows,
+    observation_diagnostics,
+    prepare_publication,
+    tradable_equity_rows,
+)
 
 INDEX_TICKERS = {
     "Nifty 50": "^NSEI",
@@ -252,6 +257,187 @@ def check_publication(target_date=None):
     return coverage
 
 
+def market_requests(snapshot, target, only_series=None):
+    target_ts = pd.Timestamp(target)
+    current = snapshot.symbols(as_of=target)
+    # Preserve and refresh recent ex-members too; suspended/delisted histories remain stored.
+    equities = snapshot.prices[snapshot.prices.series_type == "equity"]
+    maxima = equities.groupby("symbol").date.max()
+    active = set(maxima[maxima >= target_ts - pd.Timedelta(days=14)].index) | current
+    requests = {f"{s}.NS": (s, "equity") for s in sorted(active) if not s.startswith("DUMMY")}
+    requests.update({ticker: (name, "index_price") for name, ticker in INDEX_TICKERS.items()})
+    from apps.dual_momentum.config import ETF_UNIVERSE
+
+    requests.update({ticker: (ticker, "etf_adjusted") for ticker in ETF_UNIVERSE})
+    if only_series:
+        requests = {ticker: identity for ticker, identity in requests.items() if identity[1] in only_series}
+    return requests
+
+
+def usable_series_dates(prices, target):
+    eligible = prices[prices.date.le(pd.Timestamp(target)) & prices.Close.gt(0)]
+    equity = tradable_equity_rows(classify_equity_rows(eligible[eligible.series_type.eq("equity")]))
+    indices = eligible[eligible.series_type.eq("index_price")]
+    etfs = eligible[eligible.series_type.eq("etf_adjusted") & eligible.Volume.gt(0)]
+    etfs = etfs.dropna(subset=["Open", "High", "Low", "Volume"])
+    return pd.concat([equity, indices, etfs]).groupby(["series_type", "symbol"]).date.max()
+
+
+def missing_requested_series(prices, requests, target):
+    dates = usable_series_dates(prices, target)
+    return {
+        ticker: (symbol, kind)
+        for ticker, (symbol, kind) in requests.items()
+        if dates.get((kind, symbol)) != pd.Timestamp(target)
+    }
+
+
+def validate_response(frame, requests, target, errors):
+    """Isolate bad series so they cannot discard other usable provider responses."""
+    frames = []
+    missing = set(md.PRICE_COLUMNS) - set(frame)
+    if missing:
+        errors.update({ticker: f"Missing price columns: {sorted(missing)}" for ticker in requests})
+        return pd.DataFrame(columns=md.PRICE_COLUMNS)
+    tickers = {(kind, symbol): ticker for ticker, (symbol, kind) in requests.items()}
+    for identity, group in frame.groupby(["series_type", "symbol"]):
+        if identity not in tickers:
+            continue
+        try:
+            group = group.copy()
+            group.date = pd.to_datetime(group.date, errors="raise")
+            group = md.normalize_prices(group[group.date.le(pd.Timestamp(target))])
+        except ValueError as exc:
+            errors[tickers[identity]] = f"Invalid provider response: {exc}"
+            continue
+        frames.append(group)
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=md.PRICE_COLUMNS)
+
+
+def fetch_history(
+    existing, requests, target, fetch, sources, pending_rebuild, force_full, emit, provider, unavailable_error=None
+):
+    """Validate one provider's response using the shared history-rebuild rules."""
+    target_ts = pd.Timestamp(target)
+    rebuilt = set()
+    provider_error = unavailable_error
+
+    def fetch_once(batch, start, end):
+        nonlocal provider_error
+        if provider_error is None:
+            try:
+                return fetch(batch, start, end)
+            except RuntimeError as exc:
+                provider_error = str(exc)
+        return pd.DataFrame(columns=md.PRICE_COLUMNS), provider_error
+
+    source_changes = {
+        (kind, symbol)
+        for symbol, kind in requests.values()
+        if f"{kind}:{symbol}" in sources and sources[f"{kind}:{symbol}"] != provider
+    }
+    switching_rows = pd.MultiIndex.from_frame(existing[["series_type", "symbol"]]).isin(source_changes)
+    if existing.loc[switching_rows, "date"].gt(target_ts).any():
+        raise RuntimeError("A provider change must cover the latest stored session to preserve its adjustment basis")
+    additions = []
+    errors = {}
+    retained = []
+    # Group by each instrument's own coverage, not a global maximum.
+    groups = {}
+    coverage = existing.groupby(["series_type", "symbol"]).date.agg(["min", "max"])
+    for ticker, (symbol, kind) in requests.items():
+        bounds = coverage.loc[(kind, symbol)] if (kind, symbol) in coverage.index else None
+        if force_full or bounds is None or symbol in pending_rebuild or (kind, symbol) in source_changes:
+            start = target_ts - pd.DateOffset(years=10)
+            if bounds is not None:
+                start = min(start, bounds["min"])
+        else:
+            start = bounds["max"] - pd.Timedelta(days=7)
+        groups.setdefault(str(start.date()), {})[ticker] = (symbol, kind)
+    for start, group in groups.items():
+        items = list(group.items())
+        for position in range(0, len(items), 80):
+            batch = dict(items[position : position + 80])
+            emit("info", f"Refreshing {len(batch)} series from {start} through {target}")
+            new, error = fetch_once(batch, start, target)
+            if new.empty:
+                errors.update({ticker: error or "no observations" for ticker in batch})
+                retained.extend(batch)
+                continue
+            new = validate_response(new, batch, target, errors)
+            corrections = revision_needs_full_history(existing, new)
+            returned_identities = set(zip(new.series_type, new.symbol))
+            # Even identical overlap prices cannot prove two providers use
+            # the same adjustment convention across the entire history.
+            corrections.update(source_changes & returned_identities)
+            corrections.update(
+                ("equity", symbol) for symbol in pending_rebuild if ("equity", symbol) in returned_identities
+            )
+            if corrections:
+                corrected = {ticker: identity for ticker, identity in batch.items() if identity[::-1] in corrections}
+                oldest = existing[
+                    pd.MultiIndex.from_frame(existing[["series_type", "symbol"]]).isin(corrections)
+                ].date.min()
+                if pd.Timestamp(start) <= oldest:
+                    # The original request already covers all stored history.
+                    full, full_error = new.copy(), error
+                else:
+                    full, full_error = fetch_once(
+                        corrected, str(min(oldest, target_ts - pd.DateOffset(years=10)).date()), target
+                    )
+                full = validate_response(full, corrected, target, errors) if not full.empty else full
+                successful = set()
+                previous_groups = {
+                    identity: frame
+                    for identity, frame in existing.loc[
+                        pd.MultiIndex.from_frame(existing[["series_type", "symbol"]]).isin(corrections)
+                        & existing.date.le(target_ts)
+                    ].groupby(["series_type", "symbol"])
+                }
+                replacement_groups = {identity: frame for identity, frame in full.groupby(["series_type", "symbol"])}
+                for identity in corrections:
+                    kind, symbol = identity
+                    previous = previous_groups.get(identity, pd.DataFrame(columns=md.PRICE_COLUMNS))
+                    replacement = replacement_groups.get(identity, pd.DataFrame(columns=md.PRICE_COLUMNS))
+                    # A partial upstream response must not create an adjustment seam.
+                    if history_is_complete(previous, replacement):
+                        successful.add(identity)
+                        rebuilt.add(symbol)
+                full = (
+                    full[full.apply(lambda r: (r.series_type, r.symbol) in successful, axis=1)]
+                    if not full.empty
+                    else full
+                )
+                # Reject only symbols whose long adjustment correction could not be obtained.
+                bad = corrections - successful
+                if not full.empty:
+                    new = new[~new.apply(lambda r: (r.series_type, r.symbol) in corrections, axis=1)]
+                    new = pd.concat([new, full], ignore_index=True)
+                else:
+                    new = new[~new.apply(lambda r: (r.series_type, r.symbol) in corrections, axis=1)]
+                for kind, symbol in bad:
+                    errors[symbol] = full_error or "adjusted-history correction incomplete; previous history retained"
+            returned = set(zip(new.symbol, new.series_type))
+            for ticker, identity in batch.items():
+                if identity not in returned:
+                    errors.setdefault(ticker, "no usable observations returned")
+                    retained.append(ticker)
+                else:
+                    symbol, kind = identity
+                    observations = new[new.symbol.eq(symbol) & new.series_type.eq(kind)]
+                    if kind != "index_price":
+                        observations = observations[observations.Volume.gt(0)]
+                    latest = observations.date.max()
+                    if pd.isna(latest) or latest < target_ts:
+                        available = str(latest.date()) if pd.notna(latest) else "none"
+                        errors.setdefault(ticker, f"no tradable {target} observation; latest returned: {available}")
+            if not new.empty:
+                additions.append(new)
+    errors.update(getattr(fetch, "errors", {}))
+    new = pd.concat(additions, ignore_index=True) if additions else pd.DataFrame(columns=md.PRICE_COLUMNS)
+    return new, errors, retained, rebuilt
+
+
 def refresh_prices(
     target_date=None,
     force_full=False,
@@ -260,17 +446,22 @@ def refresh_prices(
     only_series=None,
     require_coverage=False,
     provider="dhan",
+    fallback_fetch=None,
 ):
+    unavailable_error = None
     if fetch is None:
         if provider == "dhan":
             from scripts.dhan_market_data import DhanDownloader
 
-            fetch = DhanDownloader()
+            try:
+                fetch = DhanDownloader()
+            except RuntimeError as exc:
+                unavailable_error = str(exc)
         elif provider == "yahoo":
             fetch = download
         else:
             raise ValueError(f"Unknown market-data provider: {provider}")
-    provider = getattr(fetch, "provider", "yahoo")
+    provider = getattr(fetch, "provider", provider if fetch is None else "yahoo")
     adjustment_policy = getattr(fetch, "adjustment_policy", "yahoo_auto_adjust")
     target = target_date or completed_session()
     target_ts = pd.Timestamp(target)
@@ -284,150 +475,65 @@ def refresh_prices(
                 sources.setdefault(f"{kind}:{symbol}", "yahoo")
                 policies.setdefault(f"{kind}:{symbol}", "yahoo_auto_adjust")
         pending_rebuild = set(existing.attrs.get("history_rebuild_required", []))
-        rebuilt = set()
         current = snapshot.symbols(as_of=target)
-        # Preserve and refresh recent ex-members too; suspended/delisted histories remain stored.
-        equities = existing[existing.series_type == "equity"]
-        maxima = equities.groupby("symbol").date.max()
-        active = set(maxima[maxima >= target_ts - pd.Timedelta(days=14)].index) | current
-        requests = {f"{s}.NS": (s, "equity") for s in sorted(active) if not s.startswith("DUMMY")}
-        requests.update({ticker: (name, "index_price") for name, ticker in INDEX_TICKERS.items()})
-        from apps.dual_momentum.config import ETF_UNIVERSE
-
-        requests.update({ticker: (ticker, "etf_adjusted") for ticker in ETF_UNIVERSE})
-        if only_series:
-            requests = {ticker: identity for ticker, identity in requests.items() if identity[1] in only_series}
-        source_changes = {
-            (kind, symbol)
-            for symbol, kind in requests.values()
-            if f"{kind}:{symbol}" in sources and sources[f"{kind}:{symbol}"] != provider
-        }
-        switching_rows = pd.MultiIndex.from_frame(existing[["series_type", "symbol"]]).isin(source_changes)
-        if existing.loc[switching_rows, "date"].gt(target_ts).any():
-            raise RuntimeError(
-                "A provider change must cover the latest stored session to preserve its adjustment basis"
-            )
-        additions = []
-        errors = {}
-        retained = []
-        # Group by each instrument's own coverage, not a global maximum.
-        groups = {}
-        coverage = existing.groupby(["series_type", "symbol"]).date.agg(["min", "max"])
-        for ticker, (symbol, kind) in requests.items():
-            bounds = coverage.loc[(kind, symbol)] if (kind, symbol) in coverage.index else None
-            if force_full or bounds is None or symbol in pending_rebuild or (kind, symbol) in source_changes:
-                start = target_ts - pd.DateOffset(years=10)
-                if bounds is not None:
-                    start = min(start, bounds["min"])
-            else:
-                start = bounds["max"] - pd.Timedelta(days=7)
-            groups.setdefault(str(start.date()), {})[ticker] = (symbol, kind)
-        for start, group in groups.items():
-            items = list(group.items())
-            for position in range(0, len(items), 80):
-                batch = dict(items[position : position + 80])
-                emit("info", f"Refreshing {len(batch)} series from {start} through {target}")
-                new, error = fetch(batch, start, target)
-                if new.empty:
-                    errors.update({ticker: error or "no observations" for ticker in batch})
-                    retained.extend(batch)
-                    continue
-                try:
-                    new = md.normalize_prices(new[new.date <= target_ts])
-                except ValueError as exc:
-                    errors.update({ticker: f"invalid response: {exc}" for ticker in batch})
-                    retained.extend(batch)
-                    continue
-                corrections = revision_needs_full_history(existing, new)
-                returned_identities = set(zip(new.series_type, new.symbol))
-                # Even identical overlap prices cannot prove two providers use
-                # the same adjustment convention across the entire history.
-                corrections.update(source_changes & returned_identities)
-                corrections.update(
-                    ("equity", symbol) for symbol in pending_rebuild if ("equity", symbol) in returned_identities
+        requests = market_requests(snapshot, target, only_series)
+        new, errors, retained, rebuilt = fetch_history(
+            existing, requests, target, fetch, sources, pending_rebuild, force_full, emit, provider, unavailable_error
+        )
+        for kind, symbol in new[["series_type", "symbol"]].drop_duplicates().itertuples(index=False):
+            sources[f"{kind}:{symbol}"] = provider
+            policies[f"{kind}:{symbol}"] = adjustment_policy
+        merged = merge_observations(existing, new)
+        provider_diagnostics = {provider: dict(errors)}
+        fallback_requests = {}
+        fallback_accepted = []
+        if provider == "dhan":
+            fallback_requests = missing_requested_series(merged, requests, target)
+            if fallback_requests:
+                emit("info", f"Trying Yahoo fallback for {len(fallback_requests)} unresolved series")
+                fallback, fallback_errors, _, fallback_rebuilt = fetch_history(
+                    merged,
+                    fallback_requests,
+                    target,
+                    fallback_fetch or download,
+                    sources,
+                    pending_rebuild - rebuilt,
+                    force_full,
+                    emit,
+                    "yahoo",
                 )
-                if corrections:
-                    corrected = {
-                        ticker: identity for ticker, identity in batch.items() if identity[::-1] in corrections
-                    }
-                    oldest = existing[
-                        pd.MultiIndex.from_frame(existing[["series_type", "symbol"]]).isin(corrections)
-                    ].date.min()
-                    if pd.Timestamp(start) <= oldest:
-                        # The original request already covers all stored history.
-                        full, full_error = new.copy(), error
-                    else:
-                        full, full_error = fetch(
-                            corrected, str(min(oldest, target_ts - pd.DateOffset(years=10)).date()), target
-                        )
-                    try:
-                        full = md.normalize_prices(full[full.date <= target_ts]) if not full.empty else full
-                    except ValueError as exc:
-                        full_error = f"invalid adjusted-history response: {exc}"
-                        full = pd.DataFrame(columns=md.PRICE_COLUMNS)
-                    successful = set()
-                    previous_groups = {
-                        identity: frame
-                        for identity, frame in existing.loc[
-                            pd.MultiIndex.from_frame(existing[["series_type", "symbol"]]).isin(corrections)
-                            & existing.date.le(target_ts)
-                        ].groupby(["series_type", "symbol"])
-                    }
-                    replacement_groups = {
-                        identity: frame for identity, frame in full.groupby(["series_type", "symbol"])
-                    }
-                    for identity in corrections:
-                        kind, symbol = identity
-                        previous = previous_groups.get(identity, pd.DataFrame(columns=md.PRICE_COLUMNS))
-                        replacement = replacement_groups.get(identity, pd.DataFrame(columns=md.PRICE_COLUMNS))
-                        # A partial upstream response must not create an adjustment seam.
-                        if history_is_complete(previous, replacement):
-                            successful.add(identity)
-                            rebuilt.add(symbol)
-                    full = (
-                        full[full.apply(lambda r: (r.series_type, r.symbol) in successful, axis=1)]
-                        if not full.empty
-                        else full
-                    )
-                    # Reject only symbols whose long adjustment correction could not be obtained.
-                    bad = corrections - successful
-                    if not full.empty:
-                        new = new[~new.apply(lambda r: (r.series_type, r.symbol) in corrections, axis=1)]
-                        new = pd.concat([new, full], ignore_index=True)
-                    else:
-                        new = new[~new.apply(lambda r: (r.series_type, r.symbol) in corrections, axis=1)]
-                    for kind, symbol in bad:
-                        errors[symbol] = (
-                            full_error or "adjusted-history correction incomplete; previous history retained"
-                        )
-                returned = set(zip(new.symbol, new.series_type))
-                for ticker, identity in batch.items():
-                    if identity not in returned:
-                        errors.setdefault(ticker, "no usable observations returned")
-                        retained.append(ticker)
-                    else:
-                        symbol, kind = identity
-                        observations = new[new.symbol.eq(symbol) & new.series_type.eq(kind)]
-                        if kind != "index_price":
-                            observations = observations[observations.Volume.gt(0)]
-                        latest = observations.date.max()
-                        if pd.isna(latest) or latest < target_ts:
-                            available = str(latest.date()) if pd.notna(latest) else "none"
-                            errors.setdefault(ticker, f"no tradable {target} observation; latest returned: {available}")
-                if not new.empty:
-                    additions.append(new)
-        errors.update(getattr(fetch, "errors", {}))
-        new = pd.concat(additions, ignore_index=True) if additions else pd.DataFrame(columns=md.PRICE_COLUMNS)
+                provider_diagnostics["yahoo"] = dict(fallback_errors)
+                # A stale fallback must not overwrite a newer accepted Dhan observation.
+                before = usable_series_dates(merged, target)
+                after = usable_series_dates(fallback, target)
+                improved = {
+                    identity for identity, day in after.items() if identity not in before or day > before[identity]
+                }
+                fallback = fallback[pd.MultiIndex.from_frame(fallback[["series_type", "symbol"]]).isin(improved)]
+                fallback_accepted = sorted(
+                    ticker for ticker, (symbol, kind) in fallback_requests.items() if (kind, symbol) in improved
+                )
+                for kind, symbol in improved:
+                    sources[f"{kind}:{symbol}"] = "yahoo"
+                    policies[f"{kind}:{symbol}"] = "yahoo_auto_adjust"
+                rebuilt.update(fallback_rebuilt & {symbol for kind, symbol in improved})
+                merged = merge_observations(merged, fallback)
+                new = pd.concat([new, fallback], ignore_index=True).drop_duplicates(
+                    ["series_type", "symbol", "date"], keep="last"
+                )
+                errors.update(fallback_errors)
+                unresolved = missing_requested_series(merged, requests, target)
+                for ticker, (symbol, kind) in requests.items():
+                    if ticker not in unresolved:
+                        errors.pop(ticker, None)
+                        errors.pop(symbol, None)
+                retained = [ticker for ticker in retained if ticker in unresolved]
         if new.empty:
             raise PublicationRejected(
                 "Shared refresh returned no accepted observations; prior files retained",
                 price_coverage(existing, current, target),
                 errors,
             )
-        for kind, symbol in new[["series_type", "symbol"]].drop_duplicates().itertuples(index=False):
-            sources[f"{kind}:{symbol}"] = provider
-            policies[f"{kind}:{symbol}"] = adjustment_policy
-        merged = merge_observations(existing, new)
         from apps.dual_momentum.config import CASH_TICKER
 
         actual = merged[(merged.series_type == "etf_adjusted") & (merged.symbol == CASH_TICKER)].set_index("date").Close
@@ -471,6 +577,10 @@ def refresh_prices(
             "errors": errors,
             "retained_series": sorted(set(retained)),
             "primary_provider": provider,
+            "provider_diagnostics": provider_diagnostics,
+            "fallback_requested_series": sorted(fallback_requests),
+            "fallback_accepted_series": fallback_accepted,
+            "missing_target_series": sorted(missing_requested_series(merged, requests, target)),
             "adjustment_policy": "per_series; see series_adjustment_policies",
             "series_sources": sources,
             "series_adjustment_policies": policies,

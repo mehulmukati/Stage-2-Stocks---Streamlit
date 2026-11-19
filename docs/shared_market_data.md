@@ -23,14 +23,20 @@ python scripts/refresh_market_data.py --target-date 2026-11-18 --require-coverag
 
 Instrument matching uses exact NSE symbols and rejects ambiguous matches. Daily
 candles use the Indian session date and include the requested target session.
-Authentication failures stop the refresh. Per-symbol mapping and data failures
-remain in the publication diagnostics. The existing 94% constituent coverage and
+After Dhan, every series still missing a usable target-session quote is retried
+through yfinance, including stocks, ETFs and price indices. Missing credentials,
+authentication and connectivity failures also allow Yahoo fallback. Successful
+Dhan quotes keep priority; stale Yahoo responses cannot replace newer accepted
+data. Per-provider errors and accepted fallback series remain in the publication
+diagnostics. The existing 94% constituent coverage and
 three required benchmarks must pass when `--require-coverage` is supplied, as in
 the scheduled recovery workflow.
 
 Each series records its provider and adjustment policy in Parquet metadata.
 Changing provider requires a full history response even when the overlap agrees.
-An incomplete replacement retains the prior series. History previously accepted
+An incomplete replacement retains the prior series, including during fallback;
+latest quotes are never spliced across incompatible adjustment histories.
+Dhan is attempted first again on subsequent refreshes. History previously accepted
 from Yahoo may remain for unmapped, delisted or rejected instruments. An explicit
 `--provider yahoo` refresh uses the same provider-change checks. Dhan's dividend
 and demerger treatment should be evaluated before comparing new rankings with
@@ -145,6 +151,14 @@ Pricing refreshes use each instrument's own coverage and overlapping sessions. A
 Generate Signal reads the accepted shared revision. It does not fetch prices. To repair stale prices, run the shared publisher (locally) or the Refresh Shared Market Data workflow (for the hosted app), then generate the signal again.
 
 TRI CSVs are source ingestion inputs, imported by `scripts/build_dual_momentum_tri.py` into the shared price file. ETF prices, TRI and price indices are distinct series types. RBI repo-rate inputs are auxiliary rate assumptions for the labeled cash proxy, whose generated price history lives in the same price file. Holiday and corporate-action calendars are auxiliary reference data, not competing market-price or membership stores.
+
+Scheduled recovery keeps seeking all requested target-session series within its
+existing retry window, even after the 94% acceptance threshold passes. It skips
+downloads only when every requested series is current, or when the retry window
+has ended and the accepted data already pass the publication gate. See
+[recovery scheduling](../doc/market_data_recovery.md). Token-renewal failures remain
+visible as workflow failures and alerts, while valid Yahoo fallback data can still
+be published and committed.
 
 The workflow changes are local until pushed/deployed. No remote workflow run or hosted-app deployment is implied by local tests.
 
