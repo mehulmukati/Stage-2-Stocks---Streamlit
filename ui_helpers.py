@@ -5,8 +5,11 @@ Shared Streamlit UI helpers used by both app.py and app_backtest.py.
 import uuid
 
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 
 from jobs import JobStatus, registry
+
+_PENDING = (JobStatus.RUNNING, JobStatus.QUEUED)
 
 
 def _get_user_token() -> str:
@@ -22,6 +25,22 @@ def _render_job_progress(job) -> None:
         st.markdown(f"**{label}**")
         for ev in list(job.events):
             st.write(f"{_icons.get(ev['level'], '▸')} {ev['msg']}")
+
+
+def _render_score_job_progress(job) -> None:
+    fragment = getattr(st, "fragment", None)
+    if fragment is None:
+        _render_job_progress(job)
+        st_autorefresh(interval=1500, key=f"{job.kind}_score_poll")
+        return
+
+    @fragment(run_every=1.5)
+    def progress():
+        if job.status not in _PENDING:
+            st.rerun()
+        _render_job_progress(job)
+
+    progress()
 
 
 def _poll_job(kind: str, worker, submit_params: dict = None) -> bool:
@@ -43,8 +62,11 @@ def _poll_job(kind: str, worker, submit_params: dict = None) -> bool:
     if job is None or job.key != job_key:
         return False
 
-    if job.status in (JobStatus.RUNNING, JobStatus.QUEUED):
-        _render_job_progress(job)
+    if job.status in _PENDING:
+        if kind in {"stage2", "momentum"}:
+            _render_score_job_progress(job)
+        else:
+            _render_job_progress(job)
         return True
 
     st.session_state.pop(job_key_ss, None)

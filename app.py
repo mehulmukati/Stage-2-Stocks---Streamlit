@@ -376,8 +376,8 @@ def _start_score_refresh(kind: str, target_date: str) -> None:
     worker = stage2_worker if kind == "stage2" else momentum_worker
     params = {"as_of_date": target_date} if kind == "momentum" else None
     st.info("Updating screener results from the latest shared prices…")
-    _poll_job(kind, worker, params)
-    st_autorefresh(interval=1500, key=f"{kind}_automatic_recalculation")
+    if not _poll_job(kind, worker, params) and f"{kind}_cached_result" in st.session_state:
+        st.rerun()
 
 
 def _invalidate_legacy_score_result(kind: str, cached: dict, target_date=None) -> bool:
@@ -397,7 +397,6 @@ def _invalidate_legacy_score_result(kind: str, cached: dict, target_date=None) -
     ):
         return False
     st.session_state.pop(f"{kind}_cached_result", None)
-    _score_cache[kind] = {"date": None, "data": None}
     _start_score_refresh(kind, target_date)
     return True
 
@@ -1238,14 +1237,11 @@ def main():
         "⏱ Momentum Backtest": "backtest",
     }
     _active_kind = _kind_for_screener.get(screener)
-    if _active_kind:
-        if _active_kind in {"stage2", "momentum"}:
-            st_autorefresh(interval=60_000, key="shared_price_revision_watch")
+    if _active_kind in {"stage2", "momentum"}:
+        st_autorefresh(interval=60_000, key="shared_price_revision_watch")
+    elif _active_kind == "backtest":
         _active_job = registry.latest(user_token, _active_kind)
-        _run_triggered = st.session_state.get(
-            "backtest_run_triggered" if _active_kind == "backtest" else f"{_active_kind}_run_triggered",
-            False,
-        )
+        _run_triggered = st.session_state.get("backtest_run_triggered", False)
         if _run_triggered or (_active_job and _active_job.status in (JobStatus.RUNNING, JobStatus.QUEUED)):
             st_autorefresh(interval=1500, key="job_autorefresh")
 
