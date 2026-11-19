@@ -7,6 +7,7 @@ History is retained; partial failures preserve accepted observations and are rep
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import time
 from datetime import datetime, timezone
@@ -255,15 +256,33 @@ def refresh_prices(
     target_date=None,
     force_full=False,
     emit=lambda level, msg: print(msg),
-    fetch=download,
+    fetch=None,
     only_series=None,
     require_coverage=False,
+    provider="dhan",
 ):
+    if fetch is None:
+        if provider == "dhan":
+            from scripts.dhan_market_data import DhanDownloader
+
+            fetch = DhanDownloader()
+        elif provider == "yahoo":
+            fetch = download
+        else:
+            raise ValueError(f"Unknown market-data provider: {provider}")
+    provider = getattr(fetch, "provider", "yahoo")
+    adjustment_policy = getattr(fetch, "adjustment_policy", "yahoo_auto_adjust")
     target = target_date or completed_session()
     target_ts = pd.Timestamp(target)
     with md.publisher_lock():
         snapshot = md.load_snapshot()
         existing = snapshot.prices
+        sources = dict(snapshot.price_metadata.get("series_sources", {}))
+        policies = dict(snapshot.price_metadata.get("series_adjustment_policies", {}))
+        for kind, symbol in existing[["series_type", "symbol"]].drop_duplicates().itertuples(index=False):
+            if kind != "cash_proxy":
+                sources.setdefault(f"{kind}:{symbol}", "yahoo")
+                policies.setdefault(f"{kind}:{symbol}", "yahoo_auto_adjust")
         pending_rebuild = set(existing.attrs.get("history_rebuild_required", []))
         rebuilt = set()
         current = snapshot.symbols(as_of=target)
@@ -278,6 +297,16 @@ def refresh_prices(
         requests.update({ticker: (ticker, "etf_adjusted") for ticker in ETF_UNIVERSE})
         if only_series:
             requests = {ticker: identity for ticker, identity in requests.items() if identity[1] in only_series}
+        source_changes = {
+            (kind, symbol)
+            for symbol, kind in requests.values()
+            if f"{kind}:{symbol}" in sources and sources[f"{kind}:{symbol}"] != provider
+        }
+        switching_rows = pd.MultiIndex.from_frame(existing[["series_type", "symbol"]]).isin(source_changes)
+        if existing.loc[switching_rows, "date"].gt(target_ts).any():
+            raise RuntimeError(
+                "A provider change must cover the latest stored session to preserve its adjustment basis"
+            )
         additions = []
         errors = {}
         retained = []
@@ -286,7 +315,7 @@ def refresh_prices(
         coverage = existing.groupby(["series_type", "symbol"]).date.agg(["min", "max"])
         for ticker, (symbol, kind) in requests.items():
             bounds = coverage.loc[(kind, symbol)] if (kind, symbol) in coverage.index else None
-            if force_full or bounds is None or symbol in pending_rebuild:
+            if force_full or bounds is None or symbol in pending_rebuild or (kind, symbol) in source_changes:
                 start = target_ts - pd.DateOffset(years=10)
                 if bounds is not None:
                     start = min(start, bounds["min"])
@@ -311,6 +340,9 @@ def refresh_prices(
                     continue
                 corrections = revision_needs_full_history(existing, new)
                 returned_identities = set(zip(new.series_type, new.symbol))
+                # Even identical overlap prices cannot prove two providers use
+                # the same adjustment convention across the entire history.
+                corrections.update(source_changes & returned_identities)
                 corrections.update(
                     ("equity", symbol) for symbol in pending_rebuild if ("equity", symbol) in returned_identities
                 )
@@ -384,6 +416,7 @@ def refresh_prices(
                             errors.setdefault(ticker, f"no tradable {target} observation; latest returned: {available}")
                 if not new.empty:
                     additions.append(new)
+        errors.update(getattr(fetch, "errors", {}))
         new = pd.concat(additions, ignore_index=True) if additions else pd.DataFrame(columns=md.PRICE_COLUMNS)
         if new.empty:
             raise PublicationRejected(
@@ -391,6 +424,9 @@ def refresh_prices(
                 price_coverage(existing, current, target),
                 errors,
             )
+        for kind, symbol in new[["series_type", "symbol"]].drop_duplicates().itertuples(index=False):
+            sources[f"{kind}:{symbol}"] = provider
+            policies[f"{kind}:{symbol}"] = adjustment_policy
         merged = merge_observations(existing, new)
         from apps.dual_momentum.config import CASH_TICKER
 
@@ -434,7 +470,10 @@ def refresh_prices(
             "missing_target_symbols": missing,
             "errors": errors,
             "retained_series": sorted(set(retained)),
-            "adjustment_policy": "yahoo_auto_adjust",
+            "primary_provider": provider,
+            "adjustment_policy": "per_series; see series_adjustment_policies",
+            "series_sources": sources,
+            "series_adjustment_policies": policies,
             "source": "shared publisher",
             "constituent_revision": snapshot.constituent_revision,
             "history_rebuild_required": sorted(pending_rebuild - rebuilt),
@@ -467,10 +506,27 @@ if __name__ == "__main__":
     parser.add_argument("--check-coverage", action="store_true", help="Check accepted publication without downloading")
     parser.add_argument("--require-coverage", action="store_true", help="Validate target coverage before publishing")
     parser.add_argument("--series-type", action="append", choices=["equity", "index_price", "etf_adjusted"])
+    parser.add_argument("--provider", choices=["dhan", "yahoo"], default="dhan")
     args = parser.parse_args()
     if args.check_coverage:
         print(check_publication(args.target_date))
     else:
-        refresh_prices(
-            args.target_date, args.full, only_series=args.series_type, require_coverage=args.require_coverage
-        )
+        diagnostic_path = md.ROOT / "outputs" / "manual_price_refresh.json"
+        diagnostic_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            report = refresh_prices(
+                args.target_date,
+                args.full,
+                only_series=args.series_type,
+                require_coverage=args.require_coverage,
+                provider=args.provider,
+            )
+        except RuntimeError as exc:
+            report = {"status": "failed", "target_date": args.target_date, "error": str(exc)}
+            if isinstance(exc, PublicationRejected):
+                report.update(candidate_coverage=exc.candidate_coverage, provider_errors=exc.provider_errors)
+            diagnostic_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+            print(f"Refresh failed: {exc}. Diagnostics: {diagnostic_path}")
+            sys.exit(1)
+        diagnostic_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        print(f"Refresh diagnostics: {diagnostic_path}")
