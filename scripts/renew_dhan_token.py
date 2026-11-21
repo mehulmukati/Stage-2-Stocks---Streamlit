@@ -21,6 +21,7 @@ import market_data as md  # noqa: E402
 from scripts.dhan_market_data import load_credentials  # noqa: E402
 
 RENEW_URL = "https://api.dhan.co/v2/RenewToken"
+PROFILE_URL = "https://api.dhan.co/v2/profile"
 SECRET_NAME = "DHAN_ACCESS_TOKEN"
 TOKEN_FIELDS = ("accessToken", "access_token", "token")
 JWT_SHAPE = re.compile(r"[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){2}")
@@ -201,6 +202,39 @@ def parse_renewal_response(payload, current_token):
     return token, expiry
 
 
+def renewal_rejection(response, credentials, session):
+    diagnostic = f"Dhan renewal HTTP rejection (HTTP {response.status_code})"
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = None
+    code = payload.get("errorCode") if isinstance(payload, dict) else None
+    if isinstance(code, str) and re.fullmatch(r"DH-90[1-8]", code):
+        diagnostic += f"; provider code {code}"
+
+    if response.status_code not in {400, 401, 403}:
+        return diagnostic
+    try:
+        profile = session.get(
+            PROFILE_URL,
+            headers={"access-token": credentials[SECRET_NAME]},
+            timeout=10,
+            allow_redirects=False,
+        )
+        if profile.status_code != 200:
+            return f"{diagnostic}; Dhan profile also returned HTTP {profile.status_code}"
+        payload = profile.json()
+    except (requests.RequestException, ValueError):
+        return f"{diagnostic}; could not verify the token with Dhan profile"
+
+    client_id = payload.get("dhanClientId") if isinstance(payload, dict) else None
+    if client_id is None:
+        return f"{diagnostic}; Dhan profile did not confirm the token's client ID"
+    if str(client_id) != credentials["DHAN_CLIENT_ID"]:
+        return f"{diagnostic}; token is active but its client ID differs from DHAN_CLIENT_ID"
+    return f"{diagnostic}; token is active and matches DHAN_CLIENT_ID, but Dhan refused to renew it"
+
+
 def renew(credentials, store, session=None):
     store.prepare(credentials[SECRET_NAME])
     session = session or requests.Session()
@@ -218,9 +252,7 @@ def renew(credentials, store, session=None):
             "Dhan renewal connection failed; token state is uncertain. A fresh Web token may be needed"
         ) from None
     if response.status_code != 200:
-        raise TokenRenewalError(
-            f"Dhan renewal HTTP rejection (HTTP {response.status_code}); verify the active Web-generated token"
-        )
+        raise TokenRenewalError(renewal_rejection(response, credentials, session))
     try:
         payload = response.json()
     except ValueError:

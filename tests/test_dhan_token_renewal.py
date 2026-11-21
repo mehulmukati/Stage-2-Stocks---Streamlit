@@ -91,7 +91,9 @@ def test_failure_never_retries_rotation_or_replaces_local_token(env_file, failur
     )
     with pytest.raises(RuntimeError) as error:
         auth.renew(CREDENTIALS, auth.LocalTokenStore(env_file), session)
-    assert len(session.calls) == 1
+    assert [url for url, _ in session.calls] == (
+        [auth.RENEW_URL] if failure == "timeout" else [auth.RENEW_URL, auth.PROFILE_URL]
+    )
     assert OLD in env_file.read_text()
     assert "sensitive provider body" not in str(error.value)
     assert NEW not in str(error.value)
@@ -237,6 +239,36 @@ def test_invalid_replacement_never_saves_or_retries(env_file, payload, reason):
 
 
 @pytest.mark.parametrize(
+    ("profile", "expected"),
+    [
+        (Response(payload={"dhanClientId": "test-client"}), "token is active and matches DHAN_CLIENT_ID"),
+        (Response(payload={"dhanClientId": "private-other-client"}), "client ID differs from DHAN_CLIENT_ID"),
+        (Response(401), "profile also returned HTTP 401"),
+        (Response(payload={}), "profile did not confirm the token's client ID"),
+    ],
+)
+def test_renewal_rejection_checks_profile_without_leaking_credentials(env_file, monkeypatch, profile, expected):
+    session = DhanSession(Response(400, {"errorCode": "DH-905", "errorMessage": OLD}))
+    get = session.get
+
+    def get_with_profile(url, **kwargs):
+        response = get(url, **kwargs)
+        return profile if url == auth.PROFILE_URL else response
+
+    monkeypatch.setattr(session, "get", get_with_profile)
+    with pytest.raises(auth.TokenRenewalError) as error:
+        auth.renew(CREDENTIALS, auth.LocalTokenStore(env_file), session)
+    assert [url for url, _ in session.calls] == [auth.RENEW_URL, auth.PROFILE_URL]
+    assert session.calls[1][1]["headers"] == {"access-token": OLD}
+    assert session.calls[1][1]["allow_redirects"] is False
+    message = str(error.value)
+    assert "DH-905" in message
+    assert expected in message
+    for private in (OLD, "test-client", "private-other-client"):
+        assert private not in message
+
+
+@pytest.mark.parametrize(
     ("status", "payload", "diagnostic"),
     [
         (400, {"errorMessage": NEW}, "HTTP rejection (HTTP 400)"),
@@ -259,5 +291,5 @@ def test_failure_report_only_contains_safe_details(env_file, monkeypatch, capsys
     assert diagnostic in output
     for private in (OLD, NEW, "test-client", "private name", "raw response"):
         assert private not in output
-    assert len(session.calls) == 1
+    assert len(session.calls) == (2 if status == 400 else 1)
     assert not env_file.with_name(".env.dhan-recovery").exists()
