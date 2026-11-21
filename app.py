@@ -46,8 +46,8 @@ from stage2_engine import compute_rolling_stage2 as _compute_rolling_stage2
 from ui_helpers import _get_user_token, _poll_job
 
 # Streamlit reuses imported package objects across reruns. Refresh the small
-# navigation contract when this process predates the Portfolio Lab addition.
-if not hasattr(qpm_navigation, "PORTFOLIO_LAB_PAGE"):
+# navigation contract when this process predates the weekly hammer research page.
+if not all(hasattr(qpm_navigation, label) for label in ("PORTFOLIO_LAB_PAGE", "WEEKLY_HAMMER_PAGE")):
     qpm_navigation = importlib.reload(qpm_navigation)
 
 ENHANCED_ICHIMOKU_PAGE = qpm_navigation.ENHANCED_ICHIMOKU_PAGE
@@ -1088,11 +1088,7 @@ _NAV_GROUPS = {
         "🔎 One Stock, Three Views",
         "▦ Many Stocks, One View",
     ),
-    "Quant-Portfolio-Maker": (
-        ENHANCED_ICHIMOKU_PAGE,
-        HA_EMA_PAGE,
-        PORTFOLIO_LAB_PAGE,
-    ),
+    "Quant-Portfolio-Maker": QPM_PAGE_LABELS,
     "Momentum Factor": (
         "🚀 Momentum Screener",
         "⏱ Momentum Backtest",
@@ -1208,7 +1204,7 @@ def main():
         if screener == PORTFOLIO_LAB_PAGE:
             import apps.quant_portfolio_maker.portfolio as portfolio_ui
 
-            if getattr(portfolio_ui, "PORTFOLIO_UI_VERSION", 0) < 7:
+            if getattr(portfolio_ui, "PORTFOLIO_UI_VERSION", 0) < 8:
                 portfolio_ui = importlib.reload(portfolio_ui)
 
             quant_portfolio_params = portfolio_ui.render_portfolio_sidebar(idx_options)

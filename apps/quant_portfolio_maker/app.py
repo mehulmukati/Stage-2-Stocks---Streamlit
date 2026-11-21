@@ -34,12 +34,13 @@ from strategy_replay import ReplayConfig, replay_single_stock
 
 # Streamlit can retain the package object across script reruns. Reload an older
 # object so a newly-added workspace constant is available without restarting.
-if not hasattr(qpm_navigation, "PORTFOLIO_LAB_PAGE"):
+if not all(hasattr(qpm_navigation, label) for label in ("PORTFOLIO_LAB_PAGE", "WEEKLY_HAMMER_PAGE")):
     qpm_navigation = importlib.reload(qpm_navigation)
 
 ENHANCED_ICHIMOKU_PAGE = qpm_navigation.ENHANCED_ICHIMOKU_PAGE
 HA_EMA_PAGE = qpm_navigation.HA_EMA_PAGE
 PORTFOLIO_LAB_PAGE = qpm_navigation.PORTFOLIO_LAB_PAGE
+WEEKLY_HAMMER_PAGE = qpm_navigation.WEEKLY_HAMMER_PAGE
 PAGE_LABELS = qpm_navigation.PAGE_LABELS
 
 
@@ -812,10 +813,14 @@ def render_quant_portfolio_maker(page: str, ticker: str, portfolio_params: dict 
     elif page == PORTFOLIO_LAB_PAGE:
         import apps.quant_portfolio_maker.portfolio as portfolio_ui
 
-        if getattr(portfolio_ui, "PORTFOLIO_UI_VERSION", 0) < 7:
+        if getattr(portfolio_ui, "PORTFOLIO_UI_VERSION", 0) < 8:
             portfolio_ui = importlib.reload(portfolio_ui)
 
         portfolio_ui.render_portfolio_lab(portfolio_params or {})
+    elif page == WEEKLY_HAMMER_PAGE:
+        from apps.quant_portfolio_maker.weekly_hammer import render_weekly_hammer
+
+        render_weekly_hammer()
 
 
 def main() -> None:
@@ -838,10 +843,12 @@ def main() -> None:
         if page == PORTFOLIO_LAB_PAGE:
             import apps.quant_portfolio_maker.portfolio as portfolio_ui
 
-            if getattr(portfolio_ui, "PORTFOLIO_UI_VERSION", 0) < 7:
+            if getattr(portfolio_ui, "PORTFOLIO_UI_VERSION", 0) < 8:
                 portfolio_ui = importlib.reload(portfolio_ui)
 
             portfolio_params = portfolio_ui.render_portfolio_sidebar(list(data_access._load_constituents().keys()))
+            ticker = ""
+        elif page == WEEKLY_HAMMER_PAGE:
             ticker = ""
         else:
             ticker = st.text_input("NSE Symbol (e.g. RELIANCE)", key="qpm_standalone_ticker").strip().upper()

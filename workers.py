@@ -17,7 +17,7 @@ from backtest_engine import BacktestConfig, run_backtest
 
 if getattr(backtest_data, "BACKTEST_DATA_VERSION", 0) < 7:
     backtest_data = importlib.reload(backtest_data)
-if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 6:
+if getattr(quant_portfolio, "QUANT_PORTFOLIO_ENGINE_VERSION", 0) < 7:
     quant_portfolio = importlib.reload(quant_portfolio)
 
 QuantPortfolioConfig = quant_portfolio.QuantPortfolioConfig
@@ -34,7 +34,7 @@ load_ohlcv_for_backtest = backtest_data.load_ohlcv_for_backtest
 load_quant_ohlcv_snapshot = backtest_data.load_quant_ohlcv_snapshot
 sync_benchmark_data = backtest_data.sync_benchmark_data
 
-SCREENER_WORKER_VERSION = 11
+SCREENER_WORKER_VERSION = 12
 
 
 def stage2_worker(params: dict, emit: Callable, cancel_evt: threading.Event) -> dict:
@@ -74,8 +74,47 @@ def quant_portfolio_worker(params: dict, emit: Callable, cancel_evt: threading.E
     if cancel_evt.is_set():
         raise RuntimeError("Cancelled")
     emit("info", f"Preparing {len(loaded.symbol_data):,} symbol histories…")
+    market_calendar = snapshot.trading_calendar()
+    symbol_data = loaded.symbol_data
+    benchmarks = load_benchmark_series(refresh=False, snapshot=snapshot)
+    membership_coverage = []
+    if params["strategy"] == "weekly_hammer":
+        universe = params.get("universe") or []
+        if not universe or compositions.empty:
+            raise RuntimeError("Select at least one index with historical constituent data.")
+        price_end = pd.Timestamp(loaded.max_price_date)
+        market_calendar = market_calendar[market_calendar <= price_end]
+        if market_calendar.empty:
+            raise RuntimeError("No observed market sessions are available for the selected range.")
+        allowed = set()
+        for name in universe:
+            key = shared_market.index_key(name)
+            rows = compositions.loc[compositions.INDEX_NAME.eq(key) & compositions.TIME_STAMP.le(price_end)]
+            if rows.empty:
+                raise RuntimeError(f"No historical composition is available for {name} by {price_end:%d %b %Y}.")
+            allowed.update(rows.SYMBOL)
+            first, last = rows.TIME_STAMP.min(), rows.TIME_STAMP.max()
+            membership_coverage.append(
+                {
+                    "Index": name,
+                    "First snapshot": str(first.date()),
+                    "Last snapshot used by price cutoff": str(last.date()),
+                    "Age at price cutoff (days)": (price_end - last).days,
+                    "Historical members": rows.SYMBOL.nunique(),
+                    "Members with price history": rows.loc[rows.SYMBOL.isin(symbol_data), "SYMBOL"].nunique(),
+                }
+            )
+        # Keep successor quotes for corporate actions on existing positions.
+        from corporate_actions import load_corporate_actions
+
+        for action in sorted(load_corporate_actions(), key=lambda entry: entry["effective_date"]):
+            if action["old_symbol"] in allowed and action["effective_date"] <= price_end:
+                allowed.add(action["successor_symbol"])
+        symbol_data = {symbol: frame for symbol, frame in symbol_data.items() if symbol in allowed}
+        emit("info", f"Replaying {len(symbol_data):,} priced symbols in the selected historical universe.")
+        benchmarks.update(snapshot.series("index_price", universe))
     config = QuantPortfolioConfig(
-        market_calendar=snapshot.trading_calendar(),
+        market_calendar=market_calendar,
         strategy=params["strategy"],
         strategy_settings=params.get("strategy_settings", {}),
         start_date=params.get("start_date"),
@@ -95,8 +134,8 @@ def quant_portfolio_worker(params: dict, emit: Callable, cancel_evt: threading.E
         ranking_benchmark="Nifty 100",
     )
     result = run_quant_portfolio(
-        loaded.symbol_data,
-        load_benchmark_series(refresh=False, snapshot=snapshot),
+        symbol_data,
+        benchmarks,
         config,
         emit,
         cancel_evt,
@@ -108,6 +147,8 @@ def quant_portfolio_worker(params: dict, emit: Callable, cancel_evt: threading.E
     result["ohlcv_date"] = loaded.max_price_date or loaded.actual_latest_date
     result["ohlcv_start_date"] = loaded.earliest_price_date
     result["ohlcv_source"] = loaded.source
+    if membership_coverage:
+        result["membership_coverage"] = membership_coverage
     return result
 
 

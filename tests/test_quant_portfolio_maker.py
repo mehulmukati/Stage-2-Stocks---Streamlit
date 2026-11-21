@@ -7,15 +7,21 @@ from streamlit.testing.v1 import AppTest
 
 import apps.quant_portfolio_maker as qpm_navigation
 import quant_portfolio_metrics
-from apps.quant_portfolio_maker import ENHANCED_ICHIMOKU_PAGE, HA_EMA_PAGE, PAGE_LABELS, PORTFOLIO_LAB_PAGE
+from apps.quant_portfolio_maker import (
+    ENHANCED_ICHIMOKU_PAGE,
+    HA_EMA_PAGE,
+    PAGE_LABELS,
+    PORTFOLIO_LAB_PAGE,
+    WEEKLY_HAMMER_PAGE,
+)
 from apps.quant_portfolio_maker import app as quant_portfolio_maker
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_quant_portfolio_maker_exposes_strategy_pages_and_portfolio_lab():
-    assert PAGE_LABELS == (ENHANCED_ICHIMOKU_PAGE, HA_EMA_PAGE, PORTFOLIO_LAB_PAGE)
-    assert PAGE_LABELS == ("☁️ Enhanced Ichimoku", "🕯️ HA + EMA Trend", "📊 Portfolio Lab")
+    assert PAGE_LABELS == (ENHANCED_ICHIMOKU_PAGE, HA_EMA_PAGE, PORTFOLIO_LAB_PAGE, WEEKLY_HAMMER_PAGE)
+    assert WEEKLY_HAMMER_PAGE == "🔨 Weekly Hammer Reversal"
 
 
 def test_quant_portfolio_maker_import_does_not_import_root_app():
@@ -59,8 +65,7 @@ def test_root_app_keeps_basic_ichimoku_and_lazy_loads_quant_application():
     assert '"☁️ Ichimoku Chart"' in source
     assert "strategy_signals=strategy_signals" not in source
     assert "from apps.quant_portfolio_maker.app import render_quant_portfolio_maker" in source
-    assert '"Quant-Portfolio-Maker": (' in source
-    assert "QPM_PAGE_LABELS" in source
+    assert '"Quant-Portfolio-Maker": QPM_PAGE_LABELS' in source
     assert "import ha_ema_engine" not in source
     assert "import ichimoku_strategy" not in source
 
@@ -124,6 +129,13 @@ def test_main_app_portfolio_lab_mounts_its_sidebar_controls():
     assert app.selectbox(key="qpm_pf_strategy").value == "HA + EMA Trend"
     assert app.multiselect(key="qpm_pf_indices").value
     assert any(button.label == "Run Quant Portfolio" for button in app.button)
+
+    app.selectbox(key="qpm_pf_strategy").set_value("Weekly Hammer Reversal").run()
+    assert not app.exception
+    assert app.selectbox(key="qpm_hammer_variant").value == "D"
+    assert app.selectbox(key="qpm_hammer_hold").value == 8
+    app.multiselect(key="qpm_hammer_indices").set_value(["Nifty 500"]).run()
+    assert app.multiselect(key="qpm_hammer_indices").value == ["Nifty 500"]
 
 
 def test_quant_portfolio_maker_can_run_as_a_direct_streamlit_entrypoint():

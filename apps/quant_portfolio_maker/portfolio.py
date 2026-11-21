@@ -15,15 +15,16 @@ from backtest_engine import _compute_summary_stats, rolling_returns
 from charts import nav_chart_figure, rolling_returns_figure
 from jobs import JobStatus, registry
 from ui_helpers import _get_user_token, _poll_job
+from weekly_hammer_reversal import HORIZONS, VARIANTS
 
 if getattr(portfolio_metrics, "QUANT_PORTFOLIO_METRICS_VERSION", 0) < 2:
     portfolio_metrics = importlib.reload(portfolio_metrics)
-if getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 7:
+if getattr(worker_functions, "SCREENER_WORKER_VERSION", 0) < 12:
     worker_functions = importlib.reload(worker_functions)
 
 slice_and_rebase_nav = portfolio_metrics.slice_and_rebase_nav
 quant_portfolio_worker = worker_functions.quant_portfolio_worker
-PORTFOLIO_UI_VERSION = 7
+PORTFOLIO_UI_VERSION = 8
 
 _ROLLING_WINDOWS = {"1 year": 252, "3 years": 756, "5 years": 1_260}
 
@@ -31,13 +32,24 @@ _ROLLING_WINDOWS = {"1 year": 252, "3 years": 756, "5 years": 1_260}
 def render_portfolio_sidebar(index_options: list[str]) -> dict:
     """Render Portfolio Lab controls and return a serializable worker payload."""
     st.markdown("### 📊 Portfolio Lab")
-    strategy_label = st.selectbox("Quant method", ["HA + EMA Trend", "Ichimoku"], key="qpm_pf_strategy")
+    methods = {"HA + EMA Trend": "ha_ema", "Ichimoku": "ichimoku", "Weekly Hammer Reversal": "weekly_hammer"}
+    strategy_label = st.selectbox("Quant method", list(methods), key="qpm_pf_strategy")
+    hammer = methods[strategy_label] == "weekly_hammer"
     settings: dict = {}
     if strategy_label == "Ichimoku":
         settings["preset"] = st.selectbox("Ichimoku preset", ["Balanced", "Aggressive", "Conservative"])
         settings["timeframe"] = st.selectbox("Signal timeframe", ["Weekly", "Daily"])
         ranking_method = "strategy_score"
         ranking_lookback = 55
+    elif hammer:
+        settings["variant"] = st.selectbox(
+            "Hammer variant", VARIANTS, index=VARIANTS.index("D"), key="qpm_hammer_variant"
+        )
+        settings["holding_weeks"] = st.selectbox(
+            "Holding weeks", HORIZONS, index=HORIZONS.index(8), key="qpm_hammer_hold"
+        )
+        ranking_method, ranking_lookback = "strategy_score", 55
+        st.caption("Simultaneous hammer entries compete in ticker order.")
     else:
         ranking_label = st.selectbox(
             "Entry ranking",
@@ -59,31 +71,40 @@ def render_portfolio_sidebar(index_options: list[str]) -> dict:
             st.caption("Score = stock return factor ÷ Nifty 100 return factor, measured through the signal date.")
         else:
             ranking_lookback = 55
-    selected = st.multiselect("Historical index universe", index_options, default=index_options, key="qpm_pf_indices")
+    if hammer:
+        options = list(dict.fromkeys([*index_options, "Nifty 500"]))
+        default = ["Nifty 50"] if "Nifty 50" in options else options[:1]
+        selected = st.multiselect("Historical index universe", options, default=default, key="qpm_hammer_indices")
+    else:
+        selected = st.multiselect(
+            "Historical index universe", index_options, default=index_options, key="qpm_pf_indices"
+        )
     st.caption("Membership is evaluated from the latest composition snapshot available on each signal date.")
     max_holdings = st.number_input("Fixed slots", min_value=1, max_value=50, value=10, step=1)
     initial_capital = st.number_input("Initial capital (₹)", min_value=10_000, value=1_000_000, step=100_000)
     today = date.today()
-    dates = st.date_input("Backtest range", value=(today - timedelta(days=365 * 2), today), max_value=today)
-    start_date, end_date = (
-        dates if isinstance(dates, tuple) and len(dates) == 2 else (today - timedelta(days=365 * 2), today)
-    )
+    default_range = (today - timedelta(days=365 * (9 if hammer else 2)), today)
+    date_key = "qpm_hammer_dates" if hammer else None
+    dates = st.date_input("Backtest range", value=default_range, max_value=today, key=date_key)
+    start_date, end_date = dates if isinstance(dates, tuple) and len(dates) == 2 else default_range
     with st.expander("Costs, taxes & data gates"):
         transaction_cost = st.number_input("Transaction cost (%)", 0.0, 5.0, 0.10, 0.01)
         brokerage = st.number_input("Brokerage per order (₹)", 0.0, 10_000.0, 0.0, 10.0)
         stcg = st.number_input("STCG rate (%)", 0.0, 100.0, 0.0, 1.0)
         ltcg = st.number_input("LTCG rate (%)", 0.0, 100.0, 0.0, 1.0)
         min_history = st.number_input("Minimum history (sessions)", 50, 2_000, 260, 10)
-        if strategy_label == "HA + EMA Trend":
+        if strategy_label == "HA + EMA Trend" or hammer:
             min_volume = st.number_input("Minimum 20-session median volume", 0, 100_000_000, 100_000, 10_000)
         else:
             min_volume = 0
             st.caption("Ichimoku does not use a volume or liquidity gate.")
-        use_compositions = st.toggle("Historical constituent filter", value=True)
-    if st.button("Run Quant Portfolio", type="primary", width="stretch"):
+        use_compositions = True if hammer else st.toggle("Historical constituent filter", value=True)
+    if hammer and not selected:
+        st.info("Select at least one index to run Weekly Hammer.")
+    if st.button("Run Quant Portfolio", type="primary", width="stretch", disabled=hammer and not selected):
         st.session_state["quant_portfolio_run_triggered"] = True
     return {
-        "strategy": "ha_ema" if strategy_label == "HA + EMA Trend" else "ichimoku",
+        "strategy": methods[strategy_label],
         "strategy_settings": settings,
         "universe": selected,
         "max_holdings": int(max_holdings),
@@ -184,6 +205,14 @@ def render_portfolio_lab(params: dict) -> None:
             f"{definition['label']} needs approximately {warmup} completed {unit} before its signals are ready. "
             "That warm-up uses data before the selected backtest start when such history is available."
         )
+    if result.get("membership_coverage"):
+        st.caption(
+            "Historical memberships use the last recorded snapshot for each index. "
+            "Before the first snapshot, that index contributes no members."
+        )
+        with st.expander("Index coverage and snapshot age", expanded=True):
+            st.dataframe(pd.DataFrame(result["membership_coverage"]), hide_index=True)
+        st.caption("Weekly Hammer uses the shared adjusted price history. This is an exploratory portfolio replay.")
     st.caption("Full-backtest metrics")
     _metric_grid(result["metrics"])
     tabs = st.tabs(["Overview", "Performance", "Holdings & trades", "Quant diagnostics", "Debugger", "Methodology"])
@@ -281,6 +310,12 @@ def render_portfolio_lab(params: dict) -> None:
                 )
             st.markdown(f"**Entry ranking:** {ranking_text}")
         st.json(result["strategy"]["config"])
+        if definition["key"] == "weekly_hammer":
+            st.write(
+                "The hold starts from the actual entry week. If the scheduled exit has no tradable open, "
+                "the position remains invested until the next available open. "
+                "Membership is checked at entry signal time."
+            )
         st.markdown(
             "Entries compete only on their execution session and are sorted by strategy score, then ticker. "
             "Each successful entry receives one fixed slot (1 ÷ configured slots) of current portfolio value. "
