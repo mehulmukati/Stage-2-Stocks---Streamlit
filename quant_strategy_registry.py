@@ -18,8 +18,9 @@ from quant_strategy import (
     next_session_dates,
     validate_signal_frame,
 )
+from weekly_hammer_portfolio import WeeklyHammerAdapter
 
-QUANT_STRATEGY_REGISTRY_VERSION = 4
+QUANT_STRATEGY_REGISTRY_VERSION = 5
 
 
 def _clean_ohlcv(data: pd.DataFrame) -> pd.DataFrame:
@@ -308,7 +309,7 @@ class IchimokuAdapter:
         return validate_signal_frame(pd.DataFrame(rows, columns=SIGNAL_COLUMNS))
 
 
-STRATEGY_KEYS = {"HA + EMA Trend": "ha_ema", "Ichimoku": "ichimoku"}
+STRATEGY_KEYS = {"HA + EMA Trend": "ha_ema", "Ichimoku": "ichimoku", "Weekly Hammer Reversal": "weekly_hammer"}
 
 
 def build_strategy(key: str, settings: dict[str, Any] | None = None):
@@ -320,6 +321,8 @@ def build_strategy(key: str, settings: dict[str, Any] | None = None):
         return HAEMAAdapter(config)
     if normalized == "ichimoku":
         return IchimokuAdapter(preset=settings.get("preset", "Balanced"), timeframe=settings.get("timeframe", "Weekly"))
+    if normalized == "weekly_hammer":
+        return WeeklyHammerAdapter(settings.get("variant", "D"), settings.get("holding_weeks", 8))
     raise ValueError(f"Unknown quant strategy: {key}")
 
 

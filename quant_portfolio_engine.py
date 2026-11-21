@@ -26,14 +26,16 @@ from equity_data import (
     tradable_equity_rows,
 )
 from quant_portfolio_metrics import build_quant_metrics
+from weekly_hammer_portfolio import WeeklyHammerAdapter
+from weekly_hammer_reversal import WEEK, exchange_weeks
 
-if getattr(strategy_registry, "QUANT_STRATEGY_REGISTRY_VERSION", 0) < 4:
+if getattr(strategy_registry, "QUANT_STRATEGY_REGISTRY_VERSION", 0) < 5:
     strategy_registry = importlib.reload(strategy_registry)
 
 build_strategy = strategy_registry.build_strategy
 strategy_metadata = strategy_registry.strategy_metadata
 
-QUANT_PORTFOLIO_ENGINE_VERSION = 6
+QUANT_PORTFOLIO_ENGINE_VERSION = 7
 RANK_STRATEGY_SCORE = "strategy_score"
 RANK_RELATIVE_STRENGTH = "relative_strength"
 RANKING_LABELS = {
@@ -226,6 +228,9 @@ def run_quant_portfolio(
     if config.max_holdings <= 0 or config.initial_capital <= 0:
         return {"error": "Max holdings and initial capital must be positive."}
     strategy = build_strategy(config.strategy, config.strategy_settings)
+    hammer = isinstance(strategy, WeeklyHammerAdapter)
+    if hammer and (not config.index_names or config.compositions_df is None):
+        return {"error": "Weekly Hammer requires a selected index and historical membership data."}
     required_price_columns = set(strategy.definition.required_price_columns) | {"Close", "Volume"}
     schema_failures = [
         {
@@ -249,12 +254,28 @@ def run_quant_portfolio(
         if config.market_calendar is not None
         else session_calendar(observed_sessions(prices.values()))
     )
+    if market_calendar.empty:
+        return {"error": "No valid dated OHLCV rows are available."}
+    corporate_actions = load_corporate_actions()
     prices = {symbol: session_frame(frame, market_calendar) for symbol, frame in prices.items()}
     emit("info", f"Computing {strategy.definition.label} signals for {len(prices):,} stocks…")
 
     signal_frames: dict[str, pd.DataFrame] = {}
     failures: list[dict[str, str]] = list(schema_failures)
-    if hasattr(strategy, "compute_many"):
+    if hammer:
+        weeks = exchange_weeks(market_calendar, market_calendar[-1])
+        for i, (symbol, frame) in enumerate(prices.items(), start=1):
+            if cancel_evt.is_set():
+                return {"error": "Cancelled"}
+            action_weeks = [
+                action["effective_date"].to_period(WEEK)
+                for action in corporate_actions
+                if action["old_symbol"] == symbol or action["successor_symbol"] == symbol
+            ]
+            signal_frames[symbol] = strategy.compute_with_calendar(frame, weeks, action_weeks)
+            if i % 100 == 0 or i == len(prices):
+                emit("info", f"Signals ready for {i:,}/{len(prices):,} stocks")
+    elif hasattr(strategy, "compute_many"):
         try:
             signal_frames, cache_hit = _cached_strategy_frames(prices, strategy, config.strategy_settings)
         except Exception as exc:
@@ -345,7 +366,6 @@ def run_quant_portfolio(
     cf_lt: list[tuple[int, float]] = []
     settled_fys: set[int] = set()
     action_log: list[dict[str, Any]] = []
-    corporate_actions = load_corporate_actions()
 
     def settle_tax(fy: int) -> float:
         nonlocal cash, total_taxes, cf_st, cf_lt
@@ -368,10 +388,17 @@ def run_quant_portfolio(
         settled_fys.add(fy)
         return tax
 
-    def marked_value(date: pd.Timestamp) -> tuple[float, dict[str, float]]:
+    def marked_value(date: pd.Timestamp, *, at_open: bool = False) -> tuple[float, dict[str, float]]:
         values = {}
         for symbol, position in holdings.items():
-            history = prices[symbol].loc[:date, "Close"].dropna()
+            frame = prices[symbol]
+            if at_open:
+                open_price = _price(frame, date, "Open")
+                if open_price is not None:
+                    values[symbol] = position["Shares"] * open_price
+                    continue
+            history_end = date - pd.Timedelta(days=1) if at_open else date
+            history = frame.loc[:history_end, "Close"].dropna()
             if not history.empty:
                 values[symbol] = position["Shares"] * float(history.iloc[-1])
         return cash + sum(values.values()), values
@@ -410,6 +437,8 @@ def run_quant_portfolio(
                 existing["Shares"] = combined_shares
                 existing["Cost_Basis"] += old["Cost_Basis"]
                 existing["Entry_Date"] = min(existing["Entry_Date"], old["Entry_Date"])
+                if hammer:
+                    existing["Exit_Week"] = min(existing["Exit_Week"], old["Exit_Week"])
             else:
                 holdings[successor] = {
                     **old,
@@ -427,7 +456,30 @@ def run_quant_portfolio(
                     "Status": "APPLIED",
                 }
             )
-        todays = events.get(date, [])
+        todays = list(events.get(date, ()))
+        if hammer:
+            for symbol, position in holdings.items():
+                due = position["Exit_Week"]
+                if date < due:
+                    continue
+                has_open = _price(prices[symbol], date, "Open") is not None
+                if not has_open and position.get("Exit_Missed"):
+                    continue
+                delayed = position.get("Exit_Missed", False)
+                position["Exit_Missed"] = not has_open
+                event = {
+                    "Symbol": symbol,
+                    "Decision_Date": due,
+                    "Execution_Date": date,
+                    "Event": "EXIT",
+                    "Score": 0.0,
+                    "Reason": "Fixed hold · next available open" if delayed else "Fixed hold · scheduled exit week",
+                    "Ready": True,
+                    "Diagnostics": {"Scheduled_Exit_Week": str(due.date())},
+                    "Outcome": "PENDING",
+                }
+                todays.append(event)
+                decisions.append(event)
         traded_value = 0.0
         exits = sorted((row for row in todays if row["Event"] == "EXIT"), key=lambda row: row["Symbol"])
         entries = sorted(
@@ -471,7 +523,7 @@ def run_quant_portfolio(
             del holdings[event["Symbol"]]
             event["Outcome"] = "EXECUTED"
 
-        portfolio_value, _ = marked_value(date)
+        portfolio_value, _ = marked_value(date, at_open=hammer)
         for event in entries:
             symbol = event["Symbol"]
             if symbol in holdings:
@@ -531,6 +583,8 @@ def run_quant_portfolio(
                 "Cost_Basis": gross + cost,
                 "Entry_Reason": event["Reason"],
             }
+            if hammer:
+                holdings[symbol]["Exit_Week"] = (date.to_period(WEEK) + strategy.config.holding_weeks).start_time
             event["Outcome"] = "EXECUTED"
 
         value, values = marked_value(date)
@@ -640,7 +694,7 @@ def run_quant_portfolio(
         "strategy": strategy_metadata(strategy),
         "ranking": {
             "method": config.ranking_method,
-            "label": RANKING_LABELS.get(config.ranking_method, config.ranking_method),
+            "label": "Ticker order" if hammer else RANKING_LABELS.get(config.ranking_method, config.ranking_method),
             "lookback_sessions": config.ranking_lookback_sessions,
             "benchmark": config.ranking_benchmark if config.ranking_method == RANK_RELATIVE_STRENGTH else None,
         },
