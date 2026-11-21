@@ -39,10 +39,11 @@ INDEX_TICKERS = {
 class PublicationRejected(RuntimeError):
     """Carry rejected candidate diagnostics without publishing its prices."""
 
-    def __init__(self, message, coverage, errors):
+    def __init__(self, message, coverage, errors, provider_diagnostics):
         super().__init__(message)
         self.candidate_coverage = coverage
         self.provider_errors = errors
+        self.provider_diagnostics = provider_diagnostics
 
 
 def completed_session(now=None):
@@ -329,6 +330,7 @@ def fetch_history(
                 return fetch(batch, start, end)
             except RuntimeError as exc:
                 provider_error = str(exc)
+                emit("warning", f"{provider} stopped: {provider_error}")
         return pd.DataFrame(columns=md.PRICE_COLUMNS), provider_error
 
     source_changes = {
@@ -457,6 +459,7 @@ def refresh_prices(
                 fetch = DhanDownloader()
             except RuntimeError as exc:
                 unavailable_error = str(exc)
+                emit("warning", f"Dhan unavailable: {unavailable_error}")
         elif provider == "yahoo":
             fetch = download
         else:
@@ -533,6 +536,7 @@ def refresh_prices(
                 "Shared refresh returned no accepted observations; prior files retained",
                 price_coverage(existing, current, target),
                 errors,
+                provider_diagnostics,
             )
         from apps.dual_momentum.config import CASH_TICKER
 
@@ -568,7 +572,7 @@ def refresh_prices(
             try:
                 validate_publication(coverage_report, target)
             except RuntimeError as exc:
-                raise PublicationRejected(str(exc), coverage_report, errors) from exc
+                raise PublicationRejected(str(exc), coverage_report, errors, provider_diagnostics) from exc
         missing = coverage_report["missing_target_symbols"]
         report = {
             "target_date": target,
@@ -634,7 +638,11 @@ if __name__ == "__main__":
         except RuntimeError as exc:
             report = {"status": "failed", "target_date": args.target_date, "error": str(exc)}
             if isinstance(exc, PublicationRejected):
-                report.update(candidate_coverage=exc.candidate_coverage, provider_errors=exc.provider_errors)
+                report.update(
+                    candidate_coverage=exc.candidate_coverage,
+                    provider_errors=exc.provider_errors,
+                    provider_diagnostics=exc.provider_diagnostics,
+                )
             diagnostic_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
             print(f"Refresh failed: {exc}. Diagnostics: {diagnostic_path}")
             sys.exit(1)

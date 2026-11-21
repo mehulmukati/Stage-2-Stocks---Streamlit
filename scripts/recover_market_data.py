@@ -84,6 +84,7 @@ def run_attempt(plan, force=False):
         if hasattr(exc, "candidate_coverage"):
             report["candidate_coverage"] = exc.candidate_coverage
             report["provider_errors"] = exc.provider_errors
+            report["provider_diagnostics"] = getattr(exc, "provider_diagnostics", {})
         try:
             snapshot = md.load_snapshot()
             report.update(price_coverage(snapshot.prices, snapshot.symbols(as_of=target), target))
