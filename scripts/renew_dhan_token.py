@@ -22,6 +22,8 @@ from scripts.dhan_market_data import load_credentials  # noqa: E402
 
 RENEW_URL = "https://api.dhan.co/v2/RenewToken"
 SECRET_NAME = "DHAN_ACCESS_TOKEN"
+TOKEN_FIELDS = ("accessToken", "access_token", "token")
+JWT_SHAPE = re.compile(r"[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){2}")
 REPORT_PATH = md.ROOT / "outputs" / "dhan_token_status.json"
 RECOVERY_PATH = md.ROOT / "outputs" / "dhan_token_recovery.json"
 
@@ -156,6 +158,49 @@ class GitHubTokenStore:
         self.recovery_path.unlink()
 
 
+def renewal_response_shape(payload):
+    """Describe only allowlisted field names and JSON types."""
+    if not isinstance(payload, dict):
+        return f"root={type(payload).__name__}"
+    fields = (*TOKEN_FIELDS, "data", "expiryTime", "errorCode", "errorMessage", "status")
+    shape = ["root=object"]
+    for prefix, obj in (("", payload), ("data.", payload.get("data"))):
+        if isinstance(obj, dict):
+            shape.extend(f"{prefix}{name}={type(obj[name]).__name__}" for name in fields if name in obj)
+    return ", ".join(shape)
+
+
+def parse_renewal_response(payload, current_token):
+    candidates = {}
+    if isinstance(payload, dict):
+        # Prefer metadata from the object that supplied the token. One data envelope
+        # and two aliases are accepted for compatibility with response variants.
+        for obj in (payload, payload.get("data")):
+            if isinstance(obj, dict):
+                for name in TOKEN_FIELDS:
+                    token = obj.get(name)
+                    if isinstance(token, str) and JWT_SHAPE.fullmatch(token):
+                        candidates.setdefault(token, obj)
+    if len(candidates) != 1 or current_token in candidates:
+        if len(candidates) > 1:
+            reason = "conflicting replacement tokens"
+        elif candidates:
+            reason = "current token echoed"
+        else:
+            reason = "replacement token missing or malformed"
+        raise TokenRenewalError(
+            f"Dhan renewal token extraction failed ({reason}; {renewal_response_shape(payload)}). "
+            "Token state is uncertain"
+        )
+    token, obj = next(iter(candidates.items()))
+    # Persist even if optional expiry metadata is absent or malformed.
+    try:
+        expiry = datetime.fromisoformat(obj.get("expiryTime")).isoformat()
+    except (TypeError, ValueError):
+        expiry = None
+    return token, expiry
+
+
 def renew(credentials, store, session=None):
     store.prepare(credentials[SECRET_NAME])
     session = session or requests.Session()
@@ -174,28 +219,28 @@ def renew(credentials, store, session=None):
         ) from None
     if response.status_code != 200:
         raise TokenRenewalError(
-            f"Dhan renewal failed (HTTP {response.status_code}); verify the active Web-generated token"
+            f"Dhan renewal HTTP rejection (HTTP {response.status_code}); verify the active Web-generated token"
         )
     try:
         payload = response.json()
     except ValueError:
-        raise TokenRenewalError("Dhan returned an invalid renewal response; generate a fresh Web token") from None
-    token = payload.get("accessToken") if isinstance(payload, dict) else None
-    if not isinstance(token, str) or not token or re.search(r"\s", token):
-        raise TokenRenewalError("Dhan returned no valid replacement token; generate a fresh Web token")
+        raise TokenRenewalError("Dhan renewal JSON parsing failed (HTTP 200). Token state is uncertain") from None
+    token, expiry = parse_renewal_response(payload, credentials[SECRET_NAME])
     if os.getenv("GITHUB_ACTIONS") == "true":
         print(f"::add-mask::{token}", flush=True)
-    expiry = payload.get("expiryTime")
-    # Persist even if optional expiry metadata is absent or malformed.
     try:
-        expiry = datetime.fromisoformat(expiry).isoformat()
-    except (TypeError, ValueError):
-        expiry = None
-    store.save(token, expiry)
+        store.save(token, expiry)
+    except TokenRenewalError as exc:
+        raise TokenRenewalError(f"Dhan replacement persistence failed: {exc}") from None
+    except (RuntimeError, OSError, ValueError, ImportError, KeyError, TypeError):
+        raise TokenRenewalError("Dhan replacement persistence failed; check for a recovery file") from None
     # A step-level secrets expression on the download step would override this.
     if os.getenv("GITHUB_ENV"):
-        with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as handle:
-            handle.write(f"{SECRET_NAME}={token}\n")
+        try:
+            with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as handle:
+                handle.write(f"{SECRET_NAME}={token}\n")
+        except OSError:
+            raise TokenRenewalError("Dhan replacement persisted, but workflow environment export failed") from None
     return {"status": "renewed", "expiry_time": expiry}
 
 

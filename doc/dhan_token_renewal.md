@@ -55,11 +55,22 @@ fallback prices may be published and committed while the token failure remains
 visible in the workflow and its separate alert.
 
 Renewal invalidates the previous token. The publisher retries transient GitHub
-save failures using the same replacement token. It never repeats an ambiguous
-Dhan renewal request after a network timeout.
+save failures using the same replacement token. It sends one renewal request
+per invocation. After a transport, JSON parsing, or token extraction failure,
+check the stored credential with Dhan’s read-only User Profile endpoint before
+manually dispatching another run. Coordinate with the scheduled workflow so
+local renewal cannot invalidate the GitHub copy.
 
-If GitHub saving fails after renewal, the workflow preserves a one-day artifact
-named `dhan-token-recovery-<run ID>`. It contains only the token encrypted with
+The status report distinguishes HTTP rejection, invalid JSON, failed token
+extraction, and failed persistence. Extraction diagnostics list only allowlisted
+field names and JSON types. The parser accepts a JWT-shaped replacement in
+`accessToken`, `access_token`, or `token` at the top level or one level under
+`data`. The aliases and envelope are compatibility cases. Dhan’s public renewal
+docs do not specify the response schema.
+
+An extraction failure leaves no replacement recovery artifact. If persistence
+fails after the encrypted replacement was staged, the workflow preserves a
+one-day artifact named `dhan-token-recovery-<run ID>`. It contains only the token encrypted with
 GitHub's environment public key and that key's identifier. Download and extract
 `dhan_token_recovery.json`, then restore it while the token remains valid.
 
