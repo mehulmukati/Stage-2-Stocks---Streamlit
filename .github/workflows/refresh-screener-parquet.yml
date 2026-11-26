@@ -1,5 +1,5 @@
 name: Refresh Shared Market Data
-
+run-name: ${{ github.event.schedule == '35 1,7,13,19 * * *' && 'Renew Dhan Token' || 'Refresh/Recover Market Data' }}
 on:
   schedule:
     - cron: "15 14 * * *" # 7:45 PM IST
